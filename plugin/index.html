@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>בית ראשון</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --color-primary:#c9a84c;--color-on-primary:#1a1200;
+    --color-secondary:#a09880;--color-on-secondary:#1a1800;
+    --color-surface-container-high:rgba(24,32,58,.92);--color-surface-container-highest:#1a1e30;
+    --color-surface:#0a0e1a;--color-on-surface:#e8e8e8;
+    --color-surface-container:#121826;--color-outline:#2a2a3a;
+    --color-error:#b3261e;--color-on-error:#fff;
+    --color-primary-subtle:rgba(201,168,76,.12);--color-secondary-subtle:rgba(160,152,128,.12);
+    --font-main:'Frank Ruhl Libre','David',serif;--font-size-base:18px;--line-height:1.5;
+    --radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-pill:999px;
+  }
+  html,body{width:100%;height:100%;overflow:hidden;font-family:var(--font-main);font-size:var(--font-size-base);line-height:var(--line-height);direction:rtl}
+  #main{position:fixed;inset:0;z-index:0;background:var(--color-surface)}
+  html:not(.themed) #main{background:transparent}
+  html:not(.themed) #loading{background:transparent}
+  html:not(.themed) #loading>*{opacity:0}
+  #loading>*{transition:opacity .25s}
+  #main canvas{display:block;width:100%;height:100%}
+  header{
+    position:fixed;top:0;left:0;right:0;z-index:20;
+    background:var(--color-surface-container-high);
+    border-bottom:1px solid var(--color-outline);
+    padding:10px 56px 10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+    font-size:.95rem;font-weight:700;color:var(--color-primary);user-select:none;
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)
+  }
+  header .title{display:flex;align-items:center;gap:8px}
+  #version{font-size:.7rem;color:var(--color-secondary);font-weight:400}
+  #loading{
+    position:fixed;inset:0;z-index:999;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+    background:var(--color-surface);color:var(--color-on-surface);font-size:1rem
+  }
+  .spinner{width:40px;height:40px;border:3px solid var(--color-outline);border-top-color:var(--color-primary);border-radius:50%;animation:spin .75s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  #loading .bar{width:240px;height:5px;background:var(--color-outline);border-radius:var(--radius-sm);overflow:hidden;margin-top:6px}
+  #fill{height:100%;width:0%;background:var(--color-primary);transition:width .3s}
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:100;
+    background:var(--color-surface-container-highest);border:1px solid var(--color-outline);
+    border-radius:var(--radius-md);padding:10px 18px;
+    font-size:.85rem;color:var(--color-on-surface);
+    opacity:0;transition:opacity .3s;pointer-events:none;text-align:center;white-space:nowrap
+  }
+  .toast.show{opacity:1}
+  body.loaded #loading{opacity:0;pointer-events:none;transition:opacity .5s}
+  @media(max-width:600px){header{font-size:.8rem;padding:8px 10px}}
+</style>
+</head>
+<body>
+<header><div class="title">בית המקדש הראשון</div><span id="version"></span></header>
+<main id="main"></main>
+<div id="loading"><div class="spinner"></div><span id="loading-msg">טוען צבעים וחומרים...</span><div class="bar"><div id="fill"></div></div></div>
+<div id="toast" class="toast"></div>
+
+<script>
+(function(){
+  function applyTheme(theme){
+    if(!theme||!theme.colorScheme)return;
+    document.documentElement.classList.add('themed');
+    var cs=theme.colorScheme,r=document.documentElement;
+    r.style.setProperty('--color-primary',cs.primary);
+    r.style.setProperty('--color-on-primary',cs.onPrimary);
+    r.style.setProperty('--color-secondary',cs.secondary);
+    r.style.setProperty('--color-on-secondary',cs.onSecondary);
+    r.style.setProperty('--color-surface',cs.surface);
+    r.style.setProperty('--color-on-surface',cs.onSurface);
+    r.style.setProperty('--color-surface-container',cs.surfaceContainer||cs.surface);
+    r.style.setProperty('--color-surface-container-high',cs.surfaceContainerHigh||cs.surface);
+    r.style.setProperty('--color-surface-container-highest',cs.surfaceContainerHighest||cs.surface);
+    r.style.setProperty('--color-error',cs.error);
+    r.style.setProperty('--color-on-error',cs.onError);
+    r.style.setProperty('--color-outline',cs.outline);
+    if(theme.typography){
+      var t=theme.typography;
+      r.style.setProperty('--font-main','\''+t.fontFamily+'\',\'David\',serif');
+      r.style.setProperty('--font-size-base',t.fontSize+'px');
+    }
+  }
+  var showThemed=function(){document.documentElement.classList.add('themed')};
+  if(typeof Otzaria==='undefined'){showThemed()}else{setTimeout(showThemed,2500)}
+  if(typeof Otzaria!=='undefined'){
+    Otzaria.on('plugin.boot',function(p){applyTheme(p.theme)});
+    Otzaria.on('theme.changed',applyTheme);
+  }
+})();
+</script>
+<script src="./bundle.js"></script>
+</body>
+</html>

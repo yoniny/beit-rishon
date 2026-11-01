@@ -1,0 +1,57 @@
+/*
+ * ===== DEV NOTES (read first; full version in DEV_NOTES.md inside the plugin zip) =====
+ * Beit HaMikdash HARISHON (First Temple, Solomon's Temple) 3D model - Otzaria plugin. Sister of the Second Temple plugin
+ * (com.beit-hamikdash.3d-model); same engine, helpers and UI, different building. Single bundled file, no build step;
+ * sections are marked "// plugin/js/...". Sources are embedded in src/ (tools/assemble.mjs concatenates them).
+ * STANDING RULE for any human/AI editing: after every change update DEV_NOTES.md + this header and bump manifest.json version;
+ * never change a dimension without a source reference in a comment (e.g. // I Kings 6:6, // II Chr 4:1, // Middot 4:7, // Yoma 51b);
+ * mark model choices as "model choice"; note disputes; do not guess - ask the user.
+ * Sources: I Kings 6-8, II Chronicles 3-4 (primary); Chazal: Mishnah Middot, Yoma, Menachot, Eruvin, Zevachim, Bava Batra, Rashi,
+ * Radak, Metzudot, Malbim, Ralbag. NOT Ezekiel (the user rejected it: that is the Third Temple).
+ * Units: 1 = 1 amah. +x east (front), +z south (right), y up. Levels: great court 0, inner court 6, house floor 12.
+ * 1.0.1 (2026-10-27, the user's first corrections): house/ulam/yatzia walls are no longer fade-occluders (chambers closed from outside);
+ *   new viewing toggles ctx.yatziaCut ("פתח את התאים") and ctx.ulamCut ("פתח את האולם", used by the Yachin & Boaz view from outside);
+ *   yatzia stories exactly per Rashi (5 clear + 0.5 slab: ledges at 17 and 22.5, roof 28..28.5); heichal doors folded flat into the reveals;
+ *   "ההיכל" = the kodesh (labels/views renamed, exterior = "הבית מבחוץ"); Sea at z +-36 with bigger, visible oxen; the outer court is
+ *   "החצר החיצונה" with chambers (Jer 35:4, 36:10), the king's platform "העמוד" (II Kings 11:14) and the donation chest (II Chr 24:8);
+ *   the palace layer is on by default, with its placement basis (I Kings 10:5, 8:1; Jer 26:10, 22:1; II Kings 11:19).
+ * 1.0.1-H (2026-10-27 evening, the user's second list; FIXES-1.0.1-H.md): the carvings of all the walls and doors as a procedural
+ *   carved-gold texture (I Kings 6:18, 6:29, 6:32, 6:35 with Rashi/Radak/Targum: cherubim with child faces, palms, open flowers, egg-knobs,
+ *   ropes of roses); the amah traksin as three solid boxes (piers + the part above the devir doorway, pattern continued); BOTH of Rashi's
+ *   explanations of "מזוזות חמישית" (ctx.shared.devirDoor: pentagonal posts / threshold + posts + a two-beam lintel); the cherubim rebuilt
+ *   (child figures, feathered wings 5 + 5 touching the walls and each other, 10 high) with three face readings (ctx.shared.cherubPose)
+ *   and Chazal's "כרובים בנס הן עומדין" (Bava Batra 99a; Rashi 6:24) stated in the UI; בית יער הלבנון in two readings (ctx.shared.forestHouse:
+ *   Rashi - rows along the house, an upper tier of "עמודים ועב", 45 ceiling boards + thin boards on small beams; Metzudot/Malbim/Ralbag -
+ *   the 1.0.0 build) with a toggle that removes the boards (ctx.forestBoardsCut) to show the beams; the panel reorganised: an opinions
+ *   table ("שיטות ומחלוקות", one row per dispute with its sources), viewing tools and layers with source links, places without duplicate
+ *   opinion buttons; performance/orbit: pixel ratio <= 1.5, shadow map 2048, high-performance GPU, minPolarAngle, lighter cloud ray test;
+ *   the "stuck rotation": a NaN guard (viewSize >= 2x2, fitToWindow watchdog, guardCamera + makeControls rebuild) and pointerSafety (a
+ *   lost pointerup in the host webview left OrbitControls rotating on every mouse move - a synthetic pointerup now ends such a drag);
+ *   a click on any label shows its explanation and source links (LABEL_MAP in ui.js); source fixes from the review (Bava Batra 3a/3b,
+ *   Malbim on 6:34, Rashi on 7:50, Megillah 10b); a presentation (75-tour.js: a button at the top left plays every view in order with
+ *   the default readings, then every other reading of the opinions table, each with its text and source links; ctx.ui exposes the UI).
+ * 1.0.1-K (2026-10-28/29, the user's third list + Yossi's requests; FIXES-1.0.1-K.md, FIXES-1.0.1-J.md): the illustrated book "מקרא
+ *   מפורש — איורי בית המקדש הראשון" (after Rashi) is the visual basis of model choices. NO automatic removals: the house, the yatzia
+ *   walls, the ulam, the forest boards and the cloud open only from buttons floating ON the model (ctx.shared.modelButtons, drawn by
+ *   70-ui.js) + "↺ החזר הכל"; views, places, opinion rows and the tour only fly. The yatzia closed as the book's general view, Rashi's
+ *   calculation (house wall 7/6/5/4, chambers 5/6/7, cedar beams 1 thick on the ledges) with a section button and measures; the ulam
+ *   closed (7:12 credit: Metzudat David, Ralbag, Malbim, Radak); Yachin and Boaz per Rashi (shaft 18 + 2 inside the 5 capital = 21;
+ *   lily basin with roses, 2 x 100 pomegranates, the network dome, small capital); new oxen; the bases per Rashi 7:27-35 with a drive
+ *   demo and a take-apart view; the tables per Rashi Ex 25:29 and Menachot (posts on the floor, 28 tubes, "תיבה פרוצה"); the golden
+ *   altar 1x1x2 with stone/cedar/gold layers and the straight incense smoke (Yoma 38a, 53a); the parochet with eagles toward the
+ *   heichal and lions toward the devir (Rashi Ex 26:1); robed armless cherubim; the carvings redrawn after the book; a wall/floor
+ *   layers exhibit (an option; default all gold); the house floor gold on cypress; the forest house per Rashi as the book draws it,
+ *   7:6 in two readings, shields and vessels, the king's house and the throne; לשכת הגזית (Yossi); the inner court floor in marble
+ *   (I Chr 29:2, Rashi); one gold recipe (GOLD_OPTS) and a warmer bronze; the presentation in three modes with a tall left banner; label
+ *   cards beside the labels; tooltips, compass letters, arrow keys, wall fade toggle + distance, two-finger zoom; cold load ~14.7 s -> ~5 s.
+ * 1.0.1-L (2026-10-29..11-01, the user's answers and notes; FIXES-1.0.1-L.md; DEV_NOTES "סבב ד'" lists the items still pending): the Sea in the
+ *   north-east corner, 2,000 bat (Eruvin 14a-b); the bases in one block of two rows of five with Moses' laver between them (the book p. לח;
+ *   CO.mechZ now = two rows), three frames a side, flat figures, the square capital, taps, a demonstration of washing and rinsing; Yachin and Boaz
+ *   nearer the wall, ctx.shared.pillarCapital (Malbim), the ulam's doorway 10 x 22 with cedar doors, ctx.shared.ulamTables; the yatzia section at x -30.5;
+ *   ten tables in Moses' form, the golden altar 1 x 1 x 1 east of the rows, menorot with all cups, knobs and flowers and marble steps, smooth one-piece
+ *   wings that touch, ctx.shared.arkInside; לשכת הגזית on the north wall, the slaughter place with ctx.shared.slaughterLayout; the forest house's third
+ *   key "mzd", the king's own court, ctx.shared.throneVersion in four versions with the ascent and the witnesses; new module 57-kelim.js (ctx.shared.kelim).
+ *   UI: ctx.ui.places, ctx.ui.card (one floating card), ctx.ui.autoOff (15 s), ctx.ui.smallSources, the removal-view table REVEAL (a pill flies to what it
+ *   reveals and back); the tour covers everything, closes the panel; view clamp and time-based damping (ent_clampView, ent_damp).
+ * 1.0.0: first version (2026-10-27).
+ */

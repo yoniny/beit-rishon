@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "com.beit-hamikdash.rishon-3d-model",
+  "name": "בית ראשון",
+  "version": "1.0.1",
+  "description": "סיור תלת־ממדי בבית המקדש הראשון כפירוש רש\"י, לסייע בהבנת ענייני המקדש: מבט 360 מעלות, מצגות, כפתור לכל שיטה וכל מקור בלחיצה באוצריא.",
+  "author": "יוני מאיר ויוסי כהן (Yossi Cohen)",
+  "homepage": "https://github.com/videopicyontsi-glitch/beit-hamikdash",
+  "icon": "icon/icon.png",
+  "entrypoint": "index.html",
+  "minAppVersion": "0.9.89",
+  "sdkVersion": "1.x",
+  "stability": "stable",
+  "permissions": [
+    "reader.open",
+    "library.books.read",
+    "library.content.read",
+    "library.links.read",
+    "search.fulltext.read"
+  ],
+  "network": {
+    "enabled": false,
+    "allowlist": []
+  },
+  "contributes": {
+    "toolTab": {
+      "title": "בית ראשון",
+      "order": 51,
+      "allowOrderBeforeBuiltIns": false,
+      "defaultPinned": true,
+      "iconName": "building_24_regular"
+    },
+    "publishedDataTypes": []
+  }
+}
