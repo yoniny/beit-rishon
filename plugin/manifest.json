@@ -5,7 +5,7 @@
   "version": "1.0.1",
   "description": "סיור תלת־ממדי בבית המקדש הראשון כפירוש רש\"י, לסייע בהבנת ענייני המקדש: מבט 360 מעלות, מצגות, כפתור לכל שיטה וכל מקור בלחיצה באוצריא.",
   "author": "יוני מאיר ויוסי כהן (Yossi Cohen)",
-  "homepage": "https://github.com/videopicyontsi-glitch/beit-hamikdash",
+  "homepage": "https://github.com/yoniny/beit-rishon",
   "icon": "icon/icon.png",
   "entrypoint": "index.html",
   "minAppVersion": "0.9.89",
