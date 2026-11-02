@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256"><defs>
+<linearGradient id="gold" gradientUnits="userSpaceOnUse" x1="10" y1="0" x2="246" y2="256">
+  <stop offset="0" stop-color="#f4e0a4"/><stop offset=".11" stop-color="#cda24e"/><stop offset=".24" stop-color="#8e6526"/><stop offset=".35" stop-color="#e3c279"/>
+  <stop offset=".49" stop-color="#b08339"/><stop offset=".61" stop-color="#f0dca4"/><stop offset=".75" stop-color="#a07628"/><stop offset=".89" stop-color="#d6ae5c"/><stop offset="1" stop-color="#84601f"/>
+</linearGradient>
+<linearGradient id="goldV" gradientUnits="objectBoundingBox" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0" stop-color="#efd99c"/><stop offset=".3" stop-color="#c49a48"/><stop offset=".55" stop-color="#e4c47c"/><stop offset=".8" stop-color="#a27a2c"/><stop offset="1" stop-color="#cfa858"/>
+</linearGradient>
+<linearGradient id="page" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffefb"/><stop offset="1" stop-color="#f3efe5"/></linearGradient>
+<linearGradient id="pageBack" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7f3ea"/><stop offset="1" stop-color="#e9e3d5"/></linearGradient>
+<filter id="polish" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB">
+  <feGaussianBlur in="SourceAlpha" stdDeviation="1.5" result="h"/>
+  <feSpecularLighting in="h" surfaceScale="4" specularConstant="1.15" specularExponent="38" lighting-color="#fffbe6" result="s"><feDistantLight azimuth="235" elevation="50"/></feSpecularLighting>
+  <feComposite in="s" in2="SourceAlpha" operator="in" result="s2"/>
+  <feDiffuseLighting in="h" surfaceScale="3" diffuseConstant="1.12" lighting-color="#ffffff" result="d"><feDistantLight azimuth="235" elevation="58"/></feDiffuseLighting>
+  <feComposite in="SourceGraphic" in2="d" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" result="lit"/>
+  <feComposite in="lit" in2="s2" operator="arithmetic" k1="0" k2="1" k3=".9" k4="0" result="m"/>
+  <feComposite in="m" in2="SourceAlpha" operator="in" result="gold"/>
+  <feMorphology in="SourceAlpha" operator="dilate" radius=".7" result="e"/>
+  <feFlood flood-color="#6a4a12" flood-opacity=".8"/><feComposite in2="e" operator="in" result="edge"/>
+  <feGaussianBlur in="SourceAlpha" stdDeviation="2.4"/><feOffset dy="2.6" result="sb"/>
+  <feFlood flood-color="#4c3410" flood-opacity=".32"/><feComposite in2="sb" operator="in" result="shadow"/>
+  <feMerge><feMergeNode in="shadow"/><feMergeNode in="edge"/><feMergeNode in="gold"/></feMerge>
+</filter>
+<filter id="polishFine" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB">
+  <feGaussianBlur in="SourceAlpha" stdDeviation=".8" result="h"/>
+  <feSpecularLighting in="h" surfaceScale="2.4" specularConstant="1" specularExponent="34" lighting-color="#fffbe6" result="s"><feDistantLight azimuth="235" elevation="50"/></feSpecularLighting>
+  <feComposite in="s" in2="SourceAlpha" operator="in" result="s2"/>
+  <feComposite in="SourceGraphic" in2="s2" operator="arithmetic" k1="0" k2="1" k3=".8" k4="0" result="m"/>
+  <feComposite in="m" in2="SourceAlpha" operator="in" result="gold"/>
+  <feMorphology in="SourceAlpha" operator="dilate" radius=".45" result="e"/>
+  <feFlood flood-color="#6a4a12" flood-opacity=".75"/><feComposite in2="e" operator="in" result="edge"/>
+  <feMerge><feMergeNode in="edge"/><feMergeNode in="gold"/></feMerge>
+</filter>
+<filter id="pageShade" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="3.2"/></filter>
+<clipPath id="frontClip"><path d="M46 45Q46 33 58 33H94Q110 33 120 41L128 48L136 41Q146 33 162 33H198Q210 33 210 45V194Q210 206 198 206H158Q146 206 137 213L128 220L119 213Q110 206 98 206H58Q46 206 46 194Z"/></clipPath>
+</defs><path d="M60 58H26Q14 58 14 70V208Q14 220 26 220H100Q112 220 120 227L128 234L136 227Q144 220 156 220H230Q242 220 242 208V70Q242 58 230 58H196Z" fill="url(#pageBack)"/>
+<g filter="url(#polish)"><path d="M60 58H26Q14 58 14 70V208Q14 220 26 220H100Q112 220 120 227L128 234L136 227Q144 220 156 220H230Q242 220 242 208V70Q242 58 230 58H196" fill="none" stroke="url(#gold)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></g>
+<path d="M60 58H26Q14 58 14 70V208Q14 220 26 220H100Q112 220 120 227L128 234L136 227Q144 220 156 220H230Q242 220 242 208V70Q242 58 230 58H196" fill="none" stroke="#6f4f1a" stroke-opacity=".38" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M46 45Q46 33 58 33H94Q110 33 120 41L128 48L136 41Q146 33 162 33H198Q210 33 210 45V194Q210 206 198 206H158Q146 206 137 213L128 220L119 213Q110 206 98 206H58Q46 206 46 194Z" fill="url(#page)"/>
+<g clip-path="url(#frontClip)"><path d="M46 45Q46 33 58 33H94Q110 33 120 41L128 48L136 41Q146 33 162 33H198Q210 33 210 45V194Q210 206 198 206H158Q146 206 137 213L128 220L119 213Q110 206 98 206H58Q46 206 46 194Z" fill="none" stroke="#7a5a20" stroke-opacity=".28" stroke-width="10" filter="url(#pageShade)"/></g>
+<g filter="url(#polish)"><path d="M46 45Q46 33 58 33H94Q110 33 120 41L128 48L136 41Q146 33 162 33H198Q210 33 210 45V194Q210 206 198 206H158Q146 206 137 213L128 220L119 213Q110 206 98 206H58Q46 206 46 194Z" fill="none" stroke="url(#gold)" stroke-width="10" stroke-linejoin="round"/></g>
+<path d="M46 45Q46 33 58 33H94Q110 33 120 41L128 48L136 41Q146 33 162 33H198Q210 33 210 45V194Q210 206 198 206H158Q146 206 137 213L128 220L119 213Q110 206 98 206H58Q46 206 46 194Z" fill="none" stroke="#6f4f1a" stroke-opacity=".38" stroke-width="1.2" stroke-linejoin="round"/><!-- the ulam's front: a flat-topped wall of stone with courses of cedar and a rectangular doorway under a stone lintel; the doorway shows the pearl page; inside it, behind the threshold, Yachin and Boaz off the axis with the heichal's gold door between them; a stair narrower than the wall comes forward. Main edges sit on the 6.4-unit grid of the 40 px size, so the pillars and door stay separate there -->
+<defs>
+  <linearGradient id="shaftRound" gradientUnits="objectBoundingBox" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#6a4a12"/><stop offset=".5" stop-color="#c79c4a"/><stop offset="1" stop-color="#6a4a12"/>
+  </linearGradient>
+  <radialGradient id="capRound" gradientUnits="objectBoundingBox" cx=".42" cy=".36" r=".66">
+    <stop offset="0" stop-color="#f0dca4"/><stop offset=".55" stop-color="#b98d3e"/><stop offset="1" stop-color="#6e4c14"/>
+  </radialGradient>
+</defs>
+<!-- Yachin and Boaz, behind the wall's plane: their feet go down behind the threshold -->
+<g filter="url(#polishFine)">
+  <rect x="102.400" y="116" width="8" height="60" fill="url(#shaftRound)"/>
+  <ellipse cx="106.400" cy="112.500" rx="7.500" ry="8" fill="url(#capRound)"/>
+  <circle cx="106.400" cy="102.500" r="2.500" fill="url(#gold)"/>
+  <rect x="145.600" y="116" width="8" height="60" fill="url(#shaftRound)"/>
+  <ellipse cx="149.600" cy="112.500" rx="7.500" ry="8" fill="url(#capRound)"/>
+  <circle cx="149.600" cy="102.500" r="2.500" fill="url(#gold)"/>
+</g>
+<!-- the net on the capitals: fine lines, for 256 only -->
+<g fill="none" stroke="#5a3d10" stroke-width=".7" opacity=".6">
+  <path transform="translate(106.400 112.500)" d="M-5 -5L3.500 6.500M0 -7L6 1.500M-6.500 -.5L-2.500 6.500M5 -5L-3.500 6.500M0 -7L-6 1.500M6.500 -.5L2.500 6.500"/>
+  <path transform="translate(149.600 112.500)" d="M-5 -5L3.500 6.500M0 -7L6 1.500M-6.500 -.5L-2.500 6.500M5 -5L-3.500 6.500M0 -7L-6 1.500M6.500 -.5L2.500 6.500"/>
+</g>
+<!-- the heichal's door, its lintel engraved inside its width -->
+<g filter="url(#polishFine)">
+  <rect x="116.800" y="118" width="22.400" height="58" fill="url(#goldV)"/>
+</g>
+<rect x="117.300" y="123.600" width="21.400" height="1.600" fill="#6f4d14"/>
+<rect x="126.500" y="125.200" width="3" height="47" fill="#5a3d10"/>
+<!-- the panels of the two leaves, so that at 256 it is plainly a door: fine lines, for 256 only -->
+<g fill="none" stroke="#6f4d14" stroke-width=".8" opacity=".6">
+  <rect x="119.500" y="129" width="4.500" height="18"/><rect x="119.500" y="151" width="4.500" height="17"/>
+  <rect x="132" y="129" width="4.500" height="18"/><rect x="132" y="151" width="4.500" height="17"/>
+</g>
+<!-- the wall: piers and lintel, running down to the same ground as the lowest tread -->
+<g filter="url(#polish)">
+  <path fill="url(#gold)" d="M68.400 68H187.600V76.800H185.600V188H160V93.900H96V188H70.400V76.800H68.400Z"/>
+</g>
+<!-- a brighter face on the stone, so the wall stays pale gold against its dark cedar -->
+<g fill="#fff0c0" opacity=".3">
+  <rect x="70.500" y="69.500" width="115" height="5.500"/>
+  <rect x="72.500" y="83.200" width="21.500" height="103"/><rect x="162" y="83.200" width="21.500" height="103"/>
+  <rect x="94" y="83.200" width="68" height="8.500"/>
+</g>
+<!-- cedar courses: one to three of stone. The top one runs the wall's whole width over the lintel; the lower two stop short of the opening, leaving an unbroken stone jamb -->
+<g fill="#5a3d10">
+  <rect x="71.400" y="76.800" width="113.200" height="6.400"/>
+  <rect x="71.400" y="115.200" width="18.600" height="6.400"/><rect x="166" y="115.200" width="18.600" height="6.400"/>
+  <rect x="71.400" y="153.600" width="18.600" height="6.400"/><rect x="166" y="153.600" width="18.600" height="6.400"/>
+</g>
+<!-- the three courses of stone between them: fine lines, for 256 only -->
+<g fill="#6f4d14" opacity=".4">
+  <rect x="72.500" y="93.900" width="20" height="1"/><rect x="163.500" y="93.900" width="20" height="1"/>
+  <rect x="72.500" y="104.500" width="20" height="1"/><rect x="163.500" y="104.500" width="20" height="1"/>
+  <rect x="72.500" y="132.300" width="20" height="1"/><rect x="163.500" y="132.300" width="20" height="1"/>
+  <rect x="72.500" y="142.900" width="20" height="1"/><rect x="163.500" y="142.900" width="20" height="1"/>
+  <rect x="72.500" y="170.700" width="20" height="1"/><rect x="163.500" y="170.700" width="20" height="1"/>
+  <rect x="72.500" y="181.300" width="9" height="1"/><rect x="174.500" y="181.300" width="9" height="1"/>
+</g>
+<!-- a dark edge where the threshold and treads meet the piers and the pillars' feet -->
+<path fill="none" stroke="#6f4d14" stroke-width="3" d="M83 188V182H90V176H94V172H162V176H166V182H173V188"/>
+<!-- the threshold across the opening, in front of the pillars' feet, and two treads -->
+<g filter="url(#polishFine)">
+  <path fill="url(#gold)" d="M94 172H162V176H166V182H173V188H83V182H90V176H94Z"/>
+</g>
+<g fill="#6f4d14">
+  <rect x="94" y="175.400" width="68" height="1.200"/>
+  <rect x="90" y="181.400" width="76" height="1.200"/>
+</g>
+</svg>
