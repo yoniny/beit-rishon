@@ -97,6 +97,7 @@
   //   - L.89: the slide's text, title and captions through ctx.ui.smallSources (it leaves a quote's own words); the verses are not touched.
   //   - L.85: arkInside is a removal, which stays by its pill: no slide opens it; a press during the tour goes back at the end (OWN_FEAT). A31: one slide per version, the
   //     ascent and then the witnesses. A32: the throne's long texts are short here (tour_SHORT); the whole text stays in the panel's card.
+  //   - 1.0.2: the box starts 5 px below the fixed top bar of index.html (--topbar-h: 56 px, 44 px in a narrow window), as it did below the old 47 px header.
   var tour_PHONE_MQ = "(max-width:639px)";
   var tour_CSS = `
 #tm-tour-btn{position:fixed;top:6px;left:10px;z-index:31;height:32px;padding:0 12px;border-radius:16px;box-sizing:border-box;
@@ -114,7 +115,7 @@ header{padding-left:116px !important}
 #tm-tour-menu button:hover,#tm-tour-menu button:focus-visible{background:rgba(201,168,76,.26);outline:none}
 #tm-tour-menu button b{display:block;color:#f3dc9a;font-size:13.5px;font-weight:700}
 #tm-tour-menu button span{display:block;font-size:11.5px;color:#b9ac82;margin-top:2px;line-height:1.45}
-#tm-tour-box{position:fixed;left:12px;top:52px;bottom:76px;width:min(300px,34vw);z-index:29;display:none;flex-direction:column;
+#tm-tour-box{position:fixed;left:12px;top:calc(var(--topbar-h, 56px) + 5px);bottom:76px;width:min(300px,34vw);z-index:29;display:none;flex-direction:column;
   box-sizing:border-box;direction:rtl;text-align:right;background:rgba(12,16,24,.9);border:1px solid rgba(201,168,76,.55);border-radius:12px;
   overflow:hidden;backdrop-filter:blur(8px);color:#e8dcae;font:13px 'Segoe UI',Arial,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.45)}
 #tm-tour-box .hd{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px 2px;font-size:11px;color:#b9ac82;flex:none}

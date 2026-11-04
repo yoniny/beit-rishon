@@ -22,6 +22,13 @@
   //   rotation is slower - OrbitControls rotateSpeed 0.9 -> 0.5 (makeControls); the nav buttons' and the arrow keys' step is slowed in
   //   70-ui.js; "סיבוב איטי" (autoRotateSpeed 0.4, 70-ui.js) is unchanged.
   // 1.0.1-L (L.87): the pan is limited (ent_clampView), the damping follows time (ent_damp), a sideways wheel moves nothing, maxDistance 1400; (L.89) the bracket of a source is smaller in the labels.
+  // 1.0.2 (the user: "שפר את ה-360 בכל התוסף"): in every roofed space a drag, the nav buttons and "סיבוב איטי" turn the view in place (ent_indoors, ent_look,
+  //   ent_controlsUpdate); outside the drag orbits as before; the camera never goes into a wall (ent_wallStep). The loading view stays below the top bar (index.html):
+  //   initModules marks the page ready (html.tm-ready) when it goes.
+  // 1.0.2 (M; the user: "אני לא יכול לרדת מתחת לאמצע או מעל - בשולחנות אין לי דרך לראות את הבזיכין", "גם במכונות אותה בעיה"): the view is free up and down everywhere -
+  //   the orbit's polar limit no longer keeps the eye above the target's level; it keeps the eye ENT_FLOOR_M over the floor or the ground under it (ent_floorStep), and,
+  //   as before, out of the walls and the ceilings (ent_wallStep: a floor keeps 0.4 now, a wall or a ceiling 0.8). The eye's height: ArrowUp / ArrowDown, PageUp /
+  //   PageDown and Shift + wheel raise and lower the eye and the target together (ent_liftStep); the tilt the arrows did stays on the nav buttons and on Shift + arrows.
   function applyTheme(theme) {
     if (!theme || !theme.colorScheme) return;
     const cs = theme.colorScheme;
@@ -128,7 +135,9 @@
     c.target.copy(target || new Vector3(0, 30, 0));
     c.enableDamping = true;
     c.dampingFactor = 0.06;
-    c.maxPolarAngle = Math.PI * 0.495;
+    // 1.0.2 (M): free below the target's level too (was PI * 0.495: the eye never went below the target - the user could not look up under a base or down
+    // between the bread stacks); the floor under the eye is the limit now, set every frame by ent_floorStep. PI - 0.06: never at the nadir, as minPolarAngle
+    c.maxPolarAngle = Math.PI - 0.06;
     // 1.0.1-H: the camera never reaches the zenith (OrbitControls "sticks" at the pole: a horizontal drag there only spins the view)
     c.minPolarAngle = 0.06;
     // 1.0.1-K: never closer than 2 amot to the target (the same floor as the UI's zoom buttons); with the DPR fix in 00-lib.js a wheel
@@ -158,22 +167,80 @@
   // 1.0.1-L (Part 7, U1, the user: "יש קטע שא\"א לראות 360 מעלות במקום קטן כגון קה\"ק"): the orbit turned the camera round a target inside a small room, so a drag pushed
   // it through the walls and it could never look up. Indoors, or very near the target, a drag now turns the view round the camera's own place: while the button is down the
   // target stands 0.05 amah before the camera (the same OrbitControls, so the same feel), the polar limit opens to look up and down, and on release the target goes back to
-  // its distance along the new direction, so the wheel and the pills go on as before. Outdoors nothing changes. Indoors = a ceiling above and walls on 3 of 4 sides within
-  // 60 amot, or walls on all 4 within 30 with the roof off (model choice; the forest house's hall is 100 x 50).
-  var ENT_POLAR = Math.PI * 0.495;
+  // its distance along the new direction, so the wheel and the pills go on as before. Outdoors nothing changes.
+  // 1.0.2 (the user: "שפר את ה-360 בכל התוסף"; the proposal he accepted): "indoors" is now EVERY roofed space - the heichal, the devir, the ulam, the side chambers, the
+  // palace's halls (the forest house, the throne hall, the halls of judgement): there a drag turns the view round the place where one stands, a full 360 (1.0.1-L did it only
+  // in a room with walls on all sides near, and orbited the target in the larger halls - ent_slide, gone now); the nav buttons and the keys follow (70-ui.js asks
+  // ctx.camIndoors), and so does "סיבוב איטי" (ent_controlsUpdate). Outside a drag orbits the target as before. Roofed = a ceiling within 60 amot straight above the camera and
+  // walls on 3 of the 4 sides within 60, or on all 4 within 30 (model choice, as 1.0.1-L); the parts that the on-model buttons remove (the house's south wall and roof, the
+  // chambers' walls, the ulam's front and roof, the forest house's boards) still count, so that opening the house does not turn the inside of the heichal into "outside".
+  // And the camera never goes into a wall, anywhere (ent_wallStep, below).
+  // 1.0.2 (M): the open polar limit (was PI * 0.495, the old orbit's; ent_floorStep closes it to the floor under the eye, outside a drag in place)
+  var ENT_POLAR = Math.PI - 0.06;
   var ent_look = { on: false, id: -1, d0: 10, rel: 0, v: new Vector3(), ray: null, t: -1e9, at: new Vector3(), res: false, dirs: [new Vector3(1, 0, 0), new Vector3(-1, 0, 0), new Vector3(0, 0, 1), new Vector3(0, 0, -1)], up: new Vector3(0, 1, 0) };
-  function ent_solids() {
-    const out = [];
-    const walk = (o) => {
-      if (o.visible === false || o.name === "tm-kk-cloud" || o.name === "tm-measure") return;
-      if (o.isMesh && !o.userData.noPick && !(o.geometry && o.geometry.type === "BoxGeometry" && o.scale.x > 1000)) {
-        const m = Array.isArray(o.material) ? o.material[0] : o.material;
-        if (m && m.visible !== false && !(m.transparent && m.opacity < 0.5)) out.push(o);
+  // the solid surfaces, for the roofed test and the walls (1.0.2: one walk of the scene a second at most, it was one per test):
+  //   .all  - what is seen: meshes that are not helpers (noPick), the sky box, the cloud or the measuring line, and not a see-through material - so not a wall that the
+  //           fade loop of 70-ui.js has made see-through for the moment (userData.fade) either: the camera may pass it, as in 1.0.1;
+  //   .roof - the same, with those faded walls counted after all, and also the parts of the four removal lists (ctx.cutaway, yatziaCut, ulamCut, forestBoardsCut) while they are removed;
+  //   .walls - .all with each mesh's bounding sphere in the world ({o, c, r}; 2 amot more, for what moves within the second), for the wall test (ent_wallHit): only the
+  //           meshes whose sphere the move comes near are tested - one test of all 650 meshes took up to 100 ms a frame in the first headless run. Without the terrain (more
+  //           than 30000 vertices, as the fade loop's roof list of 70-ui.js): its triangles were the dearest part, and the polar limit keeps the camera above it;
+  //   .big  - 1.0.2 (M): those large meshes (the terrain), for the floor under the eye only (ent_floorY: the terrain's grid is read, not ray-tested - one ray of the
+  //           whole list took 87 ms in the headless run, most of it the terrain's 97000 triangles).
+  var ent_sol = { t: -1e9, all: [], roof: [], walls: [], big: [] };
+  function ent_solids(withCut) {
+    const now = performance.now();
+    if (now - ent_sol.t > 1000) {
+      ent_sol.t = now;
+      const all = [], roof = [], cut = new Set();
+      for (const k of ["cutaway", "yatziaCut", "ulamCut", "forestBoardsCut"]) {
+        const list = ctx && ctx[k];
+        if (Array.isArray(list)) for (const m of list) if (m) cut.add(m);
       }
-      for (const c of o.children) walk(c);
-    };
-    walk(scene);
-    return out;
+      const walk = (o, off) => {
+        if (o.name === "tm-kk-cloud" || o.name === "tm-measure") return;
+        if (o.visible === false) {
+          if (!cut.has(o)) return;
+          off = true;   // removed by its button: a roof / a wall all the same, for the roofed test only
+        }
+        if (o.isMesh && !o.userData.noPick && !(o.geometry && o.geometry.type === "BoxGeometry" && o.scale.x > 1000)) {
+          const m = Array.isArray(o.material) ? o.material[0] : o.material;
+          const thin = !!(m && m.transparent && m.opacity < 0.5);
+          if (m && m.visible !== false && (!thin || o.userData.fade)) {
+            roof.push(o);
+            // 1.0.2 (fix): a wall that the fade loop shows see-through is no wall for the camera's move (as in 1.0.1: one zooms through a faded
+            // court wall to see inside); it still counts for the roofed test. The house's own walls never fade (1.0.1), so they always stop it.
+            if (!off && !thin) all.push(o);
+          }
+        }
+        for (const c of o.children) walk(c, off);
+      };
+      walk(scene, false);
+      ent_sol.all = all;
+      ent_sol.roof = roof;
+      const walls = [], big = [];
+      for (const o of all) {
+        try {
+          const pa = o.geometry && o.geometry.attributes && o.geometry.attributes.position;
+          if (pa && pa.count > 30000) big.push(o);
+          if (!pa || pa.count > 30000) continue;
+          let bs;
+          if (o.isInstancedMesh) {
+            if (!o.boundingSphere && typeof o.computeBoundingSphere === "function") o.computeBoundingSphere();
+            bs = o.boundingSphere;
+          } else {
+            if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
+            bs = o.geometry.boundingSphere;
+          }
+          if (!bs || !isFinite(bs.radius)) continue;
+          walls.push({ o, c: bs.center.clone().applyMatrix4(o.matrixWorld), r: bs.radius * o.matrixWorld.getMaxScaleOnAxis() + 2 });
+        } catch (_) {
+        }
+      }
+      ent_sol.walls = walls;
+      ent_sol.big = big;
+    }
+    return withCut ? ent_sol.roof : ent_sol.all;
   }
   function ent_indoors() {
     const now = performance.now(), p = camera.position;
@@ -184,7 +251,7 @@
     try {
       const ray = ent_look.ray || (ent_look.ray = new Raycaster());
       ray.camera = camera;
-      const list = ent_solids(), hit = (d, far) => { ray.set(p, d); ray.near = 0; ray.far = far; const h = ray.intersectObjects(list, false); return h.length ? h[0].distance : Infinity; };
+      const list = ent_solids(true), hit = (d, far) => { ray.set(p, d); ray.near = 0; ray.far = far; const h = ray.intersectObjects(list, false); return h.length ? h[0].distance : Infinity; };
       const walls = ent_look.dirs.map((d) => hit(d, 60));
       const near = walls.filter((w) => w < 60).length, tight = walls.filter((w) => w < 30).length;
       res = (near >= 3 && hit(ent_look.up, 60) < 60) || tight === 4;
@@ -204,8 +271,12 @@
     if (!(v.lengthSq() > 0)) camera.getWorldDirection(v);
     v.normalize();
     c.minDistance = 2;
-    c.maxPolarAngle = Math.max(ENT_POLAR, Math.min(Math.PI - 0.06, Math.acos(Math.max(-1, Math.min(1, -v.y))) + 1e-4));
-    c.target.copy(camera.position).addScaledVector(v, Math.max(2, ent_look.d0));
+    c.maxPolarAngle = ENT_POLAR;   // 1.0.2 (M): open; ent_floorStep closes it to the floor under the eye at the next frame
+    // 1.0.2: the target goes back to its distance, but not behind the wall in front (the wheel then dollies toward what is seen); 2 = minDistance
+    let d = Math.max(2, ent_look.d0);
+    const h = ent_wallHit(camera.position, v, d);
+    if (h) d = Math.max(2, Math.min(d, h.distance - 0.5));
+    c.target.copy(camera.position).addScaledVector(v, d);
     c.update();
   }
   {
@@ -218,23 +289,8 @@
       }
       if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || !controls || controls.enabled === false || flyAnim || ent_load.loading) return;
       const c = controls, d = camera.position.distanceTo(c.target);
-      if (!(d < 4)) {
-        // 1.0.1-L (the user: "לא רואים את השולחן, וכל חלקי ההיכל מכל הצדדים"): indoors a drag circles what is looked at, so that it is seen from every side;
-        // a wall in the way brings the camera nearer along the same line, and it goes back out when there is room (ent_slideStep). Only large surfaces are tested.
-        if (ent_indoors()) {
-          ent_slide.on = true;
-          ent_slide.id = e.pointerId;
-          ent_slide.rel = 0;
-          ent_slide.r0 = d;
-          ent_slide.list = ent_solids().filter((o) => {
-            if (o.isInstancedMesh || !o.geometry) return false;
-            if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
-            return o.geometry.boundingSphere && o.geometry.boundingSphere.radius > 5;
-          });
-          c.minDistance = 0.6;
-        }
-        return;
-      }
+      // 1.0.2: in every roofed space (ent_indoors) the drag turns the view in place; outside, only very near the target (as 1.0.1-L); else OrbitControls orbits
+      if (!(d < 4) && !ent_indoors()) return;
       ent_look.on = true;
       ent_look.id = e.pointerId;
       ent_look.rel = 0;
@@ -245,7 +301,7 @@
       c.target.copy(camera.position).addScaledVector(v, 0.05);
       c.update();
     }, true);
-    const up = (e) => { if (ent_look.on && !ent_look.rel && e.pointerId === ent_look.id) ent_look.rel = performance.now(); if (ent_slide.on && !ent_slide.rel && e.pointerId === ent_slide.id) ent_slide.rel = performance.now(); };
+    const up = (e) => { if (ent_look.on && !ent_look.rel && e.pointerId === ent_look.id) ent_look.rel = performance.now(); };
     el.addEventListener("pointerup", up, true);
     el.addEventListener("pointercancel", up, true);
     window.addEventListener("pointerup", up, true);
@@ -253,30 +309,295 @@
     window.addEventListener("blur", () => { if (ent_look.on && !ent_look.rel) ent_look.rel = performance.now(); });
     el.addEventListener("wheel", () => ent_lookEnd(), { capture: true, passive: true });
   }
-  var ent_slide = { on: false, id: -1, rel: 0, r0: 10, list: null, ray: null, v: new Vector3(), o: new Vector3() };
-  function ent_slideStep() {
-    if (!ent_slide.on) return;
-    if (ent_slide.rel && performance.now() - ent_slide.rel > 400) {
-      ent_slide.on = false;
-      ent_slide.list = null;
-      controls.minDistance = 2;
-      return;
-    }
-    const S = ent_slide, q = controls.target, v = S.v.copy(camera.position).sub(q), L = v.length();
-    if (!(L > 1e-6)) return;
-    v.multiplyScalar(1 / L);
-    const ray = S.ray || (S.ray = new Raycaster());
-    ray.set(S.o.copy(q), v);
-    ray.near = 0;
-    ray.far = S.r0 + 0.5;
-    ray.camera = camera;
-    const h = ray.intersectObjects(S.list, false);
-    const r = Math.max(0.8, Math.min(S.r0, h.length ? h[0].distance - 0.4 : S.r0));
-    camera.position.copy(q).addScaledVector(v, r);
-  }
   function ent_lookStep(t) {   // the release: after the drag's damping has run out (140 ms of time constant)
     if (ent_look.on && ent_look.rel && performance.now() - ent_look.rel > 350) ent_lookEnd();
   }
+  // ===== 1.0.2: "סיבוב איטי" in a roofed space turns the view in place =====
+  // OrbitControls' autoRotate swings the camera round the target - inside a hall, through its walls. Indoors the controls' own turn is held back for that update, and the
+  // view turns round the camera by the same angle (r160's getAutoRotationAngle without a delta time: 2 pi / 3600 * autoRotateSpeed a frame, the speed the user kept) and
+  // in the same sense (the view's azimuth decreases as in the orbit). Never during a drag (in-place: ent_look) or a flight; controls.autoRotate itself is left as it is
+  // (the panel's row and ctx.ui.autoRotate read it).
+  var ent_turn = { v: new Vector3(), s: new Spherical() };
+  function ent_controlsUpdate() {
+    const c = controls;
+    let inPlace = false;
+    if (c.autoRotate && !flyAnim && !ent_look.on && ent_indoors()) {
+      inPlace = true;
+      c.autoRotate = false;
+    }
+    try {
+      c.update();
+    } finally {
+      if (inPlace) c.autoRotate = true;
+    }
+    if (inPlace) {
+      const v = ent_turn.v.copy(c.target).sub(camera.position), s = ent_turn.s;
+      if (v.lengthSq() > 0) {
+        s.setFromVector3(v);
+        s.theta -= 2 * Math.PI / 60 / 60 * c.autoRotateSpeed;
+        v.setFromSpherical(s);
+        c.target.copy(camera.position).add(v);
+        camera.lookAt(c.target);
+      }
+    }
+  }
+  // ===== 1.0.2: the camera never goes into a wall =====
+  // Every move of the camera from one frame to the next that is not a flight - a drag's orbit and its damping, the wheel, a pinch or a two-finger slide (ent_zoomStep),
+  // a pan, the nav buttons and keys of 70-ui.js, the slow rotation - is a segment from where the camera was; if a solid surface (ent_solids: what is seen, a wall faded by
+  // the fade loop included, what the removal buttons took away not) lies on it or within ENT_WALL_M beyond it, the camera stops ENT_WALL_M before the surface, and the rest
+  // of the move goes on along the surface (once, if that way is clear): so an orbit beside a wall slides along it and a dolly stops at it. 0.8 amah: more than the near
+  // plane's reach (0.5 ahead, 0.66 at its corners) - the wall is not cut open on the screen (model choice; 1.0.1-L's indoor orbit kept 0.4 - 0.8).
+  // Not tested: a flight (flyTo: its path is designed, it may pass a doorway's jamb), a move of more than ENT_WALL_JUMP amot in one frame (a jump made by code, e.g. a
+  // test's camera; the wheel far out moves 5 % of the distance), and what the modules' per-frame hooks do after the guard (ctx.animated: e.g. the follow of a moving
+  // stand, 45-vessels.js) - the frame's start is taken after them.
+  // 1.0.2 (M): a surface that faces up (a floor, a table's top, the court's paving: its normal within 45 degrees of up) keeps ENT_FLOOR_M (0.4, the user's free view: the
+  // eye low at a base's wheels), the walls and the ceilings still ENT_WALL_M. 0.4 over a floor is enough for the near plane there: its lower edge is 0.22 below the
+  // view's middle at 0.5 ahead, so the floor is not cut open while the eye looks level or up (and looking down, the eye is higher than that over what it sees).
+  var ENT_WALL_M = 0.8, ENT_WALL_JUMP = 30, ENT_FLOOR_M = 0.4;
+  function ent_wallM(n) { return n.y > 0.7 ? ENT_FLOOR_M : ENT_WALL_M; }   // the margin of the surface whose normal is n (ent_wall.n after a hit)
+  var ent_wall = { has: false, last: new Vector3(), mv: new Vector3(), dir: new Vector3(), rest: new Vector3(), n: new Vector3(), p: new Vector3(), ray: null, ms: 0, hits: 0, cand: [], tv: new Vector3(), q: new Vector3(),
+    axes: [new Vector3(1, 0, 0), new Vector3(-1, 0, 0), new Vector3(0, 0, 1), new Vector3(0, 0, -1), new Vector3(0, 1, 0), new Vector3(0, -1, 0)] };
+  function ent_wallHit(from, dir, far) {   // the first solid surface along dir (normalized) within far, or null; its world normal in ent_wall.n
+    const W = ent_wall, ray = W.ray || (W.ray = new Raycaster());
+    ray.camera = camera;
+    ray.set(from, dir);
+    ray.near = 0;
+    ray.far = far;
+    let h = null;
+    try {
+      ent_solids(false);
+      const cand = W.cand;
+      cand.length = 0;
+      for (const w of ent_sol.walls) {   // the sphere comes within its radius of the segment from .. from + dir * far
+        const t = Math.max(0, Math.min(far, W.tv.copy(w.c).sub(from).dot(dir)));
+        if (W.tv.copy(from).addScaledVector(dir, t).distanceToSquared(w.c) <= w.r * w.r) cand.push(w.o);
+      }
+      const hs = cand.length ? ray.intersectObjects(cand, false) : [];
+      h = hs.length ? hs[0] : null;
+    } catch (_) {
+      return null;
+    }
+    if (!h) return null;
+    if (h.face) W.n.copy(h.face.normal).transformDirection(h.object.matrixWorld);
+    else W.n.copy(dir).negate();
+    if (W.n.dot(dir) > 0) W.n.negate();   // a double-sided face seen from its back
+    return h;
+  }
+  function ent_wallStep() {
+    const W = ent_wall, p = camera.position;
+    if (!W.has || flyAnim || ent_load.loading || ent_look.on) return;   // in-place turning: the camera only circles 0.05 amah round its own place
+    const mv = W.mv.copy(p).sub(W.last), L = mv.length();
+    if (!(L > 1e-4) || L > ENT_WALL_JUMP) return;
+    const t0 = performance.now();
+    const dir = W.dir.copy(mv).multiplyScalar(1 / L);
+    let h = ent_wallHit(W.last, dir, L + ENT_WALL_M), m = h ? ent_wallM(W.n) : ENT_WALL_M;
+    if (h && h.distance > L + m) h = null;   // 1.0.2 (M): a floor beyond the move and its 0.4
+    if (h) {
+      W.hits++;
+      const keep = Math.max(0, Math.min(L, h.distance - m));
+      const q = W.p.copy(W.last).addScaledVector(dir, keep), n = W.n;
+      // a move at a slant: the margin from the surface itself, not only along the move
+      const dPerp = W.rest.copy(q).sub(h.point).dot(n);
+      if (dPerp < m) q.addScaledVector(n, m - dPerp);
+      // the rest of the move, without its part into the surface
+      const rest = W.rest.copy(mv).addScaledVector(dir, -keep);
+      const into = rest.dot(n);
+      if (into < 0) rest.addScaledVector(n, -into);
+      const R = rest.length();
+      if (R > 1e-4) {
+        const rd = W.dir.copy(rest).multiplyScalar(1 / R);
+        const h2 = ent_wallHit(q, rd, R + ENT_WALL_M);
+        if (!h2 || h2.distance > R + ent_wallM(W.n)) q.add(rest);
+      }
+      p.copy(q);
+    }
+    // the clearance: a move at a slant toward a surface, or along it, finds it on no ray along the move; ENT_WALL_M round the new place (the four sides, up, down).
+    // Never more than this frame's own move toward that side: a place that was already nearer (a fly point in a narrow side chamber, 0.3 from its wall) is kept, not
+    // pushed - in a space narrower than 2 x ENT_WALL_M two pushes would rock the camera from frame to frame.
+    let pushed = !!h;
+    const q2 = W.q.copy(p), mv2 = W.rest.copy(p).sub(W.last);
+    for (const a of W.axes) {
+      const toward = mv2.dot(a);
+      if (!(toward > 1e-5)) continue;
+      const ma = a.y < -0.5 ? ENT_FLOOR_M : ENT_WALL_M;   // 1.0.2 (M): down, the floor's margin
+      const ha = ent_wallHit(q2, a, ma);
+      if (ha && ha.distance < ma) {
+        p.addScaledVector(a, -Math.min(ma - ha.distance, toward));
+        pushed = true;
+      }
+    }
+    if (pushed) {
+      // the target stays at least minDistance ahead, else OrbitControls would push the camera back toward the wall on the next frame (and this guard pull it out again)
+      const c = controls, v = W.tv.copy(c.target).sub(p), d = v.length(), md = c.minDistance || 0;
+      if (d < md) {
+        if (d > 1e-6) c.target.copy(p).addScaledVector(v, md / d);
+        else c.target.copy(p).addScaledVector(camera.getWorldDirection(v), md);
+      }
+      camera.lookAt(c.target);
+    }
+    W.ms += performance.now() - t0;
+  }
+  function ent_wallMark() {   // the frame's end: where the next frame's moves start from
+    ent_wall.last.copy(camera.position);
+    ent_wall.has = true;
+  }
+  // ===== 1.0.2 (M): the floor under the eye =====
+  // The user: "אני לא יכול לרדת מתחת לאמצע או מעל - בשולחנות אין לי דרך לראות את הבזיכין", "גם במכונות אותה בעיה". The orbit's polar limit (PI * 0.495 since 1.0.0) kept
+  // the eye at the target's level or above it: at Moses' table one could not look down between the bread stacks from above, at a base not up from below. Now the only
+  // limit down is the floor or the ground under the eye: ENT_FLOOR_M over the first solid surface straight below it (ent_floorY: one ray down against the wall guard's
+  // list, ent_wallHit, and the terrain's grid read at the eye's x / z), measured at most every 80 ms and only when the eye has moved (ent_floorMeasure), and turned every
+  // frame into OrbitControls' maxPolarAngle for the present target and distance (ent_floorStep): so an orbit downward is held at the floor's level by the controls' own
+  // clamp, smoothly with their damping, and never jumps. When the floor under the eye rises (the eye passes over a step, over the altar's top) the limit rises in
+  // ENT_FLOOR_EASE ms, not at once; when it falls the limit follows at once. A flight is never clamped (its path is designed): the limit is open during it, and after it
+  // starts where the flight put the eye. The ceiling: the first solid surface straight above (within ENT_CEIL_FAR), less ENT_WALL_M - the eye's height (ent_liftStep)
+  // stops there. The walls and the ceilings stay the wall guard's (ent_wallStep), with the floor's 0.4 there too (ent_wallM). Model choices: 0.4, the 80 ms, the 150 ms.
+  var ENT_FLOOR_EASE = 150, ENT_CEIL_FAR = 400;
+  var ent_floor = { raw: -Infinity, lim: -Infinity, ceil: Infinity, t: -1e9, at: new Vector3(1e9, 0, 0), o: new Vector3(), down: new Vector3(0, -1, 0), up: new Vector3(0, 1, 0), ms: 0, n: 0 };
+  // the terrain (20-mount.js: a PlaneGeometry laid flat by rotateX(-PI / 2), its vertices moved up and down only, the mesh not moved but by a translation): the height
+  // of its triangle under x / z, read from the grid (no ray: 97000 triangles), or NaN when the mesh is not such a grid
+  function ent_gridY(o, x, z) {
+    const g = o.geometry, P = g && g.parameters, pa = g && g.attributes && g.attributes.position, e = o.matrixWorld.elements;
+    if (!P || !pa || g.type !== "PlaneGeometry" || !(P.widthSegments > 0) || !(P.heightSegments > 0)) return NaN;
+    if (Math.abs(e[0] - 1) + Math.abs(e[5] - 1) + Math.abs(e[10] - 1) + Math.abs(e[1]) + Math.abs(e[2]) + Math.abs(e[4]) + Math.abs(e[6]) + Math.abs(e[8]) + Math.abs(e[9]) > 1e-6) return NaN;
+    const nx = P.widthSegments, nz = P.heightSegments, W1 = nx + 1, cw = P.width / nx, cz = P.height / nz, x0 = pa.getX(0), z0 = pa.getZ(0);
+    if (Math.abs(pa.getX(1) - x0 - cw) > 1e-3 || Math.abs(pa.getZ(W1) - z0 - cz) > 1e-3) return NaN;   // the rows run along x, z grows row by row
+    const fx = (x - e[12] - x0) / cw, fz = (z - e[14] - z0) / cz;
+    if (!(fx >= 0 && fx <= nx && fz >= 0 && fz <= nz)) return NaN;
+    const ix = Math.min(nx - 1, Math.floor(fx)), iz = Math.min(nz - 1, Math.floor(fz)), u = fx - ix, v = fz - iz;
+    const a = ix + W1 * iz, b = a + W1, c = b + 1, d = a + 1;   // PlaneGeometry's two triangles of the cell: a b d and b c d
+    const ha = pa.getY(a), hb = pa.getY(b), hc = pa.getY(c), hd = pa.getY(d);
+    return e[13] + (u + v <= 1 ? ha + (hd - ha) * u + (hb - ha) * v : hc + (hb - hc) * (1 - u) + (hd - hc) * (1 - v));
+  }
+  // the highest solid surface under p, or -Infinity: from 0.05 above p (an eye held at the floor's margin never goes more than a little below it, and a surface the
+  // eye was put just under - yatziaSection stands 0.4 under the top of a beam - is not taken for its floor)
+  function ent_floorY(p) {
+    const F = ent_floor, o = F.o.copy(p);
+    o.y += 0.05;
+    const h = ent_wallHit(o, F.down, 2000);
+    let y = h ? h.point.y : -Infinity;
+    for (const b of ent_sol.big) {
+      const gy = ent_gridY(b, p.x, p.z);
+      if (gy <= o.y && gy > y) y = gy;
+    }
+    return y;
+  }
+  function ent_floorMeasure() {
+    const F = ent_floor, p = camera.position, now = performance.now();
+    if (now - F.t < 80) return;
+    // not moved since the last measure: again once a second (a removal button, the moving base); high over the floor the measure may wait for a longer move
+    const dh = Math.hypot(p.x - F.at.x, p.z - F.at.z), dv = Math.abs(p.y - F.at.y), high = p.y - F.raw > 40;
+    if (dh < (high ? 4 : 0.2) && dv < (high ? 10 : 0.3) && now - F.t < 1000) return;
+    F.t = now;
+    F.at.copy(p);
+    try {
+      F.raw = ent_floorY(p);
+      const hu = ent_wallHit(p, F.up, ENT_CEIL_FAR);
+      F.ceil = hu ? hu.point.y - ENT_WALL_M - 0.02 : Infinity;   // (0.02: just clear of the wall guard's own margin, which would otherwise nudge the eye; so below)
+    } catch (_) {
+    }
+    F.n++;
+    F.ms += performance.now() - now;
+  }
+  function ent_floorStep() {
+    const c = controls, F = ent_floor, p = camera.position, q = c.target;
+    if (ent_load.loading || ent_look.on) return;   // a drag in place (ent_look): open while the button is down (its pointerdown), the eye only turns
+    if (flyAnim) {
+      c.maxPolarAngle = ENT_POLAR;
+      F.lim = -Infinity;
+      return;
+    }
+    ent_floorMeasure();
+    const want = F.raw + ENT_FLOOR_M + 0.02;
+    if (!isFinite(F.lim)) F.lim = Math.min(want, p.y);
+    if (!(want > F.lim)) F.lim = want;
+    else F.lim = Math.max(F.lim + (want - F.lim) * (1 - Math.exp(-ent_view.dt / ENT_FLOOR_EASE)), Math.min(p.y, want));   // rises: eased, and at once while the eye is above it
+    const r = p.distanceTo(q), lo = c.minPolarAngle || 0.06;
+    if (!(r > 0) || !isFinite(F.lim)) {
+      c.maxPolarAngle = ENT_POLAR;
+      return;
+    }
+    const k = (F.lim - q.y) / r;
+    let phi;
+    if (k <= Math.cos(ENT_POLAR)) phi = ENT_POLAR;
+    else if (k < Math.cos(lo)) phi = Math.acos(k);
+    // the target lies so far under the floor below the eye that no angle keeps the eye over it at this distance: the eye goes no lower (no jump to the top)
+    else phi = Math.acos(Math.max(-1, Math.min(1, (p.y - q.y) / r)));
+    c.maxPolarAngle = Math.max(lo, Math.min(ENT_POLAR, phi));
+  }
+  // ===== 1.0.2 (M): the eye's height - ArrowUp / ArrowDown, PageUp / PageDown, Shift + wheel =====
+  // The eye and the target rise or sink together (the view's direction does not change), at ent_liftSpeed amot a second while a key is held, eased in and out in
+  // ENT_LIFT_EASE ms; a short press still makes a step (ENT_LIFT_TAP ms of it); a wheel notch (100 pixels) makes ENT_LIFT_NOTCH s of it, eased as the two-finger zoom.
+  // Between the floor (ent_floor.raw + ENT_FLOOR_M) and the ceiling over the eye (ent_floor.ceil), or ENT_LIFT_TOP where nothing is over it; the target stays inside the
+  // pan's band (ent_view.yMin .. yMax: ent_clampView would pull both back). The speed grows with the distance to the target: 2.5 amot a second at a table, 40 from the
+  // general view (model choice). Plain ArrowUp / ArrowDown tilted the view (70-ui.js, 1.0.1-K): the tilt stays on the nav buttons and on Shift + the arrows (70-ui.js's
+  // handler does not look at Shift). This handler runs first (window, capture) and prevents the key, and 70-ui.js's then leaves it (e.defaultPrevented); the
+  // presentation (75-tour.js, its own capture listener, which does not ask) still hands the camera over on these keys. Not while the focus is in a field one types in,
+  // and only where 70-ui.js's arrows work (the page, the model, the nav row, the compass, the pills): a focused panel button or the presentation's box keep their keys.
+  var ENT_LIFT_EASE = 120, ENT_LIFT_TAP = 160, ENT_LIFT_NOTCH = 0.3, ENT_LIFT_TOP = 400;
+  var ent_lift = { up: false, down: false, upTo: 0, downTo: 0, v: 0, pending: 0 };
+  function ent_liftSpeed() { return Math.max(2.5, Math.min(40, camera.position.distanceTo(controls.target) * 0.3)); }
+  function ent_liftWheel(px) {   // px > 0: down (the wheel turned toward the user, as a page scrolls down)
+    const sp = ent_liftSpeed();
+    ent_lift.pending = Math.max(-2 * sp, Math.min(2 * sp, ent_lift.pending - px / 100 * ENT_LIFT_NOTCH * sp));
+  }
+  function ent_liftStep() {
+    // (the frame's time, at most 50 ms: after a slow frame the eye does not leap - at 1 frame a second a held key raised it 10 amot a frame in the headless test)
+    const L = ent_lift, p = camera.position, q = controls.target, now = performance.now(), dt = Math.min(50, ent_view.dt);
+    if (flyAnim || ent_load.loading) {
+      L.v = 0;
+      L.pending = 0;
+      return;
+    }
+    const dir = (L.up || now < L.upTo ? 1 : 0) - (L.down || now < L.downTo ? 1 : 0);
+    L.v += (dir * ent_liftSpeed() - L.v) * (1 - Math.exp(-dt / ENT_LIFT_EASE));
+    if (!dir && Math.abs(L.v) < 0.02) L.v = 0;
+    let dy = L.v * dt / 1000;
+    if (L.pending) {
+      const s = Math.abs(L.pending) < 0.005 ? L.pending : L.pending * Math.max(0.35, 1 - Math.exp(-dt / 40));
+      dy += s;
+      L.pending -= s;
+    }
+    if (!dy) return;
+    ent_floorMeasure();
+    const F = ent_floor;
+    const lo = Math.max(F.raw + ENT_FLOOR_M + 0.02, p.y + ent_view.yMin - q.y);
+    const hi = Math.min(F.ceil, ENT_LIFT_TOP, p.y + ent_view.yMax - q.y);
+    const y1 = Math.min(Math.max(p.y + dy, Math.min(lo, p.y)), Math.max(hi, p.y));   // never pushed: a limit only stops the move toward it
+    const d = y1 - p.y;
+    if (Math.abs(d) < Math.abs(dy) - 1e-9) {   // at a limit: the rest is dropped, and the held key's speed with it
+      L.pending = 0;
+      L.v = 0;
+    }
+    p.y += d;
+    q.y += d;
+  }
+  (function liftKeys() {
+    const KEYS = { ArrowUp: 1, PageUp: 1, ArrowDown: -1, PageDown: -1 };
+    const free = (el) => !el || el === window || el === document || el === document.body || el === document.documentElement || el === renderer.domElement ||
+      (el.nodeType === 1 && !el.isContentEditable && !/^(INPUT|TEXTAREA|SELECT)$/i.test(el.tagName || "") && !!(el.closest && el.closest("#tm-nav, #tm-compass, .tm-pill")));
+    window.addEventListener("keydown", (e) => {
+      const k = KEYS[e.key];
+      if (!k || e.defaultPrevented || e.ctrlKey || e.altKey || e.metaKey || ent_load.loading) return;
+      if (e.shiftKey && e.key.indexOf("Arrow") === 0) return;   // Shift + ArrowUp / ArrowDown: the tilt (70-ui.js)
+      if (!free(document.activeElement) || !free(e.target)) return;
+      const cf = document.getElementById("tm-confirm");   // the cloud's dialog (70-ui.js) is open: its keys
+      if (cf && cf.style.display === "flex") return;
+      e.preventDefault();
+      if (k > 0) {
+        ent_lift.up = true;
+        if (!e.repeat) ent_lift.upTo = performance.now() + ENT_LIFT_TAP;
+      } else {
+        ent_lift.down = true;
+        if (!e.repeat) ent_lift.downTo = performance.now() + ENT_LIFT_TAP;
+      }
+    }, true);
+    window.addEventListener("keyup", (e) => {
+      const k = KEYS[e.key];
+      if (k > 0) ent_lift.up = false;
+      else if (k < 0) ent_lift.down = false;
+    }, true);
+    window.addEventListener("blur", () => { ent_lift.up = ent_lift.down = false; });
+  })();
   // 1.0.1-H (the user: "נתקע ולא מסתובב נכון"): pointer safety for the embedded webview. OrbitControls (r160) captures the pointer on
   // pointerdown and ends a drag only on a pointerup that reaches the canvas. Inside the host app the release can be lost (the button is let
   // go outside the webview, or the host takes the mouse) and setPointerCapture may throw before the drag listeners are attached; then the
@@ -388,6 +709,18 @@
     };
     el.addEventListener("wheel", (e) => {
       if (ent_load.loading || !controls || controls.enabled === false) return;
+      // 1.0.2 (M): Shift + wheel raises or lowers the eye (ent_liftWheel), never zooms; Chromium on Windows turns a Shift + wheel into a sideways one (deltaX), so the
+      // larger delta counts (a line is 33 pixels, a page 800, as near enough)
+      if (e.shiftKey && !e.ctrlKey) {
+        e.preventDefault();
+        if (!ent_zoom.held) {
+          ent_zoom.held = true;
+          controls.enableZoom = false;
+        }
+        const dd = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+        if (dd && isFinite(dd)) ent_liftWheel(dd * (e.deltaMode === 1 ? 33 : e.deltaMode === 2 ? 800 : 1));
+        return;
+      }
       // 1.0.1-L (L.87): a slide mostly sideways on a touchpad (or a tilted wheel) moves nothing: its small vertical part is not a zoom for
       // either handler, and the page does not take it (no sideways scroll or back-swipe)
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
@@ -663,8 +996,11 @@
     ent_mark("first frame (under the overlay)", performance.now() - tf, ((renderer.info && renderer.info.programs) || []).length + " programs after it");
     bar(1);
     ent_load.loading = false;
+    // 1.0.2: the bar's buttons (the panel's, the presentation's) were hidden while the loading view was up (index.html: it no longer covers the bar)
+    document.documentElement.classList.add("tm-ready");
     const loadEl = document.getElementById("loading");
     if (loadEl) {
+      loadEl.style.pointerEvents = "none";   // 1.0.2: it fades out now (index.html), and the model takes the clicks at once
       loadEl.style.opacity = "0";
       setTimeout(() => loadEl.remove(), 700);
     }
@@ -704,11 +1040,7 @@
     const p = camera.position, q = controls.target;
     if (isFinite(p.x + p.y + p.z + q.x + q.y + q.z)) {
       ent_clampView();   // 1.0.1-L (L.87)
-      // 1.0.1-L (Part 7, U1): after looking up indoors the polar limit stays open just as far as the view needs, and closes with it
-      if (!ent_look.on && controls.maxPolarAngle > ENT_POLAR) {
-        const L0 = p.distanceTo(q);
-        if (L0 > 0) controls.maxPolarAngle = Math.max(ENT_POLAR, Math.min(controls.maxPolarAngle, Math.acos(Math.max(-1, Math.min(1, (p.y - q.y) / L0))) + 1e-4));
-      }
+      // (1.0.1-L closed the polar limit here after looking up indoors, back to PI * 0.495; 1.0.2 (M): the limit is the floor's, ent_floorStep)
       const minD = Math.max(0, (controls.minDistance || 0) - 1e-3);
       if (p.distanceTo(q) >= minD) {
         lastGoodPos.copy(p);
@@ -731,6 +1063,7 @@
   }
   renderer.setAnimationLoop((t) => {
     if (ent_load.loading) return;   // 1.0.1-K: nothing is drawn behind the loading overlay (see initModules)
+    const flying = !!flyAnim;   // 1.0.2: a flight's frames, its last one too, are not tested for walls (ent_wallStep)
     if (flyAnim) {
       const k = Math.min(1, (t - flyAnim.t0) / flyAnim.dur), e = ease(k);
       camera.position.lerpVectors(flyAnim.p0, flyAnim.p1, e);
@@ -740,8 +1073,10 @@
     ent_lookStep();   // 1.0.1-L (Part 7, U1)
     ent_damp(t);   // 1.0.1-L (L.87)
     ent_zoomStep();
-    controls.update();
-    ent_slideStep();   // 1.0.1-L
+    ent_liftStep();   // 1.0.2 (M): the eye's height (the keys, Shift + wheel)
+    ent_floorStep();   // 1.0.2 (M): the polar limit = the floor under the eye
+    ent_controlsUpdate();   // 1.0.2: controls.update(), "סיבוב איטי" in place indoors
+    if (!flying) ent_wallStep();   // 1.0.2: never into a wall
     guardCamera();
     for (const fn of ctx.animated) {
       try {
@@ -749,6 +1084,7 @@
       } catch (_) {
       }
     }
+    ent_wallMark();   // 1.0.2
     if (ent_load.printed) {
       renderer.render(scene, camera);
     } else {
@@ -762,7 +1098,9 @@
     if (document.hidden && !ent_load.loading) {
       ent_damp(performance.now());   // 1.0.1-L (L.87)
       ent_zoomStep();
-      controls.update();
+      ent_floorStep();   // 1.0.2 (M)
+      ent_controlsUpdate();   // 1.0.2 (as in the animation loop)
+      if (!flyAnim) ent_wallStep();
       guardCamera();
       for (const fn of ctx.animated) {
         try {
@@ -770,6 +1108,7 @@
         } catch (_) {
         }
       }
+      ent_wallMark();
       renderer.render(scene, camera);
     }
   }, 250);
@@ -806,5 +1145,6 @@
     initModules().catch((e) => console.error(e));
   }
   window.__ctx = ctx;
+  window.__ent360 = { indoors: ent_indoors, wall: ent_wall, look: ent_look, solids: ent_solids, wallHit: ent_wallHit, floor: ent_floor, lift: ent_lift, floorY: ent_floorY };   // 1.0.2 (+ M): for the headless tests
   window.__renderer = renderer;
   window.__camera = camera;

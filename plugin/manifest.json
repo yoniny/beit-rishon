@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "id": "com.beit-hamikdash.rishon-3d-model",
   "name": "בית ראשון",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "סיור תלת־ממדי בבית המקדש הראשון כפירוש רש\"י, לסייע בהבנת ענייני המקדש: מבט 360 מעלות, מצגות, כפתור לכל שיטה וכל מקור בלחיצה באוצריא.",
   "author": "יוני מאיר ויוסי כהן (Yossi Cohen)",
   "homepage": "https://github.com/yoniny/beit-rishon",
   "icon": "icon/icon.png",
   "entrypoint": "index.html",
-  "minAppVersion": "0.9.89",
+  "minAppVersion": "0.9.98.1",
   "sdkVersion": "1.x",
   "stability": "stable",
   "permissions": [
@@ -16,7 +16,9 @@
     "library.books.read",
     "library.content.read",
     "library.links.read",
-    "search.fulltext.read"
+    "search.fulltext.read",
+    "reader.toolbar",
+    "app.startup_contributions"
   ],
   "network": {
     "enabled": false,
@@ -30,6 +32,98 @@
       "defaultPinned": true,
       "iconName": "menorah_24_regular"
     },
-    "publishedDataTypes": []
+    "publishedDataTypes": [],
+    "startup": {
+      "programs": [
+        {
+          "id": "beit-rishon-books",
+          "version": 1,
+          "triggers": [
+            "reader.activeBookChanged"
+          ],
+          "commands": [
+            {
+              "id": "show",
+              "type": "data.choose",
+              "args": {
+                "condition": {
+                  "op": "and",
+                  "conditions": [
+                    {
+                      "op": "equals",
+                      "left": {
+                        "$context": "reader.book.source"
+                      },
+                      "right": {
+                        "$literal": "library"
+                      }
+                    },
+                    {
+                      "op": "equals",
+                      "left": {
+                        "$context": "reader.book.type"
+                      },
+                      "right": {
+                        "$literal": "text"
+                      }
+                    },
+                    {
+                      "op": "or",
+                      "conditions": [
+                        {
+                          "op": "equals",
+                          "left": {
+                            "$context": "reader.book.id"
+                          },
+                          "right": {
+                            "$literal": 10
+                          }
+                        },
+                        {
+                          "op": "equals",
+                          "left": {
+                            "$context": "reader.book.id"
+                          },
+                          "right": {
+                            "$literal": 39
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "whenTrue": {
+                  "$literal": "show"
+                },
+                "whenFalse": {
+                  "$literal": ""
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "show": {
+              "$result": "show"
+            }
+          }
+        }
+      ],
+      "toolbarItems": [
+        {
+          "id": "open-beit-rishon",
+          "type": "button",
+          "title": "פתח בתוסף בית ראשון",
+          "icon": "menorah_24_regular",
+          "contexts": [
+            "reader-text"
+          ],
+          "binding": {
+            "program": "beit-rishon-books",
+            "visibleOutput": "show"
+          },
+          "openPlugin": true
+        }
+      ]
+    }
   }
 }

@@ -9,6 +9,24 @@
  * Sources: I Kings 6-8, II Chronicles 3-4 (primary); Chazal: Mishnah Middot, Yoma, Menachot, Eruvin, Zevachim, Bava Batra, Rashi,
  * Radak, Metzudot, Malbim, Ralbag. NOT Ezekiel (the user rejected it: that is the Third Temple).
  * Units: 1 = 1 amah. +x east (front), +z south (right), y up. Levels: great court 0, inner court 6, house floor 12.
+ * VERSION 1.0.2 (manifest.json; minAppVersion 0.9.98.1). 1.0.1 is the store version (com.beit-hamikdash.rishon-3d-model, since 2.11.2026).
+ * 1.0.2 (2026-11-03, round 5 = DEV_NOTES "סבב ה' — 1.0.2": the user's list of 2.11.2026 after 1.0.1 went to the store): a reader button "פתח בתוסף בית ראשון" in
+ *   I Kings (10) and II Chronicles (39) only (manifest startup program + toolbar item, openPlugin); 70-ui.js reads the line -> verse (ui_BASE, all
+ *   chapters) -> ui_READ -> the place / view with its card; "דיווח על טעות או תקלה" -> feedback.report (inside Otzaria only); the other readings
+ *   as chips inside the cards (UI_OPS_V / _P / _L); the top bar after the SDK design guide (fixed, --topbar-h 56 / 44, the theme cached before
+ *   the first paint, no transparent stage; theme.changed needs no permission: the packer says Otzaria grants it to every plugin); השיתין at the altar's south-west corner (Middot 3:2-3,
+ *   Sukkah 49a, 53a, Rashi Zevachim 61b; a completion, also in "השלמות"); ctx.shared.altarLook: stone (default) / Abarbanel's bronze plating
+ *   (I Kings 8:64); the bases' demonstration followed from near (ctx.shared.mechona.follow); 360 in every roofed space (ent_indoors, ent_look)
+ *   and the camera stops 0.8 before a wall (ent_wallStep; a wall faded by the fade loop is passable, as in 1.0.1).
+ *   The add-on (2026-11-04, DEV_NOTES "תוספת לסבב"): the altar's yesod (Middot 3:1; Zevachim 62a) on the north, west and south, with no
+ *   yesod on the east of the south-east corner (Tosafot Zevachim 61b), the sovev at 6 (the band removed: "זה הסובב", 62a), the red line at 5
+ *   (Rambam 2:9), the big ramp floating an amah over each (62b), two small ramps by Rashi or a third by Tosafot (ctx.shared.altarRamps,
+ *   default rashi; ctx.shared.altarProfile; labels on ctx.layers.altarProfile within 130 amot; the shitin moved to the yesod's corner);
+ *   in 70-ui.js: source brackets are links (srcLinker), print / save as PDF (ui.print / ui.exportPdf, window.print outside Otzaria),
+ *   "מה חדש" once per version (UI_NEWS; storage tm1.news.seen), the fade mode "גם קיר מסתיר" (fadeState.hide, tm1.fade.hide), the
+ *   row "הכבשים הקטנים" and the new completions in "השלמות". The verse's 20 x 20 kept as the body against Rashi's 28 foot: open.
+ *   Open in 1.0.2 (DEV_NOTES "פתוח" 15-17): nothing yet tried inside Otzaria itself (toolbar payload, feedback.report, ui.print / exportPdf,
+ *   storage.*, WebView2, touch, new links).
  * 1.0.1 (2026-10-27, the user's first corrections): house/ulam/yatzia walls are no longer fade-occluders (chambers closed from outside);
  *   new viewing toggles ctx.yatziaCut ("פתח את התאים") and ctx.ulamCut ("פתח את האולם", used by the Yachin & Boaz view from outside);
  *   yatzia stories exactly per Rashi (5 clear + 0.5 slab: ledges at 17 and 22.5, roof 28..28.5); heichal doors folded flat into the reveals;

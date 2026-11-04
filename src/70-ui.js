@@ -94,7 +94,45 @@
   // verse's words), no quote inside it, at most 70 letters, and it looks like a source: a book or commentator's name, chapter and verse, or a daf.
   // ui_fillSrc(el, text) writes it to the DOM (a span.tm-src, with no innerHTML), ctx.ui.smallSources(text) returns it as HTML for 75-tour.js, and
   // ui_labelText (below) draws it in the labels on the model.
+  // 1.0.2 (the user's list of 2.11.2026; this file = the panel):
+  //   - item 4, THE OTHER OPINIONS INSIDE THE CARD: a card (the panel's #tm-xcard and the label's #tm-card) whose subject has rows in "שיטות
+  //     ומחלוקות" ends with one compact row "שיטות:" and a small chip per reading, the current one marked; a chip does what the table's button
+  //     does (row.mark + row.onPick; row.cardFly rows also fly, because their subject moves with the reading), the card stays open and its
+  //     chips follow. The subject -> rows map is UI_OPS_V (view keys) / UI_OPS_P (place titles) / UI_OPS_L (label texts) inside buildUI; a card
+  //     with no row shows nothing. The presentation's cards (ctx.ui.card.open) carry no chips.
+  //   - item 8: the row "מזבח הנחושת — אבנים או מצופה נחושת" from ctx.shared.altarLook (40-altar.js), and the altar's cards carry its chips;
+  //   - item 7: the place "השיתין" beside "מזבח הנחושת" and the label "השיתין" open ctx.shared.shitin's text (40-altar.js); nothing without it;
+  //   - item 1: "דיווח על טעות או תקלה" at the panel's foot (inside Otzaria only): a small form -> feedback.report, with the version, the view or
+  //     card and the chosen readings added to the details;
+  //   - item 2: the button "open-beit-rishon" of I Kings and II Chronicles (manifest.json; 70-ui.js listens) opens the plugin with the reading
+  //     position (reader.toolbar_item_clicked: currentId / currentBook / currentIndex): the line -> chapter and verse (ui_BASE, all the
+  //     chapters of books 10 and 39 read in the DB) -> ui_READ -> the panel's own view or place button, with its card. The event is listened
+  //     to from the script's first run (it may come during the loading) and queued until the UI and the loading are done.
+  // 1.0.2, the add-on (same version, not yet published):
+  //   - A: the brackets of a source in the cards' text are links (srcLinker / ui_srcParse): the card's own refs by label first, then a
+  //     verse of a book of ui_BASE or a page of ui_PAGES; openSource as the chips; unresolved = plain; a hover underline only;
+  //   - B: "הדפסה או שמירה כ-PDF" at the panel's foot: a print page #tm-print (the view's picture, the place's name, the open card's text and
+  //     sources), @media print; ui.print / ui.exportPdf in Otzaria (from the click), window.print() outside; the page goes after;
+  //   - C: "מה חדש בגרסה 1.0.2" (UI_NEWS) once per version, after the loading, never during the presentation; storage.* with localStorage;
+  //   - D: the fade button's second mode "טשטוש: גם קיר מסתיר" (fadeState.hide): the building's walls that hide the target fade too;
+  //   - the row "הכבשים הקטנים" (ctx.shared.altarRamps, 40-altar.js) next to "מראה המזבח", and its chips in the altar's cards.
+  //   - the fixes (rule 6): the place "היסוד, הסובב וחוט הסיקרא" (ctx.shared.altarProfile) after "השיתין" with its "השלמות" item merged
+  //     into it, and the item "הכבשים הקטנים — השלמה מן הגמרא" (both readings, the row's chips); ui_INFO.mizbeach, "הכבש והקרנות" and
+  //     "מקום המזבח" now speak of the yesod and the sovev; UI_NEWS 11 lines (the fade mode added).
   var UI_SRC_NAME = /^ו?ה?(?:שם|ראו שם|מלכים|שמואל|דברי הימים|דה״י|שמות|ויקרא|במדבר|דברים|בראשית|ישעיה|ירמיה|ירמיהו|יחזקאל|הושע|עמוס|מיכה|זכריה|תהלים|משלי|איוב|שיר השירים|קהלת|אסתר|דניאל|עזרא|נחמיה|רש״י|רשב״ם|רש״ש|רד״ק|רלב״ג|מלבי״ם|מצודת|מצודות|מנחת|אברבנאל|רמב״ם|רמב״ן|ראב״ע|ראב״ד|מאירי|המאירי|הגר״א|תרגום|יונתן|ת״י|משנה|משנת|מדות|מידות|תמיד|יומא|זבחים|מנחות|בבא|סנהדרין|שקלים|סוכה|מגילה|חגיגה|ערכין|כלים|תוספתא|תוספות|תוס׳|ברטנורא|ברייתא|הלכות|כסף משנה|ילקוט|פסיקתא|מדרש|פירוש המשנה|עמ׳|בעל צורת הבית|לחם שמים|מעשי למלך|בית הבחירה|ספרי|מכילתא|תפארת ישראל|ראבי״ה|מהרש״א|פנים אחרים|אבא גוריון)(?:$|[\s,;.:׳״])/;
+  // 1.0.2 (fix): the height of index.html's fixed top bar (56 px, 44 px in a narrow window); the floating cards' inline top never goes above it
+  // (read once per window width: the label card asks every frame, and offsetHeight would force a layout)
+  var ui_barCache = { w: -1, h: 56 };
+  function ui_barH() {
+    const w = window.innerWidth;
+    if (w !== ui_barCache.w) {
+      const b = document.querySelector("header.topbar");
+      const h = b ? b.offsetHeight : 0;
+      if (h) ui_barCache = { w, h };
+      else return 56;
+    }
+    return ui_barCache.h;
+  }
   function ui_srcIs(body) {
     if (!body || body.length > 70 || /[\u0591-\u05C7]/.test(body) || /[()]/.test(body)) return false;
     if (/^עמ['׳]\s?[א-ת]/.test(body)) return true;           // the book's page
@@ -120,17 +158,24 @@
       const e = s.indexOf(")", i + 1);
       if (e < 0 || e - i > 72 || !ui_srcIs(s.slice(i + 1, e))) continue;
       if (i > from) out.push({ t: s.slice(from, i), s: false });
-      out.push({ t: s.slice(i, e + 1), s: true });
+      out.push({ t: s.slice(i, e + 1), s: true, i });   // 1.0.2 (A): i = where the bracket stands in the text (the book named before it)
       from = e + 1;
       i = e;
     }
     if (from < s.length) out.push({ t: s.slice(from), s: false });
     return out;
   }
-  function ui_fillSrc(el, text) {
+  // 1.0.2 (A): link(run, text) -> an element for a source's bracket (span.tm-src with links inside it) or null (a plain bracket); only the cards pass it
+  function ui_fillSrc(el, text, link) {
     el.textContent = "";
-    for (const r of ui_srcRuns(text)) {
+    const full = String(text == null ? "" : text);
+    for (const r of ui_srcRuns(full)) {
       if (!r.s) { el.appendChild(document.createTextNode(r.t)); continue; }
+      let ln = null;
+      if (typeof link === "function") {
+        try { ln = link(r, full); } catch (_) { ln = null; }
+      }
+      if (ln) { el.appendChild(ln); continue; }
       const sp = document.createElement("span");
       sp.className = "tm-src";
       sp.textContent = r.t;
@@ -254,8 +299,10 @@
   // 1.0.1-K (K.9b; review Q2-7): the books this round cites were added from the Otzaria DB (each base checked by reading base + v there):
   // II Kings 11 (11:14 -> 321, 11:19 -> 326), Exodus 2, Leviticus 3, Song of Songs 31, Kohelet 32, the Mishnah of Sanhedrin 73, Menachot 81,
   // Tamid 88, Kelim 91 (ui_MN), Sanhedrin 125 (100a).
+  // 1.0.2 (item 2): books 10 and 39 with ALL their chapters (the line before verse 1 = the chapter's heading), read in the DB with the
+  // helper (every verse of both books = base + verse, no exception; e.g. I Kings 6:1 = 186, 7:15 = 239, 7:23 = 247, II Chr 3:1 = 39, 4:2 = 58)
   var ui_BASE = {
-    10: { 6: 185, 7: 224, 8: 276, 10: 372 },
+    10: { 1: 1, 2: 55, 3: 102, 4: 131, 5: 152, 6: 185, 7: 224, 8: 276, 9: 343, 10: 372, 11: 402, 12: 446, 13: 480, 14: 515, 15: 547, 16: 582, 17: 617, 18: 642, 19: 689, 20: 711, 21: 755, 22: 785 },
     11: { 11: 307, 12: 328, 15: 407, 23: 655, 25: 714 },                     // 1.0.1-K: II Kings (11:14 = 321, 23:3 = 658, 25:17 = 731)
     2: { 16: 431, 25: 685, 26: 726, 27: 764, 30: 877 },                               // 1.0.1-K: Exodus (the table, the curtain, the incense altar); 1.0.1-L: 27 (27:20 = 784, the menorah's steps)
     3: { 1: 1, 24: 725 },                                                    // 1.0.1-K: Leviticus 24:6 (the two stacks); 1.0.1-L: 1 (1:9 = 10, 1:11 = 12 - the slaughter in the north)
@@ -264,7 +311,7 @@
     54: { 6: 37 },                                                           // 1.0.1-L: Mishnah Shekalim 6:4 = 41 (the thirteen tables)
     31: { 3: 37 },                                                           // 1.0.1-K: Song of Songs 3:6-7
     32: { 2: 20 },                                                           // 1.0.1-K: Kohelet 2:5-6 (the garden)
-    39: { 3: 38, 4: 56, 5: 79, 6: 94, 8: 160, 9: 179, 20: 413, 23: 485, 24: 507, 29: 626, 34: 773 },  // 1.0.1: 23 (II Chr 23:13 "על עמודו"), 24 (II Chr 24:8 the chest); 1.0.1-K: 6 (6:13); 1.0.1-L (read in the DB): 8 (8:11 "לא תשב אשה לי" = 171), 29 (29:7 "דלתות האולם" = 633), 34 (34:22 חולדה = 795)
+    39: { 1: 1, 2: 20, 3: 38, 4: 56, 5: 79, 6: 94, 7: 137, 8: 160, 9: 179, 10: 211, 11: 231, 12: 255, 13: 272, 14: 296, 15: 311, 16: 331, 17: 346, 18: 366, 19: 401, 20: 413, 21: 451, 22: 472, 23: 485, 24: 507, 25: 535, 26: 564, 27: 588, 28: 598, 29: 626, 30: 663, 31: 691, 32: 713, 33: 747, 34: 773, 35: 807, 36: 835 },  // 1.0.1: 23 (II Chr 23:13 "על עמודו"), 24 (II Chr 24:8 the chest); 1.0.1-K: 6 (6:13); 1.0.1-L (read in the DB): 8 (8:11 "לא תשב אשה לי" = 171), 29 (29:7 "דלתות האולם" = 633), 34 (34:22 חולדה = 795); 1.0.2: all 36 chapters (the DB), the old entries unchanged
     38: { 29: 942 },                                                         // 1.0.1-K (integration): I Chr 29:2 = 944 ("ואבני שיש לרב", the court floor)
     13: { 22: 530, 26: 652, 35: 912, 36: 932, 52: 1382 },                     // 1.0.1: 22, 26 (the palace below the house), 35, 36 (the chambers)
     89: { 1: 1, 2: 11, 3: 18, 4: 27, 5: 35 },
@@ -331,6 +378,199 @@
     }
     return null;
   }
+  // ===== 1.0.2 (A, "links in the brackets"): a source's bracket inside a card's text opens it in Otzaria, as the card's chip does. A part
+  // of a bracket ("ו, טו; ו, ל" has two) is matched to the card's own refs by its label first (the label as written, then without a range's
+  // end "–כב", then without a commentator's name before it: "רש״י יומא לו." is the chip "יומא לו."); else it is read here: a verse of a book
+  // in ui_BASE ("מלכים א ז, טו", "מדות ג, ב", "רמב״ם בית הבחירה ב, יא", "שקלים ו, ד"), a page of ui_PAGES ("יומא נא:"), or a bare "ז, כו" when
+  // the last book named in a bracket before it is the book of the card's first ref (both must agree). A commentator's name is dropped only
+  // before a verse of the Tanach (its verse opens, as the chips "רש״י ז, טו" do), never before a page or a Mishnah (another book).
+  // Anything else stays plain text (model choice: no guessing). The names below are only those of ui_BASE / ui_PAGES. =====
+  var UI_SRC_TN = { "מלכים א": 10, "מלכים ב": 11, "דברי הימים א": 38, "דברי הימים ב": 39, 'דה"י א': 38, 'דה"י ב': 39, "ירמיהו": 13, "ירמיה": 13, "שמות": 2, "ויקרא": 3, "במדבר": 4, "שיר השירים": 31, "קהלת": 32 };
+  var UI_SRC_MI = { "מדות": 89, "מידות": 89, "משנה מדות": 89, "סנהדרין": 73, "משנה סנהדרין": 73, "מנחות": 81, "משנה מנחות": 81, "תמיד": 88, "משנה תמיד": 88, "כלים": 91, "משנה כלים": 91, "יומא": 55, "משנה יומא": 55, "שקלים": 54, "משנה שקלים": 54, 'רמב"ם בית הבחירה': 337, 'רמב"ם הלכות בית הבחירה': 337, "הלכות בית הבחירה": 337, "בית הבחירה": 337 };
+  var UI_SRC_TAL = { "מנחות": 131, "יומא": 107, "עירובין": 105, "סוטה": 119, "בבא בתרא": 124, "סנהדרין": 125, "זבחים": 130, "חגיגה": 114, "סוכה": 108, "מגילה": 112 };
+  var UI_SRC_PRE = ['רש"י', 'רד"ק', "מצודת דוד", "מצודת ציון", "מצודות", 'מלבי"ם', 'רלב"ג', "תרגום יונתן", "תרגום"];
+  var UI_SRC_TN_IDS = [10, 11, 38, 39, 13, 2, 3, 4, 31, 32];
+  var UI_SRC_NUM = /^[קרשת]{0,2}(?:[יכלמנסעפצ]?[א-ט]?|טו|טז)$/;
+  function ui_srcNorm(s) {
+    return String(s || "").replace(/[֑-ׇ]/g, "").replace(/[״"]/g, '"').replace(/[׳']/g, "'").replace(/\s+/g, " ").replace(/^[\s,;]+|[\s,;]+$/g, "");
+  }
+  // "ז, טו–כב" -> "ז, טו"; "ו–ז" stays (no verse: it is not read)
+  function ui_srcNoRange(s) {
+    return s.replace(/(,\s?[א-ת"']{1,5})\s*[–-]\s*[א-ת"']{1,5}$/, "$1").replace(/([א-ת"']{1,5}[.:])\s*[–-]\s*[א-ת"']{1,5}[.:]?$/, "$1");
+  }
+  function ui_srcNum(t) {
+    const s = String(t || "").replace(/["']/g, "");
+    return s && UI_SRC_NUM.test(s) ? ui_gematria(s) : 0;
+  }
+  // the last Tanach book named at the head of a bracket in text before `pos` (a bracket with a quote counts too: it names its book), or null
+  function ui_srcLastBook(text, pos) {
+    const s = ui_srcNorm(String(text || "").slice(0, Math.max(0, pos || 0)));
+    const re = /\((?:(?:רש"י|רד"ק|מצודת דוד|מצודת ציון|מצודות|מלבי"ם|רלב"ג|תרגום יונתן|תרגום|ראו|וראו)\s+)?(מלכים א|מלכים ב|דברי הימים א|דברי הימים ב|דה"י א|דה"י ב|ירמיהו|ירמיה|שמות|ויקרא|במדבר|שיר השירים|קהלת)\s/g;
+    let m, last = null;
+    while ((m = re.exec(s))) last = UI_SRC_TN[m[1]] || null;
+    return last;
+  }
+  // one part (normalized, its range end dropped) -> { book, index } or null; bareBook = the book of a bare "ז, כו" (null: not read)
+  function ui_srcParse(p, bareBook) {
+    const tal = /^(.+?) ([א-ת"']{1,5}[.:])$/.exec(p);
+    if (tal && UI_SRC_TAL[tal[1]]) {
+      const b = UI_SRC_TAL[tal[1]], pg = tal[2].replace(/["']/g, "");
+      const idx = ui_PAGES[b] && ui_PAGES[b][pg];
+      return idx == null ? null : { book: b, index: idx };
+    }
+    const m = /^(?:(.+?) )?([א-ת"']{1,5}), ?([א-ת"']{1,5})$/.exec(p);
+    if (!m) return null;
+    const ch = ui_srcNum(m[2]), v = ui_srcNum(m[3]);
+    if (!ch || !v) return null;
+    let book = null;
+    const name = m[1] || "";
+    if (!name) book = bareBook;
+    else if (UI_SRC_TN[name]) book = UI_SRC_TN[name];
+    else if (UI_SRC_MI[name]) book = UI_SRC_MI[name];
+    else {
+      for (const pre of UI_SRC_PRE) {
+        if (name === pre) { book = bareBook; break; }
+        if (name.indexOf(pre + " ") === 0) { book = UI_SRC_TN[name.slice(pre.length + 1)] || null; break; }
+      }
+    }
+    const B = book != null && ui_BASE[book];
+    if (!B || B[ch] == null) return null;
+    const idx = B[ch] + v;
+    if (B[ch + 1] != null && idx >= B[ch + 1]) return null;   // past the chapter's end (books 10 and 39 have all their chapters)
+    return { book, index: idx };
+  }
+  // ===== 1.0.2 (item 2): opening the plugin from the books (the reader's button "open-beit-rishon", openPlugin: true, shown in I Kings
+  // and II Chronicles only). Otzaria opens the page and delivers reader.toolbar_item_clicked with the reading position (api.md: itemId,
+  // currentBook = the title, currentBookId, currentId = the numeric id, currentIndex = the line, currentRef); plugin.page_opened's param is
+  // read the same way when it carries a position. The listeners are set when the script runs - the event may come while the model loads -
+  // and the position waits in ui_bookQueue until buildUI is done and the loading screen is gone (ui_bookGo is set at buildUI's end). =====
+  var UI_BOOK_ITEM = "open-beit-rishon";
+  var ui_bookQueue = [];
+  var ui_bookGo = null;
+  var ui_bootVersion = "";   // payload.plugin.version of plugin.boot (for the report, item 1)
+  // the reading ranges -> the panel's button: p = a place title, v = a view key (the grid's own buttons); [chapter, from verse, to verse].
+  // The first range that holds the verse wins (the narrow ones first); verse 0 = the chapter's heading line. Built from the verses
+  // themselves (each one read in the DB); where a verse names something narrower than its range it has its own line (marked).
+  var ui_READ = {
+    10: [   // I Kings
+      [6, 5, 10, { p: "היציע והתאים" }],
+      [6, 16, 16, { v: "kodeshHakodashim" }], [6, 19, 20, { v: "kodeshHakodashim" }],
+      [6, 30, 30, { p: "רצפת הבית — ברושים מצופים זהב" }],   // 6:30 'ואת קרקע הבית צפה זהב' (the floor; in the carvings' range)
+      [6, 15, 22, { p: "ההיכל" }],
+      [6, 23, 28, { p: "הכרובים" }],
+      [6, 29, 29, { p: "גילופי הקירות — כרובים, תמורות, פטורי ציצים, פקעים" }],
+      [6, 31, 32, { p: "פתח הדביר (מזוזות חמישית) — שני ביאורי רש״י" }],
+      [6, 33, 35, { p: "פתח ההיכל ודלתותיו" }],
+      [6, 36, 36, { p: "חצר הכהנים" }],                                // 'ויבן את החצר הפנימית' (Rashi: חצר הכהנים)
+      [6, 0, 99, { v: "heichalFront" }],                               // 6:1-4, 6:11-14, 6:37-38: the building of the house (model choice: the house from outside)
+      [7, 2, 5, { p: "בית יער הלבנון" }],
+      [7, 6, 6, { p: "אולם העמודים" }],                                // 7:6 'ואת אולם העמודים עשה'
+      [7, 7, 7, { p: "אולם הכסא ואולם המשפט" }],
+      [7, 8, 8, { p: "בית בת פרעה" }],
+      [7, 0, 12, { p: "החצר הגדולה" }],                                // 7:1-12 the palace (7:12 'וחצר הגדולה סביב')
+      [7, 13, 22, { v: "yachinBoazFull" }],
+      [7, 23, 26, { p: "הים של שלמה" }],
+      [7, 27, 39, { p: "עשר המכונות והכיורות" }],
+      [7, 40, 51, { p: "כלי הבית — סוף פרק ז" }],
+      [8, 0, 11, { p: "הארון ובדיו" }],
+      [8, 64, 64, { p: "מזבח הנחושת" }],
+      [10, 18, 20, { p: "כסא שלמה" }]
+    ],
+    39: [   // II Chronicles
+      [3, 1, 1, { p: "הר הבית והחצר הגדולה" }],                       // 3:1 'בהר המוריה... במקום דויד בגרן ארנן'
+      [3, 5, 7, { p: "ההיכל" }],
+      [3, 8, 9, { v: "kodeshHakodashim" }],
+      [3, 10, 13, { p: "הכרובים" }],
+      [3, 14, 14, { p: "הפרוכת" }],
+      [3, 15, 17, { v: "yachinBoazFull" }],
+      [3, 0, 4, { v: "heichalFront" }],                                // 3:2-4 the house
+      [4, 1, 1, { p: "מזבח הנחושת" }],
+      [4, 2, 5, { p: "הים של שלמה" }],
+      [4, 6, 6, { p: "עשר המכונות והכיורות" }],
+      [4, 7, 7, { p: "מנורת משה ועשר המנורות" }],
+      [4, 8, 8, { p: "שולחן משה ועשרה השולחנות" }],
+      [4, 9, 9, { p: "חצר הכהנים" }],
+      [4, 10, 10, { p: "הים של שלמה" }],                                // 4:10 'ואת הים נתן מכתף הימנית קדמה ממול נגבה'
+      [4, 11, 22, { p: "כלי הבית — סוף פרק ז" }],
+      [5, 2, 10, { p: "הארון ובדיו" }],
+      [9, 17, 19, { p: "כסא שלמה" }]
+    ]
+  };
+  // a book given as a number, "10", "id:10", a title ("מלכים א", "דברי הימים ב", with or without its marks) or an object holding one of them
+  function ui_bookOf(b) {
+    if (b == null) return null;
+    if (typeof b === "object") {
+      for (const k of ["id", "bookId", "currentId", "bookUid", "title", "name", "currentBook"]) {
+        const r = ui_bookOf(b[k]);
+        if (r) return r;
+      }
+      return null;
+    }
+    if (typeof b === "number") return b === 10 || b === 39 ? b : null;
+    const s = String(b).trim();
+    const n = /^(?:id:)?(\d+)$/.exec(s);
+    if (n) return ui_bookOf(+n[1]);
+    const t = s.replace(/[֑-ׇ]/g, "").replace(/[׳״'"]/g, "").replace(/[\s,_-]+/g, " ").trim();
+    if (/^מלכים א$|^I Kings$/i.test(t)) return 10;
+    if (/^(?:דברי הימים ב|דהי ב|II Chronicles)$/i.test(t)) return 39;
+    return null;
+  }
+  // line index -> { ch, v } by ui_BASE (the largest chapter base not after the line; v 0 = the heading line)
+  function ui_lineToVerse(book, index) {
+    const B = ui_BASE[book];
+    if (!B || !(index >= 0)) return null;
+    let ch = 0;
+    for (const k of Object.keys(B)) if (B[k] <= index && (!ch || B[k] > B[ch])) ch = +k;
+    return ch ? { ch, v: index - B[ch] } : null;
+  }
+  // a reference string ("מלכים א, ז, כג" as the DB's heRef, or "מלכים א פרק ז") -> { ch, v } (v 0 = the chapter only)
+  function ui_refToVerse(ref) {
+    const s = String(ref || "").replace(/[֑-ׇ]/g, "").replace(/[׳״'"]/g, "");
+    const p = /פרק\s+([א-ת]{1,3})(?:\s*,?\s*(?:פסוק\s+)?([א-ת]{1,3}))?\s*$/.exec(s);
+    const m = p || /,\s*([א-ת]{1,3})\s*,\s*([א-ת]{1,3})\s*$/.exec(s);
+    if (!m) return null;
+    const ch = ui_gematria(m[1]), v = m[2] ? ui_gematria(m[2]) : 0;
+    return ch > 0 ? { ch, v } : null;
+  }
+  // a number in Hebrew letters (15 = ט״ו, 16 = ט״ז) for the toast
+  function ui_heNum(n) {
+    const L = [[400, "ת"], [300, "ש"], [200, "ר"], [100, "ק"], [90, "צ"], [80, "פ"], [70, "ע"], [60, "ס"], [50, "נ"], [40, "מ"], [30, "ל"], [20, "כ"], [10, "י"], [9, "ט"], [8, "ח"], [7, "ז"], [6, "ו"], [5, "ה"], [4, "ד"], [3, "ג"], [2, "ב"], [1, "א"]];
+    let s = "";
+    for (const [v, c] of L) while (n >= v) { if (n === 15 || n === 16) { s += n === 15 ? "טו" : "טז"; n = 0; break; } s += c; n -= v; }
+    return s.length > 1 ? s.slice(0, -1) + "״" + s.slice(-1) : s + "׳";
+  }
+  // the reading position of an event -> { book, ch, v } or null (another book, another button, nothing readable)
+  function ui_readingOf(d) {
+    if (!d || typeof d !== "object") return null;
+    if (d.itemId && d.itemId !== UI_BOOK_ITEM) return null;
+    let book = null;
+    for (const k of ["currentId", "currentBookId", "currentBook", "bookId", "book", "id", "bookUid", "title"]) {
+      book = ui_bookOf(d[k]);
+      if (book) break;
+    }
+    if (!book) return null;
+    const ix = [d.currentIndex, d.index, d.lineIndex].map((x) => (typeof x === "string" && /^\d+$/.test(x) ? +x : x)).find((x) => typeof x === "number" && isFinite(x));
+    const cv = ix != null ? ui_lineToVerse(book, ix) : ui_refToVerse(d.currentRef || d.ref);
+    return cv ? { book, ch: cv.ch, v: cv.v } : { book, ch: 0, v: 0 };
+  }
+  function ui_bookEvent(d) {
+    const r = ui_readingOf(d);
+    if (!r) return;
+    if (ui_bookGo) {
+      try { ui_bookGo(r); } catch (_) {}
+    } else {
+      ui_bookQueue.push(r);
+      if (ui_bookQueue.length > 4) ui_bookQueue.shift();
+    }
+  }
+  try {
+    if (typeof window !== "undefined" && window.Otzaria && typeof window.Otzaria.on === "function") {
+      window.Otzaria.on("reader.toolbar_item_clicked", (d) => ui_bookEvent(d));
+      window.Otzaria.on("plugin.page_opened", (d) => { if (d && d.param && typeof d.param === "object") ui_bookEvent(d.param); });
+      window.Otzaria.on("plugin.boot", (p) => { ui_bootVersion = (p && p.plugin && p.plugin.version) || ui_bootVersion; });
+    }
+  } catch (_) {
+  }
   // ===== explanation texts of the views (Hebrew, verse reference first; wording after research/*.md) =====
   // 1.0.1-L: the pillars' text is shared by the far view "יכין ובועז" (yachinBoazFull, L.58) and the in-doorway place (yachinBoaz)
   var ui_YB_BODY = "יכין ובועז (מלכים א ז, טו–כב): עמודי נחושת — 'שמנה עשרה אמה קומת העמוד האחד וחוט שתים עשרה אמה יסב' — עגולים, ארבע אמות עוביים, 'והוא חלול' (רש״י), ודופנם ארבע אצבעות (ירמיהו נב, כא: 'ועביו ארבע אצבעות נבוב'). על כל עמוד כותרת של חמש אמות (ז, טז), והעמוד תחוב בה שתי אמות (רש״י), ולכן גובה כל העמוד עם הכותרת עשרים ואחת אמה, כציור הספר. הכותרת — 'כמין שני אגנים' (רש״י ז, יח): הגולה מצוירת שושנים, הבטן ועליה שני טורי רימונים, 'מאה רמונים בטור, חרוזים בשרשרות' (רש״י ז, מב), השבכה 'כמין כפה' הקלועה משבעה לולבים (רש״י ז, יז), וכותרת קטנה בראשה; קריאת מלבי״ם לכותרת — בטבלת 'שיטות ומחלוקות'. מקומם — 'שהעמיד באולם' (רש״י ז, טו), יכין מימין, 'בפאת הדרומי' (מצודת דוד ז, כא), ובועז משמאל — 'העמידם שלמה באולם סמוך לכותל ההיכל' (רש״י ירמיהו נב, כג): צמודים לכותל ככל שהכותרת מניחה (ראו 'יכין ובועז — מבט מפתח האולם').";
@@ -340,7 +580,7 @@
     eastGate: "השער המזרחי של החצר הגדולה, מול פתח הבית. דלתות השערים היו מצופות נחושת (דברי הימים ב ד, ט). מספר השערים ושמותיהם אינם בפסוקים — שער אחד בכל צד הוא בחירת מודל.",
     newCourt: "החצר החיצונה: לפנים ממנה חצר הכהנים (רש״י מלכים א ו, לו: 'לפנים מעזרת נשים'). בה לשכות (ירמיה לה, ד; לו, י), 'העמוד' שעליו עמד המלך (מלכים ב יא, יד; כג, ג) וארון הנדבות שבשער (דברי הימים ב כד, ח). גודלה ומפלסה — בחירת מודל.",
     azarah: "חצר הכהנים — 'החצר הפנימית' (מלכים א ו, לו): שלושה טורי גזית וטור כרותות ארזים. מידותיה (187 על 135) ושבעת שעריה — על פי מסכת מדות (ה, א; א, ד), כי במלכים אין מידה לחצר. רצפתה לוחות שיש — 'ואבני שיש לרב' (דברי הימים א כט, ב), ורש״י שם: 'לעמודים ושלחנות ולרצפה'. בה מזבח הנחושת ובצפונו בית המטבחים (השלמה מבית שני); הים בקרן המזרחית הצפונית (רש״י), ועשר המכונות וכיור משה בגוש אחד מדרום לציר הבית, מול אגף האולם הדרומי; ולשכת הגזית על החומה הצפונית, בין השער הצפוני לים.",
-    mizbeach: "מזבח הנחושת (דברי הימים ב ד, א): עשרים אמה אורך, עשרים רוחב ועשר גובה. הכבש מדרום ('לא תעלה במעלות', שמות כ; מידותיו כמדות ג, ג) והקרנות (כמזבח המשכן, שמות כז; מדות ג, א) — השלמת מודל.",
+    mizbeach: "מזבח הנחושת (דברי הימים ב ד, א): עשרים אמה אורך, עשרים רוחב ועשר גובה. הכבש מדרום ('לא תעלה במעלות', שמות כ; מידותיו כמדות ג, ג) והקרנות (כמזבח המשכן, שמות כז; מדות ג, א) — השלמת מודל. סביבו היסוד, הסובב וחוט הסיקרא, כמשנה (מדות ג, א; זבחים סב.), והכבש 'פורח אמה על יסוד ואמה על סובב' (זבחים סב:) — השלמה.",
     // 1.0.1-L (L.7 / L.75, the user: "כרש\"י ובספר"; vessels.json): the Sea in the inner court's CORNER, north-east for Rashi (the default)
     yam: "הים (מלכים א ז, כג–כו): עשר אמות משפה אל שפה, חמש אמות קומתו, 'ועביו טפח' ו'אלפים בת יכיל' (ז, כו) — ובמודל 450 אמה מעוקבת, ראו 'צורת הים' בהמשך — ועומד על שנים עשר בקר — פניהם לחוץ ואחוריהם 'ביתה' (ז, כה). שלוש אמותיו התחתונות מרובעות ושתיים העליונות עגולות (עירובין יד:). מקומו — במקצוע, בקרן העזרה: 'ואת הים נתן מכתף הבית הימנית קדמה ממול נגב' (ז, לט); רש״י: 'מקצוע מזרחית צפונית, כנגד האויר שבין כתל צפוני של בית לצד כתל העזרה' — ברירת המחדל, כציור הספר ומפתו, ממזרח לצפון בית המטבחים; לרד״ק, מצודות ורלב״ג ולרש״י על דברי הימים ב ד, י — במקצוע המזרחית־דרומית (השורה 'מקום הים' בטבלת 'שיטות ומחלוקות'). ציר הים 11 אמות מן הכתלים — בחירת מודל: המקורות אומרים 'מקצוע' ולא מרחק.",
     // 1.0.1-K (K.3): the bases rebuilt after Rashi, "בעל צורת הבית" and the book. 1.0.1-L (L.40, L.64, L.77; vessels.json): ALL TEN in one
@@ -376,7 +616,8 @@
     eastGate: [["דברי הימים ב ד, ט", ui_V(39, 4, 9)], ["מלכים א ז, יב", ui_V(10, 7, 12)]],
     newCourt: [["רש״י מלכים א ו, לו", ui_V(10, 6, 36)], ["ירמיהו לה, ד", ui_V(13, 35, 4)], ["ירמיהו לו, י", ui_V(13, 36, 10)], ["מלכים ב יא, יד", ui_V(11, 11, 14)], ["דברי הימים ב כד, ח", ui_V(39, 24, 8)]], // 1.0.1: the outer court's uses (FIXES D.2); II Chr 20:5 dropped with the "new court" identification (20-mount.js); 1.0.1-K: II Kings in Otzaria (Q2-7)
     azarah: [["מלכים א ו, לו", ui_V(10, 6, 36)], ["מדות ה, א", ui_MI(5, 1)], ["מדות א, ד", ui_MI(1, 4)], ["דברי הימים א כט, ב", ui_V(38, 29, 2)]],
-    mizbeach: [["דברי הימים ב ד, א", ui_V(39, 4, 1)], ["מדות ג, ג", ui_MI(3, 3)], ["מדות ג, א", ui_MI(3, 1)]],
+    mizbeach: [["דברי הימים ב ד, א", ui_V(39, 4, 1)], ["מדות ג, ג", ui_MI(3, 3)], ["מדות ג, א", ui_MI(3, 1)],
+      ["זבחים סב.", { book: 130, index: 2110 }], ["זבחים סב:", { book: 130, index: 2131 }]],   // 1.0.2 add-on: the yesod and sovev (lines read in the DB)
     yam: [["מלכים א ז, כג", ui_V(10, 7, 23)], ["ז, כו", ui_V(10, 7, 26)], ["עירובין יד:", ui_P(105, "יד:")], ["ז, לט (ורש״י שם)", ui_V(10, 7, 39)], ["דברי הימים ב ד, י", ui_V(39, 4, 10)]],
     mechonot: [["מלכים א ז, כז", ui_V(10, 7, 27)], ["ז, לב", ui_V(10, 7, 32)], ["ז, לג", ui_V(10, 7, 33)], ["ז, לח", ui_V(10, 7, 38)], ["ז, לט", ui_V(10, 7, 39)], ["דברי הימים ב ד, ו", ui_V(39, 4, 6)]],
     heichalFront: [["מלכים א ו, ב", ui_V(10, 6, 2)], ["ו, ג", ui_V(10, 6, 3)], ["ו, ה", ui_V(10, 6, 5)], ["ז, יב", ui_V(10, 7, 12)], ["יומא לו.", ui_P(107, "לו.")], ["מדות ד, ז", ui_MI(4, 7)]],
@@ -395,7 +636,25 @@
   // 1.0.1-L: ONE phone rule for the JS and the CSS (the brief: "the 639 px media rule"): a window up to this many px wide is a phone -
   // the panel starts closed and closes after a choice, the explanation card is a bottom sheet, the nav row hides its captions
   var ui_PHONE_MAX = 639;
+  // 1.0.2: #tm-panel and #tm-xcard start 9 px below the fixed top bar of index.html (--topbar-h: 56 px, 44 px in a narrow window), as below the old 47 px header
   var ui_AUTO_OFF_S = 15;   // 1.0.1-L (L.27): a feature a PLACE switched on goes off by itself after this many seconds
+  // 1.0.2 (C): the window "מה חדש" - shown once for this version (ver = manifest.json's version); short plain Hebrew, one line a feature
+  var UI_NEWS = {
+    ver: "1.0.2",
+    items: [
+      "כפתור ״פתח בתוסף בית ראשון״ בספרי מלכים א ודברי הימים ב.",
+      "השיתין, ומזבח הנחושת מאבנים או מצופה נחושת (אברבנאל).",
+      "היסוד, הסובב וחוט הסיקרא; הכבשים הקטנים — כרש״י או כתוספות.",
+      "טשטוש חומות: גם קיר שמסתיר את המקום נעשה שקוף.",
+      "השיטות בתוך כרטיסי ההסבר.",
+      "המקורות שבסוגריים נפתחים באוצריא בלחיצה.",
+      "הדפסה או שמירה כ-PDF, בתחתית הלוח.",
+      "סיבוב 360 מעלות בתוך הבית ובכל מקום מקורה.",
+      "הדגמת המכונה מקרוב.",
+      "סרגל הכותרת קבוע, גם בזמן הטעינה.",
+      "דיווח על טעות או תקלה מתוך התוסף."
+    ]
+  };
   var ui_CSS = `
 #tm-burger{position:fixed;top:5px;right:10px;left:auto;z-index:31;width:34px;height:34px;border-radius:50%;
   background:rgba(12,16,24,.82);border:1px solid rgba(201,168,76,.45);color:#e8c96a;font-size:18px;
@@ -403,7 +662,9 @@
 #tm-burger:hover{background:rgba(30,36,48,.9)}
 html,body{overscroll-behavior:none}
 .tm-src{font-size:.74em;opacity:.8;font-weight:400}
-#tm-panel{position:fixed;top:56px;right:12px;z-index:30;width:218px;max-height:calc(100vh - 72px);overflow-y:auto;
+.tm-src a.tm-srcl{color:inherit;text-decoration:none;cursor:pointer}
+.tm-src a.tm-srcl:hover{text-decoration:underline}
+#tm-panel{position:fixed;top:calc(var(--topbar-h, 56px) + 9px);right:12px;z-index:30;width:218px;max-height:calc(100vh - var(--topbar-h, 56px) - 25px);overflow-y:auto;
   direction:rtl;text-align:right;background:rgba(12,16,24,.82);border:1px solid rgba(201,168,76,.45);
   border-radius:12px;backdrop-filter:blur(8px);color:#e8dcae;
   font:13px 'Segoe UI',Arial,sans-serif;padding:12px 14px;box-sizing:border-box}
@@ -486,7 +747,7 @@ body.tm-measuring canvas{cursor:crosshair}
 #tm-card .r a{display:inline-block;color:#f3dc9a;margin:2px 0 2px 5px;padding:2px 7px;border:1px solid rgba(201,168,76,.45);border-radius:6px;background:rgba(201,168,76,.12);text-decoration:none;cursor:pointer}
 #tm-card .r a:hover{background:rgba(201,168,76,.3)}
 #tm-panel .tm-src.row-src{display:block;font-size:10px;color:#b9ac82;margin:-3px 19px 6px 0;line-height:1.4;cursor:default}
-#tm-xcard{position:fixed;z-index:29;display:none;flex-direction:column;top:56px;right:242px;width:min(320px,86vw);max-height:calc(100vh - 140px);overflow:hidden;box-sizing:border-box;padding:8px 11px 9px;border-radius:10px;border:1px solid rgba(201,168,76,.65);background:rgba(12,16,24,.94);color:#e8dcae;font:12.5px/1.6 'Segoe UI',Arial,sans-serif;direction:rtl;text-align:right;box-shadow:0 4px 16px rgba(0,0,0,.5);backdrop-filter:blur(6px)}
+#tm-xcard{position:fixed;z-index:29;display:none;flex-direction:column;top:calc(var(--topbar-h, 56px) + 9px);right:242px;width:min(320px,86vw);max-height:calc(100vh - var(--topbar-h, 56px) - 93px);overflow:hidden;box-sizing:border-box;padding:8px 11px 9px;border-radius:10px;border:1px solid rgba(201,168,76,.65);background:rgba(12,16,24,.94);color:#e8dcae;font:12.5px/1.6 'Segoe UI',Arial,sans-serif;direction:rtl;text-align:right;box-shadow:0 4px 16px rgba(0,0,0,.5);backdrop-filter:blur(6px)}
 #tm-xcard .h{flex:none;display:flex;align-items:flex-start;gap:6px;margin-bottom:4px}
 #tm-xcard .tt{flex:1;font-weight:700;color:#f3dc9a;font-size:13px;line-height:1.4}
 #tm-xcard .x{flex:none;width:22px;height:22px;padding:0;border-radius:50%;border:1px solid rgba(201,168,76,.45);background:rgba(201,168,76,.12);color:#e8dcae;font-size:12px;line-height:1;cursor:pointer}
@@ -503,6 +764,51 @@ body.tm-measuring canvas{cursor:crosshair}
 #tm-xcard .r a{display:inline-block;color:#f3dc9a;margin:2px 0 2px 5px;padding:3px 8px;border:1px solid rgba(201,168,76,.45);border-radius:6px;background:rgba(201,168,76,.12);text-decoration:none;cursor:pointer}
 #tm-xcard .r a:hover{background:rgba(201,168,76,.3)}
 #tm-xcard .b{white-space:pre-line}
+#tm-xcard .o,#tm-card .o{flex:none;margin-top:5px;padding-top:4px;border-top:1px solid rgba(201,168,76,.25);font-size:11px;line-height:1.5;color:#b9ac82}
+#tm-xcard.min .o{display:none}
+#tm-xcard .o .g,#tm-card .o .g{display:block}
+#tm-xcard .o .k,#tm-card .o .k{margin-left:3px}
+#tm-xcard .o a,#tm-card .o a{display:inline-block;color:#f3dc9a;margin:2px 0 2px 5px;padding:2px 7px;border:1px solid rgba(201,168,76,.45);border-radius:6px;background:rgba(201,168,76,.12);text-decoration:none;cursor:pointer}
+#tm-xcard .o a:hover,#tm-card .o a:hover{background:rgba(201,168,76,.3)}
+#tm-xcard .o a.on,#tm-card .o a.on{background:rgba(201,168,76,.5);color:#14110a;border-color:rgba(255,236,170,.85);cursor:default}
+#tm-report-link,#tm-print-link{display:block;margin:10px auto 0;padding:0;border:0;background:none;color:#9a8f6c;font:10.5px 'Segoe UI',Arial,sans-serif;text-decoration:underline dotted;cursor:pointer}
+#tm-print-link+#tm-report-link{margin-top:5px}
+#tm-report-link:hover,#tm-print-link:hover{color:#f3dc9a}
+#tm-report,#tm-printdlg,#tm-news{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;direction:rtl}
+#tm-printdlg .box,#tm-news .box{background:#1b2030;border:1px solid rgba(201,168,76,.6);border-radius:10px;padding:12px 14px;width:min(320px,90vw);box-sizing:border-box;color:#e8dcae;font:12.5px/1.5 'Segoe UI',Arial,sans-serif;text-align:right}
+#tm-printdlg .t,#tm-news .t{font-weight:700;color:#f3dc9a;margin-bottom:6px;font-size:13.5px}
+#tm-printdlg .b,#tm-news .b{display:flex;gap:8px;margin-top:10px}
+#tm-printdlg .b button,#tm-news .b button{flex:1;padding:5px 6px;border-radius:7px;border:1px solid rgba(201,168,76,.45);background:rgba(201,168,76,.12);color:#e8dcae;cursor:pointer;font:12px 'Segoe UI',Arial,sans-serif}
+#tm-printdlg .b button.y,#tm-news .b button.y{background:rgba(201,168,76,.5);color:#14110a}
+#tm-printdlg .b button:disabled{opacity:.5;cursor:default}
+#tm-news{background:rgba(0,0,0,.35)}
+#tm-news .box{width:min(340px,90vw);max-height:calc(100vh - var(--topbar-h, 56px) - 40px);overflow-y:auto}
+#tm-news ul{margin:2px 0 0;padding:0 16px 0 0;list-style:disc}
+#tm-news li{margin:2px 0}
+#tm-print{display:none}
+@media print{
+  @page{size:A4 landscape;margin:10mm}
+  html,body{background:#fff !important;color:#000 !important;width:auto !important;height:auto !important;overflow:visible !important}
+  body>*:not(#tm-print){display:none !important}
+  #tm-print{display:block !important;direction:rtl;text-align:right;color:#000;font:11pt/1.5 'Segoe UI',Arial,sans-serif}
+  #tm-print h1{font-size:15pt;font-weight:700;margin:0 0 3mm}
+  #tm-print img{display:block;max-width:100%;max-height:150mm;margin:0 auto 4mm;object-fit:contain}
+  #tm-print .tt{font-size:12pt;font-weight:700;margin:0 0 1mm}
+  #tm-print .tx{white-space:pre-line}
+  #tm-print .tm-src{font-size:.8em;opacity:1}
+  #tm-print .rs{margin-top:2mm;font-size:9.5pt;color:#333}
+}
+#tm-report .box{background:#1b2030;border:1px solid rgba(201,168,76,.6);border-radius:10px;padding:12px 14px;width:min(340px,90vw);box-sizing:border-box;color:#e8dcae;font:12.5px/1.5 'Segoe UI',Arial,sans-serif;text-align:right}
+#tm-report .t{font-weight:700;color:#f3dc9a;margin-bottom:6px;font-size:13.5px}
+#tm-report .ty{display:flex;gap:5px;margin-bottom:7px}
+#tm-report .ty button,#tm-report .b button{flex:1;padding:5px 6px;border-radius:7px;border:1px solid rgba(201,168,76,.45);background:rgba(201,168,76,.12);color:#e8dcae;cursor:pointer;font:12px 'Segoe UI',Arial,sans-serif}
+#tm-report .ty button.on{background:rgba(201,168,76,.45);color:#fff2c8;border-color:rgba(201,168,76,.8)}
+#tm-report textarea{width:100%;box-sizing:border-box;height:110px;resize:vertical;padding:6px 8px;border-radius:7px;border:1px solid rgba(201,168,76,.5);background:rgba(12,16,24,.9);color:#f3dc9a;font:12.5px/1.5 'Segoe UI',Arial,sans-serif;direction:rtl;outline:none}
+#tm-report textarea:focus{border-color:#f3dc9a}
+#tm-report .n{font-size:10.5px;color:#9a8f6c;margin:4px 0 0}
+#tm-report .b{display:flex;gap:8px;margin-top:9px}
+#tm-report .b button.y{background:rgba(201,168,76,.5);color:#14110a}
+#tm-report .b button:disabled{opacity:.5;cursor:default}
 #tm-panel,#tm-card .b,#tm-xcard .b,#tm-xcard .r,#tm-tour-box .body,#tm-tour-box .bub{scrollbar-width:thin;scrollbar-color:rgba(201,168,76,.5) transparent}
 @media(max-width:${ui_PHONE_MAX}px){#tm-nav .tm-grp .cap{display:none}
   #tm-xcard{left:8px;right:8px;top:auto;bottom:76px;width:auto;max-height:min(42vh,calc(50vh - 60px))}
@@ -642,6 +948,7 @@ body.tm-measuring canvas{cursor:crosshair}
       {
         const fs0 = ctx.shared.fadeState, sOn = lsGet("tm1.fade.on"), sDist = +lsGet("tm1.fade.dist");
         if (sOn === "0" || sOn === "1") fs0.on = sOn === "1";
+        fs0.hide = !!fs0.on && lsGet("tm1.fade.hide") === "1";   // 1.0.2 (D): the second mode "טשטוש: גם קיר מסתיר" (default off: the fade as before)
         fs0.dist = UI_FADE_STOPS.indexOf(sDist) >= 0 ? sDist : typeof fs0.dist === "number" ? fs0.dist : 120;
       }
       {
@@ -696,11 +1003,94 @@ body.tm-measuring canvas{cursor:crosshair}
           }
           return false;
         };
+        // ===== 1.0.2 (D, the mode "טשטוש: גם קיר מסתיר", chosen from the same button): besides the court and mount walls above, a wall of a
+        // building - the house, the ulam, the side chambers, the palace (the groups "heichal", "interior", "palace") - that stands between the
+        // camera and the controls' target fades to UI_FADE_OPACITY while it hides it, and comes back when it no longer does. Found by rays from
+        // the camera to the target (5 rays, 1.5 amot apart at the target; one under a roof) in the same pass as above (every 140 ms), each
+        // stopping 2 amot short of the target (a wall the target stands at is not faded) and at the fade distance. A hit on a level face (a
+        // floor, a ceiling, a roof's top) does not count; only plain meshes 4 amot high and 5 wide or more, not flat platforms (the otem, the
+        // palace's terrace), not the cloud and nothing noPick (the smoke) - model choice: these are the walls. Instanced meshes (the forest
+        // house's columns and beams) are left out: fading one would fade all its copies. A wall of two courses ("…-stone" / "…-cedar", the
+        // ulam) fades whole. Per mesh: its material is cloned once (kept in userData.tmHideClone), the clone is faded, and the shared
+        // material is put back when the wall is whole again - no material of another mesh changes; a module that swaps the material
+        // meanwhile wins (the fade lets go). userData.fade is set while it is faded: 90-entry.js's ent_solids counts such a wall as a roof
+        // for the 360 (the heichal stays "indoors") and lets the camera through it, as it does with a faded court wall (DEV_NOTES "סבב ה'" 10).
+        // The court walls' own fade above is unchanged. No allocation per frame (the lists and vectors are kept; three.js's hit records
+        // are made only in the 140 ms pass, as above). =====
+        const HIDE_GROUPS = ["heichal", "interior", "palace"];
+        let hideT = null, hideAt = -1e9;
+        const hidePair = new Map(), hideBlocked = new Set(), hideHits = [], HID = [];
+        const hideBB = new Box3(), hideSz = new Vector3(), hideN = new Vector3();
+        const hideList = () => {
+          const now = performance.now();
+          if (hideT && now - hideAt < 5000) return hideT;
+          hideAt = now;
+          const occS = new Set(OCCL), out = [], stems = new Map();
+          hidePair.clear();
+          for (const top of ctx.root && Array.isArray(ctx.root.children) ? ctx.root.children : []) {
+            if (HIDE_GROUPS.indexOf(top.name) < 0) continue;
+            top.traverse((o) => {
+              if (!o.isMesh || o.isInstancedMesh || !o.geometry || occS.has(o) || o.userData.noPick) return;
+              for (let p = o; p; p = p.parent) if (p.name === "tm-kk-cloud") return;
+              const pa = o.geometry.attributes && o.geometry.attributes.position;
+              if (!pa || pa.count > 30000) return;
+              if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+              hideBB.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld).getSize(hideSz);
+              const hz = Math.max(hideSz.x, hideSz.z);
+              if (hideSz.y < 4 || hz < 5 || hideSz.y < 0.15 * hz) return;
+              out.push(o);
+              const sm = /^(.+)-(?:stone|cedar)$/.exec(o.name || "");
+              if (sm) {
+                const k = (o.parent ? o.parent.uuid : "") + "|" + sm[1];
+                if (!stems.has(k)) stems.set(k, []);
+                stems.get(k).push(o);
+              }
+            });
+          }
+          for (const g of stems.values()) if (g.length > 1) for (const o of g) hidePair.set(o, g);
+          hideT = out;
+          return out;
+        };
+        const hideShown = (o) => {
+          for (let p = o; p; p = p.parent) if (p.visible === false) return false;
+          return true;
+        };
+        const hideStart = (m) => {
+          const ud = m.userData, orig = m.material;
+          let clone = ud.tmHideClone;
+          if (!clone || ud.tmHideOrig !== orig) {
+            clone = Array.isArray(orig) ? orig.map((x) => x.clone()) : orig.clone();
+            ud.tmHideClone = clone;
+            ud.tmHideOrig = orig;
+          }
+          const base = Array.isArray(orig) ? orig.map((x) => (typeof x.opacity === "number" ? x.opacity : 1)) : typeof orig.opacity === "number" ? orig.opacity : 1;
+          for (const c of Array.isArray(clone) ? clone : [clone]) {
+            c.transparent = true;
+            c.depthWrite = false;
+            c.needsUpdate = true;
+          }
+          m.material = clone;
+          const st = { m, orig, clone, base, cur: 1, tgt: 1 };
+          ud.fade = st;
+          HID.push(st);
+          return st;
+        };
+        const hideHas = (m) => {
+          for (let i = 0; i < HID.length; i++) if (HID[i].m === m) return HID[i];
+          return null;
+        };
+        const hideDrop = (i) => {
+          const st = HID[i];
+          if (st.m.userData.fade === st) delete st.m.userData.fade;
+          HID[i] = HID[HID.length - 1];
+          HID.pop();
+        };
         let last = -1e9;
         ctx.animated.push(function(t) {
           if (t - last > 140) {
             last = t;
             const blocked = new Set();
+            hideBlocked.clear();
             const FADE_DIST = typeof fs.dist === "number" && fs.dist > 0 ? fs.dist : 120;   // a wall fades only within this many amot of the camera
             if (fs.on) {
               const cam = ctx.camera.position, tg = ctx.controls.target;
@@ -735,12 +1125,59 @@ body.tm-measuring canvas{cursor:crosshair}
                 ray.far = NEAR + 2;
                 for (const h of ray.intersectObjects(OCCL, false)) blocked.add(h.object);
               }
+              // 1.0.2 (D): the building's walls that hide the target (see above)
+              if (fs.hide) {
+                const list = hideList();
+                for (const [ox, oy] of inside ? OFFS1 : OFFS5) {
+                  to.copy(tg).addScaledVector(right, ox * 1.5).addScaledVector(upv, oy * 1.5);
+                  dd.subVectors(to, cam);
+                  const far = Math.min(dd.length() - 2, FADE_DIST);
+                  if (!(far > 0.5)) continue;
+                  ray.set(cam, dd.normalize());
+                  ray.near = 0;
+                  ray.far = far;
+                  hideHits.length = 0;
+                  ray.intersectObjects(list, false, hideHits);
+                  for (const h of hideHits) {
+                    const o = h.object;
+                    if (hideBlocked.has(o) || !hideShown(o)) continue;
+                    if (h.face) {
+                      hideN.copy(h.face.normal).transformDirection(o.matrixWorld);
+                      if (Math.abs(hideN.y) > 0.7) continue;
+                    }
+                    hideBlocked.add(o);
+                    const pr = hidePair.get(o);
+                    if (pr) for (const q of pr) hideBlocked.add(q);
+                  }
+                }
+                hideHits.length = 0;
+              }
             }
             for (const m of OCCL) m.userData.fade.tgt = blocked.has(m) ? UI_FADE_OPACITY : 1;
             for (const m of OCCL) {
               const fw = m.userData.fadeWith;
               if (fw && blocked.has(fw)) m.userData.fade.tgt = UI_FADE_OPACITY;
             }
+            for (let i = 0; i < HID.length; i++) HID[i].tgt = hideBlocked.has(HID[i].m) ? UI_FADE_OPACITY : 1;
+            for (const o of hideBlocked) if (!hideHas(o)) hideStart(o).tgt = UI_FADE_OPACITY;
+          }
+          // 1.0.2 (D): the building's walls toward their target; whole again -> the shared material back
+          for (let i = HID.length - 1; i >= 0; i--) {
+            const st = HID[i];
+            if (st.m.material !== st.clone) {   // another module changed the material meanwhile: it wins
+              hideDrop(i);
+              continue;
+            }
+            if (Math.abs(st.cur - st.tgt) < 4e-3) {
+              if (st.tgt >= 1) {
+                st.m.material = st.orig;
+                hideDrop(i);
+              }
+              continue;
+            }
+            st.cur += (st.tgt - st.cur) * 0.2;
+            if (Array.isArray(st.clone)) for (let k = 0; k < st.clone.length; k++) st.clone[k].opacity = st.base[k] * st.cur;
+            else st.clone.opacity = st.base * st.cur;
           }
           for (const m of OCCL) {
             const f = m.userData.fade;
@@ -853,8 +1290,12 @@ body.tm-measuring canvas{cursor:crosshair}
       opsBox.id = "tm-ops";
       // 1.0.1-H: every row is also kept in OPS (with row.mark and row.cur = the key now shown) for the presentation (75-tour.js, ctx.ui)
       const OPS = [];
+      // 1.0.2 (item 4): a row with an id (the ctx.shared key of its switch) is found by the cards' chips: OPS_BY_ID[id]; row.short = its
+      // name in a card with two rows, row.chips = { key: the chip's short label }, row.cardFly = a chip also flies (the subject moves)
+      const OPS_BY_ID = {};
       const opRow = function(row) {
         OPS.push(row);
+        if (row.id) OPS_BY_ID[row.id] = row;
         row.cur = row.current;
         const box = document.createElement("div");
         box.className = "tm-op";
@@ -875,6 +1316,7 @@ body.tm-measuring canvas{cursor:crosshair}
         const mark = (key) => {
           row.cur = key;
           for (const b of bts) b.el.classList.toggle("on", b.key === key);
+          chipsRefresh();   // 1.0.2 (item 4): an open card's chips follow the table, whoever marked it
         };
         row.mark = mark;
         for (const [key, label, info, infoRefs] of row.options) {
@@ -889,7 +1331,7 @@ body.tm-measuring canvas{cursor:crosshair}
             } catch (_) {
             }
             // 1.0.1-L (L.34): the reading's explanation opens in the floating card beside the panel (K.9b scrolled the panel to its foot)
-            if (info) setInfo("__place", { text: info, refs: infoRefs || row.refs || [] }, { title: row.cap + " — " + label, anchor: b });
+            if (info) setInfo("__place", { text: info, refs: infoRefs || row.refs || [] }, { title: row.cap + " — " + label, anchor: b, row });   // 1.0.2: the card's chips = this row
             if (typeof row.fly === "function") {
               try {
                 row.fly(key);
@@ -909,6 +1351,7 @@ body.tm-measuring canvas{cursor:crosshair}
         mark(row.current);
         return { mark };
       };
+      let chipsRefresh = () => {};   // 1.0.2 (item 4): set with the cards' chips below
       // ===== 1.0.1-L (L.34, the user: "כל פעם שלוחצים על הר הבית הוא פותח הסבר ואז צריך לגלול כדי למצוא את יתר הכפתורים"; "כן, כרטיס צף"):
       // the floating EXPLANATION CARD #tm-xcard. Until 1.0.1-K the explanation of a view / place / reading was written into #tm-info at the
       // panel's foot and the panel was scrolled to it, so the buttons went out of view. Now the panel holds the buttons only; the explanation
@@ -955,11 +1398,147 @@ body.tm-measuring canvas{cursor:crosshair}
       xBody.className = "b";
       const xRefs = document.createElement("div");
       xRefs.className = "r";
+      const xOps = document.createElement("div");   // 1.0.2 (item 4): "שיטות:" and the chips, when the subject has opinions
+      xOps.className = "o";
+      xOps.style.display = "none";
       xcard.appendChild(xHead);
       xcard.appendChild(xBody);
       xcard.appendChild(xRefs);
+      xcard.appendChild(xOps);
       document.body.appendChild(xcard);
-      let xOpen = false, xAnchor = null, xSide = null;
+      let xOpen = false, xAnchor = null, xSide = null, xOpsIds = null, xRow = null;
+      // ===== 1.0.2 (item 4, the user: "מעולה"): the other opinions inside the card. A card whose subject has rows in "שיטות ומחלוקות" ends with
+      // "שיטות:" and one small chip per reading (the style of the card's source chips), the current one marked; a chip does what the row's
+      // button does - row.mark (the table in step) and row.onPick - and a row whose subject moves with the reading (row.cardFly: the Sea's
+      // corner, the height of the house, the ulam, the pillars, the forest house, the ulam's tables) flies like the row. The card stays open
+      // and its chips follow; a card opened from the table itself shows the new reading's explanation. Subject -> rows: UI_OPS_V by view key,
+      // UI_OPS_P by place title, UI_OPS_L by a label's text or layer (model choice: the rows that the subject's own text or picture shows). =====
+      const UI_OPS_V = {
+        heichalFront: ["aliyot", "ulamRambam"], aliyot: ["aliyot"],
+        ulamInside: ["ulamRambam", "ulamTables"], ulamTables: ["ulamTables"],
+        yachinBoaz: ["pillarCapital"], yachinBoazFull: ["pillarCapital"], boazFar: ["pillarCapital"], yachinBoazCapital: ["pillarCapital"],
+        yam: ["seaPlacement"], yamOxen: ["seaPlacement"],
+        kodesh: ["kodeshLayout", "kodeshOpinion"], menorot: ["kodeshLayout", "kodeshOpinion"], shulchanot: ["kodeshLayout", "kodeshOpinion"],
+        shulchanMoshe: ["kodeshLayout", "kodeshOpinion"],
+        devirDoor: ["devirDoor"], cherubim: ["cherubPose"],
+        slaughterPlace: ["slaughterLayout"], slaughterPlaceClose: ["slaughterLayout"],
+        forestInside: ["forestHouse"], forestRoof: ["forestHouse"], forestAv: ["forestHouse"], forestAlam: ["forestHouse"], forestUpper: ["forestHouse"],
+        throne: ["throneVersion"], throneSteps: ["throneVersion"],
+        mizbeach: ["altarLook", "altarRamps"]   // 1.0.2: the small ramps (ctx.shared.altarRamps; no row, no chips)
+      };
+      const UI_OPS_P = {
+        "הבית (בית ה׳)": ["aliyot"], "גג הבית ותקרותיו": ["aliyot"], "העליות (רש״י דה״י ג, ד)": ["aliyot"],
+        "יכין — מבעד לפתח, לכל גובהו": ["pillarCapital"], "בועז — מבעד לפתח, לכל גובהו": ["pillarCapital"],
+        "סידור הכלים — עשר המנורות ועשרה השולחנות (מנחות צח:–צט.)": ["kodeshLayout", "kodeshOpinion"],
+        "בית יער הלבנון": ["forestHouse"],
+        // 1.0.2 (fix): the completions whose whole subject is a row of the table
+        "מקום הים (רש״י / רד״ק)": ["seaPlacement"], "בית החליפות (רש״י יומא לו.)": ["ulamRambam"],
+        "בית יער הלבנון — שלוש קריאות (רש״י / מלבי״ם ורלב״ג / מצודת דוד)": ["forestHouse"],
+        "הכבשים הקטנים — השלמה מן הגמרא": ["altarRamps"]   // 1.0.2 add-on
+      };
+      const UI_OPS_L = [
+        [/^(?:יכין|בועז)/, ["pillarCapital"]],
+        [/^(?:הים(?:\s|$)|ים של שלמה)/, ["seaPlacement"]],
+        [/^מזבח הנחושת/, ["altarLook", "altarRamps"]],
+        [/^(?:היסוד|הסובב|הכבשים הקטנים|כבש קטן|שני כבשים קטנים)/, ["altarRamps"]],   // 1.0.2: the labels of 40-altar.js's yesod / sovev / ramps, if it gives them
+        [/^בית יער הלבנון/, ["forestHouse"]],
+        [/^כסא שלמה/, ["throneVersion"]]
+      ];
+      const UI_OPS_LAYER = { thronePesukim: "throneVersion", throneTargumSheni: "throneVersion", throneEstherRabbah: "throneVersion", throneBeitHamidrash: "throneVersion",
+        forestRashi: "forestHouse", forestMetzudot: "forestHouse", forestMzd: "forestHouse", aliyot: "aliyot", ulamRambam: "ulamRambam" };
+      // subj = { view?, title?, label?, layers? } -> the row ids (kept unfiltered: the rows are built after the places and the labels)
+      const opsFor = (subj) => {
+        const ids = [];
+        const add = (a) => { for (const id of a || []) if (ids.indexOf(id) < 0) ids.push(id); };
+        if (!subj) return ids;
+        if (subj.view) add(UI_OPS_V[subj.view]);
+        if (subj.title) {
+          add(UI_OPS_P[subj.title]);
+          const it = placeItemByT[subj.title];
+          if (it) { add(UI_OPS_V[it.view]); add(UI_OPS_V[it.key]); }
+        }
+        if (subj.label) for (const [re, a] of UI_OPS_L) if (re.test(subj.label)) add(a);
+        for (const lay of subj.layers || []) if (UI_OPS_LAYER[lay]) add([UI_OPS_LAYER[lay]]);
+        return ids;
+      };
+      // the rows now present (an id or a row object), each once; a disabled row (its switch missing) shows no chips
+      const opsLive = (ids) => {
+        const out = [];
+        for (const id of Array.isArray(ids) ? ids : []) {
+          const r = id && typeof id === "object" ? id : OPS_BY_ID[id];
+          if (r && !r.disabled && Array.isArray(r.options) && r.options.length > 1 && out.indexOf(r) < 0) out.push(r);
+        }
+        return out;
+      };
+      // a chip's words: row.chips[key], else the reading's label up to its colon, without a closing bracket
+      const opsChip = (row, key) => {
+        if (row.chips && row.chips[key]) return row.chips[key];
+        const o = row.options.find((x) => x[0] === key);
+        let s = String(o ? o[1] : key);
+        const i = s.indexOf(":");
+        if (i > 0 && i < 40) s = s.slice(0, i);
+        s = s.replace(/\s*\([^()]*\)\s*$/, "").trim();
+        return s.length > 34 ? s.slice(0, 32) + "…" : s;
+      };
+      const pickFromCard = (row, key) => {
+        row.mark(key);
+        try {
+          row.onPick(key);
+        } catch (_) {
+        }
+        if (row.cardFly && typeof row.fly === "function") {
+          try {
+            row.fly(key);
+          } catch (_) {
+          }
+          for (const o of btns) o.classList.remove("on");
+          for (const o of placeBtns) o.classList.remove("on");
+        }
+      };
+      // writes the chips of the rows `ids` into host; false (and host hidden) when there is none. onPicked(row, key) after a chip's switch
+      const renderChips = (host, ids, onPicked) => {
+        host.textContent = "";
+        const rows = opsLive(ids);
+        host.style.display = rows.length ? "" : "none";
+        if (!rows.length) return false;
+        host.appendChild(document.createTextNode("שיטות: "));
+        for (const row of rows) {
+          const g = document.createElement("span");
+          if (rows.length > 1) {
+            g.className = "g";
+            const k = document.createElement("span");
+            k.className = "k";
+            k.textContent = (row.short || "") + (row.short ? ":" : "");
+            g.appendChild(k);
+          }
+          for (const [key, label] of row.options) {
+            const a = document.createElement("a");
+            a.href = "#";
+            a.setAttribute("role", "button");
+            const on = row.cur === key;
+            a.className = on ? "on" : "";
+            a.setAttribute("aria-pressed", on ? "true" : "false");
+            ui_fillSrc(a, opsChip(row, key));
+            a.title = String(label || "");
+            a.addEventListener("click", (ev) => {
+              ev.preventDefault();
+              ev.stopPropagation();
+              if (row.cur === key) return;
+              pickFromCard(row, key);
+              if (onPicked) onPicked(row, key);
+            });
+            g.appendChild(a);
+          }
+          host.appendChild(g);
+        }
+        return true;
+      };
+      // the panel's card: a card opened from the table (xRow) shows the new reading's explanation, as the table's button does
+      const xChipPicked = (row, key) => {
+        if (xRow !== row) return;
+        const o = row.options.find((x) => x[0] === key);
+        if (o && o[2]) setInfo("__place", { text: o[2], refs: o[3] || row.refs || [] }, { title: row.cap + " — " + o[1], anchor: xAnchor, side: xSide, row });
+      };
       // the card's place: beside the panel's edge (right of the panel when it is shown, else at the window's edge), its top at the clicked
       // button's top, clamped so that it stays inside the window above the nav row; a phone uses the CSS bottom sheet (no inline top)
       const placeXCard = () => {
@@ -989,13 +1568,14 @@ body.tm-measuring canvas{cursor:crosshair}
         xcard.style.left = atLeft ? "12px" : "";
         xcard.style.right = atLeft ? "auto" : rightGap + "px";
         xcard.style.width = tr && tr.width ? Math.max(180, Math.min(340, W - rightGap - tr.right - 8)).toFixed(0) + "px" : "";
-        let top = 56;
+        const barH = ui_barH();   // 1.0.2: 9 px below the bar, as #tm-panel (the old 56 sat flush against the 56 px bar)
+        let top = barH + 9;
         if (!atLeft && xAnchor && xAnchor.isConnected !== false && typeof xAnchor.getBoundingClientRect === "function") {
           const r = xAnchor.getBoundingClientRect();
           if (r && r.height) top = r.top - 6;
         }
         const h = xcard.offsetHeight || 200;
-        top = Math.max(56, Math.min(H - h - 64, top));
+        top = Math.max(barH + 9, Math.min(H - h - 64, top));
         xcard.style.top = top.toFixed(0) + "px";
       };
       const xcardClose = () => {
@@ -1003,15 +1583,18 @@ body.tm-measuring canvas{cursor:crosshair}
         xOpen = false;
         xAnchor = null;
         xSide = null;
+        xOpsIds = null;
+        xRow = null;
         setXMin(false);
         xcard.style.display = "none";
       };
-      // open(title, content, refs, anchor, side): the content is plain text, or HTML when it starts with a tag (ctx.ui.card); refs = [[label, ref], ...] become links
-      const xcardOpen = (title, text, refs, anchor, side) => {
+      // open(title, content, refs, anchor, side, ops?, row?): the content is plain text, or HTML when it starts with a tag (ctx.ui.card); refs = [[label, ref], ...]
+      // become links; 1.0.2: ops = the rows whose chips end the card (ids or rows; none from ctx.ui.card.open), row = the table's row that opened it
+      const xcardOpen = (title, text, refs, anchor, side, ops, row) => {
         closeLabelCard();   // one card at a time
         ui_fillSrc(xTitle, String(title || ""));   // 1.0.1-L (L.89)
         if (/^\s*</.test(String(text || ""))) xBody.innerHTML = String(text);
-        else ui_fillSrc(xBody, String(text || ""));
+        else ui_fillSrc(xBody, String(text || ""), srcLinker(refs));   // 1.0.2 (A): the brackets open their sources
         xRefs.textContent = "";
         const rs = Array.isArray(refs) ? refs : [];
         if (rs.length) {
@@ -1019,6 +1602,9 @@ body.tm-measuring canvas{cursor:crosshair}
           refLinks(xRefs, rs);
         }
         xRefs.style.display = rs.length ? "" : "none";
+        xOpsIds = Array.isArray(ops) && ops.length ? ops : null;
+        xRow = row || null;
+        renderChips(xOps, xOpsIds, xChipPicked);
         xAnchor = anchor || null;
         xSide = side || null;
         xOpen = true;
@@ -1204,10 +1790,11 @@ body.tm-measuring canvas{cursor:crosshair}
         tmToast("פתיחה באוצריא נכשלה: " + label + " (" + lastErr + ")");
       };
       // source links appended to any element (1.0.1-H: used by the info box, the opinions table and the toggle rows)
+      // 1.0.1-L: 57-kelim.js gives its links as specs, ["V", 10, 7, 40] / ["L", book, line]: unresolved, the place's and the vessels' links opened nothing
+      const refOf = (ref0) => !Array.isArray(ref0) ? ref0 : ref0[0] === "V" ? ui_V(ref0[1], ref0[2], ref0[3]) : ref0[0] === "L" ? { book: ref0[1], index: ref0[2] } : "";
       const refLinks = (host, rs) => {
         for (const [label, ref0] of rs) {
-          // 1.0.1-L: 57-kelim.js gives its links as specs, ["V", 10, 7, 40] / ["L", book, line]: unresolved, the place's and the vessels' links opened nothing
-          const ref = !Array.isArray(ref0) ? ref0 : ref0[0] === "V" ? ui_V(ref0[1], ref0[2], ref0[3]) : ref0[0] === "L" ? { book: ref0[1], index: ref0[2] } : "";
+          const ref = refOf(ref0);
           const a = document.createElement("a");
           a.href = "#";
           a.__ref = ref;   // 1.0.1-L (Part 7, U2): no address of another site; the click opens Otzaria
@@ -1215,6 +1802,69 @@ body.tm-measuring canvas{cursor:crosshair}
           a.textContent = label;
           host.appendChild(a);
         }
+      };
+      // 1.0.2 (A): the linker of a card's text (ui_fillSrc's third argument) for the card's refs rs: each part of a source's bracket that
+      // resolves (ui_srcParse above: the label first) becomes a link that opens it exactly as its chip does (openSource: Otzaria, or the
+      // otzaria:// link outside it); the bracket keeps its small style (span.tm-src) and its words; nothing resolves -> null (a plain bracket)
+      const srcLinker = (rs) => {
+        const labels = [];
+        let firstBook = null;
+        (Array.isArray(rs) ? rs : []).forEach((r, k) => {
+          if (!Array.isArray(r) || r.length < 2) return;
+          const ref = refOf(r[1]);
+          const t = ref && typeof ref === "object" ? ref : typeof ref === "string" ? ui_sefToOtz(ref) : null;
+          if (!t || !t.book || t.index == null) return;
+          labels.push({ n: ui_srcNorm(r[0]), label: String(r[0]), ref });
+          if (k === 0 && UI_SRC_TN_IDS.indexOf(t.book) >= 0) firstBook = t.book;   // the card's first ref only
+        });
+        const byLabel = (n) => {
+          for (const L of labels) if (L.n === n) return L;
+          return null;
+        };
+        const resolve = (body, bare) => {
+          const n = ui_srcNorm(body), nr = ui_srcNoRange(n);
+          let L = byLabel(n) || byLabel(nr);
+          if (!L) {
+            for (const pre of UI_SRC_PRE) {
+              if (n.indexOf(pre + " ") !== 0) continue;
+              const rest = n.slice(pre.length + 1);
+              L = byLabel(rest) || byLabel(ui_srcNoRange(rest));
+              break;
+            }
+          }
+          if (L) return { label: L.label, ref: L.ref };
+          const t = ui_srcParse(nr, bare);
+          return t ? { label: body.trim(), ref: t } : null;
+        };
+        return (run, full) => {
+          const inner = run.t.slice(1, -1);
+          const lb = ui_srcLastBook(full, run.i);
+          const bare = firstBook != null && lb === firstBook ? firstBook : null;
+          const sp = document.createElement("span");
+          sp.className = "tm-src";
+          sp.appendChild(document.createTextNode("("));
+          let any = false;
+          inner.split(";").forEach((raw, k) => {
+            if (k) sp.appendChild(document.createTextNode(";"));
+            const body = raw.trim();
+            const lead = raw.slice(0, raw.indexOf(body)), trail = raw.slice(raw.indexOf(body) + body.length);
+            if (lead) sp.appendChild(document.createTextNode(lead));
+            const hit = body ? resolve(body, bare) : null;
+            if (hit) {
+              const a = document.createElement("a");
+              a.href = "#";
+              a.className = "tm-srcl";
+              a.__ref = hit.ref;
+              a.textContent = body;
+              a.addEventListener("click", (ev) => openSource(ev, hit.label, hit.ref));
+              sp.appendChild(a);
+              any = true;
+            } else if (body) sp.appendChild(document.createTextNode(body));
+            if (trail) sp.appendChild(document.createTextNode(trail));
+          });
+          sp.appendChild(document.createTextNode(")"));
+          return any ? sp : null;
+        };
       };
       // 1.0.1-L (L.34): setInfo(key | "__place", custom?, opts?) opens the explanation card: the text of the view `key` (ui_INFO / ui_REFS) or
       // the custom {text, refs}; opts.title (else the view's label), opts.anchor = the clicked button (the card's top follows it)
@@ -1226,7 +1876,10 @@ body.tm-measuring canvas{cursor:crosshair}
           const v = ui_VIEWS.find((vv) => vv.key === key);
           title = v ? v.label : key === "__general" ? "מבט כללי" : "";
         }
-        xcardOpen(title, text, rs, opts && opts.anchor, opts && opts.side);
+        // 1.0.2 (item 4): the card's opinions - the table's own row, opts.ops, or the subject's rows by its view key and title
+        const row = opts && opts.row ? opts.row : null;
+        const ops = row ? [row] : opts && Array.isArray(opts.ops) ? opts.ops : opsFor({ view: key !== "__place" ? key : null, title: opts && opts.title });
+        xcardOpen(title, text, rs, opts && opts.anchor, opts && opts.side, ops, row);
       };
       // 1.0.1 (FIXES E.2 / F.3): the basis of the palace's placement, written by 60-palace.js (ctx.shared.palaceBasis, a Hebrew string)
       // or the UI's copy; appended once to the "בית שלמה" view text and used by the "מקום בית שלמה" entry of the EXTRAS
@@ -2173,10 +2826,10 @@ body.tm-measuring canvas{cursor:crosshair}
           info: "מידות הפתחים אינן בשום מקור. פתח ההיכל נבנה עשר על עשרים (כיחס פתח ההיכל של בית שני, מדות ד, א), פתח הדביר שש על שתים עשרה — רחב ממרווח בדי הארון כדי ששני הבדים ידחקו בפרוכת (רש״י ו, כג; ח, ח). פתח האולם, עשר על עשרים ושתיים — בחירת מודל — ובו שתי דלתות ארז פתוחות (דברי הימים ב כט, ז); משקוף ישר כציור הכללי בספר, לוח אחד לכל דלת וצירי נחושת — בחירת מודל; הפרוכת שהמאירי מזכיר (יומא נד.) לא נבנתה.",
           refs: [["מדות ד, א", MI(4, 1)], ["מלכים א ו, לא", V(10, 6, 31)], ["ו, לג", V(10, 6, 33)], ["דברי הימים ב כט, ז", V(39, 29, 7)], ["מלבי״ם שם", { book: 3364, index: 810 }], ["מדות ג, ז", MI(3, 7)], ["מאירי יומא נד.", { book: 2199, index: 480 }]] },
         { t: "הכבש והקרנות", view: "mizbeach",
-          info: "דברי הימים ב ד, א נותן למזבח הנחושת רק אורך, רוחב וגובה. הכבש מדרום ('לא תעלה במעלות', שמות כ; מידותיו כמדות ג, ג), ארבע הקרנות (כמזבח הנחושת שבמשכן, שמות כז) והכרכוב — השלמת מודל.",
-          refs: [["דברי הימים ב ד, א", V(39, 4, 1)], ["מדות ג, ג", MI(3, 3)], ["מדות ג, א", MI(3, 1)]] },
+          info: "דברי הימים ב ד, א נותן למזבח הנחושת רק אורך, רוחב וגובה. הכבש מדרום ('לא תעלה במעלות', שמות כ; מידותיו כמדות ג, ג), ארבע הקרנות (כמזבח הנחושת שבמשכן, שמות כז) והשפה שבראש המזבח — השלמת מודל. הכרכוב הוא הסובב, כרבי יוסי ברבי יהודה (זבחים סב.).",
+          refs: [["דברי הימים ב ד, א", V(39, 4, 1)], ["מדות ג, ג", MI(3, 3)], ["מדות ג, א", MI(3, 1)], ["זבחים סב.", { book: 130, index: 2109 }]] },   // 1.0.2 add-on: the band became the sovev
         { t: "מקום המזבח (מדות ה, א)", tg: [49.5, 12, 0], cam: [60, 110, 40],
-          info: "מקום המזבח בחצר אינו נתון במלכים. במודל הוא על ציר הבית, ופניו המערביות עשרים ואחת אמה מן האולם — כסדר מדות ה, א ('בין האולם ולמזבח עשרים ושתים אמה'), בהתאמה למזבח של עשרים אמה. בחירת מודל.",
+          info: "מקום המזבח בחצר אינו נתון במלכים. במודל הוא על ציר הבית; גוף המזבח עשרים ואחת אמה מן האולם, ויסודו תשע עשרה — כסדר מדות ה, א ('בין האולם ולמזבח עשרים ושתים אמה'), בהתאמה למזבח של עשרים אמה. בחירת מודל.",
           refs: [["מדות ה, א", MI(5, 1)], ["מדות ג, ו", MI(3, 6)], ["דברי הימים ב ד, א", V(39, 4, 1)]] },
         { t: "האוטם והמעלות", tg: [21, 10, 0], cam: [52, 26, 30],
           info: "במלכים אין מפלסים. הבית הוגבה על אוטם של שש אמות (מדות ד, ו; מלבי״ם על מלכים א ו, ח מזכיר יסוד כזה), עם שתים עשרה מעלות מחצר הכהנים לאולם (מדות ג, ו) ושתים עשרה מעלות מן החצר הגדולה לחצר הכהנים — בחירת מודל.",
@@ -2338,6 +2991,48 @@ body.tm-measuring canvas{cursor:crosshair}
             on: () => ctx.shared.kelim.set(true), off: () => ctx.shared.kelim.set(false) },
           info: ctx.shared.kelim.info, refs: ctx.shared.kelim.refs });
       }
+      // 1.0.2 (item 7, the user: "מעולה"): השיתין beside the altar's place - ctx.shared.shitin (40-altar.js: its title, text and sources; the text
+      // says it is a completion from the Mishnah); its fly point is the module's (flyPoints[shitin.fly]); no contract or no fly point, no button
+      {
+        const shi = ctx.shared.shitin;
+        const gM = PLACES.find((g) => g[0] === "המזבח וכלי הנחושת");
+        if (gM && shi && shi.info && shi.fly) {
+          const at = gM[1].findIndex((it) => it.t === "מזבח הנחושת");
+          gM[1].splice(at >= 0 ? at + 1 : gM[1].length, 0, { t: String(shi.title || "השיתין"), view: String(shi.fly), info: String(shi.info), refs: Array.isArray(shi.refs) ? shi.refs : [] });
+          // 1.0.2 (fix, DEV_NOTES rule 6): a completion from the Mishnah is also listed in "השלמות" - merged into the altar group's button
+          // (UI_MERGE below, as לשכת הגזית), so one place keeps one button; the same text, so the kept card does not repeat it
+          EXTRAS.push({ t: "השיתין — השלמה מן המשנה", view: String(shi.fly), info: String(shi.info), refs: Array.isArray(shi.refs) ? shi.refs : [] });
+        }
+      }
+      // 1.0.2 add-on (DEV_NOTES rule 6, the review): the yesod, the sovev and the red line (ctx.shared.altarProfile) and the two small ramps
+      // (ctx.shared.altarRamps), 40-altar.js - completions from the Mishnah and the Gemara with model choices in their texts. The profile: a
+      // place after "השיתין" (as the shitin) and an item in "השלמות" merged into it (UI_MERGE); the ramps: an item in "השלמות" with both
+      // readings' texts, and the row's chips on its card (UI_OPS_P). The words and sources are the module's; no contract, nothing.
+      {
+        const fpOk = (k) => typeof k === "string" && ctx.shared.flyPoints && ctx.shared.flyPoints[k] ? k : "mizbeach";
+        const joinRefs = (lists) => {
+          const out = [], seen = new Set();
+          for (const l of lists) for (const r of Array.isArray(l) ? l : []) if (Array.isArray(r) && !seen.has(r[0])) { seen.add(r[0]); out.push(r); }
+          return out;
+        };
+        const AP = ctx.shared.altarProfile;
+        const gM = PLACES.find((g) => g[0] === "המזבח וכלי הנחושת");
+        if (gM && AP && AP.yesod && AP.sovev && AP.redLine) {
+          const parts = [AP.yesod, AP.sovev, AP.redLine];
+          const info = parts.map((p) => String(p.info || "")).join(" "), refs = joinRefs(parts.map((p) => p.refs));
+          let at = gM[1].findIndex((it) => it.t === "השיתין");
+          if (at < 0) at = gM[1].findIndex((it) => it.t === "מזבח הנחושת");
+          gM[1].splice(at >= 0 ? at + 1 : gM[1].length, 0, { t: "היסוד, הסובב וחוט הסיקרא", view: fpOk("mizbeachSW"), info, refs });
+          EXTRAS.push({ t: "היסוד, הסובב וחוט הסיקרא — השלמה מן המשנה", view: fpOk("mizbeachSW"), info, refs });
+        }
+        const ar = ctx.shared.altarRamps;
+        if (ar && ar.info && ar.info.rashi) {
+          const keys = Array.isArray(ar.keys) ? ar.keys : ["rashi", "tosafot"];
+          EXTRAS.push({ t: "הכבשים הקטנים — השלמה מן הגמרא", view: fpOk(ar.fly),
+            info: keys.map((k) => String(ar.info[k] || "")).filter(Boolean).join(" "),
+            refs: joinRefs(keys.map((k) => ar.refs && ar.refs[k])) });
+        }
+      }
       // 1.0.1-L (L.85; part5-house.md FOR-UI 3): flies to the ark and explains; the inside opens only from the pill on the ark, never automatically
       if (ctx.shared.arkInside) {
         const gA = PLACES.find((g) => g[0] === "הבית מבפנים");
@@ -2383,6 +3078,8 @@ body.tm-measuring canvas{cursor:crosshair}
         "כסא שלמה — הגרסאות": "כסא שלמה",
         "רצפת השיש בחצר הכהנים": "רצפת חצר הכהנים — שיש",
         "לשכת הגזית — מקורות מבית שני": "לשכת הגזית",
+        "השיתין — השלמה מן המשנה": "השיתין",   // 1.0.2 (rule 6; only when 40-altar.js gives ctx.shared.shitin)
+        "היסוד, הסובב וחוט הסיקרא — השלמה מן המשנה": "היסוד, הסובב וחוט הסיקרא",   // 1.0.2 add-on (only with ctx.shared.altarProfile)
         "בית המטבחים — הטבעות, השולחנות והננסין (מקורות מבית שני)": "בית המטבחים — מקרוב",
         "שני השולחנות שבאולם — צורתם ומקומם": "שולחנות האולם — ר׳ יוסי בר׳ יהודה"
       };
@@ -2519,10 +3216,15 @@ body.tm-measuring canvas{cursor:crosshair}
       cardBody.className = "b";
       const cardRefs = document.createElement("div");
       cardRefs.className = "r";
+      const cardOps = document.createElement("div");   // 1.0.2 (item 4): the label's opinions (renderChips above)
+      cardOps.className = "o";
+      cardOps.style.display = "none";
       card.appendChild(cardHead);
       card.appendChild(cardBody);
       card.appendChild(cardRefs);
+      card.appendChild(cardOps);
       document.body.appendChild(card);
+      let cardOpsIds = null;
       let cardSpr = null, cardW = 300, cardH = 160, cardShown = false, cardX0 = -1, cardY0 = -1, cardSide = 1;   // side: 1 right of the label, -1 left
       const cardV = new Vector3(), cardC = new Vector3();
       const closeCard = () => {
@@ -2569,7 +3271,7 @@ body.tm-measuring canvas{cursor:crosshair}
         let left = cardSide > 0 ? leftR : leftL;
         left = Math.max(8, Math.min(right - cardW, left));
         let top = y - cardH * 0.35;
-        top = Math.max(50, Math.min(H - cardH - 60, top));
+        top = Math.max(ui_barH() + 8, Math.min(H - cardH - 60, top));   // 1.0.2: never over the fixed top bar (#tm-card is above it, z 29 > 20)
         if (force || Math.abs(left - cardX0) > 0.5 || Math.abs(top - cardY0) > 0.5) {
           cardX0 = left;
           cardY0 = top;
@@ -2582,13 +3284,15 @@ body.tm-measuring canvas{cursor:crosshair}
         cardSpr = spr;
         cardSide = 1;
         ui_fillSrc(cardTitle, String((spr.userData.label && spr.userData.label.text) || "") + (t.title ? " — " + t.title : ""));   // a bare measure gets its meaning
-        ui_fillSrc(cardBody, t.key ? ui_INFO[t.key] || "" : t.text || "");
-        cardRefs.textContent = "";
         const rs = t.key ? ui_REFS[t.key] || [] : t.refs || [];
+        ui_fillSrc(cardBody, t.key ? ui_INFO[t.key] || "" : t.text || "", srcLinker(rs));   // 1.0.2 (A): the brackets open their sources
+        cardRefs.textContent = "";
         if (rs.length) {
           cardRefs.appendChild(document.createTextNode("למקור: "));
           refLinks(cardRefs, rs);
         }
+        cardOpsIds = Array.isArray(t.ops) && t.ops.length ? t.ops : null;   // 1.0.2 (item 4)
+        renderChips(cardOps, cardOpsIds);
         card.style.display = "flex";   // a column: the title, the text (scrolls), the source links (always seen)
         cardShown = true;
         card.scrollTop = 0;
@@ -2598,6 +3302,16 @@ body.tm-measuring canvas{cursor:crosshair}
         placeCard(true);
       };
       ctx.animated.push(() => { if (cardSpr) placeCard(false); });
+      // 1.0.2 (item 4): a row marked anywhere (the table, a chip, the presentation) redraws the open cards' chips; the label's card is measured again
+      chipsRefresh = () => {
+        if (xOpen && xOpsIds) renderChips(xOps, xOpsIds, xChipPicked);
+        if (cardSpr && cardOpsIds) {
+          renderChips(cardOps, cardOpsIds);
+          cardW = card.offsetWidth || cardW;
+          cardH = card.offsetHeight || cardH;
+          placeCard(true);
+        }
+      };
       window.addEventListener("resize", () => {
         if (!cardSpr) return;
         cardW = card.offsetWidth || cardW;
@@ -2791,6 +3505,9 @@ body.tm-measuring canvas{cursor:crosshair}
         const labelTarget = (l) => {
           if (!l || !l.text) return null;
           if (l.info) return { text: l.info, refs: l.refs || [] };
+          // 1.0.2 (item 7): the label "השיתין" of 40-altar.js opens ctx.shared.shitin's text (nothing when the contract is missing)
+          const shi = ctx.shared.shitin;
+          if (/^השיתין/.test(l.text) && shi && shi.info) return { text: shi.info, refs: Array.isArray(shi.refs) ? shi.refs : [] };
           // 1.0.1-L (L.88; part5-kelim.md FOR-UI 3): a vessel's label opens that vessel; the exhibit's titles open the exhibit
           if (l.kelimKey && ctx.shared.kelim) {
             const K = ctx.shared.kelim, itK = K.items.find((x) => x.key === l.kelimKey);
@@ -2812,16 +3529,27 @@ body.tm-measuring canvas{cursor:crosshair}
             else if (placeByT[l.text]) m = { p: l.text };
           }
           if (!m) return null;
-          if (m.info) return { text: m.info, refs: m.refs || [], title: m.title || "" };
+          if (m.info) return { text: m.info, refs: m.refs || [], title: m.title || "", subj: { view: m.v || null, title: m.p || null } };
           if (m.v && viewKeys.has(m.v)) return { key: m.v };
           const it = m.p && placeByT[m.p];
           if (!it) return null;
-          if (it.info) return { text: it.info, refs: it.refs || [] };
-          if (it.key) return { key: it.key };
-          if (it.view && viewKeys.has(it.view)) return { key: it.view };
+          if (it.info) return { text: it.info, refs: it.refs || [], subj: { title: m.p } };
+          if (it.key) return { key: it.key, subj: { title: m.p } };
+          if (it.view && viewKeys.has(it.view)) return { key: it.view, subj: { title: m.p } };
           return null;
         };
-        for (const spr of labelGroup.children) spr.userData.target = labelTarget(spr.userData.label);
+        // 1.0.2 (item 4): the label's opinions - its view or place (as the panel's card), its own text and its layers (the throne's
+        // versions, the forest readings)
+        const labelOps = (l, t) => {
+          const s = (t && t.subj) || {};
+          const lays = Array.isArray(l.layers) ? l.layers : l.layer ? [l.layer] : [];
+          return opsFor({ view: (t && t.key) || s.view || null, title: s.title || null, label: l.text, layers: lays });
+        };
+        for (const spr of labelGroup.children) {
+          const t = labelTarget(spr.userData.label);
+          if (t) t.ops = labelOps(spr.userData.label, t);
+          spr.userData.target = t;
+        }
         const missing = labelGroup.children.filter((s) => !s.userData.target).map((s) => s.userData.label && s.userData.label.text);
         if (missing.length) console.warn("[ui.js] labels without sources:", missing.join(" | "));
         const el = ctx.renderer.domElement;
@@ -2910,6 +3638,7 @@ body.tm-measuring canvas{cursor:crosshair}
         };
         // 1. the height of the house: 30 (I Kings 6:2) or 120 with the upper storeys (II Chr 3:4 with Rashi) - the layer "aliyot"
         const aliyotRow = opRow({
+          id: "aliyot", short: "גובה הבית", cardFly: true, chips: { base: "שלושים אמה", aliyot: "מאה ועשרים, עם העליות" },   // 1.0.2 (item 4)
           cap: "גובה הבית — שלושים אמה, או מאה ועשרים עם העליות",
           refs: [["מלכים א ו, ב", V(10, 6, 2)], ["דברי הימים ב ג, ד", V(39, 3, 4)], ["רש״י שם", V(39, 3, 4)], ["בבא בתרא ג.", P(124, "ג.")]],
           options: [
@@ -2924,6 +3653,7 @@ body.tm-measuring canvas{cursor:crosshair}
         layerMarks.aliyot = (on) => aliyotRow.mark(on ? "aliyot" : "base");
         // 2. the ulam: Rashi's בית החליפות wings or the Rambam's reading - the layer "ulamRambam"
         const ulamRow = opRow({
+          id: "ulamRambam", short: "האולם", cardFly: true, chips: { rashi: "רש״י", rambam: "רמב״ם" },
           cap: "האולם — בית החליפות (רש״י) או בליטת האולם לשיטת הרמב״ם",
           refs: [["מלכים א ו, ג", V(10, 6, 3)], ["יומא לו.", P(107, "לו.")], ["רמב״ם בית הבחירה פרק ד", RB(4, 0)], ["מדות ד, ז", MI(4, 7)]],
           options: [
@@ -2939,6 +3669,7 @@ body.tm-measuring canvas{cursor:crosshair}
         // 1.0.1-L (L.60, the user: "עיין בפירוש המלבים למעשה שושן (פס' יט) והוסף זאת כאופצי'"): the capitals of Yachin and Boaz - ctx.shared.pillarCapital (50-heichal.js)
         const pcap = ctx.shared.pillarCapital;
         opRow({
+          id: "pillarCapital", short: "הכותרות", cardFly: true, chips: { rashi: "רש״י", malbim: "מלבי״ם" },
           cap: "כותרות יכין ובועז — רש״י (כאיורי הספר) או מלבי״ם",
           refs: [["מלכים א ז, טו", V(10, 7, 15)], ["ז, יט", V(10, 7, 19)], ["ז, כב", V(10, 7, 22)], ["מלבי״ם ז, יז", V(10, 7, 17)], ["מלבי״ם ז, יט", V(10, 7, 19)], ["מלבי״ם ז, כ", V(10, 7, 20)]],
           options: [
@@ -2954,6 +3685,7 @@ body.tm-measuring canvas{cursor:crosshair}
         // is the user's own: it cancels the place's 15-second timer (L.27)
         const utab = ctx.shared.ulamTables;
         ulamTablesRow = opRow({
+          id: "ulamTables", short: "שולחנות האולם", cardFly: true, chips: { none: "בלי שולחנות", ryby: "ר׳ יוסי בר׳ יהודה", mishnah: "המשנה" },
           cap: "שני השולחנות שבאולם — ר׳ יוסי בר׳ יהודה",
           refs: [["מנחות צט.", P(131, "צט.")], ["משנה שקלים ו, ד", MN(54, 6, 4)], ["משנה מנחות יא, ז", MN(81, 11, 7)], ["רמב״ם בית הבחירה ג, טז", RB(3, 16)]],
           options: [
@@ -2966,8 +3698,54 @@ body.tm-measuring canvas{cursor:crosshair}
           fly: () => flyView("ulamTables"),
           disabled: !(utab && typeof utab.set === "function")
         });
+        // 1.0.2 (item 8, the user: "מצוין"): the look of the bronze altar - ctx.shared.altarLook (40-altar.js): stone (the default; Deut 27:6, the
+        // Rambam Beit HaBechira 1:13) or Abarbanel on I Kings 8:64, "מצופה נחשת". The words and the sources are the module's; no contract, no row.
+        {
+          const al = ctx.shared.altarLook;
+          const alOpts = al && Array.isArray(al.options) ? al.options.filter((o) => o && o.key) : [];
+          if (al && typeof al.set === "function" && alOpts.length > 1) {
+            const alInfo = al.info || {}, alRefs = al.refs || {};
+            const rs = [], seen = new Set();
+            for (const o of alOpts) for (const r of Array.isArray(alRefs[o.key]) ? alRefs[o.key] : []) if (r && !seen.has(r[0])) { seen.add(r[0]); rs.push(r); }
+            let cur = null;
+            try { cur = typeof al.get === "function" ? al.get() : al.current; } catch (_) { cur = null; }
+            opRow({
+              id: "altarLook", short: "מראה המזבח",
+              cap: "מזבח הנחושת — אבנים או מצופה נחושת",
+              refs: rs,
+              options: alOpts.map((o) => [o.key, String(o.label || o.key), String(alInfo[o.key] || ""), Array.isArray(alRefs[o.key]) ? alRefs[o.key] : null]),
+              current: alOpts.some((o) => o.key === cur) ? cur : alOpts.some((o) => o.key === "stone") ? "stone" : alOpts[0].key,
+              onPick: (k) => { al.set(k); },
+              fly: () => flyView("mizbeach")
+            });
+          }
+        }
+        // 1.0.2 (the altar's yesod, sovev and small ramps, 40-altar.js): ctx.shared.altarRamps = { title, get(), set(key), options [{key, label}],
+        // info {rashi, tosafot}, refs {rashi, tosafot} } - the two small ramps by Rashi (the default) or by Tosafot (Zevachim 61b-62b); the row
+        // stands next to "מראה המזבח", in the same way: the words and the sources are the module's; no contract (or one reading), no row
+        {
+          const ar = ctx.shared.altarRamps;
+          const arOpts = ar && Array.isArray(ar.options) ? ar.options.filter((o) => o && o.key) : [];
+          if (ar && typeof ar.set === "function" && arOpts.length > 1) {
+            const arInfo = ar.info || {}, arRefs = ar.refs || {};
+            const rs = [], seen = new Set();
+            for (const o of arOpts) for (const r of Array.isArray(arRefs[o.key]) ? arRefs[o.key] : []) if (Array.isArray(r) && !seen.has(r[0])) { seen.add(r[0]); rs.push(r); }
+            let cur = null;
+            try { cur = typeof ar.get === "function" ? ar.get() : ar.current; } catch (_) { cur = null; }
+            opRow({
+              id: "altarRamps", short: "הכבשים הקטנים",
+              cap: String(ar.title || "הכבשים הקטנים — רש״י או תוספות"),
+              refs: rs,
+              options: arOpts.map((o) => [o.key, String(o.label || o.key), String(arInfo[o.key] || ""), Array.isArray(arRefs[o.key]) ? arRefs[o.key] : null]),
+              current: arOpts.some((o) => o.key === cur) ? cur : arOpts.some((o) => o.key === "rashi") ? "rashi" : arOpts[0].key,
+              onPick: (k) => { ar.set(k); },
+              fly: () => flyView(typeof ar.fly === "string" && ctx.shared.flyPoints && ctx.shared.flyPoints[ar.fly] ? ar.fly : "mizbeach")
+            });
+          }
+        }
         // 3. the place of the Sea (I Kings 7:39)
         seaRow = opRow({
+          id: "seaPlacement", short: "מקום הים", cardFly: true, chips: { rashi: "רש״י: מזרחית צפונית", radak: "רד״ק ומצודות: מזרחית דרומית" },
           cap: "מקום הים — 'מכתף הבית הימנית קדמה ממול נגב'",
           refs: [["מלכים א ז, לט", V(10, 7, 39)], ["רש״י שם", V(10, 7, 39)], ["דברי הימים ב ד, י", V(39, 4, 10)]],
           options: [
@@ -2981,6 +3759,7 @@ body.tm-measuring canvas{cursor:crosshair}
         });
         // 4. the arrangement of the tables and the menorot (Menachot 98b)
         layoutRow = opRow({
+          id: "kodeshLayout", short: "סידור הכלים", chips: { rabbi: "רבי: מזרח ומערב", rashbash: "ר׳ אלעזר בר״ש: צפון ודרום" },
           cap: "סידור השולחנות והמנורות — מזרח ומערב או צפון ודרום",
           refs: [["רלב״ג ז, מט", { book: 3645, index: 312 }], ["מנחות צח:", P(131, "צח:")], ["מנחות צט.", P(131, "צט.")], ["רמב״ם בית הבחירה ג, יב", RB(3, 12)]],
           options: [
@@ -2994,6 +3773,7 @@ body.tm-measuring canvas{cursor:crosshair}
         });
         // 5. lighting and the bread (Menachot 99a)
         opinionRow = opRow({
+          id: "kodeshOpinion", short: "הדלקה וסידור הלחם", chips: { tk: "תנא קמא: בשל משה", rebs: "ר׳ אלעזר בן שמוע: בכולן" },
           cap: "הדלקת המנורות וסידור הלחם — בשל משה בלבד או בכולן",
           refs: [["מנחות צט.", P(131, "צט.")], ["מלכים א ז, מט", V(10, 7, 49)], ["רד״ק שם", V(10, 7, 49)]],
           options: [
@@ -3007,6 +3787,7 @@ body.tm-measuring canvas{cursor:crosshair}
         });
         // 6. the devir doorway: Rashi's two explanations of "מזוזות חמישית" (I Kings 6:31) - ctx.shared.devirDoor (55-interior.js)
         opRow({
+          id: "devirDoor", short: "פתח הדביר", chips: { pent: "רש״י: חמש צלעות", five: "רש״י: מפתן, מזוזות ומשקוף" },
           cap: "פתח הדביר — 'האיל מזוזות חמשית': שני ביאורי רש״י",
           refs: [["מלכים א ו, לא", V(10, 6, 31)], ["רש״י שם", V(10, 6, 31)], ["רד״ק שם", V(10, 6, 31)], ["מדות ב, ג", MI(2, 3)]],
           options: [
@@ -3020,6 +3801,7 @@ body.tm-measuring canvas{cursor:crosshair}
         });
         // 7. the faces of the cherubim (II Chr 3:13; Bava Batra 99a) - ctx.shared.cherubPose (55-interior.js)
         opRow({
+          id: "cherubPose", short: "פני הכרובים", chips: { rashi: "רש״י", radak: "רד״ק ומצודות", tzidud: "בבא בתרא: מצדדין" },
           cap: "פני הכרובים — 'ופניהם לבית' (דברי הימים ב ג, יג)",
           refs: [["דברי הימים ב ג, יג", V(39, 3, 13)], ["רש״י שם", V(39, 3, 13)], ["רד״ק מלכים א ו, כז", V(10, 6, 27)], ["בבא בתרא צט.", P(124, "צט.")]],
           options: [
@@ -3036,6 +3818,7 @@ body.tm-measuring canvas{cursor:crosshair}
         {
           const sl = ctx.shared.slaughterLayout, slNames = (sl && sl.names) || {};
           opRow({
+            id: "slaughterLayout", short: "בית המטבחים", chips: { book: "כציור הספר", meiri: "המאירי", oneRow: "ראבי״ה והגר״א" },
             cap: "בית המטבחים — הננסין והרביעין",
             refs: [["מדות ג, ה", ui_MI(3, 5)]],
             options: [
@@ -3051,6 +3834,7 @@ body.tm-measuring canvas{cursor:crosshair}
         }
         // 8. the House of the Forest of Lebanon (I Kings 7:2-6) - ctx.shared.forestHouse (60-palace.js)
         opRow({
+          id: "forestHouse", short: "בית יער הלבנון", cardFly: true, chips: { rashi: "רש״י", metzudot: "מלבי״ם ורלב״ג", mzd: "מצודת דוד" },
           cap: "בית יער הלבנון — הטורים, הקירוי ו'עמודים ועב' (מלכים א ז, ב–ו)",
           refs: [["מלכים א ז, ב", V(10, 7, 2)], ["ז, ג", V(10, 7, 3)], ["ז, ד", V(10, 7, 4)], ["ז, ו", V(10, 7, 6)], ["רש״י ז, ו", V(10, 7, 6)], ["מלבי״ם ז, ב", V(10, 7, 2)], ["רלב״ג ז, ג", V(10, 7, 3)], ["מצודת דוד ז, ב", V(10, 7, 2)]],
           options: [
@@ -3069,6 +3853,7 @@ body.tm-measuring canvas{cursor:crosshair}
         const tvNames = (tver && tver.names) || {};
         const tvNotes = PN.throneVersions || {};
         throneRow = opRow({
+          id: "throneVersion", short: "כסא שלמה",
           cap: "כסא שלמה — לפי איזה מדרש",
           refs: TH_V.slice(0, 4),
           // 1.0.1-L: the user: the midrash's name on screen is "בית המדרש ב" (a source's link may keep the book's title), whatever the module's list says
@@ -3124,6 +3909,302 @@ body.tm-measuring canvas{cursor:crosshair}
       foot.id = "tm-foot";
       foot.textContent = "גרור לסיבוב · גלגלת, צביטה או שתי אצבעות לזום · קליק ימני להזזה · חצי המקלדת לסיבוב";
       panel.appendChild(foot);
+      // ===== 1.0.2 (B, printing): one quiet link at the panel's foot, beside "דיווח על טעות או תקלה" (no new button on the model's view).
+      // It builds a clean print page #tm-print: the plugin's name and the current place or view (the open card's title, else the marked
+      // button), the view as a picture (one frame rendered and the canvas read with toDataURL right after it, in the same task: the
+      // drawing buffer is not kept), and, when a card is open, its text (the brackets small) with its sources' names below. @media print
+      // (ui_CSS) hides everything else; A4 landscape. Inside Otzaria (api.md): a small choice - ui.print (the system's dialog) or
+      // ui.exportPdf ("שמור בשם") - called straight from the button's click (both need the user's own gesture, no permission; no timeout of
+      // ours: sdk.md excludes them), with the page size given as parameters (@page is not honoured there). Outside Otzaria: window.print().
+      // The print page goes when the print is done or cancelled. =====
+      {
+        let pg = null, busy = false;
+        const PR_OPTS = { pageSize: "a4", orientation: "landscape", marginMm: 10, printBackgrounds: true };
+        const inOtz = () => typeof window.Otzaria !== "undefined" && !!window.Otzaria && typeof window.Otzaria.call === "function";
+        const drop = () => {
+          if (pg) {
+            pg.remove();
+            pg = null;
+          }
+        };
+        const curName = () => {
+          if (xOpen && xTitle.textContent.trim()) return xTitle.textContent.trim();
+          if (cardSpr && cardTitle.textContent.trim()) return cardTitle.textContent.trim();
+          const on = btns.concat(placeBtns).find((b) => b.classList.contains("on"));
+          return on ? on.textContent.replace(/\d+$/, "").trim() : "";
+        };
+        const build = () => {
+          drop();
+          let url = "";
+          try {
+            ctx.renderer.render(ctx.scene, ctx.camera);
+            url = ctx.renderer.domElement.toDataURL("image/jpeg", 0.9);
+          } catch (e) {
+            console.warn("[ui.js] print picture: " + (e && e.message ? e.message : e));
+          }
+          const name = curName();
+          pg = document.createElement("div");
+          pg.id = "tm-print";
+          const h = document.createElement("h1");
+          h.textContent = "בית המקדש הראשון" + (name ? " — " + name : "");
+          pg.appendChild(h);
+          if (/^data:image\/(?:jpeg|png)/.test(url) && url.length > 64) {
+            const img = document.createElement("img");
+            img.alt = name || "בית המקדש הראשון";
+            img.src = url;
+            pg.appendChild(img);
+          }
+          const tb = xOpen ? xBody : cardSpr ? cardBody : null, tr = xOpen ? xRefs : cardSpr ? cardRefs : null;
+          const body = tb ? String(tb.textContent || "").trim() : "";
+          if (body) {
+            const tx = document.createElement("div");
+            tx.className = "tx";
+            ui_fillSrc(tx, body);   // the brackets small, as in the card (no links on paper)
+            pg.appendChild(tx);
+            const labs = tr ? Array.from(tr.querySelectorAll("a")).map((a) => String(a.textContent || "").trim()).filter(Boolean) : [];
+            if (labs.length) {
+              const rs = document.createElement("div");
+              rs.className = "rs";
+              rs.textContent = "מקורות: " + labs.join(" · ");
+              pg.appendChild(rs);
+            }
+          }
+          document.body.appendChild(pg);
+          return pg;
+        };
+        const fileName = () => ("בית ראשון" + (curName() ? " - " + curName() : "")).replace(/[\\/:*?"<>|\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().slice(0, 100);
+        const plink = document.createElement("button");
+        plink.type = "button";
+        plink.id = "tm-print-link";
+        plink.textContent = "הדפסה או שמירה כ-PDF";
+        panel.appendChild(plink);
+        // inside Otzaria: the choice
+        const pdlg = document.createElement("div");
+        pdlg.id = "tm-printdlg";
+        pdlg.setAttribute("role", "dialog");
+        pdlg.setAttribute("aria-label", "הדפסה או שמירה כ-PDF");
+        const pbox = document.createElement("div");
+        pbox.className = "box";
+        const pt = document.createElement("div");
+        pt.className = "t";
+        pt.textContent = "הדפסה או שמירה כ-PDF";
+        const pn = document.createElement("div");
+        pn.textContent = "תמונת המבט ושם המקום; וכשהסבר פתוח — גם ההסבר ומקורותיו.";
+        const pbb = document.createElement("div");
+        pbb.className = "b";
+        const bPrint = document.createElement("button");
+        bPrint.type = "button";
+        bPrint.className = "y";
+        bPrint.textContent = "הדפסה";
+        const bPdf = document.createElement("button");
+        bPdf.type = "button";
+        bPdf.textContent = "שמירה כ-PDF";
+        const bNo = document.createElement("button");
+        bNo.type = "button";
+        bNo.textContent = "ביטול";
+        pbb.appendChild(bPrint);
+        pbb.appendChild(bPdf);
+        pbb.appendChild(bNo);
+        pbox.appendChild(pt);
+        pbox.appendChild(pn);
+        pbox.appendChild(pbb);
+        pdlg.appendChild(pbox);
+        document.body.appendChild(pdlg);
+        const closeP = () => {
+          pdlg.style.display = "none";
+          try { if (pdlg.contains(document.activeElement)) document.activeElement.blur(); } catch (_) {}
+          if (!busy) drop();
+        };
+        // the call is made at once, inside the click (the user's gesture); then the choice closes and the page waits for the answer
+        const runOtz = (method, params) => {
+          if (busy) return;
+          busy = true;
+          bPrint.disabled = bPdf.disabled = true;
+          let p;
+          try {
+            p = window.Otzaria.call(method, params);
+          } catch (e) {
+            p = Promise.resolve({ success: false, error: { message: e && e.message ? e.message : String(e) } });
+          }
+          pdlg.style.display = "none";
+          Promise.resolve(p).then((res) => {
+            if (res && res.success === false) {
+              const code = res.error ? res.error.code || res.error.message || "" : "";
+              if (code) console.warn("[ui.js] " + method + ": " + code);
+              tmToast(code === "error.conflict" ? "חלון אחר פתוח כעת, נסו שוב אחריו" : method === "ui.exportPdf" ? "השמירה לא נפתחה, נסו שוב" : "ההדפסה לא נפתחה, נסו שוב");
+            } else if (method === "ui.exportPdf" && res && res.data && res.data.saved) {
+              tmToast("נשמר" + (res.data.name ? ": " + res.data.name : ""));
+            }
+          }, (e) => {
+            console.warn("[ui.js] " + method + ": " + (e && e.message ? e.message : e));
+            tmToast("ההדפסה לא נפתחה, נסו שוב");
+          }).then(() => {
+            busy = false;
+            bPrint.disabled = bPdf.disabled = false;
+            drop();
+          });
+        };
+        bPrint.addEventListener("click", () => runOtz("ui.print", Object.assign({ jobName: fileName() }, PR_OPTS)));
+        bPdf.addEventListener("click", () => runOtz("ui.exportPdf", Object.assign({ fileName: fileName(), title: "שמירה כ-PDF" }, PR_OPTS)));
+        bNo.addEventListener("click", closeP);
+        pdlg.addEventListener("click", (e) => { if (e.target === pdlg) closeP(); });
+        pdlg.addEventListener("keydown", (e) => {
+          e.stopPropagation();
+          if (e.key === "Escape" || e.key === "Esc") closeP();
+        });
+        pdlg.addEventListener("keyup", (e) => e.stopPropagation());
+        plink.addEventListener("click", () => {
+          if (busy) return;
+          if (inOtz()) {
+            build();   // the picture of the view as it is now, before the choice covers it
+            bPrint.disabled = bPdf.disabled = false;
+            pdlg.style.display = "flex";
+            try { bPrint.focus(); } catch (_) {}
+            return;
+          }
+          // outside Otzaria: the browser's own print, once the picture is decoded
+          const page = build();
+          const img = page.querySelector("img");
+          let done = false;
+          const fin = () => {
+            if (done) return;
+            done = true;
+            window.removeEventListener("afterprint", fin);
+            drop();
+          };
+          const go = () => {
+            window.addEventListener("afterprint", fin);
+            try { window.print(); } catch (_) {}
+            setTimeout(fin, 1000);
+          };
+          const dec = img && typeof img.decode === "function" ? img.decode().catch(() => {}) : Promise.resolve();
+          Promise.race([dec, new Promise((r) => setTimeout(r, 1500))]).then(go);
+        });
+      }
+      // ===== 1.0.2 (item 1, the user: "התוסף בחנות כבר"): a report from inside the plugin. The plugin is in the Otzaria store, so
+      // feedback.report (api.md: no permission; Otzaria shows its own confirmation with a preview; returns 'sent' | 'queued' | 'cancelled';
+      // details up to 5000 characters; reportType bug | crash | content | other) reaches its developer. One quiet link at the panel's foot opens a
+      // small form: the kind, the text and "שלח"; the details get the version, the view or the open card, the camera and the readings now
+      // chosen. Outside Otzaria (no window.Otzaria.call: the standalone HTML file, a browser) there is no link. =====
+      if (typeof window.Otzaria !== "undefined" && window.Otzaria && typeof window.Otzaria.call === "function") {
+        const RT = [["content", "טעות במקור"], ["bug", "תקלה"], ["other", "הצעה"]];
+        const link = document.createElement("button");
+        link.type = "button";
+        link.id = "tm-report-link";
+        link.textContent = "דיווח על טעות או תקלה";
+        panel.appendChild(link);
+        const dlg = document.createElement("div");
+        dlg.id = "tm-report";
+        dlg.setAttribute("role", "dialog");
+        dlg.setAttribute("aria-label", "דיווח על טעות או תקלה");
+        const box = document.createElement("div");
+        box.className = "box";
+        const hd = document.createElement("div");
+        hd.className = "t";
+        hd.textContent = "דיווח על טעות או תקלה";
+        const ty = document.createElement("div");
+        ty.className = "ty";
+        let kind = "content";
+        const tyBtns = RT.map(([k, label]) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.textContent = label;
+          b.addEventListener("click", () => { kind = k; for (const o of tyBtns) o.classList.toggle("on", o === b); });
+          ty.appendChild(b);
+          return b;
+        });
+        tyBtns[0].classList.add("on");
+        const ta = document.createElement("textarea");
+        ta.maxLength = 3500;
+        ta.placeholder = "מה לא נכון, ואיפה? (למשל: המקור, המידה או הכפתור)";
+        ta.setAttribute("aria-label", "תוכן הדיווח");
+        const note = document.createElement("div");
+        note.className = "n";
+        note.textContent = "יצורפו: גרסת התוסף, המבט או ההסבר הפתוח, והשיטות שנבחרו.";
+        const bb = document.createElement("div");
+        bb.className = "b";
+        const send = document.createElement("button");
+        send.type = "button";
+        send.className = "y";
+        send.textContent = "שלח";
+        const cancel = document.createElement("button");
+        cancel.type = "button";
+        cancel.textContent = "ביטול";
+        bb.appendChild(send);
+        bb.appendChild(cancel);
+        box.appendChild(hd);
+        box.appendChild(ty);
+        box.appendChild(ta);
+        box.appendChild(note);
+        box.appendChild(bb);
+        dlg.appendChild(box);
+        document.body.appendChild(dlg);
+        const closeDlg = () => {
+          dlg.style.display = "none";
+          try { if (dlg.contains(document.activeElement)) document.activeElement.blur(); } catch (_) {}
+        };
+        link.addEventListener("click", () => {
+          dlg.style.display = "flex";
+          send.disabled = false;
+          try { ta.focus(); } catch (_) {}
+        });
+        cancel.addEventListener("click", closeDlg);
+        dlg.addEventListener("click", (e) => { if (e.target === dlg) closeDlg(); });
+        // typing in the form never turns the model (the arrow keys, + / -) and never reaches the presentation's keys; Esc closes it
+        dlg.addEventListener("keydown", (e) => {
+          e.stopPropagation();
+          if (e.key === "Escape" || e.key === "Esc") closeDlg();
+        });
+        dlg.addEventListener("keyup", (e) => e.stopPropagation());
+        // what the report is about, for the developer: the version, the open card or the marked view / place, the camera, the readings
+        const context = () => {
+          const L = [];
+          const verEl = document.getElementById("version");
+          const ver = ui_bootVersion || (verEl && verEl.textContent ? verEl.textContent.replace(/^v/, "") : "");
+          L.push("גרסה: " + (ver || "לא ידועה"));
+          if (xOpen) L.push("הסבר פתוח: " + xTitle.textContent);
+          if (cardSpr) L.push("תווית פתוחה: " + cardTitle.textContent);
+          const on = btns.concat(placeBtns).find((b) => b.classList.contains("on"));
+          if (on) L.push("מבט / מקום: " + on.textContent.replace(/\d+$/, "").trim());
+          try {
+            const r1 = (v) => [v.x, v.y, v.z].map((n) => Math.round(n * 10) / 10).join(", ");
+            L.push("מצלמה: " + r1(ctx.camera.position) + " ← " + r1(ctx.controls.target));
+          } catch (_) {}
+          const chosen = OPS.filter((r) => !r.disabled && r.cur != null).map((r) => (r.short || r.cap) + ": " + opsChip(r, r.cur));
+          if (chosen.length) L.push("שיטות: " + chosen.join(" · "));
+          return L.join("\n");
+        };
+        send.addEventListener("click", async () => {
+          const text = ta.value.trim();
+          if (!text) {
+            tmToast("כתבו מה לדווח");
+            try { ta.focus(); } catch (_) {}
+            return;
+          }
+          send.disabled = true;
+          const details = (text + "\n\n---\n" + context()).slice(0, 5000);
+          let res = null;
+          try {
+            res = await window.Otzaria.call("feedback.report", { details, reportType: kind });
+          } catch (e) {
+            res = { success: false, error: { message: e && e.message ? e.message : String(e) } };
+          }
+          send.disabled = false;
+          const st = typeof res === "string" ? res : res && typeof res.data === "string" ? res.data : null;
+          if (st === "sent" || st === "queued") {
+            tmToast(st === "sent" ? "הדיווח נשלח, תודה" : "יישלח כשיהיה חיבור");
+            ta.value = "";
+            closeDlg();
+          } else if (st === "cancelled") {
+            // Otzaria's own dialog was cancelled: the form stays as it was, nothing to say
+          } else {
+            // 1.0.2 (fix): the screen in plain Hebrew; the code (error.conflict, error.internal ...) goes to the console
+            const code = res && res.error ? res.error.code || res.error.message || "" : "";
+            if (code) console.warn("[ui.js] feedback.report: " + code);
+            tmToast(code === "error.conflict" ? "הדיווח לא נשלח: חלון אישור אחר פתוח" : "הדיווח לא נשלח, נסו שוב מאוחר יותר");
+          }
+        });
+      }
       // ===== 1.0.1-K: custom tooltips (the user: "בריחוף על כפתורי המצפן צריך להיות הסבר מה הם עושים") =====
       // Any element with data-tip - or a title, moved into data-tip on the first hover so the browser's own tooltip does not double it
       // (the presentation's buttons, the burger) - shows its short Hebrew sentence after 350 ms of hover, above it (below it near the
@@ -3409,7 +4490,9 @@ body.tm-measuring canvas{cursor:crosshair}
         fadeBtn.type = "button";
         fadeBtn.id = "tm-fade-toggle";
         fadeBtn.className = "tm-txt";
-        tip(fadeBtn, "טשטוש חומות: כשחומה עומדת בין המצלמה לבין מה שמביטים בו, היא נעשית שקופה למחצה — ונשארת נראית. כבוי: החומות חוסמות את המבט כמו במציאות.");
+        // 1.0.2 (D): three states from the same button - "פועל" (the court and mount walls, as before; the default), "גם קיר מסתיר" (also a
+        // wall of the house, the ulam, the chambers or the palace that hides what is looked at), "כבוי"; a click goes on to the next
+        tip(fadeBtn, "טשטוש חומות: כשחומה עומדת בין המצלמה לבין מה שמביטים בו, היא נעשית שקופה למחצה — ונשארת נראית. לחיצה נוספת: גם קיר מסתיר — גם קיר של הבית, האולם, התאים או הארמון שמסתיר את מה שמביטים בו נעשה שקוף, וחוזר כשאינו מסתיר עוד. לחיצה נוספת: כבוי — החומות חוסמות את המבט כמו במציאות.");
         const grp = document.createElement("span");
         grp.className = "tm-grp";
         // 1.0.1-K review (ui-3): the far setting fades only walls that hide what is looked at (not those behind it) - the text says so
@@ -3432,7 +4515,7 @@ body.tm-measuring canvas{cursor:crosshair}
         grp.appendChild(val);
         grp.appendChild(minus);
         const paintFade = () => {
-          fadeBtn.textContent = "טשטוש חומות: " + (fs.on ? "פועל" : "כבוי");
+          fadeBtn.textContent = fs.on && fs.hide ? "טשטוש: גם קיר מסתיר" : "טשטוש חומות: " + (fs.on ? "פועל" : "כבוי");
           fadeBtn.classList.toggle("on", !!fs.on);
           val.textContent = fs.dist + " אמה";
           grp.classList.toggle("off", !fs.on);
@@ -3448,8 +4531,12 @@ body.tm-measuring canvas{cursor:crosshair}
           paintFade();
         };
         fadeBtn.addEventListener("click", () => {
-          fs.on = !fs.on;
+          // פועל -> גם קיר מסתיר -> כבוי -> פועל
+          if (fs.on && !fs.hide) fs.hide = true;
+          else if (fs.on) { fs.on = false; fs.hide = false; }
+          else fs.on = true;
           lsSet("tm1.fade.on", fs.on ? "1" : "0");
+          lsSet("tm1.fade.hide", fs.hide ? "1" : "0");
           paintFade();
         });
         minus.addEventListener("click", () => stepDist(-1));
@@ -3965,10 +5052,16 @@ body.tm-measuring canvas{cursor:crosshair}
           }
         },
         fade: {
-          get: () => ({ on: !!ctx.shared.fadeState.on, dist: ctx.shared.fadeState.dist, opacity: UI_FADE_OPACITY, stops: UI_FADE_STOPS.slice() }),
+          // 1.0.2 (D): hide = the mode "טשטוש: גם קיר מסתיר" (only while on)
+          get: () => ({ on: !!ctx.shared.fadeState.on, hide: !!(ctx.shared.fadeState.on && ctx.shared.fadeState.hide), dist: ctx.shared.fadeState.dist, opacity: UI_FADE_OPACITY, stops: UI_FADE_STOPS.slice() }),
           set: (o) => {
             const fs = ctx.shared.fadeState;
             if (o && typeof o.on === "boolean") fs.on = o.on;
+            if (o && typeof o.hide === "boolean") {
+              fs.hide = o.hide;
+              if (o.hide && typeof o.on !== "boolean") fs.on = true;
+            }
+            if (!fs.on) fs.hide = false;
             if (o && UI_FADE_STOPS.indexOf(o.dist) >= 0) fs.dist = o.dist;
             if (typeof fs.repaint === "function") fs.repaint();
           }
@@ -3990,6 +5083,158 @@ body.tm-measuring canvas{cursor:crosshair}
           }
         }
       };
+      // ===== 1.0.2 (item 2, the user: "תוסיף כפתור בספרים הנ"ל"): the reading position from the book's button (ui_bookEvent at the top of
+      // this file) -> ui_READ -> the panel's own button for it (a place by its title, or a view of the grid): the same fly, card and marking
+      // as a click on it; a verse outside the table, or a position that cannot be read, gives the general view. It waits for the loading
+      // screen (ent_load of 90-entry.js, when it is in scope); a running presentation stops first. A toast names the verse. =====
+      {
+        const loading = () => typeof ent_load !== "undefined" && !!ent_load && !!ent_load.loading;
+        let lastKey = "", lastAt = 0;
+        const readTarget = (r) => {
+          const at = (v) => { for (const [c, a, b, t] of ui_READ[r.book] || []) if (c === r.ch && v >= a && v <= b) return t; return null; };
+          return r.v === 0 ? at(1) || at(0) : at(r.v);   // the chapter's heading line: as its first verse (1.0.2 fix: before the 0-based catch-all ranges)
+        };
+        const goReading = (r) => {
+          const k = r.book + ":" + r.ch + ":" + r.v, now = performance.now();
+          if (k === lastKey && now - lastAt < 2000) return;   // the same click told twice (plugin.page_opened and the toolbar event)
+          lastKey = k;
+          lastAt = now;
+          try {
+            const T = ctx.shared.tour;
+            if (T && typeof T.state === "function" && T.state().running && typeof T.stop === "function") T.stop();
+          } catch (_) {
+          }
+          cancelConfirm();
+          const t = r.ch ? readTarget(r) : null;
+          const b = (t && t.p ? placeBtnByT[t.p] : t && t.v ? viewBtnByKey[t.v] : null) || viewBtnByKey.__general || null;
+          if (b) b.click();
+          else {
+            fly(ui_GENERAL.pos, ui_GENERAL.target);
+            setInfo("__general");
+          }
+          if (r.ch) tmToast((r.book === 10 ? "מלכים א " : "דברי הימים ב ") + ui_heNum(r.ch) + (r.v ? ", " + ui_heNum(r.v) : ""));
+        };
+        const whenReady = (r) => {
+          let n = 0;
+          const tick = () => {
+            if (!loading()) return void goReading(r);
+            if (++n < 480) setTimeout(tick, 250);   // up to 2 minutes behind the loading screen
+          };
+          tick();
+        };
+        ui_bookGo = whenReady;
+        const q = ui_bookQueue.splice(0);
+        if (q.length) whenReady(q[q.length - 1]);
+        ctx.ui.reading = { go: (d) => ui_bookEvent(d), target: (book, ch, v) => readTarget({ book, ch, v }), lineToVerse: ui_lineToVerse };   // for the checks
+      }
+      // ===== 1.0.2 (C, "מה חדש"): on the first opening of a version that has a list in UI_NEWS, once the model is ready (the loading view
+      // gone), a small window with the list and "סגירה"; never while the presentation runs or another window of the plugin is open (it
+      // waits). The seen version is remembered at once when it shows: Otzaria's plugin storage (storage.get / storage.set; sdk.md: the
+      // permissions plugin.storage.* are given to every plugin since 0.9.97 - none in manifest.json), with localStorage as the fallback and
+      // the only store outside Otzaria. Either store saying "seen" is enough. The version: plugin.boot's, else UI_NEWS.ver. =====
+      {
+        const NEWS_KEY = "tm1.news.seen";
+        const inOtz = typeof window.Otzaria !== "undefined" && !!window.Otzaria && typeof window.Otzaria.call === "function";
+        const lsSeen = () => lsGet(NEWS_KEY);
+        const storeSeen = async () => {
+          if (!inOtz) return null;
+          try {
+            const res = await window.Otzaria.call("storage.get", { key: NEWS_KEY });
+            return res && res.success !== false && typeof res.data === "string" ? res.data : null;
+          } catch (_) {
+            return null;
+          }
+        };
+        const markSeen = (ver) => {
+          lsSet(NEWS_KEY, ver);
+          if (inOtz) {
+            try {
+              Promise.resolve(window.Otzaria.call("storage.set", { key: NEWS_KEY, value: ver })).then((r) => {
+                if (r && r.success === false) console.warn("[ui.js] storage.set: " + (r.error ? r.error.code || r.error.message || "" : ""));
+              }, () => {});
+            } catch (_) {
+            }
+          }
+        };
+        const show = (ver) => {
+          const dlg = document.createElement("div");
+          dlg.id = "tm-news";
+          dlg.setAttribute("role", "dialog");
+          dlg.setAttribute("aria-label", "מה חדש בגרסה " + ver);
+          const box = document.createElement("div");
+          box.className = "box";
+          const t = document.createElement("div");
+          t.className = "t";
+          t.textContent = "מה חדש בגרסה " + ver;
+          const ul = document.createElement("ul");
+          for (const s of UI_NEWS.items) {
+            const li = document.createElement("li");
+            li.textContent = s;   // (plain: a small bracket in a short list only looked broken)
+            ul.appendChild(li);
+          }
+          const bb = document.createElement("div");
+          bb.className = "b";
+          const ok = document.createElement("button");
+          ok.type = "button";
+          ok.className = "y";
+          ok.textContent = "סגירה";
+          bb.appendChild(ok);
+          box.appendChild(t);
+          box.appendChild(ul);
+          box.appendChild(bb);
+          dlg.appendChild(box);
+          document.body.appendChild(dlg);
+          const close = () => dlg.remove();
+          ok.addEventListener("click", close);
+          dlg.addEventListener("click", (e) => { if (e.target === dlg) close(); });
+          dlg.addEventListener("keydown", (e) => {
+            e.stopPropagation();
+            if (e.key === "Escape" || e.key === "Esc" || e.key === "Enter") close();
+          });
+          dlg.addEventListener("keyup", (e) => e.stopPropagation());
+          dlg.style.display = "flex";
+          try { ok.focus({ preventScroll: true }); } catch (_) {}
+          markSeen(ver);
+        };
+        // ready = the loading view gone, no presentation running, no other window of the plugin open
+        const ready = () => {
+          if (typeof ent_load !== "undefined" && ent_load && ent_load.loading) return false;
+          if (document.getElementById("loading")) return false;
+          try {
+            const T = ctx.shared.tour;
+            if (T && typeof T.state === "function" && T.state().running) return false;
+          } catch (_) {
+          }
+          for (const id of ["tm-confirm", "tm-report", "tm-printdlg"]) {
+            const el = document.getElementById(id);
+            if (el && el.style.display === "flex") return false;
+          }
+          return true;
+        };
+        let tries = 0;
+        const tick = async () => {
+          if (!ready()) {
+            if (++tries < 3600) setTimeout(tick, 1000);   // up to an hour (a long presentation)
+            return;
+          }
+          const ver = String(ui_bootVersion || UI_NEWS.ver).replace(/^v/, "");
+          if (ver !== UI_NEWS.ver) return;   // a version with no list of its own
+          if (lsSeen() === ver) return;
+          const st = await storeSeen();
+          if (st === ver) {
+            lsSet(NEWS_KEY, ver);
+            return;
+          }
+          if (!ready()) {   // (the storage's answer took a moment)
+            tries = 0;
+            setTimeout(tick, 1000);
+            return;
+          }
+          show(ver);
+        };
+        setTimeout(tick, 800);
+        ctx.ui.news = { items: UI_NEWS.items.slice(), ver: UI_NEWS.ver, show: () => show(UI_NEWS.ver) };   // for the checks
+      }
     } catch (e) {
       if (typeof console !== "undefined") console.error("[ui.js]", e);
     }

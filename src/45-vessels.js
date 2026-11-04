@@ -16,7 +16,9 @@
   //   ctx.shared.mechona = { demo: {start(), stop() (finishes its round fast and parks), reset() (parks at once), seek(sec), running,
   //     home, duration, path, station (1.0.1-L: [x, z] of its stop beside the altar), pourAt (1.0.1-L: [from, to] seconds of the
   //     water), washStation / washAt (1.0.1-L, L.64: the first stop by the ramp for the priests' hands and feet, and its seconds)}, explode:
-  //     {set(on, instant), on}, partLabels (the label objects, moved with the base), group, home, purposeLabel, washLabel }
+  //     {set(on, instant), on}, partLabels (the label objects, moved with the base), group, home, purposeLabel, washLabel,
+  //     follow (1.0.2, item 9: the demonstration's follow view - {start(), stop(), snap(), on, view(tau) -> {pos, target}}; the
+  //     pill "mechonaDemo" starts it, a drag / pinch / wheel on the canvas or any other move of the camera ends it) }
   //   ctx.shared.modelButtons += "mechonaDemo" (1.0.1-L: "הבא את הכיור להדחת העולה" / "עצור את המכונה") and "mechonaExplode" ("פרק:
   //     כיור, כן ומכונה" / "הרכב בחזרה"), anchored above the moving base (one preallocated anchor array each), maxDist 70; the explode
   //     pill also shows / hides the part labels (1.0.1-K review)
@@ -25,7 +27,7 @@
   //     demonstration itself while the base stands there - not a panel layer; ctx.layers.mechonaWash (1.0.1-L, L.64): the same for the
   //     label of the priests' washing at the first stop by the ramp
   //   flyPoints: yam and yamOxen (follow seaPlacement.set), mechonot, mechonaClose, mechonaParts (the exploded base), mechonaDemo (1.0.1-L:
-  //     the route from the block to the slaughter place north of the altar), kiyorMoshe (1.0.1-L, L.74: along the aisle between the rows)
+  //     the route from the block to the slaughter place north of the altar; 1.0.2: kept, the pill flies to the follow view), kiyorMoshe (1.0.1-L, L.74: along the aisle between the rows)
   //   The ידות: for Rashi (7:28, 7:32, 7:33) and בעל צורת הבית the axles / rods; the vertical posts and the small lying wheel follow the
   //     book's drawing (p19L) - a model choice (1.0.1-K review; vsl_baseParts)
   // 1.0.1-L (FIXES-1.0.1-L; the user's answers of 29.10.2026):
@@ -1182,7 +1184,7 @@
     //      במים"; 1:13) - the label of layer mechonaPurpose; the east tap, toward the tables, on the side that the demonstration's view (from the east) sees:
     //      the water falls at x 45.12, 1.38 from the tables' west end (x 46.5);
     //   3. comes back the same way - north, east, west, south: four directions while the body never turns.
-    // The route keeps x 32.3..45.2, z -48.4..35 (1.0.1-L: measured on all its parts, every 0.1 s): 7.8 east of the ulam steps, 2.7 west of the altar, 4.8 west of the ramp, 6.2 west of the
+    // The route keeps x 32.3..45.2, z -48.4..35 (1.0.1-L: measured on all its parts, every 0.1 s): 7.8 east of the ulam steps, 2.7 west of the altar's body (1.0.2 add-on: its yesod's west face is x 37.5, z -12..12; the base's full box, taps included, keeps 0.38 from it, measured over the whole round), 4.8 west of the ramp, 6.2 west of the
     // rings (x >= 42.82) along x 34.5; at the station 3.9 north of the last rings, 1.5 from the tables and the pillars' row (z -49.5) in the book's layout, the same or more in the other two
     // (30-courts.js, slaughterLayout; the stop is computed from the book's tables and does not move), 27 and more
     // from the Sea (x >= 72.83). Speed 5 amot a second (was 3: the way is 87.5 amot each way now), 0.7 s to turn the wheels, 4 s and 5 s of
@@ -1445,7 +1447,152 @@
       },
       get on() { return st.exTarget === 1; }
     };
-    ctx.shared.mechona = { demo, explode, partLabels, group: mg, home: [HX, HZ], poseAt: (tau) => poseAt(tau, { x: 0, z: 0, alpha: 0, flow: 0 }), timeline: TL,
+    // --- 1.0.2 (item 9; the user: "לא רואים את כל פעולת המכונה מקרוב, רק כשמתרחקים מאוד"): the FOLLOW VIEW of the demonstration.
+    // While the demonstration runs from its pill, the camera follows the moving base about 20 amot away (13.5 at the two stops, so that
+    // the water is seen running), from a side that neither the altar nor the ulam hides; the old route view (flyPoints.mechonaDemo, 72
+    // high) is kept for whoever uses it. All of it is a model choice of the view, no source. The sides, measured on the route (x 34.5
+    // from z 33 to -46, then east to the stop x 43, z -46; the altar x 39.5..59.5, z +-10, its top F + 10.5 with the lip (1.0.2 add-on:
+    // its yesod, 1 high, out to x 37.5 and z +-12 on the west, north and south, and the wall under the sovev out to x 38.5, up to F + 6); the ramp x
+    // 41.5..57.5, z 10..42; the ulam's face x 18.5 and its steps to x 24.5; the slaughter place's rings z -20..-40, tables x 46.5..52.5,
+    // z -44.25..-48.75, 1.5 high, pillars z -50 / -57 - 40-altar.js, 30-courts.js):
+    //   - the azimuth `az` of the camera round the base, in degrees: 0 = from the north (-z), 90 = from the east (+x), 180 = from the south;
+    //   - home, the wash and the north leg along the altar: from the north-north-east, az 12 (18 at the wash stop): the camera stays in
+    //     the free strip west of the altar's west face (x <= 38.5; above the yesod, which reaches x 37.5 but is only 1 high) and of the ramp, ahead of the base; from the east the altar or the
+    //     ramp would stand between, from the west the east tap (VSL_TAP_R) and its water are behind the base's own body;
+    //   - past the altar's north face (the base at z -8 .. -30) it swings round the EAST side (never the west: there the ulam's north wing
+    //     reaches z -42) over the rings, which are low, to az 110, and on the way to the marble tables to az 160: from the south-south-east,
+    //     between the base's east face and the tables, where the water falls (x 45.12), the tables beyond it;
+    //   - coming back it swings the same way to az 12 again, behind the base, while the base is still north of z -20 (so that the altar's
+    //     west edge never comes between), and follows it home: the round ends where it began, and the camera stays there.
+    // Time-based: the view follows the base's pose with an exponential lag of FOL_LAG seconds (position, aim, distance and azimuth), so a
+    // slow frame never makes it jump. A drag, a pinch or a wheel on the canvas, or any other move of the camera (the nav buttons, the
+    // keys, a flight from the panel), ends the follow until the pill switches the demonstration on again; the camera then stays where it
+    // is. The pill's "עצור" stays reachable: the camera is within 21 amot of it (maxDist 190 while it runs) and the pill stays inside the
+    // view (by projection at most 0.6 of the half-height, measured over the round) ---
+    const FOL_LAG = 0.35;                           // seconds (model choice)
+    const FOL_FAR = { r: 18, h: 12, ty: 3.5 };      // horizontal distance, eye and aim above the court floor: 19.9 from the aim
+    const FOL_NEAR = { r: 13, h: 8, ty: 4.3 };      // at the stops: 13.5 from the aim (as mechonaClose: the pills and the wheels in the view)
+    const FOL_AZ = { route: 12, wash: 18, corner: 110, pour: 160 };
+    const D2R = Math.PI / 180;
+    // the view for a moment of the round: the base at (x, z); out = {tx, ty, tz, az (radians), r, h}
+    const folNear = (tau, w) => smooth(Math.min((tau - (w[0] - 1.6)) / 1.6, (w[1] + 1.2 - tau) / 1.2));   // in 1.6 s before the water, out 1.2 s after it
+    const folView = (tau, x, z, out) => {          // (runs every frame: no allocation)
+      const nW = folNear(tau, TL.wash), nP = folNear(tau, TL.pour), n = Math.max(nW, nP);
+      let az;
+      if (z <= STOP[1] + 0.01) az = FOL_AZ.corner + (FOL_AZ.pour - FOL_AZ.corner) * smooth((x - HX) / (STOP[0] - HX));   // the leg to the tables and back
+      else if (tau < TL.pour[0]) az = FOL_AZ.route + (FOL_AZ.corner - FOL_AZ.route) * smooth((-8 - z) / 22);      // going: swings at z -8 .. -30
+      else az = FOL_AZ.corner - (FOL_AZ.corner - FOL_AZ.route) * smooth((z - STOP[1]) / 26);                       // coming back: at z -46 .. -20
+      az += (FOL_AZ.wash - FOL_AZ.route) * nW;
+      out.az = az * D2R;
+      out.r = FOL_FAR.r + (FOL_NEAR.r - FOL_FAR.r) * n;
+      out.h = F + FOL_FAR.h + (FOL_NEAR.h - FOL_FAR.h) * n;
+      out.ty = F + FOL_FAR.ty + (FOL_NEAR.ty - FOL_FAR.ty) * n;
+      out.tx = x + 1.0 * n;                          // at a stop the aim moves 1 east, toward the tap's side
+      out.tz = z;
+      return out;
+    };
+    const folPos = (v, p) => {                      // the camera's place of a view, into the array p
+      p[0] = v.tx + v.r * Math.sin(v.az);
+      p[1] = v.h;
+      p[2] = v.tz - v.r * Math.cos(v.az);
+      return p;
+    };
+    const fo = { on: false, wait: 0, cur: { tx: 0, ty: 0, tz: 0, az: 0, r: 0, h: 0 }, want: { tx: 0, ty: 0, tz: 0, az: 0, r: 0, h: 0 },
+      p: [0, 0, 0], set: [0, 0, 0, 0, 0, 0], last: null, el: null, downs: new Map() };
+    const folCam = () => (ctx.camera && ctx.controls && ctx.controls.target ? ctx.camera : null);
+    const folPut = () => {                          // the camera at fo.cur, and what was set, to see whether anyone else moves it
+      const cam = folCam();
+      if (!cam) return;
+      folPos(fo.cur, fo.p);
+      cam.position.set(fo.p[0], fo.p[1], fo.p[2]);
+      ctx.controls.target.set(fo.cur.tx, fo.cur.ty, fo.cur.tz);
+      cam.lookAt(ctx.controls.target);              // as OrbitControls' update does: this frame is drawn already aimed
+      const s = fo.set;
+      s[0] = fo.p[0]; s[1] = fo.p[1]; s[2] = fo.p[2]; s[3] = fo.cur.tx; s[4] = fo.cur.ty; s[5] = fo.cur.tz;
+    };
+    const folMoved = () => {                        // has anything but the follow moved the camera since the last frame?
+      const cam = folCam(), q = ctx.controls.target, s = fo.set, E = 0.02;
+      return Math.abs(cam.position.x - s[0]) > E || Math.abs(cam.position.y - s[1]) > E || Math.abs(cam.position.z - s[2]) > E ||
+        Math.abs(q.x - s[3]) > E || Math.abs(q.y - s[4]) > E || Math.abs(q.z - s[5]) > E;
+    };
+    const folListen = () => {                       // once: the canvas's drag, pinch and wheel end the follow (passive: OrbitControls untouched)
+      if (fo.el || !ctx.renderer || !ctx.renderer.domElement) return;
+      const el = (fo.el = ctx.renderer.domElement);
+      el.addEventListener("pointerdown", (e) => {
+        if (!fo.on) return;
+        fo.downs.set(e.pointerId, [e.clientX, e.clientY]);
+        if (fo.downs.size > 1) follow.stop();       // a second finger: a pinch
+      }, { passive: true });
+      el.addEventListener("pointermove", (e) => {
+        const d = fo.downs.get(e.pointerId);
+        if (d && fo.on && Math.hypot(e.clientX - d[0], e.clientY - d[1]) > 4) follow.stop();   // a drag (a plain click on a label does not end it)
+      }, { passive: true });
+      const up = (e) => fo.downs.delete(e.pointerId);
+      window.addEventListener("pointerup", up, { passive: true });
+      window.addEventListener("pointercancel", up, { passive: true });
+      el.addEventListener("wheel", () => { if (fo.on) follow.stop(); }, { passive: true });
+    };
+    const follow = {
+      // start(): fly to the view of the base's present moment (the UI's flight, 1.6 s), then follow it
+      start() {
+        folListen();
+        const cam = folCam();
+        if (!cam) return false;
+        folView(st.tau, pose.x, pose.z, fo.want);
+        Object.assign(fo.cur, fo.want);
+        folPos(fo.cur, fo.p);
+        const fly = ctx.ui && typeof ctx.ui.fly === "function" ? ctx.ui.fly : typeof ctx.flyTo === "function" ? ctx.flyTo : null;
+        if (fly) {
+          fly(fo.p.slice(), [fo.cur.tx, fo.cur.ty, fo.cur.tz]);
+          fo.wait = performance.now() + 1700;       // the flight's 1600 ms (90-entry.js flyTo) and a frame
+        } else fo.wait = 0;
+        fo.downs.clear();
+        fo.on = true;
+        fo.last = null;
+        return true;
+      },
+      stop() { fo.on = false; fo.wait = 0; },
+      // snap(): the camera at once in the view of the present moment (for the pictures and the checks)
+      snap() {
+        if (!folCam()) return false;
+        folListen();
+        folView(st.tau, pose.x, pose.z, fo.cur);
+        folPut();
+        fo.on = true;
+        fo.wait = 0;
+        fo.last = null;
+        return true;
+      },
+      get on() { return fo.on; },
+      // view(tau): {pos, target} of the follow view at a moment of the round (no lag) - for the checks
+      view(tau) {
+        const P = poseAt(((+tau || 0) % TL.total + TL.total) % TL.total, { x: 0, z: 0, alpha: 0, flow: 0 });
+        const v = folView(((+tau || 0) % TL.total + TL.total) % TL.total, P.x, P.z, {});
+        return { pos: folPos(v, [0, 0, 0]), target: [v.tx, v.ty, v.tz] };
+      }
+    };
+    ctx.animated.push((t) => {
+      const now = typeof t === "number" && isFinite(t) ? t : performance.now();
+      const dt = fo.last == null ? 0 : Math.min(0.25, Math.max(0, (now - fo.last) / 1000));
+      fo.last = now;
+      if (!fo.on) return;
+      if (!st.running || !folCam()) { fo.on = false; return; }   // the demonstration ended: the camera stays where it is
+      if (fo.wait) {
+        if (now < fo.wait) return;                 // the flight is still on (the frame's own time: the flight ended in this frame's first step)
+        fo.wait = 0;
+        // the flight did not end in the view (a flight elsewhere took over): no follow
+        const s = fo.set;
+        s[0] = fo.p[0]; s[1] = fo.p[1]; s[2] = fo.p[2]; s[3] = fo.cur.tx; s[4] = fo.cur.ty; s[5] = fo.cur.tz;
+        if (folMoved()) { fo.on = false; return; }
+      } else if (!ctx.controls.autoRotate && folMoved()) { fo.on = false; return; }   // someone else moved the camera ("סיבוב איטי" is overridden)
+      folView(st.tau, pose.x, pose.z, fo.want);
+      const k = dt > 0 ? 1 - Math.exp(-dt / FOL_LAG) : 0, c = fo.cur, w = fo.want;
+      c.tx += (w.tx - c.tx) * k; c.ty += (w.ty - c.ty) * k; c.tz += (w.tz - c.tz) * k;
+      c.az += (w.az - c.az) * k; c.r += (w.r - c.r) * k; c.h += (w.h - c.h) * k;
+      folPut();
+    });
+
+    ctx.shared.mechona = { demo, explode, follow, partLabels, group: mg, home: [HX, HZ], poseAt: (tau) => poseAt(tau, { x: 0, z: 0, alpha: 0, flow: 0 }), timeline: TL,
       purposeLabel: PURPOSE_TEXT, washLabel: WASH_TEXT, block: { cols: L.cols.slice(), rows: L.rows.slice(), laver: [L.laver.x, L.laver.z] } };
 
     // --- on-model buttons (contract 0.5b), above the moving base; they follow it and the raised laver ---
@@ -1469,10 +1616,12 @@
       // 1.0.1-L (L.67): the route's view stands far from the base, so "עצור" must show from there while it runs (the UI reads maxDist every frame)
       anchor: () => anchorAt(ancDemo, 1.9), get maxDist() { return st.running || st.homing ? 190 : 70; },
       get: () => st.running,
-      // 1.0.1-L (L.67): the way is long now, so switching it on also turns the camera to the route's view, as the section's pill does (L.43)
+      // 1.0.1-L (L.67): the way is long now, so switching it on also turns the camera to the route's view, as the section's pill does (L.43).
+      // 1.0.2 (item 9): it turns the camera to the follow view instead (follow, above); the route's view is the fallback without a camera
       set: (on) => {
-        if (!on) { demo.stop(); return; }
+        if (!on) { follow.stop(); demo.stop(); return; }   // the UI flies back to the view before the pill (70-ui.js revealPress)
         demo.start();
+        if (follow.start()) return;
         const f = ctx.shared.flyPoints && ctx.shared.flyPoints.mechonaDemo;
         const fly = ctx.ui && typeof ctx.ui.fly === "function" ? ctx.ui.fly : typeof ctx.flyTo === "function" ? ctx.flyTo : null;
         if (f && fly) fly(f.pos, f.target);

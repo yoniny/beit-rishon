@@ -1,0 +1,16 @@
+# Publishes the plugin to the Otzaria store on every push to main that raises "version" in plugin/manifest.json
+# (Otzaria/otzaria-plugin-validator: validate, build, publish; publishing needs the OTZARIA_USER / OTZARIA_PASSWORD secrets).
+name: Publish plugin
+on:
+  push:
+    branches: [main]
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Otzaria/otzaria-plugin-validator@v1
+        with:
+          path: plugin
+          otzaria-user: ${{ secrets.OTZARIA_USER }}
+          otzaria-password: ${{ secrets.OTZARIA_PASSWORD }}
