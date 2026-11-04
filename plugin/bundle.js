@@ -9,7 +9,7 @@
  * Sources: I Kings 6-8, II Chronicles 3-4 (primary); Chazal: Mishnah Middot, Yoma, Menachot, Eruvin, Zevachim, Bava Batra, Rashi,
  * Radak, Metzudot, Malbim, Ralbag. NOT Ezekiel (the user rejected it: that is the Third Temple).
  * Units: 1 = 1 amah. +x east (front), +z south (right), y up. Levels: great court 0, inner court 6, house floor 12.
- * VERSION 1.0.4 (manifest.json; minAppVersion 0.9.98.1). 1.0.1 is the store version (com.beit-hamikdash.rishon-3d-model, since 2.11.2026).
+ * VERSION 1.0.5 (manifest.json; minAppVersion 0.9.98.1). 1.0.1 is the store version (com.beit-hamikdash.rishon-3d-model, since 2.11.2026).
  * 1.0.2 (2026-11-03, round 5 = DEV_NOTES "סבב ה' — 1.0.2": the user's list of 2.11.2026 after 1.0.1 went to the store): a reader button "פתח בתוסף בית ראשון" in
  *   I Kings (10) and II Chronicles (39) only (manifest startup program + toolbar item, openPlugin); 70-ui.js reads the line -> verse (ui_BASE, all
  *   chapters) -> ui_READ -> the place / view with its card; "דיווח על טעות או תקלה" -> feedback.report (inside Otzaria only); the other readings
@@ -44623,8 +44623,9 @@ var OtzariaPlugin = (() => {
   var ui_AUTO_OFF_S = 15;   // 1.0.1-L (L.27): a feature a PLACE switched on goes off by itself after this many seconds
   // 1.0.2 (C): the window "מה חדש" - shown once for this version (ver = manifest.json's version); short plain Hebrew, one line a feature
   var UI_NEWS = {
-    ver: "1.0.4",
+    ver: "1.0.5",
     items: [
+      "סיבוב מלא סביב מה שמסתכלים עליו בתוך הבית, גם מאחור ומלמעלה; הקירות והתקרות נעשים שקופים בדרך.",
       "כפתור ״פתח בתוסף בית ראשון״ בספרי מלכים א ודברי הימים ב.",
       "השיתין, ומזבח הנחושת מאבנים או מצופה נחושת עם הכבש (אברבנאל).",
       "היסוד, הסובב וחוט הסיקרא; הכבשים הקטנים — כרש״י או כתוספות.",
@@ -44994,35 +44995,62 @@ body.tm-measuring canvas{cursor:crosshair}
         // stopping 2 amot short of the target (a wall the target stands at is not faded) and at the fade distance. A hit on a level face (a
         // floor, a ceiling, a roof's top) does not count; only plain meshes 4 amot high and 5 wide or more, not flat platforms (the otem, the
         // palace's terrace), not the cloud and nothing noPick (the smoke) - model choice: these are the walls. Instanced meshes (the forest
-        // house's columns and beams) are left out: fading one would fade all its copies. A wall of two courses ("…-stone" / "…-cedar", the
+        // house's columns and beams) are left out: fading one would fade all its copies (1.0.4: but for 4 copies or fewer, below). A wall of two courses ("…-stone" / "…-cedar", the
         // ulam) fades whole. Per mesh: its material is cloned once (kept in userData.tmHideClone), the clone is faded, and the shared
         // material is put back when the wall is whole again - no material of another mesh changes; a module that swaps the material
         // meanwhile wins (the fade lets go). userData.fade is set while it is faded: 90-entry.js's ent_solids counts such a wall as a roof
         // for the 360 (the heichal stays "indoors") and lets the camera through it, as it does with a faded court wall (DEV_NOTES "סבב ה'" 10).
         // The court walls' own fade above is unchanged. No allocation per frame (the lists and vectors are kept; three.js's hit records
         // are made only in the 140 ms pass, as above). =====
-        const HIDE_GROUPS = ["heichal", "interior", "palace"];
+        // ===== 1.0.4 (the user at the menorot: "למה אני לא יכול לראות מאחוריהם? ... אם צריך תוותר על התקרה - אני לא צריך אותה בשום מקום"): the pass. Round a thing
+        // one flew to under a roof (ctx.camPass, 90-entry.js) the camera orbits through the buildings' walls and ceilings; then the same rays (in every fade mode but
+        // "כבוי", and 0.3 short of the target, not 2: the wall the target stands at fades too once the camera is behind it) fade every candidate they cross, the
+        // ceilings, the roofs and the upper stories' floors too (the flat meshes 5 wide or more, and the 4 high ones from 1 wide, join the list: hideFlat, hideSmall,
+        // used only here; a level face counts) - except what still holds the camera (ctx.camPassHit: the floors at or under the target). Every candidate is marked
+        // userData.tmPass: those are the meshes 90-entry.js lets the camera through, so a surface it passes is one this loop can fade. Back to whole as before, when
+        // the camera returns. =====
+        const HIDE_GROUPS = ["heichal", "interior", "palace"], HIDE_PASS_SHORT = 0.3, HIDE_INST = 4;
+        // 1.0.4: a ceiling, a roof or a floor that the pass fades goes to HIDE_PASS_FLAT, not UI_FADE_OPACITY: over the heichal four of them lie one on another
+        // (the roof, two courses, the gold ceiling), and at 0.35 each the menorot were all but lost (model choice; the walls keep 0.35)
+        const HIDE_PASS_FLAT = 0.06;
         let hideT = null, hideAt = -1e9;
-        const hidePair = new Map(), hideBlocked = new Set(), hideHits = [], HID = [];
+        const hidePair = new Map(), hideBlocked = new Set(), hideHits = [], HID = [], hideFlat = new Set(), hideSmall = new Set(), hideDeep = new Set();
         const hideBB = new Box3(), hideSz = new Vector3(), hideN = new Vector3();
+        const hideTo = (o) => (hideDeep.has(o) ? HIDE_PASS_FLAT : UI_FADE_OPACITY);   // 1.0.4: how far a hidden mesh fades
         const hideList = () => {
           const now = performance.now();
           if (hideT && now - hideAt < 5000) return hideT;
           hideAt = now;
           const occS = new Set(OCCL), out = [], stems = new Map();
           hidePair.clear();
+          hideFlat.clear();
+          hideSmall.clear();
           for (const top of ctx.root && Array.isArray(ctx.root.children) ? ctx.root.children : []) {
             if (HIDE_GROUPS.indexOf(top.name) < 0) continue;
             top.traverse((o) => {
-              if (!o.isMesh || o.isInstancedMesh || !o.geometry || occS.has(o) || o.userData.noPick) return;
+              // 1.0.4: an instanced mesh of up to HIDE_INST copies too (Yachin and Boaz in the ulam, whose shafts stopped the orbit round the ulam's tables:
+              // the two fade together); not the forest house's 45 columns
+              if (!o.isMesh || (o.isInstancedMesh && !(o.count <= HIDE_INST && typeof o.computeBoundingBox === "function")) || !o.geometry || occS.has(o) || o.userData.noPick) return;
               for (let p = o; p; p = p.parent) if (p.name === "tm-kk-cloud") return;
               const pa = o.geometry.attributes && o.geometry.attributes.position;
               if (!pa || pa.count > 30000) return;
-              if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
-              hideBB.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld).getSize(hideSz);
-              const hz = Math.max(hideSz.x, hideSz.z);
-              if (hideSz.y < 4 || hz < 5 || hideSz.y < 0.15 * hz) return;
+              if (o.isInstancedMesh) {
+                if (!o.boundingBox) o.computeBoundingBox();
+                hideBB.copy(o.boundingBox);
+              } else {
+                if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+                hideBB.copy(o.geometry.boundingBox);
+              }
+              hideBB.applyMatrix4(o.matrixWorld).getSize(hideSz);
+              const hz = Math.max(hideSz.x, hideSz.z), flat = hideSz.y < 0.15 * hz;
+              // 1.0.4: for the pass also what is 4 high but narrower than 5 (1 at least): the devir's door leaves, which hid Moses' menorah from the devir,
+              // a cherub, the parochet
+              const small = !flat && hideSz.y >= 4 && hz < 5 && hz >= 1;
+              if ((hz < 5 && !small) || (!flat && hideSz.y < 4)) return;
               out.push(o);
+              o.userData.tmPass = true;   // 1.0.4: 90-entry.js lets the camera through it round a thing one flew to
+              if (flat) hideFlat.add(o);   // 1.0.4: a ceiling, a roof, a floor: the pass only
+              if (small) hideSmall.add(o);   // 1.0.4: the pass only
               const sm = /^(.+)-(?:stone|cedar)$/.exec(o.name || "");
               if (sm) {
                 const k = (o.parent ? o.parent.uuid : "") + "|" + sm[1];
@@ -45075,6 +45103,7 @@ body.tm-measuring canvas{cursor:crosshair}
             last = t;
             const blocked = new Set();
             hideBlocked.clear();
+            hideDeep.clear();
             const FADE_DIST = typeof fs.dist === "number" && fs.dist > 0 ? fs.dist : 120;   // a wall fades only within this many amot of the camera
             if (fs.on) {
               const cam = ctx.camera.position, tg = ctx.controls.target;
@@ -45109,13 +45138,15 @@ body.tm-measuring canvas{cursor:crosshair}
                 ray.far = NEAR + 2;
                 for (const h of ray.intersectObjects(OCCL, false)) blocked.add(h.object);
               }
-              // 1.0.2 (D): the building's walls that hide the target (see above)
-              if (fs.hide) {
+              // 1.0.2 (D): the building's walls that hide the target (see above); 1.0.4: and the pass (see above)
+              let pass = false;
+              try { pass = typeof ctx.camPass === "function" && !!ctx.camPass() && typeof ctx.camPassHit === "function"; } catch (_) { pass = false; }
+              if (fs.hide || pass) {
                 const list = hideList();
                 for (const [ox, oy] of inside ? OFFS1 : OFFS5) {
                   to.copy(tg).addScaledVector(right, ox * 1.5).addScaledVector(upv, oy * 1.5);
                   dd.subVectors(to, cam);
-                  const far = Math.min(dd.length() - 2, FADE_DIST);
+                  const far = Math.min(dd.length() - (pass ? HIDE_PASS_SHORT : 2), FADE_DIST);
                   if (!(far > 0.5)) continue;
                   ray.set(cam, dd.normalize());
                   ray.near = 0;
@@ -45125,11 +45156,15 @@ body.tm-measuring canvas{cursor:crosshair}
                   for (const h of hideHits) {
                     const o = h.object;
                     if (hideBlocked.has(o) || !hideShown(o)) continue;
-                    if (h.face) {
+                    if (pass) {
+                      if (!ctx.camPassHit(h, ray.ray.direction)) continue;   // a floor under the target
+                    } else if (hideFlat.has(o) || hideSmall.has(o)) continue;
+                    else if (h.face) {
                       hideN.copy(h.face.normal).transformDirection(o.matrixWorld);
                       if (Math.abs(hideN.y) > 0.7) continue;
                     }
                     hideBlocked.add(o);
+                    if (pass && hideFlat.has(o)) hideDeep.add(o);
                     const pr = hidePair.get(o);
                     if (pr) for (const q of pr) hideBlocked.add(q);
                   }
@@ -45142,8 +45177,8 @@ body.tm-measuring canvas{cursor:crosshair}
               const fw = m.userData.fadeWith;
               if (fw && blocked.has(fw)) m.userData.fade.tgt = UI_FADE_OPACITY;
             }
-            for (let i = 0; i < HID.length; i++) HID[i].tgt = hideBlocked.has(HID[i].m) ? UI_FADE_OPACITY : 1;
-            for (const o of hideBlocked) if (!hideHas(o)) hideStart(o).tgt = UI_FADE_OPACITY;
+            for (let i = 0; i < HID.length; i++) HID[i].tgt = hideBlocked.has(HID[i].m) ? hideTo(HID[i].m) : 1;
+            for (const o of hideBlocked) if (!hideHas(o)) hideStart(o).tgt = hideTo(o);
           }
           // 1.0.2 (D): the building's walls toward their target; whole again -> the shared material back
           for (let i = HID.length - 1; i >= 0; i--) {
@@ -46137,6 +46172,11 @@ body.tm-measuring canvas{cursor:crosshair}
           }
           return true;
         };
+        const kkP = [0, 0, 0];   // 1.0.4: the orbit into the cloud (below)
+        let kkAsked = false, kkRel = 0;
+        ctx.renderer.domElement.addEventListener("pointerdown", () => { kkRel = Infinity; });
+        window.addEventListener("pointerup", () => { if (kkRel === Infinity) kkRel = performance.now(); }, true);
+        window.addEventListener("pointercancel", () => { if (kkRel === Infinity) kkRel = performance.now(); }, true);
         ctx.animated.push(function(t) {
           const cam = ctx.camera.position;
           const dist = Math.hypot(cam.x - KKC.x, cam.y - KKC.y, cam.z - KKC.z);
@@ -46150,6 +46190,17 @@ body.tm-measuring canvas{cursor:crosshair}
           if (!cloudOn) {
             if (dist < 50) cloudSeenNear = true;
             else if (cloudSeenNear && dist > 75) setCloud(true);
+          }
+          // 1.0.4: the orbit round a thing one flew to (ctx.camPass, 90-entry.js; Moses' menorah stands 1.5 amot before the devir) takes the camera through the
+          // devir's wall into the cloud: once the drag is let go (kkRel, 400 ms), the question a flight into the devir asks (askRemoveCloud) - once each time the
+          // camera goes in; "ביטול" leaves the cloud, and the camera where it is
+          kkP[0] = cam.x;
+          kkP[1] = cam.y;
+          kkP[2] = cam.z;
+          if (!inKK(kkP)) kkAsked = false;
+          else if (cloudOn && !kkAsked && cf.style.display !== "flex" && performance.now() - kkRel > 400 && typeof ctx.camPass === "function" && ctx.camPass()) {
+            kkAsked = true;
+            askRemoveCloud(() => setCloud(false));
           }
           let show = false;
           // 1.0.17: the button appears only while the cloud is actually seen at a reasonable size on screen,
@@ -51203,6 +51254,10 @@ body.tm-measuring #tm-tour-box{bottom:96px}
   //   the orbit's polar limit no longer keeps the eye above the target's level; it keeps the eye ENT_FLOOR_M over the floor or the ground under it (ent_floorStep), and,
   //   as before, out of the walls and the ceilings (ent_wallStep: a floor keeps 0.4 now, a wall or a ceiling 0.8). The eye's height: ArrowUp / ArrowDown, PageUp /
   //   PageDown and Shift + wheel raise and lower the eye and the target together (ent_liftStep); the tilt the arrows did stays on the nav buttons and on Shift + arrows.
+  // 1.0.4 (the user, in the heichal: "כשאני מסתכל על המנורות למה אני לא יכול לראות מאחוריהם? יש לי בעיה בסיבוב בעיקר לצד שמאל. אם צריך תוותר על התקרה"): after a
+  //   flight to something close under a roof (the menorot, the tables, the cherubim: ENT_ORBIT_NEAR) a drag orbits round it again, and the walls and the ceilings of
+  //   the buildings let the camera through while the fade loop of 70-ui.js shows them see-through (ent_orbit, ent_passOn, ent_passSurf); the 360 in place stays for
+  //   a hall seen from afar (the kodesh, the forest house) and after a look in place.
   function applyTheme(theme) {
     if (!theme || !theme.colorScheme) return;
     const cs = theme.colorScheme;
@@ -51384,7 +51439,9 @@ body.tm-measuring #tm-tour-box{bottom:96px}
             roof.push(o);
             // 1.0.2 (fix): a wall that the fade loop shows see-through is no wall for the camera's move (as in 1.0.1: one zooms through a faded
             // court wall to see inside); it still counts for the roofed test. The house's own walls never fade (1.0.1), so they always stop it.
-            if (!off && !thin) all.push(o);
+            // 1.0.4: a building's wall or ceiling (userData.tmPass, 70-ui.js) stays in the list when faded: the floors in its merged mesh still hold the eye, and
+            // its walls and ceilings are let through hit by hit (ent_wallHit, ent_passSurf)
+            if (!off && (!thin || o.userData.tmPass)) all.push(o);
           }
         }
         for (const c of o.children) walk(c, off);
@@ -51416,11 +51473,7 @@ body.tm-measuring #tm-tour-box{bottom:96px}
     }
     return withCut ? ent_sol.roof : ent_sol.all;
   }
-  function ent_indoors() {
-    const now = performance.now(), p = camera.position;
-    if (now - ent_look.t < 1200 && ent_look.at.distanceToSquared(p) < 0.25) return ent_look.res;
-    ent_look.t = now;
-    ent_look.at.copy(p);
+  function ent_roofed(p) {   // is p under a roof (the test above; 1.0.4: for the camera and for the target)
     let res = false;
     try {
       const ray = ent_look.ray || (ent_look.ray = new Raycaster());
@@ -51431,11 +51484,79 @@ body.tm-measuring #tm-tour-box{bottom:96px}
       res = (near >= 3 && hit(ent_look.up, 60) < 60) || tight === 4;
     } catch (_) {
     }
-    return (ent_look.res = res);
+    return res;
+  }
+  function ent_indoors() {
+    const now = performance.now(), p = camera.position;
+    if (now - ent_look.t < 1200 && ent_look.at.distanceToSquared(p) < 0.25) return ent_look.res;
+    ent_look.t = now;
+    ent_look.at.copy(p);
+    return (ent_look.res = ent_roofed(p));
+  }
+  // ===== 1.0.4: the orbit round a thing close by under a roof, through the walls and the ceilings =====
+  // The user, at the menorot: "למה אני לא יכול לראות מאחוריהם? יש לי בעיה בסיבוב בעיקר לצד שמאל. אם צריך תוותר על התקרה - אני לא צריך אותה בשום מקום". Reproduced in
+  // headless Chrome (drags of 500 pixels from the fly point "menorot"): in the heichal every drag turned the view in place (1.0.2's 360) - the head turned, the camera stayed, so the menorot were
+  // never seen from behind; and an orbit (the drag with the 360 held off) was stopped by ent_wallStep 0.8 before the devir's wall (1.5 amot west of Moses' menorah: a
+  // drag to the left stopped after 60 degrees, in the parochet) and before the south wall (4.8 amot south of it: to the right after 55 degrees, then it slid along the
+  // wall toward the target), and from 27 amot away over the top by the ceiling (the eye held at 41.2). Now: a flight whose target is within ENT_ORBIT_NEAR amot of its
+  // eye (the menorot 12.9, the tables 12.6, Moses' table 4, the incense altar 3.7, the cherubim 14.7, the throne 17.7; not the kodesh 22.4, the hall of hewn stone
+  // 20.5, the king's house 24.1 - model choice) and that ends under a roof (the eye: ent_roofed; not Yachin and Boaz seen from the court) marks the target as a thing
+  // (ent_orbit.obj); while it is under a roof (ent_roofed at the target, and the fade on - "טשטוש חומות: כבוי" means walls that stop) a drag, the nav buttons and
+  // "סיבוב איטי" orbit round it (ent_inPlace false), and the walls, the ceilings and the roofs of the buildings - the meshes the fade loop of 70-ui.js can fade
+  // (userData.tmPass: the groups "heichal", "interior", "palace", walls 4 high and 1 wide or more, flat ones 5 wide or more) - let the camera through, while that
+  // loop fades every one of them between the camera and the target (ctx.camPass, ctx.camPassHit). What still holds the eye: the floor under the target and every
+  // surface facing up at or under the target's level (+ ENT_PASS_FLOOR; the floor lining, the otem, a lower story's floor), everything at or under the floor under the
+  // target (the otem's sides), the vessels, the many-copied instanced meshes (the forest house's columns; Yachin and Boaz, 2 copies, are let through) and the ground -
+  // so the floor clamp is unchanged, and over the roof the floor under the eye is the heichal's floor (the roof and the upper stories are let through downward too). A
+  // look in place (ent_lookEnd) or a flight to a far target clears the mark.
+  var ENT_ORBIT_NEAR = 18, ENT_PASS_FLOOR = 0.3;
+  var ent_orbit = { obj: false, t: -1e9, at: new Vector3(1e9, 0, 0), roofed: false, fy: -Infinity, busy: false, n: new Vector3() };
+  function ent_passTarget() {   // the target's roof and the floor under it, again when the target moved an amah or after 1.2 s
+    const O = ent_orbit, q = controls.target, now = performance.now();
+    if (now - O.t < 1200 && O.at.distanceToSquared(q) < 1) return O;
+    O.t = now;
+    O.at.copy(q);
+    O.busy = true;   // the floor under the target: no surface let through
+    try {
+      O.roofed = ent_roofed(q);
+      O.fy = ent_floorY(q);
+    } catch (_) {
+      O.roofed = false;
+    } finally {
+      O.busy = false;
+    }
+    return O;
+  }
+  function ent_passOn() {
+    if (!ent_orbit.obj || ent_look.on || flyAnim || ent_load.loading || !controls) return false;
+    const fs = ctx && ctx.shared && ctx.shared.fadeState;
+    if (fs && fs.on === false) return false;
+    return ent_passTarget().roofed;
+  }
+  // may the camera pass the surface of x (a Raycaster hit, along the ray's direction dir)? Only a building's wall or ceiling (userData.tmPass), above the floor under
+  // the target, and not a surface facing up at or under the target's level
+  function ent_passSurf(x, dir) {
+    const O = ent_orbit, o = x && x.object;
+    if (O.busy || !o || !o.userData.tmPass) return false;
+    const T = ent_passTarget();
+    if (x.point.y <= T.fy + 0.05) return false;
+    const n = O.n;
+    if (x.face) n.copy(x.face.normal).transformDirection(o.matrixWorld);
+    else n.copy(dir).negate();
+    if (n.dot(dir) > 0) n.negate();
+    return !(n.y > 0.7 && x.point.y <= controls.target.y + ENT_PASS_FLOOR);
+  }
+  function ent_thin(o) {   // shown see-through now (the test of ent_solids)
+    const m = Array.isArray(o.material) ? o.material[0] : o.material;
+    return !!(m && m.transparent && m.opacity < 0.5);
+  }
+  function ent_inPlace() {   // does a drag (and the nav buttons, "סיבוב איטי") turn the view in place? (ctx.camIndoors)
+    return ent_indoors() && !ent_passOn();
   }
   function ent_lookEnd() {
     if (!ent_look.on) return;
     ent_look.on = false;
+    ent_orbit.obj = false;   // 1.0.4: the target is now a point along the view, not the thing one flew to
     const c = controls, v = ent_look.v;
     const dm = c.enableDamping;
     c.enableDamping = false;   // the rest of the drag's movement is used up here, at the tiny radius, and not on the long one
@@ -51463,8 +51584,9 @@ body.tm-measuring #tm-tour-box{bottom:96px}
       }
       if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || !controls || controls.enabled === false || flyAnim || ent_load.loading) return;
       const c = controls, d = camera.position.distanceTo(c.target);
-      // 1.0.2: in every roofed space (ent_indoors) the drag turns the view in place; outside, only very near the target (as 1.0.1-L); else OrbitControls orbits
-      if (!(d < 4) && !ent_indoors()) return;
+      // 1.0.2: in every roofed space (ent_indoors) the drag turns the view in place; outside, only very near the target (as 1.0.1-L); else OrbitControls orbits.
+      // 1.0.4: round a thing one flew to under a roof (ent_passOn) OrbitControls orbits, near or far
+      if (ent_passOn() || (!(d < 4) && !ent_indoors())) return;
       ent_look.on = true;
       ent_look.id = e.pointerId;
       ent_look.rel = 0;
@@ -51495,7 +51617,7 @@ body.tm-measuring #tm-tour-box{bottom:96px}
   function ent_controlsUpdate() {
     const c = controls;
     let inPlace = false;
-    if (c.autoRotate && !flyAnim && !ent_look.on && ent_indoors()) {
+    if (c.autoRotate && !flyAnim && !ent_look.on && ent_inPlace()) {   // 1.0.4: round a thing one flew to, it orbits (ent_inPlace)
       inPlace = true;
       c.autoRotate = false;
     }
@@ -51527,6 +51649,8 @@ body.tm-measuring #tm-tour-box{bottom:96px}
   // 1.0.2 (M): a surface that faces up (a floor, a table's top, the court's paving: its normal within 45 degrees of up) keeps ENT_FLOOR_M (0.4, the user's free view: the
   // eye low at a base's wheels), the walls and the ceilings still ENT_WALL_M. 0.4 over a floor is enough for the near plane there: its lower edge is 0.22 below the
   // view's middle at 0.5 ahead, so the floor is not cut open while the eye looks level or up (and looking down, the eye is higher than that over what it sees).
+  // 1.0.4: round a thing one flew to under a roof the buildings' walls, ceilings and roofs are not surfaces here (ent_wallHit skips them: ent_passOn, ent_passSurf),
+  // and so neither for the floor under the eye nor for the ceiling over it - the floors under the target still are.
   var ENT_WALL_M = 0.8, ENT_WALL_JUMP = 30, ENT_FLOOR_M = 0.4;
   function ent_wallM(n) { return n.y > 0.7 ? ENT_FLOOR_M : ENT_WALL_M; }   // the margin of the surface whose normal is n (ent_wall.n after a hit)
   var ent_wall = { has: false, last: new Vector3(), mv: new Vector3(), dir: new Vector3(), rest: new Vector3(), n: new Vector3(), p: new Vector3(), ray: null, ms: 0, hits: 0, cand: [], tv: new Vector3(), q: new Vector3(),
@@ -51547,7 +51671,15 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         if (W.tv.copy(from).addScaledVector(dir, t).distanceToSquared(w.c) <= w.r * w.r) cand.push(w.o);
       }
       const hs = cand.length ? ray.intersectObjects(cand, false) : [];
-      h = hs.length ? hs[0] : null;
+      // 1.0.4: the first surface that holds - a building's wall or ceiling is let through round a thing one flew to (ent_passOn), or while the fade shows it
+      // see-through (as a faded wall before), but never a floor under the target (ent_passSurf)
+      const on = !ent_orbit.busy && ent_passOn();
+      for (const x of hs) {
+        const ud = x.object.userData;
+        if (ud.tmPass && (on || (ud.fade && ent_thin(x.object))) && ent_passSurf(x, dir)) continue;
+        h = x;
+        break;
+      }
     } catch (_) {
       return null;
     }
@@ -51861,6 +51993,9 @@ body.tm-measuring #tm-tour-box{bottom:96px}
       c0: controls.target.clone(),
       c1: new Vector3(...target)
     };
+    // 1.0.4: a target close to the flight's eye is a thing to orbit round (ent_passOn), if the flight ends under a roof (the animation loop)
+    ent_orbit.obj = flyAnim.p1.distanceTo(flyAnim.c1) <= ENT_ORBIT_NEAR;
+    ent_orbit.t = -1e9;
   }
   // ===== 1.0.1-K: two-finger zoom (the user: "תוסיף אופציה להגדלת זום או להקטנה באמצעות שתי אצבעות על עכבר על לפטופ") =====
   // A touchpad pinch reaches the page as "wheel" events with ctrlKey = true and small deltaY (Chromium / WebView2: the pinch scale is
@@ -52018,7 +52153,9 @@ body.tm-measuring #tm-tour-box{bottom:96px}
     layers: {},
     shared: {},
     flyTo,
-    camIndoors: ent_indoors,   // 1.0.1-L (Part 7, U1): 70-ui.js's nav buttons and keys
+    camIndoors: ent_inPlace,   // 1.0.1-L (Part 7, U1): 70-ui.js's nav buttons and keys turn in place (1.0.4: not round a thing one flew to, ent_inPlace)
+    camPass: ent_passOn,       // 1.0.4: the fade loop of 70-ui.js fades the buildings' walls and ceilings between the camera and the target
+    camPassHit: ent_passSurf,  //   (only those hits: ent_passSurf(hit, ray direction))
     camera,
     controls,
     renderer
@@ -52242,7 +52379,12 @@ body.tm-measuring #tm-tour-box{bottom:96px}
       const k = Math.min(1, (t - flyAnim.t0) / flyAnim.dur), e = ease(k);
       camera.position.lerpVectors(flyAnim.p0, flyAnim.p1, e);
       controls.target.lerpVectors(flyAnim.c0, flyAnim.c1, e);
-      if (k >= 1) flyAnim = null;
+      if (k >= 1) {
+        flyAnim = null;
+        // 1.0.4: a thing to orbit round only when the flight ends under a roof (the menorot, the ulam's tables); a view from outside (Yachin and Boaz from the
+        // court, 15.9 amot, its target before the ulam) stays as it was
+        if (ent_orbit.obj && !ent_roofed(camera.position)) ent_orbit.obj = false;
+      }
     }
     ent_lookStep();   // 1.0.1-L (Part 7, U1)
     ent_damp(t);   // 1.0.1-L (L.87)
@@ -52319,7 +52461,7 @@ body.tm-measuring #tm-tour-box{bottom:96px}
     initModules().catch((e) => console.error(e));
   }
   window.__ctx = ctx;
-  window.__ent360 = { indoors: ent_indoors, wall: ent_wall, look: ent_look, solids: ent_solids, wallHit: ent_wallHit, floor: ent_floor, lift: ent_lift, floorY: ent_floorY };   // 1.0.2 (+ M): for the headless tests
+  window.__ent360 = { indoors: ent_indoors, wall: ent_wall, look: ent_look, solids: ent_solids, wallHit: ent_wallHit, floor: ent_floor, lift: ent_lift, floorY: ent_floorY, orbit: ent_orbit, passOn: ent_passOn };   // 1.0.2 (+ M, 1.0.4): for the headless tests
   window.__renderer = renderer;
   window.__camera = camera;
 })();

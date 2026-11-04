@@ -640,8 +640,9 @@
   var ui_AUTO_OFF_S = 15;   // 1.0.1-L (L.27): a feature a PLACE switched on goes off by itself after this many seconds
   // 1.0.2 (C): the window "מה חדש" - shown once for this version (ver = manifest.json's version); short plain Hebrew, one line a feature
   var UI_NEWS = {
-    ver: "1.0.4",
+    ver: "1.0.5",
     items: [
+      "סיבוב מלא סביב מה שמסתכלים עליו בתוך הבית, גם מאחור ומלמעלה; הקירות והתקרות נעשים שקופים בדרך.",
       "כפתור ״פתח בתוסף בית ראשון״ בספרי מלכים א ודברי הימים ב.",
       "השיתין, ומזבח הנחושת מאבנים או מצופה נחושת עם הכבש (אברבנאל).",
       "היסוד, הסובב וחוט הסיקרא; הכבשים הקטנים — כרש״י או כתוספות.",
@@ -1011,35 +1012,62 @@ body.tm-measuring canvas{cursor:crosshair}
         // stopping 2 amot short of the target (a wall the target stands at is not faded) and at the fade distance. A hit on a level face (a
         // floor, a ceiling, a roof's top) does not count; only plain meshes 4 amot high and 5 wide or more, not flat platforms (the otem, the
         // palace's terrace), not the cloud and nothing noPick (the smoke) - model choice: these are the walls. Instanced meshes (the forest
-        // house's columns and beams) are left out: fading one would fade all its copies. A wall of two courses ("…-stone" / "…-cedar", the
+        // house's columns and beams) are left out: fading one would fade all its copies (1.0.4: but for 4 copies or fewer, below). A wall of two courses ("…-stone" / "…-cedar", the
         // ulam) fades whole. Per mesh: its material is cloned once (kept in userData.tmHideClone), the clone is faded, and the shared
         // material is put back when the wall is whole again - no material of another mesh changes; a module that swaps the material
         // meanwhile wins (the fade lets go). userData.fade is set while it is faded: 90-entry.js's ent_solids counts such a wall as a roof
         // for the 360 (the heichal stays "indoors") and lets the camera through it, as it does with a faded court wall (DEV_NOTES "סבב ה'" 10).
         // The court walls' own fade above is unchanged. No allocation per frame (the lists and vectors are kept; three.js's hit records
         // are made only in the 140 ms pass, as above). =====
-        const HIDE_GROUPS = ["heichal", "interior", "palace"];
+        // ===== 1.0.4 (the user at the menorot: "למה אני לא יכול לראות מאחוריהם? ... אם צריך תוותר על התקרה - אני לא צריך אותה בשום מקום"): the pass. Round a thing
+        // one flew to under a roof (ctx.camPass, 90-entry.js) the camera orbits through the buildings' walls and ceilings; then the same rays (in every fade mode but
+        // "כבוי", and 0.3 short of the target, not 2: the wall the target stands at fades too once the camera is behind it) fade every candidate they cross, the
+        // ceilings, the roofs and the upper stories' floors too (the flat meshes 5 wide or more, and the 4 high ones from 1 wide, join the list: hideFlat, hideSmall,
+        // used only here; a level face counts) - except what still holds the camera (ctx.camPassHit: the floors at or under the target). Every candidate is marked
+        // userData.tmPass: those are the meshes 90-entry.js lets the camera through, so a surface it passes is one this loop can fade. Back to whole as before, when
+        // the camera returns. =====
+        const HIDE_GROUPS = ["heichal", "interior", "palace"], HIDE_PASS_SHORT = 0.3, HIDE_INST = 4;
+        // 1.0.4: a ceiling, a roof or a floor that the pass fades goes to HIDE_PASS_FLAT, not UI_FADE_OPACITY: over the heichal four of them lie one on another
+        // (the roof, two courses, the gold ceiling), and at 0.35 each the menorot were all but lost (model choice; the walls keep 0.35)
+        const HIDE_PASS_FLAT = 0.06;
         let hideT = null, hideAt = -1e9;
-        const hidePair = new Map(), hideBlocked = new Set(), hideHits = [], HID = [];
+        const hidePair = new Map(), hideBlocked = new Set(), hideHits = [], HID = [], hideFlat = new Set(), hideSmall = new Set(), hideDeep = new Set();
         const hideBB = new Box3(), hideSz = new Vector3(), hideN = new Vector3();
+        const hideTo = (o) => (hideDeep.has(o) ? HIDE_PASS_FLAT : UI_FADE_OPACITY);   // 1.0.4: how far a hidden mesh fades
         const hideList = () => {
           const now = performance.now();
           if (hideT && now - hideAt < 5000) return hideT;
           hideAt = now;
           const occS = new Set(OCCL), out = [], stems = new Map();
           hidePair.clear();
+          hideFlat.clear();
+          hideSmall.clear();
           for (const top of ctx.root && Array.isArray(ctx.root.children) ? ctx.root.children : []) {
             if (HIDE_GROUPS.indexOf(top.name) < 0) continue;
             top.traverse((o) => {
-              if (!o.isMesh || o.isInstancedMesh || !o.geometry || occS.has(o) || o.userData.noPick) return;
+              // 1.0.4: an instanced mesh of up to HIDE_INST copies too (Yachin and Boaz in the ulam, whose shafts stopped the orbit round the ulam's tables:
+              // the two fade together); not the forest house's 45 columns
+              if (!o.isMesh || (o.isInstancedMesh && !(o.count <= HIDE_INST && typeof o.computeBoundingBox === "function")) || !o.geometry || occS.has(o) || o.userData.noPick) return;
               for (let p = o; p; p = p.parent) if (p.name === "tm-kk-cloud") return;
               const pa = o.geometry.attributes && o.geometry.attributes.position;
               if (!pa || pa.count > 30000) return;
-              if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
-              hideBB.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld).getSize(hideSz);
-              const hz = Math.max(hideSz.x, hideSz.z);
-              if (hideSz.y < 4 || hz < 5 || hideSz.y < 0.15 * hz) return;
+              if (o.isInstancedMesh) {
+                if (!o.boundingBox) o.computeBoundingBox();
+                hideBB.copy(o.boundingBox);
+              } else {
+                if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+                hideBB.copy(o.geometry.boundingBox);
+              }
+              hideBB.applyMatrix4(o.matrixWorld).getSize(hideSz);
+              const hz = Math.max(hideSz.x, hideSz.z), flat = hideSz.y < 0.15 * hz;
+              // 1.0.4: for the pass also what is 4 high but narrower than 5 (1 at least): the devir's door leaves, which hid Moses' menorah from the devir,
+              // a cherub, the parochet
+              const small = !flat && hideSz.y >= 4 && hz < 5 && hz >= 1;
+              if ((hz < 5 && !small) || (!flat && hideSz.y < 4)) return;
               out.push(o);
+              o.userData.tmPass = true;   // 1.0.4: 90-entry.js lets the camera through it round a thing one flew to
+              if (flat) hideFlat.add(o);   // 1.0.4: a ceiling, a roof, a floor: the pass only
+              if (small) hideSmall.add(o);   // 1.0.4: the pass only
               const sm = /^(.+)-(?:stone|cedar)$/.exec(o.name || "");
               if (sm) {
                 const k = (o.parent ? o.parent.uuid : "") + "|" + sm[1];
@@ -1092,6 +1120,7 @@ body.tm-measuring canvas{cursor:crosshair}
             last = t;
             const blocked = new Set();
             hideBlocked.clear();
+            hideDeep.clear();
             const FADE_DIST = typeof fs.dist === "number" && fs.dist > 0 ? fs.dist : 120;   // a wall fades only within this many amot of the camera
             if (fs.on) {
               const cam = ctx.camera.position, tg = ctx.controls.target;
@@ -1126,13 +1155,15 @@ body.tm-measuring canvas{cursor:crosshair}
                 ray.far = NEAR + 2;
                 for (const h of ray.intersectObjects(OCCL, false)) blocked.add(h.object);
               }
-              // 1.0.2 (D): the building's walls that hide the target (see above)
-              if (fs.hide) {
+              // 1.0.2 (D): the building's walls that hide the target (see above); 1.0.4: and the pass (see above)
+              let pass = false;
+              try { pass = typeof ctx.camPass === "function" && !!ctx.camPass() && typeof ctx.camPassHit === "function"; } catch (_) { pass = false; }
+              if (fs.hide || pass) {
                 const list = hideList();
                 for (const [ox, oy] of inside ? OFFS1 : OFFS5) {
                   to.copy(tg).addScaledVector(right, ox * 1.5).addScaledVector(upv, oy * 1.5);
                   dd.subVectors(to, cam);
-                  const far = Math.min(dd.length() - 2, FADE_DIST);
+                  const far = Math.min(dd.length() - (pass ? HIDE_PASS_SHORT : 2), FADE_DIST);
                   if (!(far > 0.5)) continue;
                   ray.set(cam, dd.normalize());
                   ray.near = 0;
@@ -1142,11 +1173,15 @@ body.tm-measuring canvas{cursor:crosshair}
                   for (const h of hideHits) {
                     const o = h.object;
                     if (hideBlocked.has(o) || !hideShown(o)) continue;
-                    if (h.face) {
+                    if (pass) {
+                      if (!ctx.camPassHit(h, ray.ray.direction)) continue;   // a floor under the target
+                    } else if (hideFlat.has(o) || hideSmall.has(o)) continue;
+                    else if (h.face) {
                       hideN.copy(h.face.normal).transformDirection(o.matrixWorld);
                       if (Math.abs(hideN.y) > 0.7) continue;
                     }
                     hideBlocked.add(o);
+                    if (pass && hideFlat.has(o)) hideDeep.add(o);
                     const pr = hidePair.get(o);
                     if (pr) for (const q of pr) hideBlocked.add(q);
                   }
@@ -1159,8 +1194,8 @@ body.tm-measuring canvas{cursor:crosshair}
               const fw = m.userData.fadeWith;
               if (fw && blocked.has(fw)) m.userData.fade.tgt = UI_FADE_OPACITY;
             }
-            for (let i = 0; i < HID.length; i++) HID[i].tgt = hideBlocked.has(HID[i].m) ? UI_FADE_OPACITY : 1;
-            for (const o of hideBlocked) if (!hideHas(o)) hideStart(o).tgt = UI_FADE_OPACITY;
+            for (let i = 0; i < HID.length; i++) HID[i].tgt = hideBlocked.has(HID[i].m) ? hideTo(HID[i].m) : 1;
+            for (const o of hideBlocked) if (!hideHas(o)) hideStart(o).tgt = hideTo(o);
           }
           // 1.0.2 (D): the building's walls toward their target; whole again -> the shared material back
           for (let i = HID.length - 1; i >= 0; i--) {
@@ -2154,6 +2189,11 @@ body.tm-measuring canvas{cursor:crosshair}
           }
           return true;
         };
+        const kkP = [0, 0, 0];   // 1.0.4: the orbit into the cloud (below)
+        let kkAsked = false, kkRel = 0;
+        ctx.renderer.domElement.addEventListener("pointerdown", () => { kkRel = Infinity; });
+        window.addEventListener("pointerup", () => { if (kkRel === Infinity) kkRel = performance.now(); }, true);
+        window.addEventListener("pointercancel", () => { if (kkRel === Infinity) kkRel = performance.now(); }, true);
         ctx.animated.push(function(t) {
           const cam = ctx.camera.position;
           const dist = Math.hypot(cam.x - KKC.x, cam.y - KKC.y, cam.z - KKC.z);
@@ -2167,6 +2207,17 @@ body.tm-measuring canvas{cursor:crosshair}
           if (!cloudOn) {
             if (dist < 50) cloudSeenNear = true;
             else if (cloudSeenNear && dist > 75) setCloud(true);
+          }
+          // 1.0.4: the orbit round a thing one flew to (ctx.camPass, 90-entry.js; Moses' menorah stands 1.5 amot before the devir) takes the camera through the
+          // devir's wall into the cloud: once the drag is let go (kkRel, 400 ms), the question a flight into the devir asks (askRemoveCloud) - once each time the
+          // camera goes in; "ביטול" leaves the cloud, and the camera where it is
+          kkP[0] = cam.x;
+          kkP[1] = cam.y;
+          kkP[2] = cam.z;
+          if (!inKK(kkP)) kkAsked = false;
+          else if (cloudOn && !kkAsked && cf.style.display !== "flex" && performance.now() - kkRel > 400 && typeof ctx.camPass === "function" && ctx.camPass()) {
+            kkAsked = true;
+            askRemoveCloud(() => setCloud(false));
           }
           let show = false;
           // 1.0.17: the button appears only while the cloud is actually seen at a reasonable size on screen,
