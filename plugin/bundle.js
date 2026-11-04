@@ -9,7 +9,7 @@
  * Sources: I Kings 6-8, II Chronicles 3-4 (primary); Chazal: Mishnah Middot, Yoma, Menachot, Eruvin, Zevachim, Bava Batra, Rashi,
  * Radak, Metzudot, Malbim, Ralbag. NOT Ezekiel (the user rejected it: that is the Third Temple).
  * Units: 1 = 1 amah. +x east (front), +z south (right), y up. Levels: great court 0, inner court 6, house floor 12.
- * VERSION 1.0.2 (manifest.json; minAppVersion 0.9.98.1). 1.0.1 is the store version (com.beit-hamikdash.rishon-3d-model, since 2.11.2026).
+ * VERSION 1.0.3 (manifest.json; minAppVersion 0.9.98.1). 1.0.1 is the store version (com.beit-hamikdash.rishon-3d-model, since 2.11.2026).
  * 1.0.2 (2026-11-03, round 5 = DEV_NOTES "סבב ה' — 1.0.2": the user's list of 2.11.2026 after 1.0.1 went to the store): a reader button "פתח בתוסף בית ראשון" in
  *   I Kings (10) and II Chronicles (39) only (manifest startup program + toolbar item, openPlugin); 70-ui.js reads the line -> verse (ui_BASE, all
  *   chapters) -> ui_READ -> the place / view with its card; "דיווח על טעות או תקלה" -> feedback.report (inside Otzaria only); the other readings
@@ -35499,8 +35499,8 @@ var OtzariaPlugin = (() => {
       get on() { return st.exTarget === 1; }
     };
     // --- 1.0.2 (item 9; the user: "לא רואים את כל פעולת המכונה מקרוב, רק כשמתרחקים מאוד"): the FOLLOW VIEW of the demonstration.
-    // While the demonstration runs from its pill, the camera follows the moving base about 20 amot away (13.5 at the two stops, so that
-    // the water is seen running), from a side that neither the altar nor the ulam hides; the old route view (flyPoints.mechonaDemo, 72
+    // While the demonstration runs from its pill, the camera follows the moving base about 20 amot away (16.4 and 18.4 at the two stops, so that
+    // the water is seen running and the stop's label with it - 1.0.2 (M), below), from a side that neither the altar nor the ulam hides; the old route view (flyPoints.mechonaDemo, 72
     // high) is kept for whoever uses it. All of it is a model choice of the view, no source. The sides, measured on the route (x 34.5
     // from z 33 to -46, then east to the stop x 43, z -46; the altar x 39.5..59.5, z +-10, its top F + 10.5 with the lip (1.0.2 add-on:
     // its yesod, 1 high, out to x 37.5 and z +-12 on the west, north and south, and the wall under the sovev out to x 38.5, up to F + 6); the ramp x
@@ -35518,11 +35518,17 @@ var OtzariaPlugin = (() => {
     // Time-based: the view follows the base's pose with an exponential lag of FOL_LAG seconds (position, aim, distance and azimuth), so a
     // slow frame never makes it jump. A drag, a pinch or a wheel on the canvas, or any other move of the camera (the nav buttons, the
     // keys, a flight from the panel), ends the follow until the pill switches the demonstration on again; the camera then stays where it
-    // is. The pill's "עצור" stays reachable: the camera is within 21 amot of it (maxDist 190 while it runs) and the pill stays inside the
+    // is. The pill's "עצור" stays reachable: the camera is within 23 amot of it (maxDist 190 while it runs) and the pill stays inside the
     // view (by projection at most 0.6 of the half-height, measured over the round) ---
+    // 1.0.2 (M; 1.0.2 left it open: "בהדגמה מקרוב תוויות התחנות ... נחתכות בשולי התמונה"): at the two stops the labels WASH_TEXT and PURPOSE_TEXT (above, west of each
+    // stop, 13 and 12.2 amot long at their nearest scale, 70-ui.js) were cut by the frame's edge - at 13.5 amot the frame is about 19 wide, the wash label stood 31
+    // degrees off the aim and the purpose label 52 (beside the camera). The near view now aims FOL_NEAR.lab of the way from the base toward its stop's label and stands
+    // a little further (FOL_NEAR.rWash / rPour instead of 13): the base, the water, the pills and the whole label are in the frame, measured by projection with a margin
+    // at 16 : 10 and wider (about 4 % of the half-width at the narrowest point; at 4 : 3 just inside). The azimuths, the heights and the labels are unchanged. Model choice.
     const FOL_LAG = 0.35;                           // seconds (model choice)
     const FOL_FAR = { r: 18, h: 12, ty: 3.5 };      // horizontal distance, eye and aim above the court floor: 19.9 from the aim
-    const FOL_NEAR = { r: 13, h: 8, ty: 4.3 };      // at the stops: 13.5 from the aim (as mechonaClose: the pills and the wheels in the view)
+    const FOL_NEAR = { h: 8, ty: 4.3, rWash: 16, rPour: 18, lab: 0.7 };   // at the stops: 16.4 / 18.4 from the aim (1.0.2: 13.5 for both, as mechonaClose)
+    const FOL_LABW = [WASH[0] - 7.5, WASH[1] - 1.5], FOL_LABP = [STOP[0] - 7.5, STOP[1] + 8];   // 1.0.2 (M): x / z of the two labels, as they are pushed above
     const FOL_AZ = { route: 12, wash: 18, corner: 110, pour: 160 };
     const D2R = Math.PI / 180;
     // the view for a moment of the round: the base at (x, z); out = {tx, ty, tz, az (radians), r, h}
@@ -35535,11 +35541,15 @@ var OtzariaPlugin = (() => {
       else az = FOL_AZ.corner - (FOL_AZ.corner - FOL_AZ.route) * smooth((z - STOP[1]) / 26);                       // coming back: at z -46 .. -20
       az += (FOL_AZ.wash - FOL_AZ.route) * nW;
       out.az = az * D2R;
-      out.r = FOL_FAR.r + (FOL_NEAR.r - FOL_FAR.r) * n;
+      out.r = FOL_FAR.r + ((nW >= nP ? FOL_NEAR.rWash : FOL_NEAR.rPour) - FOL_FAR.r) * n;   // 1.0.2 (M): was 13 at both
       out.h = F + FOL_FAR.h + (FOL_NEAR.h - FOL_FAR.h) * n;
       out.ty = F + FOL_FAR.ty + (FOL_NEAR.ty - FOL_FAR.ty) * n;
       out.tx = x + 1.0 * n;                          // at a stop the aim moves 1 east, toward the tap's side
       out.tz = z;
+      // 1.0.2 (M): and then toward the stop's label, so that the whole of it is in the frame with the base
+      const lab = nW >= nP ? FOL_LABW : FOL_LABP, kl = n * FOL_NEAR.lab;
+      out.tx += (lab[0] - out.tx) * kl;
+      out.tz += (lab[1] - out.tz) * kl;
       return out;
     };
     const folPos = (v, p) => {                      // the camera's place of a view, into the array p
@@ -44613,16 +44623,17 @@ var OtzariaPlugin = (() => {
   var ui_AUTO_OFF_S = 15;   // 1.0.1-L (L.27): a feature a PLACE switched on goes off by itself after this many seconds
   // 1.0.2 (C): the window "מה חדש" - shown once for this version (ver = manifest.json's version); short plain Hebrew, one line a feature
   var UI_NEWS = {
-    ver: "1.0.2",
+    ver: "1.0.3",
     items: [
       "כפתור ״פתח בתוסף בית ראשון״ בספרי מלכים א ודברי הימים ב.",
-      "השיתין, ומזבח הנחושת מאבנים או מצופה נחושת (אברבנאל).",
+      "השיתין, ומזבח הנחושת מאבנים או מצופה נחושת עם הכבש (אברבנאל).",
       "היסוד, הסובב וחוט הסיקרא; הכבשים הקטנים — כרש״י או כתוספות.",
       "טשטוש חומות: גם קיר שמסתיר את המקום נעשה שקוף.",
       "השיטות בתוך כרטיסי ההסבר.",
       "המקורות שבסוגריים נפתחים באוצריא בלחיצה.",
       "הדפסה או שמירה כ-PDF, בתחתית הלוח.",
       "סיבוב 360 מעלות בתוך הבית ובכל מקום מקורה.",
+      "מבט חופשי למעלה ולמטה בכל מקום, וגובה העין בחצים או ב-Shift עם הגלגלת.",
       "הדגמת המכונה מקרוב.",
       "סרגל הכותרת קבוע, גם בזמן הטעינה.",
       "דיווח על טעות או תקלה מתוך התוסף."
