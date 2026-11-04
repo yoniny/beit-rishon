@@ -640,7 +640,7 @@
   var ui_AUTO_OFF_S = 15;   // 1.0.1-L (L.27): a feature a PLACE switched on goes off by itself after this many seconds
   // 1.0.2 (C): the window "מה חדש" - shown once for this version (ver = manifest.json's version); short plain Hebrew, one line a feature
   var UI_NEWS = {
-    ver: "1.0.5",
+    ver: "1.0.6",
     items: [
       "סיבוב מלא סביב מה שמסתכלים עליו בתוך הבית, גם מאחור ומלמעלה; הקירות והתקרות נעשים שקופים בדרך.",
       "כפתור ״פתח בתוסף בית ראשון״ בספרי מלכים א ודברי הימים ב.",
@@ -657,6 +657,14 @@
       "דיווח על טעות או תקלה מתוך התוסף."
     ]
   };
+  // 1.0.6 (the user): what is new by version, newest first - one who saw a version is shown only the versions after it; nothing stored -> all
+  var UI_NEWS_VERS = [
+    ["1.0.6", ["דיווח והדפסה בסרגל העליון, ליד המצגת.", "בהדפסה: קרדיט ״תוסף בית ראשון״, ודף נוסף עם ההסבר והקישורים למקורות.", "החלון הזה מראה רק את מה שהתחדש מאז הגרסה שפתחתם."]],
+    ["1.0.5", ["סיבוב מלא סביב מה שמסתכלים עליו בתוך הבית, גם מאחור ומלמעלה; הקירות והתקרות נעשים שקופים בדרך."]],
+    ["1.0.4", ["שמירה כ-PDF תוקנה."]],
+    ["1.0.3", ["מבט חופשי למעלה ולמטה בכל מקום, וגובה העין בחצים או ב-Shift עם הגלגלת.", "באברבנאל גם הכבש מצופה נחושת.", "תוויות הדגמת המכונה בתוך התמונה."]],
+    ["1.0.2", ["כפתור ״פתח בתוסף בית ראשון״ בספרי מלכים א ודברי הימים ב.", "השיתין, ומזבח הנחושת מאבנים או מצופה נחושת (אברבנאל).", "היסוד, הסובב וחוט הסיקרא; הכבשים הקטנים — כרש״י או כתוספות.", "טשטוש חומות: גם קיר שמסתיר את המקום נעשה שקוף.", "השיטות בתוך כרטיסי ההסבר.", "המקורות שבסוגריים נפתחים באוצריא בלחיצה.", "הדפסה או שמירה כ-PDF.", "סיבוב 360 מעלות בתוך הבית ובכל מקום מקורה.", "הדגמת המכונה מקרוב.", "סרגל הכותרת קבוע, גם בזמן הטעינה.", "דיווח על טעות או תקלה מתוך התוסף."]]
+  ];
   var ui_CSS = `
 #tm-burger{position:fixed;top:5px;right:10px;left:auto;z-index:31;width:34px;height:34px;border-radius:50%;
   background:rgba(12,16,24,.82);border:1px solid rgba(201,168,76,.45);color:#e8c96a;font-size:18px;
@@ -776,6 +784,9 @@ body.tm-measuring canvas{cursor:crosshair}
 #tm-report-link,#tm-print-link{display:block;margin:10px auto 0;padding:0;border:0;background:none;color:#9a8f6c;font:10.5px 'Segoe UI',Arial,sans-serif;text-decoration:underline dotted;cursor:pointer}
 #tm-print-link+#tm-report-link{margin-top:5px}
 #tm-report-link:hover,#tm-print-link:hover{color:#f3dc9a}
+#tm-report-link.tm-topbtn,#tm-print-link.tm-topbtn{position:fixed;top:6px;left:96px;z-index:31;height:32px;margin:0;padding:0 12px;border-radius:16px;box-sizing:border-box;background:rgba(12,16,24,.82);border:1px solid rgba(201,168,76,.55);color:#f3dc9a;font:600 13px 'Segoe UI',Arial,sans-serif;cursor:pointer;text-decoration:none;white-space:nowrap}
+#tm-report-link.tm-topbtn:hover,#tm-print-link.tm-topbtn:hover{background:rgba(201,168,76,.28)}
+#tm-news li.v{list-style:none;font-weight:700;color:#f3dc9a;margin:7px 0 2px}
 #tm-report,#tm-printdlg,#tm-news{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;direction:rtl}
 #tm-printdlg .box,#tm-news .box{background:#1b2030;border:1px solid rgba(201,168,76,.6);border-radius:10px;padding:12px 14px;width:min(320px,90vw);box-sizing:border-box;color:#e8dcae;font:12.5px/1.5 'Segoe UI',Arial,sans-serif;text-align:right}
 #tm-printdlg .t,#tm-news .t{font-weight:700;color:#f3dc9a;margin-bottom:6px;font-size:13.5px}
@@ -798,6 +809,9 @@ body.tm-measuring canvas{cursor:crosshair}
   #tm-print .tt{font-size:12pt;font-weight:700;margin:0 0 1mm}
   #tm-print .tx{white-space:pre-line}
   #tm-print .tm-src{font-size:.8em;opacity:1}
+  #tm-print .cr{font-size:9pt;color:#555;margin:1mm 0 0}
+  #tm-print .pg2{break-before:page;page-break-before:always}
+  #tm-print .rs a{color:#000}
   #tm-print .rs{margin-top:2mm;font-size:9.5pt;color:#333}
 }
 #tm-report .box{background:#1b2030;border:1px solid rgba(201,168,76,.6);border-radius:10px;padding:12px 14px;width:min(340px,90vw);box-sizing:border-box;color:#e8dcae;font:12.5px/1.5 'Segoe UI',Arial,sans-serif;text-align:right}
@@ -3961,6 +3975,24 @@ body.tm-measuring canvas{cursor:crosshair}
       foot.id = "tm-foot";
       foot.textContent = "גרור לסיבוב · גלגלת, צביטה או שתי אצבעות לזום · קליק ימני להזזה · חצי המקלדת לסיבוב";
       panel.appendChild(foot);
+      // 1.0.6 (the user): the print and the report sit in the top bar beside "מצגת" (75-tour.js #tm-tour-btn, built after this module), in its style
+      const topBtns = [];
+      const placeTopBtns = () => {
+        const tb = document.getElementById("tm-tour-btn");
+        let x = tb ? tb.getBoundingClientRect().right + 6 : 96;
+        for (const b of topBtns) {
+          b.style.left = x + "px";
+          x += b.offsetWidth + 6;
+        }
+      };
+      const topbarAdd = (el) => {
+        el.classList.add("tm-topbtn");
+        document.body.appendChild(el);
+        topBtns.push(el);
+        setTimeout(placeTopBtns, 0);
+      };
+      window.addEventListener("resize", placeTopBtns);
+      setInterval(placeTopBtns, 1000);   // the presentation button changes its text ("■ עצור"), and so its width
       // ===== 1.0.2 (B, printing): one quiet link at the panel's foot, beside "דיווח על טעות או תקלה" (no new button on the model's view).
       // It builds a clean print page #tm-print: the plugin's name and the current place or view (the open card's title, else the marked
       // button), the view as a picture (one frame rendered and the canvas read with toDataURL right after it, in the same task: the
@@ -4006,20 +4038,43 @@ body.tm-measuring canvas{cursor:crosshair}
             img.src = url;
             pg.appendChild(img);
           }
+          const cr = document.createElement("div");
+          cr.className = "cr";
+          cr.textContent = "תוסף בית ראשון";
+          pg.appendChild(cr);
           const tb = xOpen ? xBody : cardSpr ? cardBody : null, tr = xOpen ? xRefs : cardSpr ? cardRefs : null;
           const body = tb ? String(tb.textContent || "").trim() : "";
           if (body) {
+            // 1.0.6 (the user): the card on a page of its own, attached: its title, its text and each source with its link to Otzaria
+            const p2 = document.createElement("div");
+            p2.className = "pg2";
+            const t2 = document.createElement("div");
+            t2.className = "tt";
+            t2.textContent = name || "בית המקדש הראשון";
+            p2.appendChild(t2);
             const tx = document.createElement("div");
             tx.className = "tx";
-            ui_fillSrc(tx, body);   // the brackets small, as in the card (no links on paper)
-            pg.appendChild(tx);
-            const labs = tr ? Array.from(tr.querySelectorAll("a")).map((a) => String(a.textContent || "").trim()).filter(Boolean) : [];
-            if (labs.length) {
+            ui_fillSrc(tx, body);   // the brackets small, as in the card
+            p2.appendChild(tx);
+            const as = tr ? Array.from(tr.querySelectorAll("a")).filter((a) => String(a.textContent || "").trim()) : [];
+            if (as.length) {
               const rs = document.createElement("div");
               rs.className = "rs";
-              rs.textContent = "מקורות: " + labs.join(" · ");
-              pg.appendChild(rs);
+              rs.appendChild(document.createTextNode("מקורות: "));
+              as.forEach((a, k) => {
+                const r = a.__ref, l = document.createElement("a");
+                l.textContent = String(a.textContent).trim();
+                if (r && r.book != null && r.index != null) l.href = "otzaria://open/book/" + r.book + "?index=" + r.index;
+                if (k) rs.appendChild(document.createTextNode(" · "));
+                rs.appendChild(l);
+              });
+              p2.appendChild(rs);
             }
+            const c2 = document.createElement("div");
+            c2.className = "cr";
+            c2.textContent = "תוסף בית ראשון";
+            p2.appendChild(c2);
+            pg.appendChild(p2);
           }
           document.body.appendChild(pg);
           return pg;
@@ -4028,8 +4083,9 @@ body.tm-measuring canvas{cursor:crosshair}
         const plink = document.createElement("button");
         plink.type = "button";
         plink.id = "tm-print-link";
-        plink.textContent = "הדפסה או שמירה כ-PDF";
-        panel.appendChild(plink);
+        plink.textContent = "הדפסה";
+        plink.title = "הדפסה או שמירה כ-PDF";
+        topbarAdd(plink);
         // inside Otzaria: the choice
         const pdlg = document.createElement("div");
         pdlg.id = "tm-printdlg";
@@ -4145,8 +4201,9 @@ body.tm-measuring canvas{cursor:crosshair}
         const link = document.createElement("button");
         link.type = "button";
         link.id = "tm-report-link";
-        link.textContent = "דיווח על טעות או תקלה";
-        panel.appendChild(link);
+        link.textContent = "דיווח";
+        link.title = "דיווח על טעות או תקלה";
+        topbarAdd(link);
         const dlg = document.createElement("div");
         dlg.id = "tm-report";
         dlg.setAttribute("role", "dialog");
@@ -5210,6 +5267,7 @@ body.tm-measuring canvas{cursor:crosshair}
             }
           }
         };
+        let newsSince = null;   // 1.0.6: the version seen before (set by tick), or null
         const show = (ver) => {
           const dlg = document.createElement("div");
           dlg.id = "tm-news";
@@ -5219,12 +5277,27 @@ body.tm-measuring canvas{cursor:crosshair}
           box.className = "box";
           const t = document.createElement("div");
           t.className = "t";
-          t.textContent = "מה חדש בגרסה " + ver;
+          const cmpV = (a, b) => {
+            const x = String(a).split(".").map(Number), y = String(b).split(".").map(Number);
+            for (let i = 0; i < 3; i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) - (y[i] || 0);
+            return 0;
+          };
+          const known = !!newsSince && UI_NEWS_VERS.some((v) => v[0] === newsSince);
+          const vers = UI_NEWS_VERS.filter((v) => cmpV(v[0], ver) <= 0 && (!known || cmpV(v[0], newsSince) > 0));
+          t.textContent = known ? "מה חדש בגרסה " + ver : "מה חדש בתוסף";
           const ul = document.createElement("ul");
-          for (const s of UI_NEWS.items) {
-            const li = document.createElement("li");
-            li.textContent = s;   // (plain: a small bracket in a short list only looked broken)
-            ul.appendChild(li);
+          for (const [vv, its] of vers) {
+            if (vers.length > 1) {
+              const lh = document.createElement("li");
+              lh.className = "v";
+              lh.textContent = "גרסה " + vv;
+              ul.appendChild(lh);
+            }
+            for (const s2 of its) {
+              const li = document.createElement("li");
+              li.textContent = s2;   // (plain: a small bracket in a short list only looked broken)
+              ul.appendChild(li);
+            }
           }
           const bb = document.createElement("div");
           bb.className = "b";
@@ -5273,12 +5346,16 @@ body.tm-measuring canvas{cursor:crosshair}
           }
           const ver = String(ui_bootVersion || UI_NEWS.ver).replace(/^v/, "");
           if (ver !== UI_NEWS.ver) return;   // a version with no list of its own
-          if (lsSeen() === ver) return;
-          const st = await storeSeen();
-          if (st === ver) {
+          let seen = lsSeen();
+          if (seen !== ver) {
+            const st = await storeSeen();
+            if (st) seen = st;
+          }
+          if (seen === ver) {
             lsSet(NEWS_KEY, ver);
             return;
           }
+          newsSince = seen || null;
           if (!ready()) {   // (the storage's answer took a moment)
             tries = 0;
             setTimeout(tick, 1000);

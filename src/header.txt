@@ -9,7 +9,7 @@
  * Sources: I Kings 6-8, II Chronicles 3-4 (primary); Chazal: Mishnah Middot, Yoma, Menachot, Eruvin, Zevachim, Bava Batra, Rashi,
  * Radak, Metzudot, Malbim, Ralbag. NOT Ezekiel (the user rejected it: that is the Third Temple).
  * Units: 1 = 1 amah. +x east (front), +z south (right), y up. Levels: great court 0, inner court 6, house floor 12.
- * VERSION 1.0.5 (manifest.json; minAppVersion 0.9.98.1). 1.0.1 is the store version (com.beit-hamikdash.rishon-3d-model, since 2.11.2026).
+ * VERSION 1.0.6 (manifest.json; minAppVersion 0.9.98.1). 1.0.1 is the store version (com.beit-hamikdash.rishon-3d-model, since 2.11.2026).
  * 1.0.2 (2026-11-03, round 5 = DEV_NOTES "סבב ה' — 1.0.2": the user's list of 2.11.2026 after 1.0.1 went to the store): a reader button "פתח בתוסף בית ראשון" in
  *   I Kings (10) and II Chronicles (39) only (manifest startup program + toolbar item, openPlugin); 70-ui.js reads the line -> verse (ui_BASE, all
  *   chapters) -> ui_READ -> the place / view with its card; "דיווח על טעות או תקלה" -> feedback.report (inside Otzaria only); the other readings
