@@ -640,7 +640,7 @@
   var ui_AUTO_OFF_S = 15;   // 1.0.1-L (L.27): a feature a PLACE switched on goes off by itself after this many seconds
   // 1.0.2 (C): the window "מה חדש" - shown once for this version (ver = manifest.json's version); short plain Hebrew, one line a feature
   var UI_NEWS = {
-    ver: "1.0.3",
+    ver: "1.0.4",
     items: [
       "כפתור ״פתח בתוסף בית ראשון״ בספרי מלכים א ודברי הימים ב.",
       "השיתין, ומזבח הנחושת מאבנים או מצופה נחושת עם הכבש (אברבנאל).",
@@ -4046,7 +4046,9 @@ body.tm-measuring canvas{cursor:crosshair}
           });
         };
         bPrint.addEventListener("click", () => runOtz("ui.print", Object.assign({ jobName: fileName() }, PR_OPTS)));
-        bPdf.addEventListener("click", () => runOtz("ui.exportPdf", Object.assign({ fileName: fileName(), title: "שמירה כ-PDF" }, PR_OPTS)));
+        // 1.0.4 (the user's picture): in Otzaria 0.9.98.x ui.exportPdf opens a FOLDER picker and puts fileName into its folder box, which then
+        // fails with "Path does not exist" - so no fileName: the person picks a folder and Otzaria names the file
+        bPdf.addEventListener("click", () => runOtz("ui.exportPdf", Object.assign({ title: "שמירה כ-PDF" }, PR_OPTS)));
         bNo.addEventListener("click", closeP);
         pdlg.addEventListener("click", (e) => { if (e.target === pdlg) closeP(); });
         pdlg.addEventListener("keydown", (e) => {

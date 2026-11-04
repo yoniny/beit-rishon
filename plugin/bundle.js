@@ -9,7 +9,7 @@
  * Sources: I Kings 6-8, II Chronicles 3-4 (primary); Chazal: Mishnah Middot, Yoma, Menachot, Eruvin, Zevachim, Bava Batra, Rashi,
  * Radak, Metzudot, Malbim, Ralbag. NOT Ezekiel (the user rejected it: that is the Third Temple).
  * Units: 1 = 1 amah. +x east (front), +z south (right), y up. Levels: great court 0, inner court 6, house floor 12.
- * VERSION 1.0.3 (manifest.json; minAppVersion 0.9.98.1). 1.0.1 is the store version (com.beit-hamikdash.rishon-3d-model, since 2.11.2026).
+ * VERSION 1.0.4 (manifest.json; minAppVersion 0.9.98.1). 1.0.1 is the store version (com.beit-hamikdash.rishon-3d-model, since 2.11.2026).
  * 1.0.2 (2026-11-03, round 5 = DEV_NOTES "סבב ה' — 1.0.2": the user's list of 2.11.2026 after 1.0.1 went to the store): a reader button "פתח בתוסף בית ראשון" in
  *   I Kings (10) and II Chronicles (39) only (manifest startup program + toolbar item, openPlugin); 70-ui.js reads the line -> verse (ui_BASE, all
  *   chapters) -> ui_READ -> the place / view with its card; "דיווח על טעות או תקלה" -> feedback.report (inside Otzaria only); the other readings
@@ -44623,7 +44623,7 @@ var OtzariaPlugin = (() => {
   var ui_AUTO_OFF_S = 15;   // 1.0.1-L (L.27): a feature a PLACE switched on goes off by itself after this many seconds
   // 1.0.2 (C): the window "מה חדש" - shown once for this version (ver = manifest.json's version); short plain Hebrew, one line a feature
   var UI_NEWS = {
-    ver: "1.0.3",
+    ver: "1.0.4",
     items: [
       "כפתור ״פתח בתוסף בית ראשון״ בספרי מלכים א ודברי הימים ב.",
       "השיתין, ומזבח הנחושת מאבנים או מצופה נחושת עם הכבש (אברבנאל).",
@@ -48029,7 +48029,9 @@ body.tm-measuring canvas{cursor:crosshair}
           });
         };
         bPrint.addEventListener("click", () => runOtz("ui.print", Object.assign({ jobName: fileName() }, PR_OPTS)));
-        bPdf.addEventListener("click", () => runOtz("ui.exportPdf", Object.assign({ fileName: fileName(), title: "שמירה כ-PDF" }, PR_OPTS)));
+        // 1.0.4 (the user's picture): in Otzaria 0.9.98.x ui.exportPdf opens a FOLDER picker and puts fileName into its folder box, which then
+        // fails with "Path does not exist" - so no fileName: the person picks a folder and Otzaria names the file
+        bPdf.addEventListener("click", () => runOtz("ui.exportPdf", Object.assign({ title: "שמירה כ-PDF" }, PR_OPTS)));
         bNo.addEventListener("click", closeP);
         pdlg.addEventListener("click", (e) => { if (e.target === pdlg) closeP(); });
         pdlg.addEventListener("keydown", (e) => {
