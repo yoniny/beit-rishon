@@ -100,13 +100,9 @@
   //   - 1.0.2: the box starts 5 px below the fixed top bar of index.html (--topbar-h: 56 px, 44 px in a narrow window), as it did below the old 47 px header.
   var tour_PHONE_MQ = "(max-width:639px)";
   var tour_CSS = `
-#tm-tour-btn{position:fixed;top:6px;left:10px;z-index:31;height:32px;padding:0 12px;border-radius:16px;box-sizing:border-box;
-  background:rgba(12,16,24,.82);border:1px solid rgba(201,168,76,.55);color:#f3dc9a;font:600 13px 'Segoe UI',Arial,sans-serif;
-  cursor:pointer;backdrop-filter:blur(6px);display:flex;align-items:center;gap:6px;direction:rtl;white-space:nowrap;max-width:98px;overflow:hidden}
-#tm-tour-btn:hover,#tm-tour-btn.open{background:rgba(201,168,76,.28)}
-#tm-tour-btn.on{background:rgba(201,168,76,.5);color:#14110a}
-header{padding-left:116px !important}
-#tm-tour-menu{position:fixed;top:43px;left:10px;z-index:33;width:min(282px,calc(100vw - 20px));display:none;flex-direction:column;gap:5px;
+/* 1.1.0: #tm-tour-btn is a bar button (index.html header.topbar .tm-topbtn, via ctx.ui.topbarAdd); the menu hangs under the bar's
+   button row (#tm-topbtns is position:relative), at its start edge (right, RTL), where the presentation button is */
+#tm-tour-menu{position:absolute;top:calc(100% + 6px);right:0;left:auto;z-index:33;width:min(282px,calc(100vw - 20px));display:none;flex-direction:column;gap:5px;
   padding:7px;box-sizing:border-box;direction:rtl;text-align:right;background:rgba(12,16,24,.95);border:1px solid rgba(201,168,76,.55);
   border-radius:11px;backdrop-filter:blur(8px);box-shadow:0 8px 26px rgba(0,0,0,.5);font:13px 'Segoe UI',Arial,sans-serif;color:#e8dcae}
 #tm-tour-menu .mh{font-size:11px;color:#b9ac82;padding:0 3px 1px}
@@ -1026,11 +1022,14 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         if (fnc(U.tip)) call(U.tip, el, text);
         else if (fnc(U.tooltip)) call(U.tooltip, el, text);
       };
-      const btn = mk("button", null, "▶ מצגת", document.body);
+      // 1.1.0: the button goes into the top bar (70-ui.js ctx.ui.topbarAdd: order 10 = first), the menu under the bar's button row
+      const btn = mk("button", null, "▶ מצגת", null);
       btn.id = "tm-tour-btn";
       btn.type = "button";
+      if (fnc(U.topbarAdd)) call(U.topbarAdd, btn, 10, "play", "מצגת");
+      else document.body.appendChild(btn);
       tip(btn, "מצגת: בחירה בין מצגת לפי הנושאים, מצגת רציפה, או מצגת לפי סדר הפסוקים במלכים");
-      const menu = mk("div", null, null, document.body);
+      const menu = mk("div", null, null, btn.parentNode && btn.parentNode.id === "tm-topbtns" ? btn.parentNode : document.body);
       menu.id = "tm-tour-menu";
       mk("div", "mh", "מצגת — בחר את סוג המצגת:", menu);
       for (const M of tour_MODES) {
@@ -1116,7 +1115,8 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         return Math.max(9000, Math.min(45000, 2500 + 55 * n)) * speed;
       };
       const setBtn = () => {
-        btn.textContent = running ? "■ עצור" : "▶ מצגת";
+        if (fnc(U.setTopBtn)) call(U.setTopBtn, btn, running ? "stop" : "play", running ? "עצור" : "מצגת");
+        else btn.textContent = running ? "■ עצור" : "▶ מצגת";
         btn.classList.toggle("on", running);
         tip(btn, running ? "עצירת המצגת (Esc)" : "מצגת: בחירה בין מצגת לפי הנושאים, מצגת רציפה, או מצגת לפי סדר הפסוקים במלכים");
       };

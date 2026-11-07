@@ -1,0 +1,17 @@
+{
+  "name": "beit-rishon-plugin",
+  "private": true,
+  "type": "module",
+  "description": "תוסף אוצריא 'בית ראשון' — כלי בנייה (build) ובדיקה (QA). הקוד הקריא ב-src/; plugin/bundle.js הוא תוצר בנייה מוקטן.",
+  "scripts": {
+    "build": "node tools/build.mjs",
+    "build:readable": "node tools/build.mjs --no-min",
+    "pack": "node tools/build.mjs --pack",
+    "serve": "node tools/serve.mjs 8765",
+    "qa": "node tools/qa.mjs"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^23.11.1",
+    "terser": "^5.36.0"
+  }
+}

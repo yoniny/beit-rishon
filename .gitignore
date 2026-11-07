@@ -1,3 +1,6 @@
 tools/shots/
 node_modules/
 *.log
+build/
+dist/
+qa/

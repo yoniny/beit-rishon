@@ -1221,7 +1221,7 @@
   if (isOtzaria) {
     window.Otzaria.on("plugin.boot", (payload) => {
       const ver = document.getElementById("version");
-      if (ver) ver.textContent = "v" + payload.plugin.version;
+      if (ver && payload && payload.plugin && payload.plugin.version) ver.textContent = "v" + payload.plugin.version;
       applyTheme(payload.theme);
       initModules().catch((e) => {
         console.error(e);

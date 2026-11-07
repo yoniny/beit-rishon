@@ -122,6 +122,40 @@
   var UI_SRC_NAME = /^ו?ה?(?:שם|ראו שם|מלכים|שמואל|דברי הימים|דה״י|שמות|ויקרא|במדבר|דברים|בראשית|ישעיה|ירמיה|ירמיהו|יחזקאל|הושע|עמוס|מיכה|זכריה|תהלים|משלי|איוב|שיר השירים|קהלת|אסתר|דניאל|עזרא|נחמיה|רש״י|רשב״ם|רש״ש|רד״ק|רלב״ג|מלבי״ם|מצודת|מצודות|מנחת|אברבנאל|רמב״ם|רמב״ן|ראב״ע|ראב״ד|מאירי|המאירי|הגר״א|תרגום|יונתן|ת״י|משנה|משנת|מדות|מידות|תמיד|יומא|זבחים|מנחות|בבא|סנהדרין|שקלים|סוכה|מגילה|חגיגה|ערכין|כלים|תוספתא|תוספות|תוס׳|ברטנורא|ברייתא|הלכות|כסף משנה|ילקוט|פסיקתא|מדרש|פירוש המשנה|עמ׳|בעל צורת הבית|לחם שמים|מעשי למלך|בית הבחירה|ספרי|מכילתא|תפארת ישראל|ראבי״ה|מהרש״א|פנים אחרים|אבא גוריון)(?:$|[\s,;.:׳״])/;
   // 1.0.2 (fix): the height of index.html's fixed top bar (56 px, 44 px in a narrow window); the floating cards' inline top never goes above it
   // (read once per window width: the label card asks every frame, and offsetHeight would force a layout)
+  // 1.1.0: the top bar's icons (inline SVG, stroke = currentColor; index.html sizes them). ui_setTopBtn swaps a button's icon and label.
+  var ui_ICONS = {
+    play: ['<path d="M8 5.5v13l11-6.5z" fill="currentColor" stroke="none"/>'],
+    stop: ['<rect x="6.5" y="6.5" width="11" height="11" rx="1.5" fill="currentColor" stroke="none"/>'],
+    help: ['<circle cx="12" cy="12" r="9.2"/>', '<path d="M15.6 8.4l-2.3 6-6 2.3 2.3-6z" fill="currentColor" stroke="none"/>'],
+    print: ['<path d="M7 9V4h10v5"/>', '<path d="M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/>', '<path d="M7 14h10v6H7z"/>'],
+    report: ['<path d="M5 21V4"/>', '<path d="M5 4h13l-2.5 4.5L18 13H5"/>'],
+    news: ['<path d="M12 3.5l2.1 5.6 5.6 2.1-5.6 2.1L12 19l-2.1-5.7-5.6-2.1 5.6-2.1z" fill="currentColor" stroke="none"/>']
+  };
+  function ui_topIcon(name) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    svg.innerHTML = (ui_ICONS[name] || ui_ICONS.help).join("");
+    return svg;
+  }
+  function ui_setTopBtn(el, icon, label) {
+    const svg = el.querySelector("svg");
+    if (icon) {
+      const n = ui_topIcon(icon);
+      if (svg) el.replaceChild(n, svg);
+      else el.insertBefore(n, el.firstChild);
+    }
+    const sp = el.querySelector(".lbl");
+    if (label != null) {
+      if (sp) sp.textContent = label;
+      else {
+        const s2 = document.createElement("span");
+        s2.className = "lbl";
+        s2.textContent = label;
+        el.appendChild(s2);
+      }
+    }
+  }
   var ui_barCache = { w: -1, h: 56 };
   function ui_barH() {
     const w = window.innerWidth;
@@ -640,7 +674,7 @@
   var ui_AUTO_OFF_S = 15;   // 1.0.1-L (L.27): a feature a PLACE switched on goes off by itself after this many seconds
   // 1.0.2 (C): the window "מה חדש" - shown once for this version (ver = manifest.json's version); short plain Hebrew, one line a feature
   var UI_NEWS = {
-    ver: "1.0.6",
+    ver: "__PLUGIN_VERSION__",   // 1.1.0: tools/build.mjs writes manifest.json's version here
     items: [
       "סיבוב מלא סביב מה שמסתכלים עליו בתוך הבית, גם מאחור ומלמעלה; הקירות והתקרות נעשים שקופים בדרך.",
       "כפתור ״פתח בתוסף בית ראשון״ בספרי מלכים א ודברי הימים ב.",
@@ -659,6 +693,8 @@
   };
   // 1.0.6 (the user): what is new by version, newest first - one who saw a version is shown only the versions after it; nothing stored -> all
   var UI_NEWS_VERS = [
+    ["1.1.0", ["סרגל עליון חדש: מצגת, ניווט, הדפסה, דיווח ו״מה חדש״ בשורה אחת, ומספר הגרסה תמיד נראה.", "כפתור ״ניווט״ — הוראות השימוש בעכבר, במשטח מגע, במסך מגע ובמקלדת.",
+      "התפריט בלי כפילויות: כל נושא במקום אחד, ההשלמות בתוך כרטיסי הנושאים, וטבלת השיטות בקבוצה נסגרת.", "המקורות — בכרטיסי ההסבר בלבד, לא בעץ התפריט.", "קובץ התוסף קטן בכמחצית: טעינה מהירה יותר."]],
     ["1.0.6", ["דיווח והדפסה בסרגל העליון, ליד המצגת.", "בהדפסה: קרדיט ״תוסף בית ראשון״, ודף נוסף עם ההסבר והקישורים למקורות.", "החלון הזה מראה רק את מה שהתחדש מאז הגרסה שפתחתם."]],
     ["1.0.5", ["סיבוב מלא סביב מה שמסתכלים עליו בתוך הבית, גם מאחור ומלמעלה; הקירות והתקרות נעשים שקופים בדרך."]],
     ["1.0.4", ["שמירה כ-PDF תוקנה."]],
@@ -666,10 +702,7 @@
     ["1.0.2", ["כפתור ״פתח בתוסף בית ראשון״ בספרי מלכים א ודברי הימים ב.", "השיתין, ומזבח הנחושת מאבנים או מצופה נחושת (אברבנאל).", "היסוד, הסובב וחוט הסיקרא; הכבשים הקטנים — כרש״י או כתוספות.", "טשטוש חומות: גם קיר שמסתיר את המקום נעשה שקוף.", "השיטות בתוך כרטיסי ההסבר.", "המקורות שבסוגריים נפתחים באוצריא בלחיצה.", "הדפסה או שמירה כ-PDF.", "סיבוב 360 מעלות בתוך הבית ובכל מקום מקורה.", "הדגמת המכונה מקרוב.", "סרגל הכותרת קבוע, גם בזמן הטעינה.", "דיווח על טעות או תקלה מתוך התוסף."]]
   ];
   var ui_CSS = `
-#tm-burger{position:fixed;top:5px;right:10px;left:auto;z-index:31;width:34px;height:34px;border-radius:50%;
-  background:rgba(12,16,24,.82);border:1px solid rgba(201,168,76,.45);color:#e8c96a;font-size:18px;
-  cursor:pointer;backdrop-filter:blur(6px);line-height:1;display:flex;align-items:center;justify-content:center}
-#tm-burger:hover{background:rgba(30,36,48,.9)}
+/* 1.1.0: #tm-burger and the bar's buttons (.tm-topbtn) are styled by index.html (header.topbar); nothing here */
 html,body{overscroll-behavior:none}
 .tm-src{font-size:.74em;opacity:.8;font-weight:400}
 .tm-src a.tm-srcl{color:inherit;text-decoration:none;cursor:pointer}
@@ -686,11 +719,15 @@ html,body{overscroll-behavior:none}
 #tm-pl-sec{margin-top:8px}
 details.tm-pl{margin-top:6px;border-top:1px solid rgba(201,168,76,.2);padding-top:4px}
 details.tm-pl summary{cursor:pointer;font-size:12px;font-weight:600;color:#c9a84c;padding:3px 0}
-details.tm-pl div{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:5px 0}
+details.tm-pl>div{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:5px 0}
+details.tm-ops-det>div,details.tm-ops-det>div div{display:block;grid-template-columns:none}
+details.tm-ops-det>.s{margin:4px 0 2px}
 details.tm-pl button,#tm-views button,#tm-panel .tm-opt button{background:rgba(201,168,76,.10);border:1px solid rgba(201,168,76,.32);color:#e8dcae;
   border-radius:6px;padding:5px 3px;font:12px 'Segoe UI',Arial,sans-serif;cursor:pointer;position:relative}
 details.tm-pl .tm-cnt{position:absolute;left:3px;top:-7px;min-width:17px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:#c9a84c;color:#14110a;font:600 10px/16px 'Segoe UI',Arial,sans-serif;direction:ltr;text-align:center;pointer-events:none}
 #tm-views button:hover,details.tm-pl button:hover,#tm-panel .tm-opt button:hover{background:rgba(201,168,76,.28)}
+#tm-views.one{grid-template-columns:1fr;margin-bottom:2px}
+#tm-views.one button{font-weight:700}
 #tm-views button.on,details.tm-pl button.on,#tm-panel .tm-opt button.on{background:rgba(201,168,76,.42);color:#fff2c8;border-color:rgba(201,168,76,.7)}
 #tm-panel .tm-opt{margin:7px 0 4px}
 #tm-panel .tm-opt .cap{display:block;font-size:11px;color:#b9ac82;margin-bottom:3px}
@@ -781,21 +818,22 @@ body.tm-measuring canvas{cursor:crosshair}
 #tm-xcard .o a,#tm-card .o a{display:inline-block;color:#f3dc9a;margin:2px 0 2px 5px;padding:2px 7px;border:1px solid rgba(201,168,76,.45);border-radius:6px;background:rgba(201,168,76,.12);text-decoration:none;cursor:pointer}
 #tm-xcard .o a:hover,#tm-card .o a:hover{background:rgba(201,168,76,.3)}
 #tm-xcard .o a.on,#tm-card .o a.on{background:rgba(201,168,76,.5);color:#14110a;border-color:rgba(255,236,170,.85);cursor:default}
-#tm-report-link,#tm-print-link{display:block;margin:10px auto 0;padding:0;border:0;background:none;color:#9a8f6c;font:10.5px 'Segoe UI',Arial,sans-serif;text-decoration:underline dotted;cursor:pointer}
-#tm-print-link+#tm-report-link{margin-top:5px}
-#tm-report-link:hover,#tm-print-link:hover{color:#f3dc9a}
-#tm-report-link.tm-topbtn,#tm-print-link.tm-topbtn{position:fixed;top:6px;left:96px;z-index:31;height:32px;margin:0;padding:0 12px;border-radius:16px;box-sizing:border-box;background:rgba(12,16,24,.82);border:1px solid rgba(201,168,76,.55);color:#f3dc9a;font:600 13px 'Segoe UI',Arial,sans-serif;cursor:pointer;text-decoration:none;white-space:nowrap}
-#tm-report-link.tm-topbtn:hover,#tm-print-link.tm-topbtn:hover{background:rgba(201,168,76,.28)}
 #tm-news li.v{list-style:none;font-weight:700;color:#f3dc9a;margin:7px 0 2px}
-#tm-report,#tm-printdlg,#tm-news{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;direction:rtl}
-#tm-printdlg .box,#tm-news .box{background:#1b2030;border:1px solid rgba(201,168,76,.6);border-radius:10px;padding:12px 14px;width:min(320px,90vw);box-sizing:border-box;color:#e8dcae;font:12.5px/1.5 'Segoe UI',Arial,sans-serif;text-align:right}
-#tm-printdlg .t,#tm-news .t{font-weight:700;color:#f3dc9a;margin-bottom:6px;font-size:13.5px}
-#tm-printdlg .b,#tm-news .b{display:flex;gap:8px;margin-top:10px}
-#tm-printdlg .b button,#tm-news .b button{flex:1;padding:5px 6px;border-radius:7px;border:1px solid rgba(201,168,76,.45);background:rgba(201,168,76,.12);color:#e8dcae;cursor:pointer;font:12px 'Segoe UI',Arial,sans-serif}
-#tm-printdlg .b button.y,#tm-news .b button.y{background:rgba(201,168,76,.5);color:#14110a}
+#tm-report,#tm-printdlg,#tm-news,#tm-help{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;direction:rtl}
+#tm-printdlg .box,#tm-news .box,#tm-help .box{background:#1b2030;border:1px solid rgba(201,168,76,.6);border-radius:10px;padding:12px 14px;width:min(320px,90vw);box-sizing:border-box;color:#e8dcae;font:12.5px/1.5 'Segoe UI',Arial,sans-serif;text-align:right}
+#tm-printdlg .t,#tm-news .t,#tm-help .t{font-weight:700;color:#f3dc9a;margin-bottom:6px;font-size:13.5px}
+#tm-printdlg .b,#tm-news .b,#tm-help .b{display:flex;gap:8px;margin-top:10px}
+#tm-printdlg .b button,#tm-news .b button,#tm-help .b button{flex:1;padding:5px 6px;border-radius:7px;border:1px solid rgba(201,168,76,.45);background:rgba(201,168,76,.12);color:#e8dcae;cursor:pointer;font:12px 'Segoe UI',Arial,sans-serif}
+#tm-printdlg .b button.y,#tm-news .b button.y,#tm-help .b button.y{background:rgba(201,168,76,.5);color:#14110a}
 #tm-printdlg .b button:disabled{opacity:.5;cursor:default}
-#tm-news{background:rgba(0,0,0,.35)}
-#tm-news .box{width:min(340px,90vw);max-height:calc(100vh - var(--topbar-h, 56px) - 40px);overflow-y:auto}
+#tm-news,#tm-help{background:rgba(0,0,0,.35)}
+#tm-news .box,#tm-help .box{width:min(340px,90vw);max-height:calc(100vh - var(--topbar-h, 56px) - 40px);overflow-y:auto}
+#tm-help .box{width:min(400px,92vw)}
+#tm-help h4{margin:9px 0 3px;font-size:12.5px;color:#f3dc9a}
+#tm-help h4:first-of-type{margin-top:2px}
+#tm-help ul{margin:0;padding:0 16px 0 0;list-style:disc}
+#tm-help li{margin:2px 0}
+#tm-help kbd{font:11px Consolas,'Segoe UI',monospace;background:rgba(255,255,255,.08);border:1px solid rgba(201,168,76,.35);border-radius:4px;padding:0 4px}
 #tm-news ul{margin:2px 0 0;padding:0 16px 0 0;list-style:disc}
 #tm-news li{margin:2px 0}
 #tm-print{display:none}
@@ -1249,11 +1287,16 @@ body.tm-measuring canvas{cursor:crosshair}
       const style = document.createElement("style");
       style.textContent = ui_CSS;
       document.head.appendChild(style);
-      const burger = document.createElement("button");
-      burger.id = "tm-burger";
+      // 1.1.0: the burger lives in the top bar of index.html (header.topbar .tb-start); created here only if the page has none
+      let burger = document.getElementById("tm-burger");
+      if (!burger) {
+        burger = document.createElement("button");
+        burger.id = "tm-burger";
+        burger.type = "button";
+        burger.title = "הצג/הסתר לוח בקרה";
+        document.body.appendChild(burger);
+      }
       burger.textContent = "✕";
-      burger.title = "הצג/הסתר לוח בקרה";
-      document.body.appendChild(burger);
       const panel = document.createElement("div");
       panel.id = "tm-panel";
       document.body.appendChild(panel);
@@ -1322,7 +1365,7 @@ body.tm-measuring canvas{cursor:crosshair}
         lab.appendChild(span);
         panel.appendChild(lab);
         // 1.0.1-K (review UI-H2-3): the sources go AFTER the label, not inside it - a click on their caption toggled the checkbox
-        if (opts && Array.isArray(opts.src) && opts.src.length) {
+        if (false && opts && Array.isArray(opts.src) && opts.src.length) {   // 1.1.0: no sources in the tree (they stay in the cards)
           const s = document.createElement("div");
           s.className = "tm-src row-src";
           s.appendChild(document.createTextNode(opts.srcLabel || "מקור: "));
@@ -1353,13 +1396,7 @@ body.tm-measuring canvas{cursor:crosshair}
         cap.className = "cap";
         ui_fillSrc(cap, row.cap);   // 1.0.1-L (L.89)
         box.appendChild(cap);
-        if (row.refs && row.refs.length) {
-          const s = document.createElement("span");
-          s.className = "src";
-          s.appendChild(document.createTextNode("מקורות: "));
-          refLinks(s, row.refs);
-          box.appendChild(s);
-        }
+        // 1.1.0 (the user): no sources in the tree - the row's refs stay on the card of its subject (the chips) and in the presentation
         const bb = document.createElement("div");
         bb.className = "bb" + (row.options.length === 3 ? " c3" : "");   // 1.0.1-L: three in a row; two and four in two columns
         const bts = [];
@@ -2059,6 +2096,13 @@ body.tm-measuring canvas{cursor:crosshair}
       const grid = document.createElement("div");
       grid.id = "tm-views";
       panel.appendChild(grid);
+      // 1.1.0: after the merges (UI_VIEW_HOME) the grid keeps "מבט כללי" alone - no "מבטים" header, one wide button
+      setTimeout(() => {
+        if (grid.children.length <= 1) {
+          secViews.style.display = "none";
+          grid.classList.add("one");
+        }
+      }, 0);
 
       // ===== Holy of Holies: cloud + confirmation before it is revealed =====
       const KKF = LVL.HEI;
@@ -2786,6 +2830,7 @@ body.tm-measuring canvas{cursor:crosshair}
           // (review Q2-3: Abaye's challenge on BB 99a is the model's reading; Q2-4: the baraita reads "ומצודדים פניהם")
           // 1.0.1-L (L.30, the user: "כנפי הכרובים, מאוזן (תצוגה שוכבת) ולא מאונך"; L.35 "פרצופי הכרובים נוראים" - interior.md): the wings in a
           // horizontal plane under the heads, the kaporet's cherubim with their wings raised, the new faces
+          { t: "קודש הקדשים — הדביר", view: "kodeshHakodashim", key: "kodeshHakodashim" },   // 1.1.0: was the grid's view
           { t: "הכרובים", view: "cherubim",
             info: "'ויעש בדביר שני כרובים עצי שמן עשר אמות קומתו' (מלכים א ו, כג–כח): כנף חמש אמות, 'עשר אמות מקצות כנפיו ועד קצות כנפיו', 'ותגע כנף האחד בקיר וכנף הכרוב השני נגעת בקיר השני וכנפיהם אל תוך הבית נגעת כנף אל כנף' (ו, כז), ומצופים זהב (ו, כח). 'מעשה צעצעים' (דברי הימים ב ג, י) — רש״י: 'תבנית ילדים וילדות עשה לכרובים, כרביא'; 'והם עמדים על רגליהם ופניהם לבית' (ג, יג). הכנפיים פרושות במישור אחד מאוזן, שוכבות, סוכה על הארון — 'כי הכרובים פרשים כנפים אל מקום הארון ויסכו הכרבים על הארון ועל בדיו מלמעלה' (ח, ז); רש״י (דברי הימים ב ג, יג): 'והיו כנפי הכרובים מטין מן הכותל וסוככין על הכפרת ועל הארון בכנפיהם' — ובמודל מתחת לראשים (בחירת מודל), קצותיהן נוגעות בקירות וזו בזו. ואילו כרובי הכפורת שעל הארון — כנפיהם עולות מן הכתפיים מעל ראשיהם ונמשכות בקשת עד אמצע הכפורת, וקצותיהן נוגעים זה בזה (הנגיעה — כציור הספר): 'והיו הכרבים פרשי כנפים למעלה סככים בכנפיהם על הכפרת' (שמות כה, כ), רש״י: 'שלא תעשה כנפיהם שוכבים אלא פרושים וגבוהים למעלה אצל ראשיהם, שיהא עשרה טפחים בחלל שבין הכנפים לכפרת' (סוכה ה:). הפנים — פני ילד: 'דמות פרצוף תינוק להם' (רש״י שמות כה, יח), 'מאי כרוב? אמר רבי אבהו: כרביא, שכן בבבל קורין לינוקא רביא' (חגיגה יג:) — ראש סגלגל עם סנטר ולחיים, אף ישר, עיניים שקדיות בעפעפיים, פה קטן סגור וקו שיער, כולו זהב, כציור הספר. במודל, כציור הספר: דמות גבוהה וחלקה של זהב, לבושה עד הקרקע, בלי ידיים (אין להן זכר בפסוקים). חז״ל: 'כרובים — בנס הן עומדין' (בבא בתרא צט.; רש״י ו, כד: 'וגוף הכרובים אינו מן המדה ועומד בנס'); ושם מקשה אביי: 'ודלמא בולטין כתרנגולין הוו קיימי' — גופם תחת כנפיהם (רשב״ם), וכך רד״ק (ו, כז): 'גופות הכרובים תחת הכנפים הם ואין צריך להיותם עומדת בנס' — וכך נבנה המודל. פניהם — שלוש דעות בטבלת 'שיטות ומחלוקות': רש״י (ג, יג) — ראשם כפוף ופונה זה אל זה; רד״ק ומצודות — לבית, מזרחה; בבא בתרא צט. — 'ומצודדים פניהם כתלמיד הנפטר מרבו'.",
             refs: [["מלכים א ו, כג", V(10, 6, 23)], ["ו, כד", V(10, 6, 24)], ["ו, כז", V(10, 6, 27)], ["ו, כח", V(10, 6, 28)], ["ח, ז", V(10, 8, 7)], ["דברי הימים ב ג, י", V(39, 3, 10)], ["ג, יג", V(39, 3, 13)], ["שמות כה, יח", V(2, 25, 18)], ["שמות כה, כ", V(2, 25, 20)], ["סוכה ה:", P(108, "ה:")], ["בבא בתרא צט.", P(124, "צט.")], ["מגילה י:", P(112, "י:")], ["חגיגה יג:", P(114, "יג:")]] },
@@ -3147,12 +3192,35 @@ body.tm-measuring canvas{cursor:crosshair}
         "השיתין — השלמה מן המשנה": "השיתין",   // 1.0.2 (rule 6; only when 40-altar.js gives ctx.shared.shitin)
         "היסוד, הסובב וחוט הסיקרא — השלמה מן המשנה": "היסוד, הסובב וחוט הסיקרא",   // 1.0.2 add-on (only with ctx.shared.altarProfile)
         "בית המטבחים — הטבעות, השולחנות והננסין (מקורות מבית שני)": "בית המטבחים — מקרוב",
-        "שני השולחנות שבאולם — צורתם ומקומם": "שולחנות האולם — ר׳ יוסי בר׳ יהודה"
+        "שני השולחנות שבאולם — צורתם ומקומם": "שולחנות האולם — ר׳ יוסי בר׳ יהודה",
+        // 1.1.0 (the user: no doubles): the last of "השלמות" go to their subjects; the group is gone when it is empty
+        "מידות החצרות (מדות ה, א; ב, א)": "הר הבית והחצר הגדולה",
+        ["עובי הקירות — כותל הבית " + hwT.join(", ") + " (רש״י ו, ו, כציור הספר)"]: "חתך היציע",
+        "מקום המזבח (מדות ה, א)": "מזבח הנחושת",
+        "מקום הים (רש״י / רד״ק)": "הים של שלמה",
+        "בית החליפות (רש״י יומא לו.)": "האולם ובית החליפות",
+        "גובה חומות החצרות (20 אמה)": "הר הבית והחצר הגדולה",
+        "מקום הכיורות והים": "עשר המכונות והכיורות",
+        "הדגמת המכונה — המסלול והמים": "המכונות מקרוב",
+        "בית יער הלבנון — שלוש קריאות (רש״י / מלבי״ם ורלב״ג / מצודת דוד)": "בית יער הלבנון",
+        "הכבשים הקטנים — השלמה מן הגמרא": "הכבש"
       };
+      // 1.1.0: "העליות" is a subject of the house, not a completion: it moves after "גג הבית ותקרותיו"
+      {
+        const ex = PLACES.find((g) => g[0] === "השלמות מחז״ל ובחירות מודל"), ho = PLACES.find((g) => g[0] === "הבית מבחוץ");
+        const i = ex ? ex[1].findIndex((it) => it.t === "העליות (רש״י דה״י ג, ד)") : -1;
+        if (i >= 0 && ho) {
+          const it = ex[1].splice(i, 1)[0];
+          const j = ho[1].findIndex((x) => x.t === "גג הבית ותקרותיו");
+          ho[1].splice(j >= 0 ? j + 1 : ho[1].length, 0, it);
+        }
+      }
       // the grid's views that repeated a place: the place stays, in its group (ui_VIEWS keeps them for the presentation and the labels)
       const UI_VIEW_HOME = { newCourt: "החצר החיצונה", azarah: "חצר הכהנים", mizbeach: "מזבח הנחושת", yam: "הים של שלמה", mechonot: "עשר המכונות והכיורות",
         heichalSouth: "היציע והתאים", ulamInside: "האולם ובית החליפות", heichalDoor: "פתח ההיכל ודלתותיו", kodesh: "ההיכל", devirDoor: "פתח הדביר (מזוזות חמישית) — שני ביאורי רש״י",
-        aliyot: "העליות (רש״י דה״י ג, ד)", palace: "החצר הגדולה" };
+        aliyot: "העליות (רש״י דה״י ג, ד)", palace: "החצר הגדולה",
+        // 1.1.0 (the user: no doubles): the last three of the grid too - the grid keeps "מבט כללי" alone
+        heichalFront: "הבית (בית ה׳)", yachinBoazFull: "יכין ובועז — מבט מפתח האולם", kodeshHakodashim: "קודש הקדשים — הדביר" };
       {
         const byT = {};
         for (const g of PLACES) for (const it of g[1]) if (!byT[it.t]) byT[it.t] = it;
@@ -3249,7 +3317,7 @@ body.tm-measuring canvas{cursor:crosshair}
             refs: it.key ? ui_REFS[it.key] || [] : it.refs || [], layer: it.layer || null, feature: it.feature ? it.feature.key : null, item: it });
         }
         det.appendChild(box);
-        panel.appendChild(det);
+        if (box.children.length) panel.appendChild(det);   // 1.1.0: a group whose buttons all merged elsewhere is not shown
       }
       for (const dt of Object.keys(UI_MERGE)) {   // 1.0.1-L (Part 7, U3): the old title leads to the kept button
         const d = placeItemByT[dt];
@@ -3685,15 +3753,19 @@ body.tm-measuring canvas{cursor:crosshair}
       // Every dispute of the model in ONE place, one row each: the subject, its sources (links), and the readings as buttons. The
       // places accordion no longer carries opinion buttons (one place = one button); the layers "העליות" and "האולם לשיטת הרמב״ם" are
       // rows here too (a view that needs a layer still switches it on, and the row follows through layerMarks).
-      const secOps = document.createElement("div");
-      secOps.className = "sec";
-      secOps.textContent = "שיטות ומחלוקות — בחירת הקריאה";
-      panel.appendChild(secOps);
+      // 1.1.0 (the user: no doubles): the table is a closed group like the places' groups - every row is also a chip on its subject's
+      // card, so the table is the one place to see ALL the readings together, and it does not sit open under the tree
+      const secOps = document.createElement("details");
+      secOps.className = "tm-pl tm-ops-det";
+      const opsSum = document.createElement("summary");
+      opsSum.textContent = "שיטות ומחלוקות — בחירת הקריאה";
+      secOps.appendChild(opsSum);
       const opsNote = document.createElement("div");
       opsNote.className = "s";
-      opsNote.textContent = "בכל שורה: הנושא, מקורותיו, והדעות. הלחיצה מחליפה את המודל, מסבירה את הדעה ועפה אליה.";
-      panel.appendChild(opsNote);
-      panel.appendChild(opsBox);
+      opsNote.textContent = "בכל שורה: הנושא והדעות. הלחיצה מחליפה את המודל, מסבירה את הדעה ועפה אליה. המקורות — בכרטיס ההסבר.";
+      secOps.appendChild(opsNote);
+      secOps.appendChild(opsBox);
+      panel.appendChild(secOps);
       {
         const sp = ctx.shared.seaPlacement, kl = ctx.shared.kodeshLayout, ko = ctx.shared.kodeshOpinion;
         const dd = ctx.shared.devirDoor, cpz = ctx.shared.cherubPose, fh = ctx.shared.forestHouse;
@@ -3942,7 +4014,7 @@ body.tm-measuring canvas{cursor:crosshair}
         note.className = "s";
         note.style.lineHeight = "1.5";
         // 1.0.1-L: the pills of this round; what a PLACE switches on goes off by itself (L.27), what a pill switches on stays
-        note.textContent = "הבית, היציע והאולם סגורים כבנייתם. כדי לפתוח — לחצו על הכפתור שעל המודל עצמו (״פתח את הבית״, ״הסר את קירות היציע״, ״פתח את האולם״, ״הסר את הנסרים״, ״הסר ענן״). על המודל גם: ״הצג חתך של היציע (רש״י)״, ״הצג את שכבות הקיר והרצפה״, ״הצג את שכבות המזבח״, הכפתורים שעל המכונה (הבאת הכיור ו״פרק: כיור, כן ומכונה״) ושעל הכסא (״הצג את עליית המלך לכסא״, ״עדי שקר״). מה שכפתור על המודל פתח נשאר פתוח; מה שנפתח מכפתור בלוח (החתך, השכבות, שולחנות האולם) חוזר לבד אחרי 15 שניות. ״↺ החזר הכל״ שבשורת הכפתורים למטה מחזיר הכל. טשטוש החומות ומרחקו — בשורת הכפתורים למטה. לחיצה על תווית במודל פותחת לידה את ההסבר ומקורותיו.";
+        note.textContent = "פתיחה לצפייה (הבית, היציע, האולם, הנסרים, החתכים והשכבות) — בכפתורים שעל המודל עצמו. מה שנפתח מכפתור בלוח חוזר לבד אחרי 15 שניות; ״↺ החזר הכל״ מחזיר את המבט ואת כל המתגים.";   // 1.1.0: short (the long list of the pills is gone from the tree)
         panel.appendChild(note);
       }
       toggleRow("תוויות", true, (on) => {
@@ -3969,30 +4041,133 @@ body.tm-measuring canvas{cursor:crosshair}
       }
       const units = document.createElement("div");
       units.id = "tm-units";
-      units.textContent = "המידות באמות. יחידה אחת במודל = אמה אחת. מקורות: מלכים א ו–ח, דברי הימים ב ג–ד, חז״ל ומפרשים (רש״י תחילה). לחיצה על מבט, מקום או שיטה פותחת את ההסבר ומקורותיו בכרטיס ליד הלוח (✕ או Esc סוגר). מה שאינו בפסוקים מסומן בהסברים ובלוח 'השלמות'; המחלוקות — בטבלת 'שיטות ומחלוקות'.";
+      units.textContent = "המידות באמות. יחידה אחת במודל = אמה אחת. לחיצה על מבט, מקום או שיטה פותחת את ההסבר ומקורותיו בכרטיס ליד הלוח (✕ או Esc סוגר). מה שאינו בפסוקים מסומן בהסברים ובלוח 'השלמות'; המחלוקות — בטבלת 'שיטות ומחלוקות'.";
       panel.appendChild(units);
       const foot = document.createElement("div");
       foot.id = "tm-foot";
-      foot.textContent = "גרור לסיבוב · גלגלת, צביטה או שתי אצבעות לזום · קליק ימני להזזה · חצי המקלדת לסיבוב";
+      // 1.1.0: the controls' hint is the "ניווט" dialog of the top bar; the foot only points there
+      foot.textContent = "הוראות ניווט (עכבר, מגע, מקלדת) — בכפתור ״ניווט״ שבסרגל העליון";
+      foot.style.cursor = "pointer";
+      foot.addEventListener("click", () => { const b = document.getElementById("tm-help-btn"); if (b) b.click(); });
       panel.appendChild(foot);
-      // 1.0.6 (the user): the print and the report sit in the top bar beside "מצגת" (75-tour.js #tm-tour-btn, built after this module), in its style
-      const topBtns = [];
-      const placeTopBtns = () => {
-        const tb = document.getElementById("tm-tour-btn");
-        let x = tb ? tb.getBoundingClientRect().right + 6 : 96;
-        for (const b of topBtns) {
-          b.style.left = x + "px";
-          x += b.offsetWidth + 6;
-        }
-      };
-      const topbarAdd = (el) => {
+      // 1.1.0: the top bar's buttons are children of #tm-topbtns in index.html's header, in a flex row, ordered by `order`
+      // (presentation 10, navigation help 20, print 30, report 40, what's new 50). Each gets an inline SVG icon (ui_topIcon) and its
+      // label in a span.lbl (hidden in a narrow window: index.html). No measuring, no polling: the row lays itself out.
+      // ctx.ui.topbarAdd is exported for 75-tour.js (the presentation button, built after this module).
+      const topbarAdd = (el, order, icon, label) => {
         el.classList.add("tm-topbtn");
-        document.body.appendChild(el);
-        topBtns.push(el);
-        setTimeout(placeTopBtns, 0);
+        el.dataset.order = String(order == null ? 99 : order);
+        if (icon || label) {
+          el.textContent = "";
+          if (icon) el.appendChild(ui_topIcon(icon));
+          if (label) {
+            const sp = document.createElement("span");
+            sp.className = "lbl";
+            sp.textContent = label;
+            el.appendChild(sp);
+          }
+        }
+        const nav = document.getElementById("tm-topbtns");
+        if (!nav) {
+          document.body.appendChild(el);
+          return el;
+        }
+        const o = +el.dataset.order;
+        let before = null;
+        for (const c of nav.children) {
+          if (+c.dataset.order > o) { before = c; break; }
+        }
+        nav.insertBefore(el, before);
+        return el;
       };
-      window.addEventListener("resize", placeTopBtns);
-      setInterval(placeTopBtns, 1000);   // the presentation button changes its text ("■ עצור"), and so its width
+      // ===== 1.1.0 (the user): a clear button in the bar with the navigation instructions ("הוראות ניווט") =====
+      {
+        const hbtn = document.createElement("button");
+        hbtn.type = "button";
+        hbtn.id = "tm-help-btn";
+        hbtn.title = "הוראות ניווט: עכבר, משטח מגע, מגע ומקלדת";
+        topbarAdd(hbtn, 20, "help", "ניווט");
+        const dlg = document.createElement("div");
+        dlg.id = "tm-help";
+        dlg.setAttribute("role", "dialog");
+        dlg.setAttribute("aria-label", "הוראות ניווט");
+        const box = document.createElement("div");
+        box.className = "box";
+        const t = document.createElement("div");
+        t.className = "t";
+        t.textContent = "הוראות ניווט במודל";
+        box.appendChild(t);
+        const sec = (title, items) => {
+          const h = document.createElement("h4");
+          h.textContent = title;
+          box.appendChild(h);
+          const ul = document.createElement("ul");
+          for (const it of items) {
+            const li = document.createElement("li");
+            // "<kbd>" marks a key: [[text]]
+            const parts = String(it).split(/(\[\[[^\]]+\]\])/);
+            for (const p of parts) {
+              if (!p) continue;
+              const m = /^\[\[([^\]]+)\]\]$/.exec(p);
+              if (m) {
+                const k = document.createElement("kbd");
+                k.textContent = m[1];
+                li.appendChild(k);
+              } else li.appendChild(document.createTextNode(p));
+            }
+            ul.appendChild(li);
+          }
+          box.appendChild(ul);
+        };
+        sec("עכבר", [
+          "גרירה עם הכפתור השמאלי — סיבוב המבט.",
+          "גלגלת — התקרבות והתרחקות (זום).",
+          "גרירה עם הכפתור הימני — הזזת התמונה הצידה.",
+          "[[Shift]] + גלגלת — הגבהה והנמכה של גובה העין."
+        ]);
+        sec("משטח מגע (לפטופ)", [
+          "גרירה באצבע אחת — סיבוב.",
+          "שתי אצבעות: צביטה או החלקה למעלה ולמטה — זום.",
+          "אם הגלגלת גוללת את הדף במקום לזום: לחץ פעם אחת על המודל (שיקבל את המיקוד), והחזק את הסמן מעל המודל ולא מעל הלוח."
+        ]);
+        sec("מסך מגע", [
+          "אצבע אחת — סיבוב. צביטה — זום. שתי אצבעות יחד — הזזה."
+        ]);
+        sec("מקלדת", [
+          "[[←]] [[→]] — סיבוב ימינה ושמאלה.",
+          "[[Shift]] + [[↑]] [[↓]] — הטיית המבט למעלה ולמטה.",
+          "[[↑]] [[↓]] או [[PageUp]] [[PageDown]] — הגבהה והנמכה של גובה העין.",
+          "[[+]] [[−]] — זום.",
+          "[[Esc]] — סגירת כרטיס הסבר."
+        ]);
+        sec("בתוך הבית", [
+          "גרירה מסובבת את המבט במקום, כמי שעומד ומביט סביבו.",
+          "אחרי מעבר לכלי קרוב (המנורות, השולחנות, הכרובים) הגרירה מסובבת סביב הכלי, גם מאחוריו ומעליו; הקירות נעשים שקופים בדרך.",
+          "״↺ החזר הכל״ בתחתית הלוח מחזיר את המבט הראשון ואת כל המתגים."
+        ]);
+        const bb = document.createElement("div");
+        bb.className = "b";
+        const ok = document.createElement("button");
+        ok.type = "button";
+        ok.className = "y";
+        ok.textContent = "סגירה";
+        bb.appendChild(ok);
+        box.appendChild(bb);
+        dlg.appendChild(box);
+        document.body.appendChild(dlg);
+        const close = () => { dlg.style.display = "none"; };
+        ok.addEventListener("click", close);
+        dlg.addEventListener("click", (e) => { if (e.target === dlg) close(); });
+        dlg.addEventListener("keydown", (e) => {
+          e.stopPropagation();
+          if (e.key === "Escape" || e.key === "Esc" || e.key === "Enter") close();
+        });
+        dlg.addEventListener("keyup", (e) => e.stopPropagation());
+        hbtn.addEventListener("click", () => {
+          dlg.style.display = dlg.style.display === "flex" ? "none" : "flex";
+          if (dlg.style.display === "flex") { try { ok.focus({ preventScroll: true }); } catch (_) {} }
+        });
+      }
       // ===== 1.0.2 (B, printing): one quiet link at the panel's foot, beside "דיווח על טעות או תקלה" (no new button on the model's view).
       // It builds a clean print page #tm-print: the plugin's name and the current place or view (the open card's title, else the marked
       // button), the view as a picture (one frame rendered and the canvas read with toDataURL right after it, in the same task: the
@@ -4085,7 +4260,7 @@ body.tm-measuring canvas{cursor:crosshair}
         plink.id = "tm-print-link";
         plink.textContent = "הדפסה";
         plink.title = "הדפסה או שמירה כ-PDF";
-        topbarAdd(plink);
+        topbarAdd(plink, 30, "print", "הדפסה");
         // inside Otzaria: the choice
         const pdlg = document.createElement("div");
         pdlg.id = "tm-printdlg";
@@ -4203,7 +4378,7 @@ body.tm-measuring canvas{cursor:crosshair}
         link.id = "tm-report-link";
         link.textContent = "דיווח";
         link.title = "דיווח על טעות או תקלה";
-        topbarAdd(link);
+        topbarAdd(link, 40, "report", "דיווח");
         const dlg = document.createElement("div");
         dlg.id = "tm-report";
         dlg.setAttribute("role", "dialog");
@@ -5110,6 +5285,8 @@ body.tm-measuring canvas{cursor:crosshair}
       // table rows (OPS: cap, refs, options [[key, label, info]], onPick, mark, cur, fly, disabled), the info box, the source links, the
       // cloud confirmation state, the panel
       ctx.ui = {
+        topbarAdd,            // 1.1.0: (el, order, icon, label) - a button into the top bar (75-tour.js: the presentation button)
+        setTopBtn: ui_setTopBtn,
         views: ui_VIEWS,
         info: ui_INFO,
         refs: ui_REFS,
@@ -5365,6 +5542,20 @@ body.tm-measuring canvas{cursor:crosshair}
         };
         setTimeout(tick, 800);
         ctx.ui.news = { items: UI_NEWS.items.slice(), ver: UI_NEWS.ver, show: () => show(UI_NEWS.ver) };   // for the checks
+        // 1.1.0: "מה חדש" in the top bar - opens the window with every version's list (newsSince = null: "מה חדש בתוסף")
+        {
+          const nb = document.createElement("button");
+          nb.type = "button";
+          nb.id = "tm-news-btn";
+          nb.title = "מה חדש בתוסף, לפי גרסאות";
+          topbarAdd(nb, 50, "news", "מה חדש");
+          nb.addEventListener("click", () => {
+            const open = document.getElementById("tm-news");
+            if (open) { open.remove(); return; }
+            newsSince = null;
+            show(UI_NEWS.ver);
+          });
+        }
       }
     } catch (e) {
       if (typeof console !== "undefined") console.error("[ui.js]", e);
