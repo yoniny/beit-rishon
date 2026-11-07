@@ -784,13 +784,14 @@
       const TB_L = 2, TB_W = 1, TB_H = 1.5, TB_X0 = HE + 1.2, TB_Z = 3.8;   // x 3.7..5.7, centres z -+3.8
       const gT = new Group();
       gT.name = "ulamTables";
-      gT.visible = false;
+      gT.visible = true;   // 1.1.0 (the user): the tables are always there - "בלי שולחנות" was wrong
       g.add(gT);
       ctx.layers.ulamTables = gT;
       const gRy = new Group(), gMi = new Group();               // label gates
       gRy.name = "ulamTablesRyby";
       gMi.name = "ulamTablesMishnah";
-      gRy.visible = gMi.visible = false;
+      gRy.visible = true;
+      gMi.visible = false;
       g.add(gRy, gMi);
       ctx.layers.ulamTablesRyby = gRy;
       ctx.layers.ulamTablesMishnah = gMi;
@@ -811,15 +812,15 @@
         { text: "שולחן הזהב (מנחות צט.)", x: lx, y: ly, z: TB_Z, size: 1, layer: "ulamTables" }
       );
       const ulamTables = {
-        current: "none",
-        keys: ["none", "ryby", "mishnah"],
-        names: { none: "בלי שולחנות באולם (ברירת המחדל)", ryby: "ר׳ יוסי בר׳ יהודה: שולחן כסף ושולחן זהב (מנחות צט.)", mishnah: "המשנה: שולחן שיש ושולחן זהב (שקלים ו, ד; מנחות יא, ז)" },
+        current: "ryby",   // 1.1.0: no "none" any more
+        keys: ["ryby", "mishnah"],
+        names: { ryby: "ר׳ יוסי בר׳ יהודה: שולחן כסף ושולחן זהב (מנחות צט.)", mishnah: "המשנה: שולחן שיש ושולחן זהב (שקלים ו, ד; מנחות יא, ז)" },
         set: null
       };
       ulamTables.set = (key) => {                               // an unknown key changes nothing and returns false
         if (ulamTables.keys.indexOf(key) < 0) return false;
         ulamTables.current = key;
-        gT.visible = key !== "none";
+        gT.visible = true;
         gRy.visible = key === "ryby";
         gMi.visible = key === "mishnah";
         tEntry.material = key === "mishnah" ? M.marble : silver;
@@ -1359,14 +1360,64 @@
     // תם כל הבית" - Metzudat David there: "בא לומר שהכל חפה, ואף התקרה שלא הוזכר למעלה" (also the devir aliyah, II Chr 3:9); 1.0.1-K: the
     // gold undersides lie between 55-interior's gold skins (z +-9.8, x -63.4..-3.7) and on both sides of the amah traksin (x -44.5..-43.5,
     // which rises to the ceiling), not over their tops.
+    // 1.2.0 (the user, after the book "נתיבות המקרא" p. 10-11, figs. 14-17; Rashi 6:9): the house ceiling is TWO ceilings - the lower, the
+    // "גבים", for beauty: a carved and painted ceiling (Metzudot: "גומות גומות חקוקות לנוי"; the book: wood, decorated and gold-plated),
+    // then "בית דילפא", two amot of air, then the "שדרות בארזים", cedars side by side, "לדריסת הרגל" - the floor of the aliyah (Rashi).
+    // The same three layers close each aliyah (the layer "aliyot" below). The coffers: a gold map with recessed ovals (hei_cofferGold).
+    const hei_cofferGold = (() => {
+      const draw = (c, sz) => {
+        c.fillStyle = "#d8b14e";
+        c.fillRect(0, 0, sz, sz);
+        const g2 = c.createLinearGradient(0, 0, sz, sz);
+        g2.addColorStop(0, "rgba(255,240,190,.25)");
+        g2.addColorStop(1, "rgba(120,80,10,.25)");
+        c.fillStyle = g2;
+        c.fillRect(0, 0, sz, sz);
+        for (let r = 0; r < 2; r++) for (let k = 0; k < 2; k++) {
+          const cx = sz * (0.25 + 0.5 * k), cy = sz * (0.25 + 0.5 * r), rx = sz * 0.19, ry = sz * 0.14;
+          c.fillStyle = "#8f6516";
+          c.beginPath(); c.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2); c.fill();
+          c.fillStyle = "#b8872a";
+          c.beginPath(); c.ellipse(cx, cy + sz * 0.012, rx * 0.86, ry * 0.82, 0, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = "#f3dc8a";
+          c.lineWidth = sz * 0.012;
+          c.beginPath(); c.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2); c.stroke();
+        }
+      };
+      const bump = (c, sz) => {
+        c.fillStyle = "#ffffff";
+        c.fillRect(0, 0, sz, sz);
+        for (let r = 0; r < 2; r++) for (let k = 0; k < 2; k++) {
+          const cx = sz * (0.25 + 0.5 * k), cy = sz * (0.25 + 0.5 * r);
+          const gr = c.createRadialGradient(cx, cy, sz * 0.02, cx, cy, sz * 0.19);
+          gr.addColorStop(0, "#606060");
+          gr.addColorStop(0.85, "#707070");
+          gr.addColorStop(1, "#ffffff");
+          c.fillStyle = gr;
+          c.beginPath(); c.ellipse(cx, cy, sz * 0.19, sz * 0.14, 0, 0, Math.PI * 2); c.fill();
+        }
+      };
+      return goldStd(worldTex(makeTex(512, draw, { bump, bumpSize: 512 }), 4), { roughness: 0.34, bumpScale: 1.2 });
+    })();
+    let houseRoofProxy = null;   // the cutaway toggles this stand-in; the real roof follows it AND the aliyot layer (hidden while the aliyot stand on the cedars)
     {
       const c1 = H.box(g, KE - DW, 1, 20, M.cedar, (KE + DW) / 2, CEIL, 0);
+      c1.name = "house-ceiling-gavim";
       const gold = hei_boxMesh(g, [{ x0: DW + 0.1, x1: DE, y0: CEIL - 0.05, y1: CEIL, z0: -9.8, z1: 9.8 },
-        { x0: CO.xKodeshW, x1: KE - 0.2, y0: CEIL - 0.05, y1: CEIL, z0: -9.8, z1: 9.8 }], M.gold, "house-ceiling-gold");
+        { x0: CO.xKodeshW, x1: KE - 0.2, y0: CEIL - 0.05, y1: CEIL, z0: -9.8, z1: 9.8 }], hei_cofferGold, "house-ceiling-gold");
       const c2 = H.box(g, KE - DW, 1, 20, M.cedar, (KE + DW) / 2, CEIL + 3, 0);
-      // the roof slab with a cornice 0.3 proud of the upper walls (north, south, west; model choice, as the ulam's roof): x -67.8..-3.8, z +-14.3
+      c2.name = "house-ceiling-sdeirot";
       const roof = hei_boxMesh(g, [{ x0: wx[3] - 0.3, x1: KE - 0.3, y0: TOP, y1: ROOF, z0: -zOut(3) - 0.3, z1: zOut(3) + 0.3 }], M.stone, "house-roof");
-      cut.push(c1, gold, c2, roof);
+      houseRoofProxy = new Object3D();
+      houseRoofProxy.name = "house-roof-proxy";
+      houseRoofProxy.userData.real = roof;
+      cut.push(c1, gold, c2, houseRoofProxy);
+      // the three layers named at the south edge of the ceilings (seen with the house opened, or from the aliyot's opening)
+      ctx.labels.push(
+        { text: "תקרת הגבים — כיור מצויר ומצופה זהב (מלכים א ו, ט; מצודות: גומות לנוי)", x: -25, y: CEIL + 0.5, z: 10.6, size: 1.1 },
+        { text: "בית דילפא — חלל שתי אמות בין התקרות", x: -25, y: CEIL + 2, z: 10.6, size: 1.1 },
+        { text: "שדרות בארזים — ארזים זה בצד זה, רצפת העלייה (רש״י ו, ט)", x: -25, y: CEIL + 3.5, z: 10.6, size: 1.1 }
+      );
       // over the devir only: a ceiling at 20 (I Kings 6:20 "עשרים אמה קומתו", Rashi: "עלית של בית קדשי הקדשים, נמוכה משל היכל"; Chazal in
       // Bava Batra 98b-99a measure the 20 from the cherubim's wing-line - DEV note) with a gold underside (II Chr 3:9 "והעליות חפה זהב");
       // the room above it (y 33..42) is the devir's עלייה: empty, gold-lined.
@@ -1387,57 +1438,95 @@
     // (Radak's second reading: "ג' עליות גבהן תשעים אמה"; the number of stories, 3, follows Radak; the heights of the stories and the
     // ceilings are a model choice). Built over the house + the ulam hall: x -67.5..18.5, z +-14 (the upper walls of the house are 4
     // thick with their outer face at +-14, so the stories continue them), from the roof slab (47.5) up to 12 + 120 = 132.
+    // 1.2.0 (the user: "בדיוק כמו בספר" - figs. 16-17 of "נתיבות המקרא"): TWO aliyot over the house (Rashi on II Chr 3:4: 30 to the first
+    // ceiling, 90 above it to the top roof - 120), one on the other, each closed by the same three layers as the house - גבים, בית דילפא,
+    // שדרות - and the top שדרות the roof. Model choice: the two of equal height (39 each; the three ceiling sets 4 thick); on the house's
+    // cedars (the stone roof slab of the 30-amah reading is hidden while the layer shows). Inside: gold (II Chr 3:9 "והעליות חפה זהב").
+    // They served as the treasuries where the Mishkan and its vessels were stored (Abarbanel on I Kings 8; Metzudat David 8:4) - the card.
+    // The pill "פתח את העליות" takes the south wall off (the book's fig. 17: the interior in section).
     {
       const gA = new Group();
       gA.name = "aliyot";
       gA.visible = false;
       g.add(gA);
       ctx.layers.aliyot = gA;
-      const A0 = ROOF, AT = F + 120;                           // 47.5 .. 132
+      const A0 = TOP, AT = F + 120;                            // 46 .. 132: on the house's cedars, up to 120 over the floor
       const ax0 = wx[3], ax1 = E, acx = (ax0 + ax1) / 2;       // -67.5 .. 18.5
-      layerLabel(gA, "העליות: הבית כולו 120 אמה (דברי הימים ב ג, ד לפי רש\"י)", acx, AT + 4, 0, 5);   // now: 70-ui.js reads ctx.labels once
-      // 1.0.1-K (FIXES K 0.6, a faster load): the layer is off by default, so its geometry (~6 ms on a cold start) is built the first time
-      // the layer is shown (a check per frame in ctx.animated); its materials are the house's, compiled with the rest
+      layerLabel(gA, "העליות: הבית כולו 120 אמה (דברי הימים ב ג, ד לפי רש\"י)", acx, AT + 4, 0, 5);
       let aliyotBuilt = false;
+      const open = { on: false, walls: [] };
       const buildAliyot = () => {
        if (aliyotBuilt) return;
        aliyotBuilt = true;
        try {
-        const SB = [A0, 76, 104], SC = [72, 100, 128];          // story bottoms / ceiling bottoms (double ceilings 4 thick: 1 + 2 + 1)
+        const SB = [A0, 89], SC = [85, 128];                   // story bottoms / the bottoms of their ceiling sets (גבים 1, air 2, שדרות 1)
         const inW = 2 * 10, inL = ax1 - ax0 - 8;               // interior z +-10, x -63.5..14.5
         const WT4 = WT[3];                                     // 4
         for (const s of [-1, 1]) {
           const holes = [];
           for (const sb of SB) for (const c of [-30, 0, 30]) holes.push({ c, b: sb + 10 - A0, w: 2, h: 2 }); // small windows 2 x 2, 3 per side per story
-          hei_holeWall(H, gA, { axis: "x", length: ax1 - ax0, height: AT - A0, thickness: WT4, mat: M.stone, cx: acx, cz: s * (10 + WT4 / 2), y: A0, holes, v0: 2 });
+          const wall = hei_holeWall(H, gA, { axis: "x", length: ax1 - ax0, height: AT - A0, thickness: WT4, mat: M.stone, cx: acx, cz: s * (10 + WT4 / 2), y: A0, holes, v0: 2 });
+          if (s > 0 && wall) open.walls.push(wall);
         }
         for (const [cx] of [[ax1 - WT4 / 2], [ax0 + WT4 / 2]]) {
           const holes = SB.map((sb) => ({ c: 0, b: sb + 10 - A0, w: 2, h: 2 }));
           hei_holeWall(H, gA, { axis: "z", length: inW, height: AT - A0, thickness: WT4, mat: M.stone, cx, cz: 0, y: A0, holes, v0: 2 });
         }
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 2; i++) {
           const y0 = SB[i], y1 = SC[i];
-          H.box(gA, inL, 1, inW, M.cedar, acx, y1, 0);                        // lower slab of the double ceiling
-          H.box(gA, inL, 1, inW, M.cedar, acx, y1 + 3, 0);                    // upper slab
-          // interiors overlaid with gold (II Chr 3:9 "והעליות חפה זהב")
-          for (const s of [-1, 1]) H.box(gA, inL, y1 - y0, 0.1, M.gold, acx, y0, s * 9.95);
+          H.box(gA, inL, 1, inW, M.cedar, acx, y1, 0).name = "aliyah-gavim";              // the גבים: a cedar slab, its underside the coffered gold
+          H.box(gA, inL - 0.2, 0.05, inW - 0.2, hei_cofferGold, acx, y1 - 0.05, 0).name = "aliyah-gavim-gold";
+          H.box(gA, inL, 1, inW, M.cedar, acx, y1 + 3, 0).name = "aliyah-sdeirot";       // the שדרות: the cedars - the floor of the next story / the roof
+          for (const s of [-1, 1]) {
+            const sk = H.box(gA, inL, y1 - y0, 0.1, M.gold, acx, y0, s * 9.95);          // the gold on the walls (II Chr 3:9)
+            if (s > 0) open.walls.push(sk);
+          }
           H.box(gA, 0.1, y1 - y0, inW, M.gold, ax1 - WT4 - 0.05, y0, 0);
           H.box(gA, 0.1, y1 - y0, inW, M.gold, ax0 + WT4 + 0.05, y0, 0);
-          H.box(gA, inL, 0.05, inW, M.gold, acx, y0, 0);
-          H.box(gA, inL, 0.05, inW, M.gold, acx, y1 - 0.05, 0);
+          layerLabel(gA, (i === 0 ? "עלייה א׳" : "עלייה ב׳") + " — אוצר בית האלקים (אברבנאל מלכים א ח)", acx, y0 + 20, 0, 3.2);
+          layerLabel(gA, "גבים · בית דילפא · שדרות בארזים", -25, y1 + 2, 10.6, 1.2);
         }
-        H.box(gA, ax1 - ax0, 1, 2 * (10 + WT4), M.stone, acx, AT, 0);          // top roof slab 132..133
-        for (const s of [-1, 1]) H.box(gA, ax1 - ax0, 1.5, 1, M.stoneLight, acx, AT + 1, s * (10 + WT4 - 0.5)); // tall parapet
-        H.box(gA, 1, 1.5, 2 * (10 + WT4) - 2, M.stoneLight, ax1 - 0.5, AT + 1, 0);
-        H.box(gA, 1, 1.5, 2 * (10 + WT4) - 2, M.stoneLight, ax0 + 0.5, AT + 1, 0);
+        for (const s of [-1, 1]) H.box(gA, ax1 - ax0, 1.5, 1, M.stoneLight, acx, AT, s * (10 + WT4 - 0.5)); // a parapet on the roof
+        H.box(gA, 1, 1.5, 2 * (10 + WT4) - 2, M.stoneLight, ax1 - 0.5, AT, 0);
+        H.box(gA, 1, 1.5, 2 * (10 + WT4) - 2, M.stoneLight, ax0 + 0.5, AT, 0);
         gA.updateMatrixWorld(true);
+        if (open.on) for (const w of open.walls) w.visible = false;
        } catch (e) {
         console.warn("[heichal] aliyot layer:", e && e.message);
        }
       };
+      ctx.shared.aliyotOpen = {
+        get: () => open.on,
+        set: (on) => {
+          open.on = !!on;
+          if (!aliyotBuilt && gA.visible) buildAliyot();
+          for (const w of open.walls) w.visible = !open.on;
+        }
+      };
+      ctx.shared.modelButtons = ctx.shared.modelButtons || [];
+      ctx.shared.modelButtons.push({
+        id: "hei-aliyot-open",
+        label: "פתח את העליות",
+        labelOn: "סגור את העליות",
+        title: "מסיר את הכותל הדרומי של העליות ומראה את פנים שתי העליות: רצפת הארזים (ה״שדרות״), ציפוי הזהב, ומעל כל עלייה תקרת הגבים, בית דילפא והשדרות (כאיור הספר).",
+        layer: "aliyot",
+        anchor: () => [-25, 90, 14.6],
+        maxDist: 260,
+        get: () => open.on,
+        set: (on) => {
+          ctx.shared.aliyotOpen.set(on);
+          if (on) heiFly("aliyot");
+        }
+      });
       gA.userData.build = buildAliyot;                         // for a caller that needs the geometry at once (headless checks)
+      let roofWas = null;
       (ctx.animated = ctx.animated || []).push(() => {
         if (!aliyotBuilt && gA.visible) buildAliyot();
+        // the stone roof slab: as the cutaway left its proxy, and never while the aliyot stand on the cedars
+        if (houseRoofProxy && houseRoofProxy.userData.real) {
+          const want = houseRoofProxy.visible && !gA.visible;
+          if (want !== roofWas) { roofWas = want; houseRoofProxy.userData.real.visible = want; }
+        }
       });
     }
 
@@ -1608,7 +1697,7 @@
     // over 144 eyes and pictures: it sees 22 of 28 sample points of the figure; the eye before it ([8.5, 36.5, 2]) saw 15, with the label over the
     // heichal's doorway (9 amot wide, 5 from that eye) across 18% of the frame
     const FP_CAP = {
-      rashi: { pos: [11.8, 31.5, 2.5], target: [PX, 30.5, PZ] },
+      rashi: { pos: [19.5, 32.5, -4.5], target: [PX, 30.5, PZ] },   // 1.2.0 (the user: the eye stood inside the capital): from the ulam's doorway, 16 away
       malbim: { pos: [31, 37, 26], target: [19.5, 32, 9.5] }   // A14: from outside and from the south, so that the hat with its net stands beside the lily on the ulam's front and does not hide it
     };
     // 1.0.1-L (verifier): the view from the doorway per reading - Rashi's eye 0.5 higher than K.1's, so that the label over the heichal's doorway

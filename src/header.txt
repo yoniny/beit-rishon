@@ -11,6 +11,9 @@
  * Units: 1 = 1 amah. +x east (front), +z south (right), y up. Levels: great court 0, inner court 6, house floor 12.
  * VERSION: plugin/manifest.json is the ONE source (tools/build.mjs writes it into the bundle and index.html; minAppVersion 0.9.98.1).
  * 1.1.0 (8.11.2026): build = node tools/build.mjs (assemble + version + checks + terser minify); plugin/bundle.js is a build product - edit src/ only.
+ * 1.2.0 (8.11.2026, DEV_NOTES "סבב ו'"): one top bar; menu without doubles, no sources in the tree; a two-mode camera (orbit / look, no wall or floor
+ *   stops, indoors the eye stays in the room by default); the book's three-layer ceiling and two aliyot with an opening pill; altarPlace, arkLayout,
+ *   arkLift, incenseSmoke, devirPentEdges switches; the staffs to the west wall; the Baraita on the cards; the verse presentation trimmed to 46.
  * 1.0.2 (2026-11-03, round 5 = DEV_NOTES "סבב ה' — 1.0.2": the user's list of 2.11.2026 after 1.0.1 went to the store): a reader button "פתח בתוסף בית ראשון" in
  *   I Kings (10) and II Chronicles (39) only (manifest startup program + toolbar item, openPlugin); 70-ui.js reads the line -> verse (ui_BASE, all
  *   chapters) -> ui_READ -> the place / view with its card; "דיווח על טעות או תקלה" -> feedback.report (inside Otzaria only); the other readings

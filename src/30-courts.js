@@ -388,7 +388,7 @@
       // right, whole (1.0.1-L: from over the holy door it stood half under the frame's edge), the line of the wall across the floor, the 71
       // seats facing the camera beyond it (model choice). The camera stands 6.4 from the target across the floor, so the turn buttons keep it
       // inside the room (the inner faces x 49.5..68.5, z -75.5..-59.5) at every step
-      ctx.shared.flyPoints.lishkatHaGazit = { pos: [58.5, AZ + 20.5, -63.3], target: [62.2, AZ + 1, -68.5] };   // 1.0.1-L (A9): 1.2 east, with the ring
+      ctx.shared.flyPoints.lishkatHaGazit = { pos: [44, AZ + 11, -40], target: [62, AZ + 3, -64] };   // 1.2.0 (the user: the angle): from the court, south-west, low (the Sea stands east of it)   // 1.0.1-L (A9): 1.2 east, with the ring
       // outside (a second view for the UI, optional): high over the outer court's corner, 136 from the chamber's nearest corner - beyond the
       // walls' fade reach along the view (70-ui.js: 120), so the chamber stays solid - aimed at the court floor 11 in front of it: the
       // chamber on the north wall beside the gate, the Sea in its corner, the altar

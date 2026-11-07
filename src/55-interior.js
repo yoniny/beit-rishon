@@ -1075,7 +1075,8 @@
                                             // הקדשים במערבו שעליה היה הארון מנח"); the 5 from the west wall = model choice (SPEC 7)
     const STAFF_Z = ARK_L / 2 + 0.15;       // staffs at the ends of the ark's length (Rashi on I Kings 6:23; Menachot 98b: 2.5 between them)
     const STAFF_Y = F + ROCK_H + ARK_H / 2; // at the ark's mid height
-    const STAFF_X0 = ARK_X - ARK_W / 2 + 0.2;   // -59.05: the staffs start 0.2 inside the ark's west face
+    const STAFF_X0 = XDW;                   // 1.2.0 (the user, after Baraita d'Melechet HaMishkan 7 "ומנין שהאריכו מבפנים? שנאמר ולא יראו החוצה"): the staffs
+                                            // were lengthened inward too - their west ends at the west wall itself (x -63.5; was 0.2 inside the ark's west face)
     const STAFF_LEN = XW - STAFF_X0;        // 15.55 (model choice, SPEC 7 "~15"): their east ends reach the parochet's west face (x -43.5) and press it (I Kings 8:8)
     const STAFF_PRESS = 0.3, STAFF_BULGE = 0.28;   // 1.0.1-L (L.54): the staffs 0.3 longer, into the curtain's swelling, 0.28 high (model choices)
 
@@ -1970,6 +1971,14 @@
         else for (let i = 0; i < 3; i++) { fps[k].pos[i] = src[k].pos[i]; fps[k].target[i] = src[k].target[i]; }   // in place: holders of the object follow
       }
     };
+    // 1.2.0 (the user): the incense smoke of every layout as one switch - the place "פתח הדביר" hides it for 15 s (70-ui.js)
+    ctx.shared.incenseSmoke = {
+      on: true,
+      set(v) {
+        this.on = !!v;
+        for (const k in layouts) for (const m of layouts[k].smoke) m.visible = !!v;
+      }
+    };
     ctx.shared.kodeshLayout = {
       current: "rabbi",
       keys: ["rabbi", "rashbash"],
@@ -2176,6 +2185,24 @@
           lintel.name = "devir-lintel";
           lintel.castShadow = lintel.receiveShadow = true;
           vg.add(lintel);
+          // 1.2.0 (the user: "להדגיש את הצלעות כ-5"): the five sides of the posts and of the lintel as glowing edges - a group the place
+          // "פתח הדביר" switches on for 15 s (70-ui.js feature devirDoorView; ctx.shared.devirPentEdges)
+          const eg = new Group();
+          eg.name = "devir-pent-edges";
+          eg.visible = false;
+          const edgeMat = new LineBasicMaterial({ color: 0xfff6c0, transparent: true, opacity: 0.95, depthTest: false });
+          for (const o of vg.children) {
+            if (!o.isMesh || !o.geometry) continue;
+            const ln = new LineSegments(new EdgesGeometry(o.geometry, 20), edgeMat);
+            ln.position.copy(o.position);
+            ln.rotation.copy(o.rotation);
+            ln.renderOrder = 5;
+            ln.userData.noPick = true;
+            ln.raycast = int_noRaycast;
+            eg.add(ln);
+          }
+          vg.add(eg);
+          ctx.shared.devirPentEdges = { on: false, set(v) { this.on = !!v; eg.visible = !!v; } };
         }
       } else {
         // square posts 1 x 1 (section: model choice), 0.1 proud of both faces; threshold 0.25 high (model choice; Rashi on 6:34 "חור המפתן"),
@@ -2312,6 +2339,7 @@
       const rockGeo = new ExtrudeGeometry(rockShape, { depth: ROCK_H, bevelEnabled: false });
       rockGeo.rotateX(-Math.PI / 2);     // extrusion -> +y (0..ROCK_H)
       const rock = new Mesh(rockGeo, rockMat);
+      rock.name = "even-shetiya";
       rock.position.set(ARK_X, F, 0);
       rock.castShadow = rock.receiveShadow = true;
       g.add(rock);
@@ -2544,7 +2572,9 @@
           m.rotation.y = Math.PI / 2;                                    // the letters read from the east, their tops to the west
           m.name = "ark-tablet";
           open.add(m);
+          tabletsMine.push(m);
         };
+        const tabletsMine = [];
         tablet(zN + 3 * TF, ["אנכי ה׳ אלקיך", "לא יהיה לך", "לא תשא", "זכור את יום השבת", "כבד את אביך"]);                   // the first on the viewer's right (north): Hebrew reads from the right
         tablet(zN + 9 * TF, ["לא תרצח", "לא תנאף", "לא תגנב", "לא תענה", "לא תחמד"]);
         // the broken tablets: two layers of shards, three tefachim high, showing a little past the whole tablets' sides
@@ -2566,6 +2596,65 @@
         scroll.position.set(ARK_X, yf + TF, -zN - TF);
         scroll.name = "ark-torah-scroll";
         open.add(scroll);
+        // 1.2.0 (the user; Bava Batra 14a-b): TWO readings of what lay in the ark and how - ctx.shared.arkLayout (a row of the opinions table).
+        // R. Meir (an amah of six handbreadths; the model so far): the ark 15 x 9 x 9 tefachim; the tablets 6 x 6 x 3 along its length, 12
+        //   of the 15, a tefach for the walls, and "נשתיירו שם שני טפחים שבהן ספר תורה מונח" - the scroll INSIDE, at the south end, "מן הצד";
+        //   the broken tablets under them (Rav Huna, "יושב הכרובים"); the silver pillars "מבראי" - outside.
+        // R. Yehuda (an amah of five): the ark 12.5 x 7.5 x 7.5; the tablets 12 along the length and half a tefach for the walls; across: 6 for
+        //   the tablets, a tefach for the silver pillars (Song 3:10 "עמודיו עשה כסף") INSIDE, half for the walls; the scroll NOT inside -
+        //   "ארגז ששיגרו פלשתים דורון לאלהי ישראל מונח בצדו... ועליו ספר תורה מונח - מצד הוא מונח ולא בתוכו"; the broken tablets inside
+        //   ("אין בארון רק" - לרבות שברי לוחות). In the model the ark's outer size stays (2.5 x 1.5 amot); the tablets grow to 5-tefach amot.
+        {
+          const TF5 = 0.2;                                                    // a tefach of an amah of five
+          const silver = new MeshStandardMaterial({ color: 0xf2f4f6, roughness: 0.28, metalness: 0.75, emissive: 0x30343a, emissiveIntensity: 0.4 });
+          const amudim = new Group();
+          amudim.name = "ark-amudim";
+          for (const dz of [-0.45, 0.45]) {                                  // two silver pillars, in the tefach beside the tablets (the west side)
+            const a = new Mesh(new CylinderGeometry(0.055, 0.055, ARK_H - 2 * ARK_T - 0.1, 10), silver);
+            a.position.set(ARK_X - ARK_W / 2 + ARK_T + 0.12, yf + (ARK_H - 2 * ARK_T - 0.1) / 2, dz);
+            amudim.add(a);
+          }
+          amudim.visible = false;
+          open.add(amudim);
+          // the Philistines' chest (I Sam 6:8 "ואת כלי הזהב... תשימו בארגז מצדו") beside the ark, on the west, with the scroll on it
+          const argaz = new Group();
+          argaz.name = "ark-argaz";
+          const chestMat = new MeshStandardMaterial({ color: 0x6b4a2a, roughness: 0.8 });
+          const cb = new Mesh(new BoxGeometry(0.9, 0.55, 0.6), chestMat);
+          cb.position.set(ARK_X - ARK_W / 2 - 0.62, F + ROCK_H + 0.275, 0);
+          cb.castShadow = cb.receiveShadow = true;
+          argaz.add(cb);
+          const sc2 = new Mesh(new CylinderGeometry(0.17, 0.17, 1.0, 24), parchment);   // the scroll, lying on the chest along z
+          sc2.rotation.x = Math.PI / 2;
+          sc2.position.set(ARK_X - ARK_W / 2 - 0.62, F + ROCK_H + 0.55 + 0.17, 0);
+          argaz.add(sc2);
+          argaz.visible = false;
+          g.add(argaz);
+          const LAYOUT = {
+            current: "meir",
+            keys: ["meir", "yehuda"],
+            names: { meir: "רבי מאיר: ספר התורה בתוך הארון, מן הצד", yehuda: "רבי יהודה: ספר התורה על הארגז בצד הארון, והעמודים בפנים" },
+            info: {
+              meir: "אמה בת ששה טפחים: הארון חמישה עשר על תשעה על תשעה טפחים. הלוחות — 'ארכן ששה ורחבן ששה ועביין שלשה' — מונחות לאורכו, שתים עשרה אמות מתוך חמש עשרה; טפח לשני הכתלים, 'נשתיירו שם שני טפחים שבהן ספר תורה מונח' — ספר התורה בתוך הארון, בקצהו, 'מן הצד'; וברוחב, אחרי הלוחות והכתלים, שני טפחים פנויים 'שלא יהא ספר תורה נכנס ויוצא כשהוא דחוק'. שברי הלוחות מונחים בארון (רב הונא: 'יושב הכרובים'); העמודים — 'מבראי', מחוץ לארון (בבא בתרא יד.–יד:).",
+              yehuda: "אמה בת חמישה טפחים: הארון שנים עשר וחצי על שבעה וחצי על שבעה וחצי. הלוחות שתים עשרה לאורכו וחצי טפח לכתלים; ברוחב — שישה ללוחות, טפח לעמודי הכסף ('עמודיו עשה כסף', שיר השירים ג, י) שבתוך הארון, וחצי טפח לכתלים. ספר התורה אינו בארון: 'ארגז ששיגרו פלשתים דורון לאלהי ישראל מונח בצדו... ועליו ספר תורה מונח — מצד הוא מונח ולא בתוכו'; ושברי הלוחות בארון ('אין בארון רק' — לרבות שברי לוחות) (בבא בתרא יד.–יד:). במודל: הארגז ממערב לארון; הלוחות בטפחי אמה בת חמישה."
+            },
+            set(key) {
+              if (!(key in this.info)) return false;
+              this.current = key;
+              const y5 = key === "yehuda";
+              const tf = y5 ? TF5 : TF, k = tf / TF;
+              tabletsMine.forEach((m, i) => {
+                m.scale.set(k, k, k);
+                m.position.set(ARK_X, yf + 3 * TF + 1.5 * tf, zN + (i === 0 ? 3 : 9) * tf);
+              });
+              scroll.visible = !y5;
+              amudim.visible = y5;
+              argaz.visible = y5;
+              return true;
+            }
+          };
+          ctx.shared.arkLayout = LAYOUT;
+        }
         // the parchment, lying over the join of the tablets at their west side
         const cardGeo = new PlaneGeometry(0.56, 0.42, 12, 4);
         cardGeo.rotateX(-Math.PI / 2);
@@ -2688,6 +2777,33 @@
       const devirLight = new PointLight(0xFFE0A0, 9, 40, 1.8);
       devirLight.position.set(cx, F + DH - 4, 0);
       g.add(devirLight);
+      // 1.2.0 (the user: "אבן השתיה - אני רוצה שתציג את האבן"): the place lifts the ark off the stone for 15 s (70-ui.js feature arkLift) - every
+      // part that stands on the ark's footprint (the body, the kaporet with its cherubim, the rings, what is inside) goes up 3 amot; the
+      // stone, the staffs and the big cherubim stay. The parts are found by their bounds once, when first lifted.
+      {
+        const LIFT = 3, parts = [];
+        let found = false, up = false;
+        const bx = new Box3();
+        const find = () => {
+          found = true;
+          for (const o of g.children) {
+            if (o === rock || o.name === "even-shetiya" || o.isLight) continue;
+            try { bx.setFromObject(o); } catch (_) { continue; }
+            if (bx.isEmpty()) continue;
+            if (bx.min.x > ARK_X - 1.6 && bx.max.x < ARK_X + 1.6 && bx.min.z > -1.9 && bx.max.z < 1.9 && bx.min.y > F - 0.05 && bx.max.y < F + 8) parts.push(o);
+          }
+        };
+        ctx.shared.arkLift = {
+          get: () => up,
+          set: (v) => {
+            v = !!v;
+            if (v === up) return;
+            if (!found) find();
+            up = v;
+            for (const o of parts) o.position.y += v ? LIFT : -LIFT;
+          }
+        };
+      }
     }
     const kodeshLight = new PointLight(0xFFE0A0, 12, 50, 1.8);          // reference values (ref-heichal-bayit2.js), lowered to our ceiling
     kodeshLight.position.set((XE + XW) / 2, F + KH - 4, 0);
@@ -2723,7 +2839,7 @@
       // lintel at the top (y 24..25.54), the swellings of the staffs at the bottom (y ~12.9); K.5: [-28, 22, 3] -> [-43.3, 19, 0]. From the
       // south-east (z 6.5): the incense column stands on the axis before the curtain (x -39), so from the axis it crossed the curtain's middle;
       // now it crosses its south third (2.3 from the middle at the curtain), and the middle with the swellings and the eagles is clear
-      devirDoor: { pos: [-27, 21.8, 6.5], target: [-43.3, 19.6, 0] },
+      devirDoor: { pos: [-24.5, 20.6, 0], target: [-43.4, 19.2, 0] },   // 1.2.0 (the user): centred on the axis; the smoke is hidden by the place
       // the carved north wall, close: a palm between two pairs of cherubim (the palm at x -14, the pairs at -16.5 and -11.5). 1.0.1-L (L.31):
       // back at K.5's view - the wall-layers window now spans x -21.5..-9.5 around it, but it is an option (default all gold, and a place that
       // switches it on switches it off again, L.27); with the layers on, this view shows the window

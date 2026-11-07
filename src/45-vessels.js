@@ -1475,10 +1475,10 @@
     // a little further (FOL_NEAR.rWash / rPour instead of 13): the base, the water, the pills and the whole label are in the frame, measured by projection with a margin
     // at 16 : 10 and wider (about 4 % of the half-width at the narrowest point; at 4 : 3 just inside). The azimuths, the heights and the labels are unchanged. Model choice.
     const FOL_LAG = 0.35;                           // seconds (model choice)
-    const FOL_FAR = { r: 18, h: 12, ty: 3.5 };      // horizontal distance, eye and aim above the court floor: 19.9 from the aim
-    const FOL_NEAR = { h: 8, ty: 4.3, rWash: 16, rPour: 18, lab: 0.7 };   // at the stops: 16.4 / 18.4 from the aim (1.0.2: 13.5 for both, as mechonaClose)
+    const FOL_FAR = { r: 26, h: 17, ty: 3.5 };      // 1.2.0 (the user: "מזווית שונה וממרחק קצת יותר"): farther and higher (was 18 / 12)
+    const FOL_NEAR = { h: 12, ty: 4.3, rWash: 22, rPour: 24, lab: 0.7 };   // 1.2.0: at the stops too (was 8 / 16 / 18)
     const FOL_LABW = [WASH[0] - 7.5, WASH[1] - 1.5], FOL_LABP = [STOP[0] - 7.5, STOP[1] + 8];   // 1.0.2 (M): x / z of the two labels, as they are pushed above
-    const FOL_AZ = { route: 12, wash: 18, corner: 110, pour: 160 };
+    const FOL_AZ = { route: 38, wash: 44, corner: 118, pour: 160 };   // 1.2.0: a three-quarter view on the way (was 12 / 18 / 110)
     const D2R = Math.PI / 180;
     // the view for a moment of the round: the base at (x, z); out = {tx, ty, tz, az (radians), r, h}
     const folNear = (tau, w) => smooth(Math.min((tau - (w[0] - 1.6)) / 1.6, (w[1] + 1.2 - tau) / 1.2));   // in 1.6 s before the water, out 1.2 s after it

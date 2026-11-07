@@ -25,6 +25,7 @@ const browser = await puppeteer.launch({
 try {
   const page = await browser.newPage();
   page.setDefaultTimeout(30000);
+  await page.evaluateOnNewDocument((ver) => { try { localStorage.setItem('tm1.news.seen', ver); } catch (_) {} }, JSON.parse(fs.readFileSync(path.join(root, 'plugin', 'manifest.json'), 'utf8')).version);   // no "מה חדש" window during the tests
   await page.setViewport({ width: 1280, height: 800, deviceScaleFactor: 1 });
   page.on('console', (m) => {
     const t = m.type(), s = m.text();

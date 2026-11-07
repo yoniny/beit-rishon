@@ -37,6 +37,7 @@
     const g = new Group();
     g.name = "altar";
     ctx.root.add(g);
+    const altLabel0 = ctx.labels.length;   // 1.2.0: the labels this module pushes (moved with the altar, altarPlace below)
 
     const F = LV2.AZ;                                  // court floor, y 6 (inner court level, model choice: see 10-core.js)
     const S = CO2.ALTAR;                               // 20: II Chr 4:1 "עשרים אמה ארכו ועשרים אמה רחבו"
@@ -560,4 +561,64 @@
         sp.material.opacity = 0.17 * (p < 0.12 ? p / 0.12 : 1 - (p - 0.12) / 0.88);
       }
     });
+
+    // --- 1.2.0 (the user): THE PLACE OF THE ALTAR in the court - the Tannaim's dispute (Yoma 16a; Zevachim 58b-59a, 63a). All agree the
+    // ramp stood at the altar's south (Rav Huna from "ירך המזבח צפונה", R. Yehuda from "ומעלותיהו פנות קדים"); they differ where the altar
+    // and its ramp stood in the court's 135 amot north to south: R. Eliezer b. Yaakov - "כוליה מזבח בדרום קאי" (so the Rambam rules);
+    // R. Yose (R. Yose HaGelili, R. Elazar) - "כוליה מזבח בצפון קאי"; R. Yehuda - in the middle, half north and half south. The whole
+    // group moves (the body, the yesod and sovev, the ramp and the small ramps, the shitin, the fire): "כוליה" = the body of 20 (model
+    // choice): south = its north edge on the house's axis, north = its south edge on it, middle = centred (the 1.0.x model). The court's
+    // slaughter place (30-courts.js) and the mechonot's route (45-vessels.js) stay. The labels and the fly points follow. ---
+    {
+      const S2 = CO2.ALTAR;
+      const mine = ctx.labels.slice(altLabel0);
+      const base = mine.map((l) => l.z);
+      const FPK = ["mizbeach", "mizbeachSW", "mizbeachRamps", "shitin"];
+      const fp0 = {};
+      for (const k of FPK) if (ctx.shared.flyPoints[k]) fp0[k] = { pos: ctx.shared.flyPoints[k].pos.slice(), target: ctx.shared.flyPoints[k].target.slice() };
+      const PLACE = {
+        title: "מקום המזבח בעזרה",
+        current: "south",
+        keys: ["south", "north", "middle"],
+        dz: { south: S2 / 2, north: -S2 / 2, middle: 0 },
+        names: {
+          south: "רבי אליעזר בן יעקב: כולו בדרום (וכן פסק הרמב״ם)",
+          north: "רבי יוסי: כולו בצפון",
+          middle: "רבי יהודה: ממוצע, באמצע העזרה"
+        },
+        info: {
+          south: "'כוליה מזבח בדרום קאי' — המזבח והכבש עמדו כולם בחלק הדרומי של העזרה (וכן פסק הרמב״ם). גוף המזבח מתחיל בקו ציר הבית ונמשך דרומה, והכבש ממנו הלאה לדרום; פתח ההיכל אינו חסום על ידי גוף המזבח.",
+          north: "'כוליה מזבח בצפון קאי' — שיטת רבי יוסי (וכן רבי יוסי הגלילי ורבי אלעזר): המזבח עמד בחצי הצפוני של העזרה, והכבש נמשך ממנו לצד הדרום, אל מול פתח ההיכל.",
+          middle: "רבי יהודה: המזבח היה ממוצע ועמד באמצע העזרה ממש — חציו בצפון וחציו בדרום; גוף המזבח והכבש בקו ישר כנגד פתח ההיכל, וחוסמים את מראה הפתח."
+        },
+        lead: "מחלוקת התנאים במיקום המזבח והכבש בעזרה (יומא טז., זבחים סג.). כל התנאים מסכימים כי הכבש עמד בצדו הדרומי של המזבח עצמו (כדדרש רב הונא מ'ירך המזבח צפונה' וכדדרש רבי יהודה מ'ומעלותיהו פנות קדים'). המחלוקת היא היכן עמדו המזבח והכבש בתוך חלל העזרה (שרוחבה 135 אמות מצפון לדרום). מן ההשוואה בין השיטות עולה כי המחלוקת על מיקום המזבח (באמצע, בצפון או בדרום) אינה משפיעה רק על מיקום הכבש בחלל העזרה, אלא גם על השאלה האם גוף המזבח והכבש עמדו בקו ישר כנגד פתח ההיכל וחסמו את מראה הפתח. במודל: 'כוליה' = גוף המזבח (עשרים על עשרים); היסוד, הכבש, הכבשים הקטנים והשיתין זזים עמו (בחירת מודל).",
+        refs: [["יומא טז.", ["P", 107, "טז."]], ["זבחים סג.", ["P", 130, "סג."]], ["זבחים נח:", ["P", 130, "נח:"]], ["רמב״ם בית הבחירה ה, יג", ["RB", 5, 13]]],
+        get() { return this.current; },
+        set(key) {
+          if (!(key in this.dz)) return false;
+          this.current = key;
+          const dz = this.dz[key];
+          g.position.z = dz;
+          g.updateMatrixWorld(true);
+          let lg = null;
+          try { lg = ctx.root.getObjectByName("labels"); } catch (_) {}
+          mine.forEach((l, i) => {
+            const oz = l.z;
+            l.z = base[i] + dz;
+            if (lg) for (const spr of lg.children) {
+              if (spr.userData && spr.userData.label === l) { spr.position.z = l.z; break; }
+              if (Math.abs(spr.position.x - l.x) < 1e-3 && Math.abs(spr.position.y - l.y) < 1e-3 && Math.abs(spr.position.z - oz) < 1e-3) { spr.position.z = l.z; break; }
+            }
+          });
+          for (const k of FPK) if (fp0[k] && ctx.shared.flyPoints[k]) {
+            const f = ctx.shared.flyPoints[k];
+            f.pos = [fp0[k].pos[0], fp0[k].pos[1], fp0[k].pos[2] + dz];
+            f.target = [fp0[k].target[0], fp0[k].target[1], fp0[k].target[2] + dz];
+          }
+          return true;
+        }
+      };
+      ctx.shared.altarPlace = PLACE;
+      PLACE.set("south");   // the user: the default - in the south, as the Rambam rules
+    }
   }
