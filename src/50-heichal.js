@@ -1469,36 +1469,58 @@
        if (aliyotBuilt) return;
        aliyotBuilt = true;
        try {
-        const SB = [A0, 89], SC = [85, 128];                   // story bottoms / the bottoms of their ceiling sets (גבים 1, air 2, שדרות 1)
-        const inW = 2 * 10, inL = ax1 - ax0 - 8;               // interior z +-10, x -63.5..14.5
+        // 1.2.4 (the user, Metzudat David on 6:20 after Rashi: "עליית בית קודש הקדשים היתה נמוכה משל היכל י' אמות"; "רק בקריאה של העליות"):
+        // over the devir (x ax0 .. CO.xDevirE) the block is TEN AMOT LOWER - the first storey's ceiling set at 75..79 (the heichal's at
+        // 85..89), the second storey 79..118 with its set at 118..122, the roof 122 against 132: a step seen from outside; the gold slabs
+        // at the step close the first storey's ceiling drop (75..89) and the top (118..132). In the 30-amah reading nothing changes.
+        const xS = CO.xDevirE;                                 // -44.5: the devir's east face - the step
+        const PARTS = [
+          { x0: ax0, x1: xS, SB: [A0, 79], SC: [75, 118], AT: AT - 10, west: true },
+          { x0: xS, x1: ax1, SB: [A0, 89], SC: [85, 128], AT, east: true }
+        ];
+        const inW = 2 * 10;                                    // interior z +-10
         const WT4 = WT[3];                                     // 4
-        for (const s of [-1, 1]) {
-          const holes = [];
-          for (const sb of SB) for (const c of [-30, 0, 30]) holes.push({ c, b: sb + 10 - A0, w: 2, h: 2 }); // small windows 2 x 2, 3 per side per story
-          hei_holeWall(H, gA, { axis: "x", length: ax1 - ax0, height: AT - A0, thickness: WT4, mat: M.stone, cx: acx, cz: s * (10 + WT4 / 2), y: A0, holes, v0: 2 });
+        const HOLE_X = [acx - 30, acx, acx + 30];              // the small windows' x (-54.5, -24.5, 5.5), 2 x 2, per side per story
+        for (const P of PARTS) {
+          const cx = (P.x0 + P.x1) / 2, len = P.x1 - P.x0;
+          for (const s of [-1, 1]) {
+            const holes = [];
+            for (const sb of P.SB) for (const hx of HOLE_X) if (hx > P.x0 + 2 && hx < P.x1 - 2) holes.push({ c: hx - cx, b: sb + 10 - A0, w: 2, h: 2 });
+            hei_holeWall(H, gA, { axis: "x", length: len, height: P.AT - A0, thickness: WT4, mat: M.stone, cx, cz: s * (10 + WT4 / 2), y: A0, holes, v0: 2 });
+          }
+          // 1.2.3 (the user: "המבט של העליות יהיה ממזרח"): "פתח את העליות" takes the EAST wall off - the two storeys seen along the house's length
+          if (P.east || P.west) {
+            const wx0 = P.east ? P.x1 - WT4 / 2 : P.x0 + WT4 / 2;
+            const holes = P.SB.map((sb) => ({ c: 0, b: sb + 10 - A0, w: 2, h: 2 }));
+            const wall = hei_holeWall(H, gA, { axis: "z", length: inW, height: P.AT - A0, thickness: WT4, mat: M.stone, cx: wx0, cz: 0, y: A0, holes, v0: 2 });
+            if (P.east && wall) open.walls.push(wall);
+          }
+          const ix0 = P.west ? P.x0 + WT4 : P.x0, ix1 = P.east ? P.x1 - WT4 : P.x1, iL = ix1 - ix0, icx = (ix0 + ix1) / 2;   // the part's interior in x
+          for (let i = 0; i < 2; i++) {
+            const y0 = P.SB[i], y1 = P.SC[i];
+            H.box(gA, iL, 1, inW, M.gold, icx, y1, 0).name = "aliyah-gavim";              // the גבים: a gold slab (1.2.3; was cedar), its underside the coffered gold
+            H.box(gA, iL - 0.2, 0.05, inW - 0.2, hei_cofferGold, icx, y1 - 0.05, 0).name = "aliyah-gavim-gold";
+            H.box(gA, iL, 1, inW, M.cedar, icx, y1 + 3, 0).name = "aliyah-sdeirot";       // the שדרות: the cedars - the floor of the next story / the roof; between them the two amot of בית דילפא, open
+            for (const s of [-1, 1]) H.box(gA, iL, y1 - y0, 0.1, M.gold, icx, y0, s * 9.95);   // the gold on the walls (II Chr 3:9)
+            if (P.east) {
+              const skE = H.box(gA, 0.1, y1 - y0, inW, M.gold, P.x1 - WT4 - 0.05, y0, 0);   // the east lining goes with the east wall (1.2.3)
+              open.walls.push(skE);
+              layerLabel(gA, (i === 0 ? "עלייה א׳" : "עלייה ב׳") + " — אוצר בית האלקים (אברבנאל מלכים א ח)", acx, y0 + 20, 0, 3.2);
+              layerLabel(gA, "גבים · בית דילפא · שדרות בארזים", P.x1 - WT4 + 0.8, y1 + 2, 0, 1.2);   // at the east end (1.2.3)
+            }
+            if (P.west) H.box(gA, 0.1, y1 - y0, inW, M.gold, P.x0 + WT4 + 0.05, y0, 0);
+          }
+          for (const s of [-1, 1]) H.box(gA, len, 1.5, 1, M.stoneLight, cx, P.AT, s * (10 + WT4 - 0.5)); // a parapet on the roof
+          if (P.east) H.box(gA, 1, 1.5, 2 * (10 + WT4) - 2, M.stoneLight, P.x1 - 0.5, P.AT, 0);
+          if (P.west) H.box(gA, 1, 1.5, 2 * (10 + WT4) - 2, M.stoneLight, P.x0 + 0.5, P.AT, 0);
         }
-        // 1.2.3 (the user: "המבט של העליות יהיה ממזרח"): "פתח את העליות" takes the EAST wall off (1.2.x: the south one) - the two storeys seen
-        // along the house's length, 20 wide, as the book's narrow section
-        for (const [cx, east] of [[ax1 - WT4 / 2, true], [ax0 + WT4 / 2, false]]) {
-          const holes = SB.map((sb) => ({ c: 0, b: sb + 10 - A0, w: 2, h: 2 }));
-          const wall = hei_holeWall(H, gA, { axis: "z", length: inW, height: AT - A0, thickness: WT4, mat: M.stone, cx, cz: 0, y: A0, holes, v0: 2 });
-          if (east && wall) open.walls.push(wall);
-        }
-        for (let i = 0; i < 2; i++) {
-          const y0 = SB[i], y1 = SC[i];
-          H.box(gA, inL, 1, inW, M.gold, acx, y1, 0).name = "aliyah-gavim";              // the גבים: a gold slab (1.2.3; was cedar), its underside the coffered gold
-          H.box(gA, inL - 0.2, 0.05, inW - 0.2, hei_cofferGold, acx, y1 - 0.05, 0).name = "aliyah-gavim-gold";
-          H.box(gA, inL, 1, inW, M.cedar, acx, y1 + 3, 0).name = "aliyah-sdeirot";       // the שדרות: the cedars - the floor of the next story / the roof; between them the two amot of בית דילפא, open
-          for (const s of [-1, 1]) H.box(gA, inL, y1 - y0, 0.1, M.gold, acx, y0, s * 9.95);   // the gold on the walls (II Chr 3:9)
-          const skE = H.box(gA, 0.1, y1 - y0, inW, M.gold, ax1 - WT4 - 0.05, y0, 0);   // the east lining goes with the east wall (1.2.3)
-          open.walls.push(skE);
-          H.box(gA, 0.1, y1 - y0, inW, M.gold, ax0 + WT4 + 0.05, y0, 0);
-          layerLabel(gA, (i === 0 ? "עלייה א׳" : "עלייה ב׳") + " — אוצר בית האלקים (אברבנאל מלכים א ח)", acx, y0 + 20, 0, 3.2);
-          layerLabel(gA, "גבים · בית דילפא · שדרות בארזים", ax1 - WT4 + 0.8, y1 + 2, 0, 1.2);   // at the east end (1.2.3)
-        }
-        for (const s of [-1, 1]) H.box(gA, ax1 - ax0, 1.5, 1, M.stoneLight, acx, AT, s * (10 + WT4 - 0.5)); // a parapet on the roof
-        H.box(gA, 1, 1.5, 2 * (10 + WT4) - 2, M.stoneLight, ax1 - 0.5, AT, 0);
-        H.box(gA, 1, 1.5, 2 * (10 + WT4) - 2, M.stoneLight, ax0 + 0.5, AT, 0);
+        // the step itself (1.2.4): the east part's end wall above the lower roof (x xS..xS+4, y 122..132), its parapet, and inside the two
+        // gold slabs that close the ceiling drops at x = xS - the first storey's (75..89) and the second's (118..128)
+        H.box(gA, WT4, AT - (AT - 10), 2 * (10 + WT4), M.stone, xS + WT4 / 2, AT - 10, 0).name = "aliyot-step-wall";
+        H.box(gA, 1, 1.5, 2 * (10 + WT4) - 2, M.stoneLight, xS + 0.5, AT, 0);
+        H.box(gA, 1, 89 - 75, inW, M.gold, xS, 75, 0).name = "aliyot-step-1";
+        H.box(gA, 1, 128 - 118, inW, M.gold, xS, 118, 0).name = "aliyot-step-2";
+        layerLabel(gA, "עליית קודש הקדשים נמוכה בעשר אמות (מצודת דוד ו, כ ע״פ רש״י)", xS - 12, AT - 10 + 4, -16, 2.2);
         gA.updateMatrixWorld(true);
         if (open.on) for (const w of open.walls) w.visible = false;
        } catch (e) {
