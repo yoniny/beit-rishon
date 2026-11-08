@@ -1409,19 +1409,28 @@
     })();
     let houseRoofProxy = null;   // the cutaway toggles this stand-in; the real roof follows it AND the aliyot layer (hidden while the aliyot stand on the cedars)
     {
-      const c1 = H.box(g, KE - DW, 1, 20, M.gold, (KE + DW) / 2, CEIL, 0);   // 1.2.3 (the user: "תקרת הגבים היתה מזהב"): the slab gold, not cedar
+      // 1.2.4 (the user: "העליה עצמה אמורה להיות יותר נמוכה בי' אמות"): the ceilings in two pieces, over the devir (DW..DE) and over the kodesh
+      // (DE..KE) - in the aliyot reading the pieces over the devir go (ctx.aliyotHide, 70-ui.js applyHidden): there the first aliyah's
+      // floor is the devir's own ceiling set (32..36), ten amot under the heichal's (sec. 9)
+      const c1w = H.box(g, DE - DW, 1, 20, M.gold, (DE + DW) / 2, CEIL, 0);   // 1.2.3 (the user: "תקרת הגבים היתה מזהב"): the slab gold, not cedar
+      c1w.name = "house-ceiling-gavim-w";
+      const c1 = H.box(g, KE - DE, 1, 20, M.gold, (KE + DE) / 2, CEIL, 0);
       c1.name = "house-ceiling-gavim";
-      const gold = hei_boxMesh(g, [{ x0: DW + 0.1, x1: DE, y0: CEIL - 0.05, y1: CEIL, z0: -9.8, z1: 9.8 },
-        { x0: CO.xKodeshW, x1: KE - 0.2, y0: CEIL - 0.05, y1: CEIL, z0: -9.8, z1: 9.8 }], hei_cofferGold, "house-ceiling-gold");
-      const c2 = H.box(g, KE - DW, 1, 20, M.cedar, (KE + DW) / 2, CEIL + 3, 0);
+      const goldW = hei_boxMesh(g, [{ x0: DW + 0.1, x1: DE, y0: CEIL - 0.05, y1: CEIL, z0: -9.8, z1: 9.8 }], hei_cofferGold, "house-ceiling-gold-w");
+      const gold = hei_boxMesh(g, [{ x0: CO.xKodeshW, x1: KE - 0.2, y0: CEIL - 0.05, y1: CEIL, z0: -9.8, z1: 9.8 }], hei_cofferGold, "house-ceiling-gold");
+      const c2w = H.box(g, DE - DW, 1, 20, M.cedar, (DE + DW) / 2, CEIL + 3, 0);
+      c2w.name = "house-ceiling-sdeirot-w";
+      const c2 = H.box(g, KE - DE, 1, 20, M.cedar, (KE + DE) / 2, CEIL + 3, 0);
       c2.name = "house-ceiling-sdeirot";
+      const aliyotHide = (ctx.aliyotHide = ctx.aliyotHide || []);
+      aliyotHide.push(c1w, goldW, c2w);
       // (1.2.2 filled the two amot of בית דילפא with a dark box; 1.2.3 (the user: "לא השארת 2 אמות בין הגבים לארזים"): the gap is left open - from the
       // section's east end one looks into it, the gold top of the גבים below and the cedars above)
       const roof = hei_boxMesh(g, [{ x0: wx[3] - 0.3, x1: KE - 0.3, y0: TOP, y1: ROOF, z0: -zOut(3) - 0.3, z1: zOut(3) + 0.3 }], M.stone, "house-roof");
       houseRoofProxy = new Object3D();
       houseRoofProxy.name = "house-roof-proxy";
       houseRoofProxy.userData.real = roof;
-      cut.push(c1, gold, c2, houseRoofProxy);
+      cut.push(c1w, c1, goldW, gold, c2w, c2, houseRoofProxy);
       // the three layers named at the EAST end of the ceilings (1.2.3: the section is seen from the east, "פתח את העליות" / "בית דילפא")
       ctx.labels.push(
         { text: "תקרת הגבים — כיור מצויר ומצופה זהב (מלכים א ו, ט; מצודות: גומות לנוי)", x: KE + 0.8, y: CEIL + 0.3, z: 0, size: 1.3 },
@@ -1431,7 +1440,7 @@
       // over the devir only: a ceiling at 20 (I Kings 6:20 "עשרים אמה קומתו", Rashi: "עלית של בית קדשי הקדשים, נמוכה משל היכל"; Chazal in
       // Bava Batra 98b-99a measure the 20 from the cherubim's wing-line - DEV note) with a gold underside (II Chr 3:9 "והעליות חפה זהב");
       // the room above it (y 33..42) is the devir's עלייה: empty, gold-lined.
-      const dc = H.box(g, DE - DW, 1, 20, M.cedar, (DE + DW) / 2, F + CO.DEVIR_H, 0);
+      const dc = H.box(g, DE - DW, 1, 20, M.gold, (DE + DW) / 2, F + CO.DEVIR_H, 0);   // 1.2.4: the devir's גבים slab gold (as the house's)
       const dg = H.box(g, DE - (DW + 0.2), 0.05, 19.6, hei_cofferGold, (DE + DW + 0.2) / 2, F + CO.DEVIR_H - 0.05, 0);   // 1.2.3: the devir's גבים (the user)
       const dt = H.box(g, DE - DW, 0.05, 20, M.gold, (DE + DW) / 2, F + CO.DEVIR_H + 1, 0);
       cut.push(dc, dg, dt);
@@ -1439,8 +1448,9 @@
       for (const s of [-1, 1]) {
         const sk = H.box(g, DE - DW, aH, 0.1, M.gold, (DE + DW) / 2, aY, s * 9.95);
         if (s > 0) cut.push(sk);
+        aliyotHide.push(sk);   // 1.2.4: in the aliyot reading the room over the devir is the first aliyah's west part, lined by the layer itself
       }
-      H.box(g, 0.1, aH, 19.8, M.gold, DW + 0.05, aY, 0);
+      aliyotHide.push(H.box(g, 0.1, aH, 19.8, M.gold, DW + 0.05, aY, 0));
     }
 
     // ============================================================ 9. layer "עליות" (ctx.layers.aliyot) ============================================================
@@ -1474,10 +1484,16 @@
         // 85..89), the second storey 79..118 with its set at 118..122, the roof 122 against 132: a step seen from outside; the gold slabs
         // at the step close the first storey's ceiling drop (75..89) and the top (118..132). In the 30-amah reading nothing changes.
         const xS = CO.xDevirE;                                 // -44.5: the devir's east face - the step
+        // 1.2.4 (the user: "העליה עצמה אמורה להיות יותר נמוכה בי' אמות"): over the devir the whole first storey is ten lower - its floor on the
+        // devir's own ceiling set (the גבים 32..33, בית דילפא 33..35, the שדרות 35..36, built here), 36..75, the second 79..118, the roof 122; the
+        // house's ceiling pieces over the devir and the gold room of the 30-amah reading are hidden while the layer shows (ctx.aliyotHide)
+        const DEV_TOP = F + CO.DEVIR_H + 4;                    // 36
         const PARTS = [
-          { x0: ax0, x1: xS, SB: [A0, 79], SC: [75, 118], AT: AT - 10, west: true },
+          { x0: ax0, x1: xS, SB: [DEV_TOP, 79], SC: [75, 118], AT: AT - 10, west: true },
           { x0: xS, x1: ax1, SB: [A0, 89], SC: [85, 128], AT, east: true }
         ];
+        H.box(gA, DE - DW, 1, 20, M.cedar, (DE + DW) / 2, DEV_TOP - 1, 0).name = "devir-sdeirot";   // the devir's שדרות: the first aliyah's floor over it
+        layerLabel(gA, "תקרת הדביר — גבים, בית דילפא ושדרות; רצפת העלייה שמעליו (מצודת דוד ו, כ)", DE + 0.8, DEV_TOP - 2, 0, 1.2);
         const inW = 2 * 10;                                    // interior z +-10
         const WT4 = WT[3];                                     // 4
         const HOLE_X = [acx - 30, acx, acx + 30];              // the small windows' x (-54.5, -24.5, 5.5), 2 x 2, per side per story

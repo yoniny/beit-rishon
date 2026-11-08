@@ -712,7 +712,7 @@
   };
   // 1.0.6 (the user): what is new by version, newest first - one who saw a version is shown only the versions after it; nothing stored -> all
   var UI_NEWS_VERS = [
-    ["1.2.4", ["בקריאת העליות: הגוש שמעל קודש הקדשים נמוך בעשר אמות — תקרת העלייה הראשונה שמעליו נמוכה, והגג מדורג (מצודת דוד ו, כ ע״פ רש״י).",
+    ["1.2.5", ["בקריאת העליות: העלייה שמעל קודש הקדשים כולה נמוכה בעשר אמות — רצפתה על תקרת הדביר (גבים, בית דילפא ושדרות), תקרתה נמוכה, והגג מדורג (מצודת דוד ו, כ ע״פ רש״י).",
       "הליכה במקלדת: ↑↓ קדימה ואחורה, ←→ פנייה, PageUp/PageDown גובה (הכול ב״ניווט״).",
       "״פתח את העליות״ — חתך ממזרח לאורך הבית, כבספר: שתי העליות, ובין התקרות שתי אמות של בית דילפא. תקרת הגבים מזהב, הגומות עמוקות, וגם מעל קודש הקדשים.",
       "הדגמת המכונה — המצלמה אינה עומדת עוד על המזבח. קו ציר הבית — כפתור ומבט משלו; עליית קודש הקדשים — מקום חדש.",
@@ -952,7 +952,9 @@ body.tm-measuring canvas{cursor:crosshair}
         if (yatziaOpen) for (const m of cutList(ctx.yatziaCut)) hide.add(m);
         if (ulamOpen) for (const m of cutList(ctx.ulamCut)) hide.add(m);
         if (boardsOff) for (const m of cutList(ctx.forestBoardsCut)) hide.add(m);
-        for (const list of [ctx.cutaway, ctx.sectionCut, ctx.yatziaCut, ctx.ulamCut, ctx.forestBoardsCut]) {
+        // 1.2.4: with the aliyot layer on, the house's ceiling pieces over the devir and the devir's gold room go - the first aliyah stands there
+        if (ctx.layers && ctx.layers.aliyot && ctx.layers.aliyot.visible) for (const m of cutList(ctx.aliyotHide)) hide.add(m);
+        for (const list of [ctx.cutaway, ctx.sectionCut, ctx.yatziaCut, ctx.ulamCut, ctx.forestBoardsCut, ctx.aliyotHide]) {
           for (const m of cutList(list)) if (m) m.visible = !hide.has(m);
         }
         try { const yb = ctx.root.getObjectByName("yachinBoaz"); if (yb) yb.visible = !sectionOn; } catch (_) {}
@@ -988,6 +990,7 @@ body.tm-measuring canvas{cursor:crosshair}
       const setLayer = function(name, on) {
         const g = ctx.layers && ctx.layers[name];
         if (g) g.visible = !!on;
+        if (name === "aliyot") { try { applyHidden(); } catch (_) {} }   // 1.2.4: ctx.aliyotHide follows the layer
         const row = layerRows[name];
         if (row) row.checked = !!on;
         if (typeof layerMarks[name] === "function") {
@@ -3883,7 +3886,7 @@ body.tm-measuring canvas{cursor:crosshair}
           refs: [["מלכים א ו, ב", V(10, 6, 2)], ["דברי הימים ב ג, ד", V(39, 3, 4)], ["רש״י שם", V(39, 3, 4)], ["בבא בתרא ג.", P(124, "ג.")]],
           options: [
             ["base", "שלושים אמה (מלכים א ו, ב)", "'ושלשים אמה קומתו' (מלכים א ו, ב) — גובה הבית שלושים אמה; בבא בתרא ג. משווה את גובה הבית לבית שני ואינה מזכירה מאה ועשרים. זה המודל הבסיסי: הבית והאולם בגובה שלושים."],
-            ["aliyot", "מאה ועשרים — עליות (רש״י דה״י ב ג, ד)", "'והגובה מאה ועשרים' (דברי הימים ב ג, ד): רש״י — שלושים אמה עד תקרת העלייה הראשונה 'ומעליה לעליה עד גג העליון תשעים אמות'; רד״ק (כדעה שנייה): 'ג' עליות גבהן תשעים אמה'. השכבה בונה שתי עליות, זו על גב זו, על הבית ועל האולם עד 120 אמה (כאיור הספר); כל עלייה סגורה בשלוש השכבות — גבים, בית דילפא ושדרות בארזים. מעל קודש הקדשים הגוש נמוך בעשר אמות — 'עליית בית קודש הקדשים היתה נמוכה משל היכל י' אמות' (מצודת דוד ו, כ ע״פ רש״י): תקרת העלייה הראשונה שמעליו נמוכה, והגג מדורג. חלוקת הגובה — בחירת מודל."]
+            ["aliyot", "מאה ועשרים — עליות (רש״י דה״י ב ג, ד)", "'והגובה מאה ועשרים' (דברי הימים ב ג, ד): רש״י — שלושים אמה עד תקרת העלייה הראשונה 'ומעליה לעליה עד גג העליון תשעים אמות'; רד״ק (כדעה שנייה): 'ג' עליות גבהן תשעים אמה'. השכבה בונה שתי עליות, זו על גב זו, על הבית ועל האולם עד 120 אמה (כאיור הספר); כל עלייה סגורה בשלוש השכבות — גבים, בית דילפא ושדרות בארזים. מעל קודש הקדשים הכול נמוך בעשר אמות — 'עליית בית קודש הקדשים היתה נמוכה משל היכל י' אמות' (מצודת דוד ו, כ ע״פ רש״י): העלייה הראשונה שמעליו עומדת על תקרת הדביר עצמה (גבים, בית דילפא ושדרות, 32–36), רצפתה ותקרתה נמוכות בעשר, והגג מדורג. חלוקת הגובה — בחירת מודל."]
           ],
           current: ctx.layers.aliyot && ctx.layers.aliyot.visible ? "aliyot" : "base",
           onPick: (k) => setLayer("aliyot", k === "aliyot"),
