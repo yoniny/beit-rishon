@@ -298,20 +298,65 @@
       g.add(inst);
     }
     const flames = [];
+    // ===== 1.2.8 (the user: "חי יותר"): REALISTIC FIRE, the Second Temple plugin's 1.0.28 - each flame a camera-facing quad with a noise
+    // shader (no textures, offline): the tongue is bent and eaten by scrolling fractal noise, deep red at the edge, orange, pale-yellow core;
+    // additive. The flames sit in the altar's group, so they go with it in every reading of its place. Tuning: FIRE.speed, FIRE.heat.
+    const FIRE = { speed: 1, heat: 0.65 };
+    const flameVS = "uniform vec2 uSize; varying vec2 vUv; void main(){ vUv = uv; vec4 mv = modelViewMatrix * vec4(0.0,0.0,0.0,1.0); mv.xy += position.xy * uSize; gl_Position = projectionMatrix * mv; }";
+    const flameFS = [
+      "varying vec2 vUv; uniform float uTime; uniform float uSeed; uniform float uOp;",
+      "float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453); }",
+      "float noise(vec2 p){ vec2 i = floor(p); vec2 f = fract(p); f = f*f*(3.0-2.0*f);",
+      "  return mix(mix(hash(i), hash(i+vec2(1.0,0.0)), f.x), mix(hash(i+vec2(0.0,1.0)), hash(i+vec2(1.0,1.0)), f.x), f.y); }",
+      "float fbm(vec2 p){ return noise(p)*0.5 + noise(p*2.03)*0.25 + noise(p*4.1)*0.125 + noise(p*8.3)*0.0625; }",
+      "void main(){",
+      "  vec2 q = vec2(vUv.x - 0.5, vUv.y); float t = uTime + uSeed * 0.37;",
+      "  float n1 = fbm(vec2(q.x*2.6, q.y*1.8 - t*1.35) + uSeed);",
+      "  float n2 = fbm(vec2(q.x*5.5 + 3.1, q.y*3.6 - t*2.6) + uSeed*1.7);",
+      "  float sway = (n1 - 0.5) * 0.9 * q.y * q.y * 2.2;",
+      "  float xw = (q.x + sway) * (1.0 + q.y * 2.4);",
+      "  float body = 1.0 - smoothstep(0.0, 0.42 - 0.18*q.y, abs(xw));",
+      "  float h = q.y + (n2 - 0.5) * 0.55 * (0.3 + q.y);",
+      "  float top = 1.0 - smoothstep(0.30, 0.98, h);",
+      "  float a = body * top;",
+      "  a *= 0.75 + 0.5 * n2;",
+      "  a = clamp(a * smoothstep(0.0, 0.10, q.y), 0.0, 1.0);",
+      "  float heat = a * (1.15 - q.y * 0.75);",
+      "  vec3 col = mix(vec3(0.55,0.05,0.0), vec3(1.0,0.38,0.04), smoothstep(0.08,0.45,heat));",
+      "  col = mix(col, vec3(1.0,0.72,0.18), smoothstep(0.38,0.75,heat));",
+      "  col = mix(col, vec3(1.0,0.93,0.65), smoothstep(0.72,1.05,heat));",
+      "  gl_FragColor = vec4(col, pow(a, 1.25) * uOp);",
+      "}"
+    ].join("\n");
+    const flameGeo = new PlaneGeometry(1, 1);
+    flameGeo.translate(0, 0.5, 0);
     const addFlame = (x, y, z, r, h, color, op) => {
-      const geo = new ConeGeometry(r, h, 10);
-      geo.translate(0, h / 2, 0);
-      const m = new Mesh(geo, new MeshBasicMaterial({ color, transparent: true, opacity: op, depthWrite: false }));
+      const mat = new ShaderMaterial({
+        uniforms: { uTime: { value: 0 }, uSeed: { value: flames.length * 7.31 }, uOp: { value: op * FIRE.heat }, uSize: { value: new Vector2(r * 2.6, h * 1.35) } },
+        vertexShader: flameVS, fragmentShader: flameFS, transparent: true, depthWrite: false, blending: AdditiveBlending, fog: false
+      });
+      const m = new Mesh(flameGeo, mat);
       m.position.set(x, y, z);
       m.castShadow = false;
+      m.frustumCulled = false;
       m.renderOrder = 2;
       m.userData.op = op;
+      m.userData.w = r * 2.6;
+      m.userData.h = h * 1.35;
+      m.userData.noPick = true;
       g.add(m);
       flames.push(m);
+      return m;
     };
-    addFlame(PX, TOP + 1.1, PZ, 1.5, 3.6, 0xff791e, 0.75);
-    addFlame(PX + 0.4, TOP + 1.15, PZ + 0.3, 0.95, 2.5, 0xffb730, 0.85);
-    addFlame(PX - 0.3, TOP + 1.2, PZ - 0.3, 0.55, 1.7, 0xffdf8a, 0.9);
+    {
+      const fx = [PX - 1.3, PX, PX + 1.3], fz = [PZ - 1.6, PZ, PZ + 1.6];
+      let fi = 0;
+      for (const x of fx) for (const z of fz) {
+        const k = fi % 3;
+        addFlame(x + (fi % 2 ? 0.2 : -0.15), TOP + 1.1, z + (k - 1) * 0.15, 0.75 - k * 0.1, 3.0 - k * 0.5, [0xff791e, 0xffb730, 0xffdf8a][k], 0.78 + k * 0.06);
+        fi++;
+      }
+    }
     addFlame(E1X, TOP + 0.55, E1Z, 0.65, 1.5, 0xffb730, 0.8);
     addFlame(E2X, TOP + 0.55, E2Z, 0.6, 1.3, 0xff791e, 0.8);
     const fireLight = new PointLight(0xff9a3d, 24, 60, 1.8);
@@ -542,26 +587,37 @@
       for (let i = 0; i < flames.length; i++) {
         const f = flames[i];
         const n = Math.sin(s * 9.1 + i * 2.3) * 0.6 + Math.sin(s * 15.7 + i * 4.1) * 0.4;
-        f.scale.y = 1 + 0.15 * n;
-        f.scale.x = f.scale.z = 1 + 0.06 * Math.sin(s * 12.3 + i * 3.1);
-        f.material.opacity = f.userData.op * (0.85 + 0.15 * n);
+        const u = f.material.uniforms;
+        u.uTime.value = s * FIRE.speed;
+        u.uSize.value.set(f.userData.w * (1 + 0.06 * Math.sin(s * 12.3 + i * 3.1)), f.userData.h * (1 + 0.15 * n));
+        u.uOp.value = f.userData.op * FIRE.heat * (0.85 + 0.15 * n);
       }
       fireLight.intensity = 23 + 4.5 * Math.sin(s * 9.7) + 2.5 * Math.sin(s * 22.3 + 1.3);
       emberLight.intensity = 5.5 + 1.4 * Math.sin(s * 7.3);
       for (let i = 0; i < smoke.length; i++) {
         const sp = smoke[i];
         const p = (s * 0.045 + i / smoke.length) % 1;
+        // 1.2.8: a straight column (Yoma 21b: the smoke of the pyre "מתמר ועולה כמקל" - one of the ten wonders), almost no drift
         sp.position.set(
-          PX + Math.sin(s * 0.55 + i * 1.9 + p * 5) * (0.3 + p * 1.7),
-          TOP + 1.6 + p * 40,
-          PZ + Math.cos(s * 0.5 + i * 2.7 + p * 4) * (0.25 + p * 1.3)
+          PX + Math.sin(s * 0.55 + i * 1.9 + p * 5) * (0.15 + p * 0.5),
+          TOP + 1.6 + p * 70,
+          PZ + Math.cos(s * 0.5 + i * 2.7 + p * 4) * (0.12 + p * 0.4)
         );
-        const sc2 = 2.2 + p * 6.5;
+        const sc2 = 2.2 + p * 4.5;
         sp.scale.set(sc2, sc2, 1);
         sp.material.opacity = 0.17 * (p < 0.12 ? p / 0.12 : 1 - (p - 0.12) / 0.88);
       }
     });
 
+    // 1.2.8 (the user: "לבית ראשון הוסף תוך ציון שלא מאומת"): THE RUBUVA - the window 1 x 1 in the west side of the ramp (Rambam Beit
+    // HaBechirah 2:14, of the Second Temple's altar; Zevachim 62b "רבובה היתה"). No source places it in Solomon's altar - told on the label.
+    {
+      const darkMat = new MeshBasicMaterial({ color: 0x0f0c08 });
+      const rx = ACX - 8 - 0.05, rz = ACZ + S / 2 + 14;   // the ramp is 16 wide (RW above); the window mid-way along it, near the ground
+      H2.box(g, 0.1, 1.5, 1.5, M2.altarStone, rx, F + 0.15, rz);
+      H2.box(g, 0.1, 1, 1, darkMat, rx - 0.04, F + 0.4, rz);
+      ctx.labels.push({ text: "רבובה — חלון בכבש (רמב״ם ב, יד; לבית ראשון לא מאומת)", x: rx - 2, y: F + 3.2, z: rz, size: 1.2 });
+    }
     // --- 1.2.0 (the user): THE PLACE OF THE ALTAR in the court - the Tannaim's dispute (Yoma 16a; Zevachim 58b-59a, 63a). All agree the
     // ramp stood at the altar's south (Rav Huna from "ירך המזבח צפונה", R. Yehuda from "ומעלותיהו פנות קדים"); they differ where the altar
     // and its ramp stood in the court's 135 amot north to south: R. Eliezer b. Yaakov - "כוליה מזבח בדרום קאי" (so the Rambam rules);

@@ -1637,7 +1637,8 @@
     // floor, the roof a tefach lower (5/6; the horns a tefach high: model choice), the crown on the roof's edge. THE LAYERS (ctx.shared.
     // incenseAltar.layers + an on-model button): the gold of the upper south half is taken off (the cedar boards show, recessed under the gold -
     // the two south horns are cedar), and windows in the cedar boards show the stone core - like the book's cutaway (p07R; and its wall p06).
-    const ALT_W = 1, ALT_TOP = 1, ALT_HORN_H = INT_TEF, ALT_H = ALT_TOP - ALT_HORN_H, ALT_HORN = 0.18, ALT_CEDAR = 0.12, ALT_GOLD = 0.03;
+    // 1.2.8 (the user): the golden altar two amot high - Ex 30:2 "ואמתים קמתו" (was 1, a model choice)
+    const ALT_W = 1, ALT_TOP = 2, ALT_HORN_H = INT_TEF, ALT_H = ALT_TOP - ALT_HORN_H, ALT_HORN = 0.18, ALT_CEDAR = 0.12, ALT_GOLD = 0.03;
     const ALT_CUT = 0.3;                    // 1.0.1-L: the layers' cut (K.4: 0.65 of 2) - below it the south half keeps its gold, as the book (p07R)
     const buildIncenseAltar = (parent, ax, az) => {
       const out = { plain: [], layers: [] };

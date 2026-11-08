@@ -1,1 +1,2 @@
+# the store's packer leaves *.md out; the maintainers' notes travel with the plugin (the user's rule)
 !DEV_NOTES.md
