@@ -11,6 +11,10 @@
  * Units: 1 = 1 amah. +x east (front), +z south (right), y up. Levels: great court 0, inner court 6, house floor 12.
  * VERSION: plugin/manifest.json is the ONE source (tools/build.mjs writes it into the bundle and index.html; minAppVersion 0.9.98.1).
  * 1.1.0 (8.11.2026): build = node tools/build.mjs (assemble + version + checks + terser minify); plugin/bundle.js is a build product - edit src/ only.
+ * 1.2.3 (8.11.2026, DEV_NOTES "סבב ו'" 1.2.3): the eye kept in the room (hideList marks tmPass in every mode); the gavim gold with deep coffers, also over
+ *   the devir; the SECTION FROM THE EAST (ctx.sectionCut = the house's east wall and what hangs on it, with ctx.ulamCut and Yachin & Boaz hidden; the
+ *   aliyot's east wall opens; the dilfa gap open; a 15-s place feature, the pill a 30-s roof pill); pills never under the top bar; the axis line's own
+ *   place and its chips on the altar's card; Rashi's hall of pillars from inside; the thin boards three to a row on four beams.
  * 1.2.2 (8.11.2026 morning, DEV_NOTES "סבב ו'" 1.2.2): the arrows walk (ent_walk; PageUp/Down lift); the SECTION along the length (ctx.sectionCut / ui.setSection:
  *   the south wall off, the ceilings kept, the dilfa void drawn dark) for "פתח את העליות", "בית דילפא" and the verses tour; the base's follow view off the
  *   altar (FOL_AZ -8/118/160 relative to altarPlace; the wash stop fixed at z 22); the axis strip 1.5 wide with a label; the cloud under the devir's

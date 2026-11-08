@@ -1167,11 +1167,14 @@
     // 1.0.1-K review (heichal-2, interior-4): these courses are inside the ulam, so none of them is in ctx.cutaway (since K.2 that list opens
     // the HOUSE only; the ulam has ctx.ulamCut = its front wall and roof, not this face): the strips south of the doorway were still in it,
     // and "פתח את הבית" stripped them from the closed ulam; both sides are now built alike
+    // 1.2.3: the section from the east (70-ui.js setSection, ctx.sectionCut) takes the house's east wall off (50-heichal.js) - and with it
+    // what hangs on it here: these courses, the doorposts and lintel, the two doors and their pivots, the gold skin round the doorway inside
+    const secE = (ctx.sectionCut = ctx.sectionCut || []);
     try {
       for (let y = F + 3; y < F + KH - 1; y += 4) {                                         // y 15, 19, ... 39
         // around the heichal doorway and its posts (z +-6) and lintel (to y 33)
-        if (y >= F + INT_HEI_DOOR_H + 1) H.box(g, 0.08, 1, 2 * HW, M.cedar, CO.xHouseE + 0.04, y, 0);
-        else for (const s of [-1, 1]) H.box(g, 0.08, 1, 4, M.cedar, CO.xHouseE + 0.04, y, s * 8);   // z +-6..+-10
+        if (y >= F + INT_HEI_DOOR_H + 1) secE.push(H.box(g, 0.08, 1, 2 * HW, M.cedar, CO.xHouseE + 0.04, y, 0));
+        else for (const s of [-1, 1]) secE.push(H.box(g, 0.08, 1, 4, M.cedar, CO.xHouseE + 0.04, y, s * 8));   // z +-6..+-10
       }
     } catch (e) { console.warn("[interior] ulam courses", e); }
 
@@ -1181,8 +1184,8 @@
       // doorposts of olive wood, SQUARE section 1x1 (6:33 "מזוזות עצי שמן מאת רבעית"; Targum "מרבעין"; Rashi; Radak: four steps - DEV note),
       // 20 high (= the opening), with a lintel 1 high (model choice); gold-overlaid (II Chr 3:7 "ויחף את הבית... הספים... זהב" - the doorposts;
       // 7:50 "והפתות... זהב" is about the pivots or their sockets, not the posts - see the pivots below)
-      for (const s of [-1, 1]) H.box(g, 1, INT_HEI_DOOR_H, 1, M.gold, PX, F, s * (INT_HEI_DOOR_W / 2 + 0.5));   // z +-5..6
-      H.box(g, 1, 1, INT_HEI_DOOR_W + 2, M.gold, PX, F + INT_HEI_DOOR_H, 0);                                    // lintel y 32..33
+      for (const s of [-1, 1]) secE.push(H.box(g, 1, INT_HEI_DOOR_H, 1, M.gold, PX, F, s * (INT_HEI_DOOR_W / 2 + 0.5)));   // z +-5..6
+      secE.push(H.box(g, 1, 1, INT_HEI_DOOR_W + 2, M.gold, PX, F + INT_HEI_DOOR_H, 0));                                    // lintel y 32..33
       // two doors of cypress (6:34 "שתי דלתות עצי ברושים"), each 5 wide = half the opening (Rashi), 20 high, 0.33 thick (model choice),
       // each made of two boards ("שני צלעים": Malbim; Rashi: two hinges per door), hung on the posts, opened westward into the wall
       // thickness and resting on the sides of the opening (Radak's four-door reading - DEV note). Thin gold straightened over the
@@ -1202,6 +1205,7 @@
         hinge.position.set(HX, F, s * DZ);
         hinge.rotation.y = 0;              // first board folded fully back (180 deg from closed): flat along the reveal, x -0.2..2.3 (1.0.1, model choice)
         g.add(hinge);
+        secE.push(hinge);   // 1.2.3: the leaf (both boards) goes with the east wall into the section
         const fold = new Group();          // the second board continues westward along the same reveal, x -2.7..-0.2 (1.0.1, model choice)
         fold.position.set(-2.5, 0, 0);
         fold.rotation.y = 0;
@@ -1220,8 +1224,8 @@
         // doors' pivots ("והם צירי הדלתות"); for Ralbag and Metzudat Zion the socket the pivot turns in (Ralbag "מה שיכנס ציר הדלת בו";
         // Metzudat Zion "העשויות להציב בהן צירי הדלתות", Kelim 11:2 "הפותה שתחת הציר"); for Rashi keys ("מפתחות, שמעתי") - the gold
         // cylinders fit the first two readings (review Q2-2)
-        H.cyl(g, 0.14, 0.14, 0.3, M.gold, HX, F, s * DZ, 10);
-        H.cyl(g, 0.14, 0.14, 0.3, M.gold, HX, F + INT_HEI_DOOR_H - 0.3, s * DZ, 10);
+        secE.push(H.cyl(g, 0.14, 0.14, 0.3, M.gold, HX, F, s * DZ, 10));
+        secE.push(H.cyl(g, 0.14, 0.14, 0.3, M.gold, HX, F + INT_HEI_DOOR_H - 0.3, s * DZ, 10));
       }
     }
 
@@ -1345,7 +1349,7 @@
       int_uvBox(ek, XE - SKIN, XE, F, F + INT_HEI_DOOR_H, -HW, -INT_HEI_DOOR_W / 2, east);
       int_uvBox(ek, XE - SKIN, XE, F, F + INT_HEI_DOOR_H, INT_HEI_DOOR_W / 2, HW, east);
       int_uvBox(ek, XE - SKIN, XE, F + INT_HEI_DOOR_H, F + KH, -HW, HW, east);
-      mergedMesh(ek, goldCarvedEast, g);
+      mergedMesh(ek, goldCarvedEast, g, secE);   // 1.2.3: with the east wall into the section
       // (the kodesh ceiling at y 42 and the devir ceiling at y 32 get their gold undersides in 50-heichal.js: 6:22, II Chr 3:9)
     }
     const wallLayerGroup = new Group();                // gates the labels of the exhibit (layer "wallLayers", FIXES K 0.5c)

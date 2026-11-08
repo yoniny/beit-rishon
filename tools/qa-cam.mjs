@@ -105,6 +105,28 @@ try {
   } catch (e) {
     out.lift = { error: String(e && e.message || e).slice(0, 200), ok: false };
   }
+  // 1.2.2 (the user's recording: the eye left the heichal through its north wall while orbiting the menorot): in the default mode
+  // ("סיבוב בתוך הבית בלבד") the eye stays INSIDE the heichal - x -43.5..2.5, |z| < 10, y 12..42 - through long drags in four
+  // directions and a wheel out; cam_keepInside needs the walls marked userData.tmPass (70-ui.js hideList, now in every mode)
+  try {
+    await fly('מנורת משה ועשר המנורות');
+    const inside = (p) => p[0] > -43.5 && p[0] < 2.5 && Math.abs(p[2]) < 10 && p[1] > 12 && p[1] < 42;
+    const steps = [];
+    for (const [dx, dy] of [[260, 0], [260, 0], [-260, 0], [0, -200], [0, 200], [200, 120]]) {
+      await drag(dx, dy);
+      const st = await state();
+      steps.push({ dx, dy, pos: st.pos, inside: inside(st.pos), mode: st.mode });
+    }
+    await page.mouse.move(W / 2, H / 2);
+    await page.evaluate(() => { const el = window.__TM_CTX.renderer.domElement; for (let i = 0; i < 20; i++) el.dispatchEvent(new WheelEvent('wheel', { deltaY: 120, deltaMode: 0, bubbles: true, cancelable: true, clientX: 200, clientY: 150 })); });
+    await sleep(2000);
+    const st = await state();
+    steps.push({ wheelOut: true, pos: st.pos, inside: inside(st.pos), mode: st.mode });
+    out.room = { steps, ok: steps.every((x) => x.inside) };
+    await page.screenshot({ path: path.join(outDir, 'cam-room.png') });
+  } catch (e) {
+    out.room = { error: String(e && e.message || e).slice(0, 200), ok: false };
+  }
   // 1.2.2: the walk keys - ArrowUp moves the eye AND the target along the view's horizontal direction (the height stays)
   try {
     const a = await state();
@@ -125,5 +147,5 @@ try {
 }
 fs.writeFileSync(path.join(outDir, 'cam-report.json'), JSON.stringify(out, null, 2), 'utf8');
 console.log(JSON.stringify(out, null, 1));
-const bad = out.errors.length || out.cases.some((c) => !c.ok) || !(out.wheel && out.wheel.ok) || !(out.lift && out.lift.ok) || !(out.walk && out.walk.ok);
+const bad = out.errors.length || out.cases.some((c) => !c.ok) || !(out.wheel && out.wheel.ok) || !(out.lift && out.lift.ok) || !(out.walk && out.walk.ok) || !(out.room && out.room.ok);
 process.exit(bad ? 1 : 0);
