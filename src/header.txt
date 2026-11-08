@@ -11,7 +11,8 @@
  * Units: 1 = 1 amah. +x east (front), +z south (right), y up. Levels: great court 0, inner court 6, house floor 12.
  * VERSION: plugin/manifest.json is the ONE source (tools/build.mjs writes it into the bundle and index.html; minAppVersion 0.9.98.1).
  * 1.1.0 (8.11.2026): build = node tools/build.mjs (assemble + version + checks + terser minify); plugin/bundle.js is a build product - edit src/ only.
- * 1.2.6 (8.11.2026): the forest house's thin boards one to a space in each row (three across, four beam lines), paler.
+ * 1.2.7 (8.11.2026): the forest house's second roofing after Rashi 7:4 - four lines of small beams across (three end to end), the thin pale boards
+ *   along the house from beam to beam, three to a row (TB_W 2.5); the 45 stay dark.
  * 1.2.4-1.2.5 (8.11.2026): the aliyot block in two parts - over the devir the first storey stands on the devir's own ceiling set (32..36) and is ten amot
  *   lower in full (Metzudat David on 6:20 after Rashi), the roof stepped at CO.xDevirE; the house's ceiling pieces over the devir and the devir's gold
  *   room (ctx.aliyotHide) go while the layer shows; the 30-amah reading unchanged.
