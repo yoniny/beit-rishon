@@ -300,6 +300,7 @@
     innerEastGate: { pos: [168, 27, 42], target: [95.5, 14, 0] },
     mizbeach: { pos: [115, 52, 72], target: [49.5, 16, 0] },
     altarFromDoor: { pos: [20.5, 21, 0], target: [60, 12, 0] },   // 1.2.0: from the ulam's doorway down the axis to the altar
+    altarPlaceView: { pos: [190, 125, 0], target: [40, 10, 0] },   // 1.2.2: from the east, high, down the axis - the altar's side of the line is plain
     lishkatHaGazit: { pos: [44, 17, -40], target: [62, 9, -64] },   // 1.0.1-L (verify-courts.md): 30-courts.js's three fly points
     slaughterPlace: { pos: [66, 52, -2], target: [58, 7, -36] },
     slaughterPlaceClose: { pos: [52, 12.5, -31], target: [49.5, 9, -44] },
@@ -312,11 +313,12 @@
     yachinBoazFull: { pos: [74, 32, -40], target: [18.4, 24.63, -1.39] },   // 1.0.1-L (L.45 / L.58; verify-heichal.md): far, from the north-east: the doorway frames Yachin whole
     boazFar: { pos: [84, 34, 47], target: [18.4, 24.74, 1.4] },         // 1.0.1-L (verify-heichal.md): Boaz whole, from the south-east, farther back
     aliyot: { pos: [260, 150, 220], target: [-25, 70, 0] },
+    aliyotSection: { pos: [-25, 78, 205], target: [-25, 72, 0] },
     heichalWest: { pos: [-200, 60, -60], target: [-80.6, 25, 0] },      // 1.0.1-L (verify-heichal.md): the old target stood inside the closed chambers
     kodesh: { pos: [-8, 34, 0], target: [-28, 24, 0] },
     kodeshHakodashim: { pos: [-46, 30, 6], target: [-56, 22, 0] },
-    menorot: { pos: [-32, 20.5, -1], target: [-42, 15, 5] },            // 1.0.1-L: the menorot one amah west of the tables (interior.md)
-    shulchanot: { pos: [-32, 21.5, 1.4], target: [-41, 15, -4.6] },     // (it stood outside the north wall: the user's "שולחן משה" showed the carvings)
+    menorot: { pos: [-29, 22, -2.5], target: [-42, 15, 5] },            // 1.0.1-L: the menorot one amah west of the tables (interior.md); 1.2.2: 3 further back - the labels were cut by the frame
+    shulchanot: { pos: [-29, 23, 3], target: [-41, 15, -4.6] },     // (it stood outside the north wall: the user's "שולחן משה" showed the carvings)
     shulchanMoshe: { pos: [-36.2, 15.8, -5.15], target: [-40, 14.45, -5.25] },   // 1.0.1-L: along Moses' table from its east end
     incenseAltar: { pos: [-25.5, 15, 2.1], target: [-28, 12.75, 0.55] },         // 1.0.1-L (L.69): the altar 1 x 1 x 1 east of the rows (Rabbi's layout)
     heichalDoor: { pos: [9, 26, 0], target: [-1, 22, 0] },
@@ -710,6 +712,14 @@
   };
   // 1.0.6 (the user): what is new by version, newest first - one who saw a version is shown only the versions after it; nothing stored -> all
   var UI_NEWS_VERS = [
+    ["1.2.2", ["הליכה במקלדת: החצים ↑↓ הולכים קדימה ואחורה לכיוון המבט (כמי שמטייל בבית), ←→ פונים, PageUp/PageDown מגביהים; הכול בכפתור ״ניווט״.",
+      "חתך לאורך הבית כאיור הספר: ״פתח את העליות״ ו״בית דילפא״ מסירים את הכותל הדרומי ומשאירים את התקרות — תקרת הגבים, חלל בית דילפא (חשוך) והשדרות חתוכים בקצה, ומעליהם שתי העליות הפתוחות. גם במצגת (מלכים א ו, ט–י).",
+      "הדגמת המכונה: המצלמה נשארת ברצועה הפנויה שבין מעלות האולם למזבח ואינה עומדת עוד על המזבח ליד האש — בשלושת מקומות המזבח; תחנת הקידוש ליד הכבש בכולם.",
+      "מקום המזבח: המבט מרחוק ממזרח עם קו ציר הבית מסומן על הרצפה (15 שניות) — ברור איזה צד.",
+      "הכותרת מקרוב אינה נעלמת עוד; הענן נשאר בדביר ואינו נכנס להיכל ולא לעלייה שמעל הדביר.",
+      "מקום חדש: ״עליית קודש הקדשים — מעל הדביר״ (רש״י ו, כ; דברי הימים ב ג, ט).",
+      "מבטים מתוקנים: שערי חצר הכהנים (החומה אינה שקופה), המעלות אל הבית (בלי המזבח בחזית), כיור משה, מנורת משה ושולחן משה (התוויות בתוך המסגרת), פתח התאים.",
+      "הנסרים הדקים שעל מרישי בית יער הלבנון חזרו (הציור בספר רק חושף את המרישים). ״מה חדש״ מראה את הגרסה הנוכחית בלבד."]],
     ["1.2.1", ["סרגל עליון חדש: מצגת, ניווט, הדפסה, דיווח ו״מה חדש״ בשורה אחת, ומספר הגרסה תמיד נראה.", "כפתור ״ניווט״ — הוראות השימוש בעכבר, במשטח מגע, במסך מגע ובמקלדת.",
       "התפריט בלי כפילויות: כל נושא במקום אחד, ההשלמות בתוך כרטיסי הנושאים, וטבלת השיטות בקבוצה נסגרת; המקורות — בכרטיסים בלבד.",
       "סיבוב חדש (360): בלי עצירות — כל מיצג מכל גובה ומכל מרחק. בתוך הבית הסיבוב סביב כלי נשאר בחדר (למנורות מאחור: להתקרב בגלגלת ולגרור); ״מעבר דרך קירות״ בלוח מרשה לצאת, והקירות נעשים שקופים.",
@@ -913,6 +923,7 @@ body.tm-measuring canvas{cursor:crosshair}
       // that side), ctx.yatziaCut (the chambers' outer walls, all three sides), ctx.ulamCut (the ulam's front wall and roof),
       // ctx.forestBoardsCut (60-palace.js: the boards of the roofing of בית יער הלבנון, to show the beams). Any list may be missing.
       let cutOn = false;
+      let sectionOn = false;   // 1.2.2: the section along the length (ctx.sectionCut: the house's south wall and windows off, the ceilings kept)
       let yatziaOpen = false, ulamOpen = false;
       let boardsOff = false;
       const layerRows = {};
@@ -922,19 +933,24 @@ body.tm-measuring canvas{cursor:crosshair}
       const applyHidden = function() {
         const hide = new Set();
         if (cutOn) for (const m of cutList(ctx.cutaway)) hide.add(m);
+        if (sectionOn) for (const m of cutList(ctx.sectionCut)) hide.add(m);   // 1.2.2
         if (yatziaOpen) for (const m of cutList(ctx.yatziaCut)) hide.add(m);
         if (ulamOpen) for (const m of cutList(ctx.ulamCut)) hide.add(m);
         if (boardsOff) for (const m of cutList(ctx.forestBoardsCut)) hide.add(m);
-        for (const list of [ctx.cutaway, ctx.yatziaCut, ctx.ulamCut, ctx.forestBoardsCut]) {
+        for (const list of [ctx.cutaway, ctx.sectionCut, ctx.yatziaCut, ctx.ulamCut, ctx.forestBoardsCut]) {
           for (const m of cutList(list)) if (m) m.visible = !hide.has(m);
         }
         for (const m of cutList(ctx.interiorOnly)) {
-          if (m) m.visible = cutOn;
+          if (m) m.visible = cutOn || sectionOn;
         }
       };
       // (the on-model pills read the state through get() every frame, so nothing else has to be kept in sync)
       const setCutaway = function(on) {
         cutOn = !!on;
+        applyHidden();
+      };
+      const setSection = function(on) {   // 1.2.2
+        sectionOn = !!on;
         applyHidden();
       };
       const setYatziaCut = function(on) {
@@ -1125,7 +1141,9 @@ body.tm-measuring canvas{cursor:crosshair}
               // 1.0.4: an instanced mesh of up to HIDE_INST copies too (Yachin and Boaz in the ulam, whose shafts stopped the orbit round the ulam's tables:
               // the two fade together); not the forest house's 45 columns
               if (!o.isMesh || (o.isInstancedMesh && !(o.count <= HIDE_INST && typeof o.computeBoundingBox === "function")) || !o.geometry || occS.has(o) || o.userData.noPick) return;
-              for (let p = o; p; p = p.parent) if (p.name === "tm-kk-cloud") return;
+              // 1.2.2 (the user: the capital "disappears"): the pillars and their capitals are never faded - the dome of the capital stood between
+              // the eye and the target (the capital's centre) and went see-through; also any mesh or group marked userData.noFade
+              for (let p = o; p; p = p.parent) if (p.name === "tm-kk-cloud" || p.name === "yachinBoaz" || (p.userData && p.userData.noFade)) return;
               const pa = o.geometry.attributes && o.geometry.attributes.position;
               if (!pa || pa.count > 30000) return;
               if (o.isInstancedMesh) {
@@ -2146,9 +2164,11 @@ body.tm-measuring canvas{cursor:crosshair}
         // the devir is 20 x 20 x 20 (I Kings 6:20), built 19 clear because the amah traksin is taken from it (user's decision, 10-core.js
         // CO.xDevirE / xDevirW): interior x -63.5..-44.5, z +-10, y 12..32, and its aliyah above (y 33..42).
         // The WHOLE cloud (puff centre + scaled radius + the 0.7 / 0.5 sway of the animation below) stays inside x/z +-9 around
-        // the centre and y 13..41, so no puff pokes through the traksin into the kodesh, through the side walls or through the
+        // the centre and y 13..31.5 (1.2.2; was 41), so no puff pokes through the traksin into the kodesh, through the side walls or through the
         // west wall into the ta'im. Smaller puffs than 1.0.19, hence more of them (shared geometry: still cheap).
-        const HALF = 9, Y0 = KKF + 1, Y1 = KKF + 29, SWAY = 0.7, SWAY_Y = 0.5;
+        // 1.2.2 (the scan): the puffs stay under the devir's own ceiling (F + 20, 50-heichal.js sec. 8) - they rose to 41, into the gold room
+        // above the devir, which has its own button now
+        const HALF = 9, Y0 = KKF + 1, Y1 = KKF + 19.5, SWAY = 0.7, SWAY_Y = 0.5;
         for (let i = 0; i < 72; i++) {
           const pf = new Mesh(cloudGeo, cloudMat);
           const r = 3 + rnd() * 2;                              // scaled radius 3.45..5.75 in x/z, 2.7..4.5 in y
@@ -2662,7 +2682,9 @@ body.tm-measuring canvas{cursor:crosshair}
           { t: "רצפת חצר הכהנים — שיש", tg: [64, 6.1, -42], cam: [86, 14, -30],
             info: "'ואבני שיש לרב' (דברי הימים א כט, ב) — רש״י: 'ואבני שיש — לעמודים ושלחנות ולרצפה'; התרגום: 'ואבני מרמוריא'. במודל כל רצפת חצר הכהנים, בין כתליה, לוחות שיש לבנים; גודל הלוחות (שלוש על שלוש אמות) — בחירת מודל. הרצועה שמתחת לחומה ומחוצה לה — אבן.",
             refs: [["דברי הימים א כט, ב (ורש״י שם)", V(38, 29, 2)]] },
-          { t: "שערי חצר הכהנים", tg: [0, 14, 67.5], cam: [40, 42, 128],
+          // 1.2.2 (the scan): from the south, straight at the wall's three gates (x -40, 0, 40), the house rising behind it - and 136 amot off:
+          // nearer than the fade distance (120, the rays along the view) the wall went a ghost over the house's chambers (1.0.x: z 128)
+          { t: "שערי חצר הכהנים", tg: [0, 12, 64], cam: [0, 62, 200],
             info: "שבעה שערים לחצר הכהנים — שלושה בצפון, שלושה בדרום ואחד במזרח — על פי מדות א, ד (מוסכמה למודל; במלכים לא נמנו השערים ולא נקראו בשם). דלתותיהם מצופות נחושת (דברי הימים ב ד, ט).",
             refs: [["מדות א, ד", MI(1, 4)], ["דברי הימים ב ד, ט", V(39, 4, 9)], ["מלכים א ו, לו", V(10, 6, 36)]] },
           // 1.0.1-K (K.6.5, Yossi): לשכת הגזית (30-courts.js). 1.0.1-L (L.21, the user: "רמבם", "לאורך", "הבא את שיטת התוספות יו"ט והמכילתא",
@@ -2679,7 +2701,7 @@ body.tm-measuring canvas{cursor:crosshair}
           { t: "בית המטבחים — מקרוב", view: "slaughterPlaceClose",
             info: "שולחנות השיש והננסין מקרוב: 'שמונה של שיש בבית המטבחים, שעליהן מדיחין את הקרבים' (שקלים ו, ד) — שיש, 'לפי שהשיש מקרר ומצנן ושומר הבשר שלא יסריח' (ברטנורא); 'שמנה עמודים ננסין, ורביעין של ארז על גביהן, ואנקליות של ברזל היו קבועין בהם, ושלשה סדרים היו לכל אחד ואחד, שבהם תולין' (מדות ג, ה) — האונקליות 'כעין מזלגות', 'זו למעלה מזו' (ברטנורא), בשלושה סדרים בגובה 1.7, 2.6 ו־3.5 אמות, בצד מזרח, צפון ודרום ולא במערב (ראבי״ה בתוספות יום טוב); ולפניהם הטבעות, 'כמין קשת' (ברטנורא). מידותיהם — בחירת מודל; כל המקורות על בית שני.",
             refs: [["משנה שקלים ו, ד", { book: 54, index: 41 }], ["מדות ג, ה", MI(3, 5)], ["ברטנורא מדות ג, ה", { book: 643, index: 144 }], ["תוספות יום טוב מדות ג, ה", { book: 948, index: 132 }], ["מדות ה, ב", MI(5, 2)]] },
-          { t: "המעלות אל הבית (האוטם)", tg: [21, 10, 0], cam: [52, 26, 30],
+          { t: "המעלות אל הבית (האוטם)", tg: [22, 10, 0], cam: [45, 26, -35],   // 1.2.2 (the scan): from the north-east - with the altar in the south its top and fire filled the old view from z 30
             info: "שתים עשרה מעלות מחצר הכהנים אל האולם, והבית עומד על אוטם של שש אמות — על פי מדות ג, ו ו־ד, ו; מלבי״ם (מלכים א ו, ח) מזכיר יסוד של שש אמות מתחת לבית. במלכים אין מפלסים — בחירת מודל.",
             refs: [["מדות ג, ו", MI(3, 6)], ["מדות ד, ו", MI(4, 6)], ["מלבי״ם מלכים א ו, ח", V(10, 6, 8)]] }
         ]],
@@ -2704,7 +2726,7 @@ body.tm-measuring canvas{cursor:crosshair}
             refs: [["מלכים א ז, כה", V(10, 7, 25)], ["ז, מד", V(10, 7, 44)], ["דברי הימים ב ד, ד", V(39, 4, 4)], ["רש״י ז, כה", V(10, 7, 25)]] },
           // 1.0.1-L (L.74, the user: "הכיור בין שתי השורות! של המכונות"; L.77 the book p. לח; vessels-2.md): Moses' laver in the middle column, between the two rows
           // of five; flyPoints.kiyorMoshe (45-vessels.js), with a fallback of the same camera
-          { t: "כיור משה", view: "kiyorMoshe", tg: [rowX, 9, kz], cam: [rowX + 18, 19, kz],
+          { t: "כיור משה", view: "kiyorMoshe", tg: [rowX, 6, kz], cam: [rowX + 16, 26, kz],   // 1.2.2 (the scan): higher, so that the near bases of the two rows do not fill the frame
             info: "כיור משה עומד באמצע, בין שתי שורות המכונות: 'חמשה מימין כיור של משה וחמשה משמאל כיור משה' (ברייתא דמלאכת המשכן יב). 'ויעש כיורים עשרה ויתן חמשה מימין וחמשה משמאול' (דברי הימים ב ד, ו) — רש״י: 'ויתן חמשה מימין. לכיור של משה'; רד״ק (שם): 'מימין כיור משה ומשמאלו'. ובמשנה: 'הכיור היה בין האולם ולמזבח, ומשוך כלפי הדרום' (מדות ג, ו). ובמשכן: 'ועשית כיור נחשת וכנו נחשת לרחצה ונתת אתו בין אהל מועד ובין המזבח' (שמות ל, יח); רש״י שם: 'ועומד כנגד אויר שבין המזבח והמשכן', 'משוך קמעא כלפי הדרום'. ובו שני ברזים: 'בן קטין עשה שנים עשר דד לכיור, שלא היו לו אלא שנים' (משנה יומא ג, י) — תוספת של בית שני. במודל: " + nf(rowX - ulamE) + " אמות מזרחה מחזית האולם ו־" + nf(kz) + " אמות דרומה מציר הבית — בחירת מודל, כציור הספר.",
             refs: [["מדות ג, ו", MI(3, 6)], ["ברייתא דמלאכת המשכן יב", { book: 240, index: 2876 }], ["דברי הימים ב ד, ו", V(39, 4, 6)], ["רש״י שם", { book: 3662, index: 129 }], ["רד״ק מלכים א ז, לט", { book: 3540, index: 505 }], ["שמות ל, יח", V(2, 30, 18)], ["רש״י שמות ל, יח", { book: 3692, index: 2237 }], ["משנה יומא ג, י", MN(55, 3, 10)]] },
           // 1.0.1-L (L.40, L.64, L.77; vessels.json FOR-UI): the block of 2 x 5, the purpose, the pills (L.51: the panel places for the demo and
@@ -2764,10 +2786,15 @@ body.tm-measuring canvas{cursor:crosshair}
             info: "'ויעש לבית חלוני שקפים אטמים' (מלכים א ו, ד): לפי רש״י ומנחות פו: — פתוחים (רחבים) מבחוץ ואטומים (צרים) מבפנים, שלא כחלונות רגילים, להראות שאין הבית צריך לאורה. מספרם ומקומם אינם במקורות — במודל שישה בכל צד, לאורך ההיכל, מעל גג היציע (בחירת מודל; ראו 'השלמות').",
             refs: [["מלכים א ו, ד", V(10, 6, 4)], ["מנחות פו:", P(131, "פו:")]] },
           // 1.2.0 (the user): the three layers of the ceiling by name, after the book (figs. 14-15) and Rashi 6:9; the house opened shows them in section
-          { t: "בית דילפא — בין תקרת הגבים לשדרות", tg: [-25, 44, 9], cam: [8, 52, 40],
-            info: "'ויספן את הבית גבים ושדרת בארזים' (מלכים א ו, ט) — שתי תקרות: התחתונה, ה'גבים', לנוי — רש״י: 'כמין לבנים חלולות' (רעפים) או נסרים ארוגים נאים; מצודות: 'גומות גומות חקוקות לנוי' — במודל כיור מצויר ומצופה זהב; והעליונה, ה'שדרות', ארזים סדורים זה בצד זה 'לדריסת הרגל' (רש״י) — רצפת העלייה. ביניהן חלל של שתי אמות, 'בית דילפא' (רמב״ם בית הבחירה ד, ג, שהובא במלבי״ם): שם נוטף הגשם, ולא לתקרת ההיכל. כך מעל ההיכל, וכך מעל כל אחת משתי העליות. לראות: הכפתור ״פתח את הבית״ שעל המודל, או ״פתח את העליות״.",
+          { t: "בית דילפא — בין תקרת הגבים לשדרות", tg: [-25, 44, 8], cam: [-6, 48, 32], layer: "aliyot",   // 1.2.1 (the user): the aliyot reading at once;
+            // 1.2.2: the SECTION (the south wall off, the ceilings kept) and the eye at the ceilings' south edge: the גבים, the two-amah void and
+            // the שדרות cut open, with their labels; the first aliyah's floor and gold above them (the cutaway of 1.2.1 took the ceilings off)
+            action: () => { try { if (ctx.ui && ctx.ui.setCutaway) ctx.ui.setCutaway(false); if (ctx.ui && ctx.ui.setSection) ctx.ui.setSection(true); if (ctx.shared.aliyotOpen) ctx.shared.aliyotOpen.set(true); } catch (_) {} },
+            info: "'ויספן את הבית גבים ושדרת בארזים' (מלכים א ו, ט) — שתי תקרות: התחתונה, ה'גבים', לנוי — רש״י: 'כמין לבנים חלולות' (רעפים) או נסרים ארוגים נאים; מצודות: 'גומות גומות חקוקות לנוי' — במודל כיור מצויר ומצופה זהב; והעליונה, ה'שדרות', ארזים סדורים זה בצד זה 'לדריסת הרגל' (רש״י) — רצפת העלייה. ביניהן חלל של שתי אמות, 'בית דילפא' (רמב״ם בית הבחירה ד, ג, שהובא במלבי״ם): שם נוטף הגשם, ולא לתקרת ההיכל. כך מעל ההיכל, וכך מעל כל אחת משתי העליות. לראות: הכפתור ״פתח את העליות״ שעל המודל — חתך לאורך הבית, והתקרות חתוכות בקצן הדרומי.",
             refs: [["מלכים א ו, ט", V(10, 6, 9)], ["רש״י שם", V(10, 6, 9)], ["מצודת ציון שם", V(10, 6, 9)], ["רמב״ם בית הבחירה ד, ג", RB(4, 3)], ["דברי הימים ב ג, ט", V(39, 3, 9)]] },
           { t: "גג הבית ותקרותיו", tg: [-30, 46, 0], cam: [40, 92, 62],
+            // 1.2.2 (the scan): the roof of the 30-amah reading - after "בית דילפא" the eye stood inside the open aliyot; the layer, the section and the cutaway go off
+            action: () => { try { setLayer("aliyot", false); if (ctx.shared.aliyotOpen) ctx.shared.aliyotOpen.set(false); setSection(false); setCutaway(false); } catch (_) {} },
             info: "'ויספן את הבית גבים ושדרת בארזים' (מלכים א ו, ט): תקרה כפולה — ה'גבים' למטה (כיור מצויר ומצופה זהב, אמה), חלל 'בית דילפא' (שתי אמות; הרמב״ם בית הבחירה ד, במלבי״ם), וה'שדרות' למעלה — ארזים זה בצד זה, רצפת העלייה (רש״י). מעליה, בקריאת 120 האמה, שתי העליות (השורה 'גובה הבית'). תקרת קודש הקדשים נמוכה מתקרת ההיכל (רש״י ו, כ), ומעליה עלייה מצופה זהב (דברי הימים ב ג, ט).",
             refs: [["מלכים א ו, ט", V(10, 6, 9)], ["ו, כ", V(10, 6, 20)], ["דברי הימים ב ג, ט", V(39, 3, 9)], ["רמב״ם בית הבחירה ד, ג", RB(4, 3)]] },
           { t: "קודש הקדשים מבחוץ", view: "heichalWest",
@@ -2880,7 +2907,11 @@ body.tm-measuring canvas{cursor:crosshair}
               on: () => { if (ctx.shared.arkLift) ctx.shared.arkLift.set(true); },
               off: () => { if (ctx.shared.arkLift) ctx.shared.arkLift.set(false); } },
             info: "הייתה בבית ראשון, והארון מונח עליה. המשנה (יומא ה, ב): 'משנטל הארון, אבן היתה שם מימות נביאים ראשונים, ושתיה היתה נקראת, גבוהה מן הארץ שלש אצבעות, ועליה היה נותן' — 'מימות נביאים ראשונים': רש״י (יומא נג:) 'דוד ושמואל'; רמב״ם (בית הבחירה ד, א): 'אבן היתה בקדש הקדשים במערבו שעליה היה הארון מנח. ולפניו צנצנת המן ומטה אהרן'; תוספתא יומא (ב, יד): 'אבן היתה שם מימות נביאים הראשנים ושתיה נקרית, גבוהה מן הארץ שלש אצבעות, שמתחלה היה עליה ארון נתון. משניטל הארון, עליה היו מקטירין קטרת שלפני לפנים'; יומא נד:: 'ושתיה היתה נקראת. תנא: שממנה הושתת העולם'. במודל: האבן, שלוש אצבעות גובהה, במערב קודש הקדשים, והארון עליה; המבט מרים את הארון לרגע כדי להראות אותה. אינה נזכרת במלכים. היכן נגנז הארון — " + UI_BARAITA.b,
-            refs: [["משנה יומא ה, ב", MN(55, 5, 2)], ["יומא נג:", P(107, "נג:")], ["יומא נד.", P(107, "נד.")], ["רמב״ם בית הבחירה ד, א", RB(4, 1)]] }
+            refs: [["משנה יומא ה, ב", MN(55, 5, 2)], ["יומא נג:", P(107, "נג:")], ["יומא נד.", P(107, "נד.")], ["רמב״ם בית הבחירה ד, א", RB(4, 1)]] },
+          // 1.2.2 (the scan): the gold-lined room over the devir (50-heichal.js sec. 8: the devir's ceiling at 20, the room y 33..42) had no button
+          { t: "עליית קודש הקדשים — מעל הדביר", tg: [-60, 36, -3], cam: [-47, 38, 6],
+            info: "מעל הדביר חדר ריק מצופה זהב: 'ועשרים אמה קומתו' (מלכים א ו, כ) — לפי רש״י שם תקרת קודש הקדשים נמוכה מתקרת ההיכל, עשרים אמה, ומעליה עד תקרת ההיכל עלייה; 'והעליות חפה זהב' (דברי הימים ב ג, ט). בגמרא (בבא בתרא צח:–צט.) נמדדות העשרים מכנפי הכרובים ולמעלה. בבית שני היו לולים פתוחים מן העלייה אל הדביר, ובהם שלשלו את האומנים בתיבות לתיקונו (מדות ד, ה; פסחים כו.). במודל: חדר סגור, לצפייה; הכניסה אליו אינה מתוארת בכתוב.",
+            refs: [["מלכים א ו, כ", V(10, 6, 20)], ["רש״י שם", V(10, 6, 20)], ["דברי הימים ב ג, ט", V(39, 3, 9)], ["בבא בתרא צט.", P(124, "צט.")], ["מדות ד, ה", MI(4, 5)]] },
         ]],
         ["בית שלמה", [
           // 1.0.1-K (K.6): the forest house per the book (Rashi, the default) and the second reading; review Q2-5: Ralbag credited only with
@@ -3934,7 +3965,15 @@ body.tm-measuring canvas{cursor:crosshair}
               options: ap.keys.map((k) => [k, String(ap.names[k] || k), String(ap.lead || "") + " " + String(ap.info[k] || ""), null]),
               current: ap.current || "south",
               onPick: (k) => { ap.set(k); },
-              fly: () => flyView("altarFromDoor")
+              fly: () => {   // 1.2.2 (the user: "מרחוק יותר - שיהיה ברור איזה צד"): from the east, high, down the house's axis; the axis drawn for 15 s
+                flyView("altarPlaceView");
+                const ax = ctx.shared.altarAxis;
+                if (ax) {
+                  ax.set(true);
+                  clearTimeout(ax.tmr);
+                  ax.tmr = setTimeout(() => ax.set(false), 15000);
+                }
+              }
             });
           }
         }
@@ -4210,12 +4249,12 @@ body.tm-measuring canvas{cursor:crosshair}
         sec("מסך מגע", [
           "אצבע אחת — סיבוב. צביטה — זום. שתי אצבעות יחד — הזזה."
         ]);
-        sec("מקלדת", [
-          "[[←]] [[→]] — סיבוב ימינה ושמאלה.",
+        sec("מקלדת — הליכה", [
+          "[[↑]] [[↓]] — הליכה קדימה ואחורה, לכיוון המבט (בתוך הבית: כמי שמטייל בו).",
+          "[[←]] [[→]] — פנייה ימינה ושמאלה (בחוץ: סיבוב סביב היעד).",
+          "[[PageUp]] [[PageDown]] — הגבהה והנמכה של גובה העין.",
           "[[Shift]] + [[↑]] [[↓]] — הטיית המבט למעלה ולמטה.",
-          "[[↑]] [[↓]] או [[PageUp]] [[PageDown]] — הגבהה והנמכה של גובה העין.",
-          "[[+]] [[−]] — זום.",
-          "[[Esc]] — סגירת כרטיס הסבר."
+          "[[+]] [[−]] — זום. [[Esc]] — סגירת כרטיס הסבר."
         ]);
         sec("בתוך הבית", [
           "באולם או בהיכל, כשהמבט רחוק — גרירה מסובבת את המבט במקום, כמי שעומד ומביט סביבו; הגלגלת מתקדמת קדימה ואחורה.",
@@ -5376,6 +5415,9 @@ body.tm-measuring canvas{cursor:crosshair}
         applyCut,    // 1.0.1-K: no-ops (navigation never opens anything); the removals are ctx.ui.removals / the on-model pills
         applyOpen,
         setLayer,
+        setCutaway,   // 1.2.1: the house's cutaway (the pill "פתח את הבית") from a place
+        setSection,   // 1.2.2: the section along the length (the south wall off, the ceilings kept) - the pill "פתח את העליות", the place "בית דילפא"
+        sectionOn: () => sectionOn,
         fly,
         resolveFp,
         confirmOpen: () => cf.style.display === "flex",
@@ -5540,7 +5582,9 @@ body.tm-measuring canvas{cursor:crosshair}
             return 0;
           };
           const known = !!newsSince && UI_NEWS_VERS.some((v) => v[0] === newsSince);
-          const vers = UI_NEWS_VERS.filter((v) => cmpV(v[0], ver) <= 0 && (!known || cmpV(v[0], newsSince) > 0));
+          // 1.2.1 (the user): only THIS version's list, whatever was seen before (the older lists stay in the table for the record)
+          const vers = UI_NEWS_VERS.filter((v) => v[0] === ver);
+          void known;
           t.textContent = known ? "מה חדש בגרסה " + ver : "מה חדש בתוסף";
           const ul = document.createElement("ul");
           for (const [vv, its] of vers) {

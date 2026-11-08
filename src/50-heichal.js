@@ -260,6 +260,8 @@
     g.name = "heichal";
     ctx.root.add(g);
     const cut = [];                   // -> ctx.cutaway (the UI's "פתח את הבית"): the south HOUSE wall, its windows, the house ceilings and roof
+    const sec = [];                   // 1.2.2 -> ctx.sectionCut (the UI's section along the length, "פתח את העליות" / "בית דילפא"): the south wall and
+                                      // its windows ONLY - the ceilings stay, their three layers cut at the south edge (the book's fig. 17)
     ctx.yatziaCut = [];               // the three OUTER walls of the chambers (the UI's "הסר את קירות היציע"; the roof stays: the book p. ח)
     ctx.ulamCut = [];                 // the ulam's front wall with its doorway trim, its ceilings and its roof (the UI's "פתח את האולם")
     // ---- levels and coordinates (10-core.js) ----
@@ -453,6 +455,7 @@
     }
     hei_boxMesh(g, NW, M.stone, "house-wall-nw");
     cut.push(hei_boxMesh(g, SWEST, M.stone, "house-wall-s"), hei_boxMesh(segE, SEAST, M.stone, "house-wall-s-east"));   // "פתח את הבית" removes the SOUTH wall
+    sec.push(cut[0], cut[1]);
     {
       // the west wall's south end (z 10), seen only while the south wall is off (ctx.interiorOnly: 70-ui.js shows these only with the cutaway on)
       const wc = hei_boxMesh(g, WT.map((t, k) => ({ x0: DW - t, x1: DW, y0: WY[k], y1: WY[k + 1], z0: 10, z1: 10, v0: 2, skip: "px,nx,py,ny,nz" })), M.stone, "house-wall-w-cap");
@@ -465,6 +468,7 @@
       // removal: 70-ui.js applyHidden sets .visible on the meshes of its lists only)
       cut.push(hei_boxMesh(secCaps, WT.map((t, k) => ({ x0: X0, x1: X0, y0: WY[k], y1: WY[k + 1], z0: 10, z1: 10 + t, v0: 2, skip: "nx,py,ny,pz,nz" })),
         M.stone, "yatzia-section-caps-house"));
+      sec.push(cut[cut.length - 1]);
       ctx.yatziaCut.push(hei_boxMesh(secCaps, [{ x0: X0, x1: X0, y0: F, y1: YROOF, z0: TA_IN, z1: ZT, v0: 1, skip: "nx,py,ny,pz,nz" }],
         M.stone, "yatzia-section-caps-ta"));
     }
@@ -629,14 +633,14 @@
         // plain meshes (1.0.1 fix A.1); the south side goes with the south wall into the general cutaway
         const a = hei_inst(parent, splayG, splayMat, sm, false);
         const b = hei_inst(parent, backG, backMat, bm, false);
-        if (s > 0) cut.push(a, b);
+        if (s > 0) { cut.push(a, b); sec.push(a, b); }
       }
     } catch (e) {
       console.warn("[heichal] window splays skipped:", e && e.message);
       for (const s of [-1, 1]) {
         const bm = WIN_X.map((x) => hei_m4(x, WIN_Y, s * (zOut(3) - WT[3] + 0.1)));
         const b = hei_inst(g, new BoxGeometry(WIN_IW, WIN_IH, 0.2), dark, bm, false);
-        if (s > 0) cut.push(b);
+        if (s > 0) { cut.push(b); sec.push(b); }
       }
     }
 
@@ -1399,6 +1403,7 @@
       };
       return goldStd(worldTex(makeTex(512, draw, { bump, bumpSize: 512 }), 4), { roughness: 0.34, bumpScale: 1.2 });
     })();
+    const hei_voidMat = new MeshBasicMaterial({ color: 0x241a0c });   // 1.2.2: the dark of a closed hollow (בית דילפא), unlit
     let houseRoofProxy = null;   // the cutaway toggles this stand-in; the real roof follows it AND the aliyot layer (hidden while the aliyot stand on the cedars)
     {
       const c1 = H.box(g, KE - DW, 1, 20, M.cedar, (KE + DW) / 2, CEIL, 0);
@@ -1407,16 +1412,21 @@
         { x0: CO.xKodeshW, x1: KE - 0.2, y0: CEIL - 0.05, y1: CEIL, z0: -9.8, z1: 9.8 }], hei_cofferGold, "house-ceiling-gold");
       const c2 = H.box(g, KE - DW, 1, 20, M.cedar, (KE + DW) / 2, CEIL + 3, 0);
       c2.name = "house-ceiling-sdeirot";
+      // 1.2.2: the void of בית דילפא drawn dark (an unlit box filling the two amot between the slabs), so that the section (ctx.sectionCut) shows a
+      // hollow between the two cedar faces and not one brown band; it goes with the ceilings into the cutaway
+      const dv = H.box(g, KE - DW - 0.1, 1.96, 19.8, hei_voidMat, (KE + DW) / 2, CEIL + 1.02, 0);
+      dv.name = "house-ceiling-dilfa-void";
+      dv.castShadow = dv.receiveShadow = false;
       const roof = hei_boxMesh(g, [{ x0: wx[3] - 0.3, x1: KE - 0.3, y0: TOP, y1: ROOF, z0: -zOut(3) - 0.3, z1: zOut(3) + 0.3 }], M.stone, "house-roof");
       houseRoofProxy = new Object3D();
       houseRoofProxy.name = "house-roof-proxy";
       houseRoofProxy.userData.real = roof;
-      cut.push(c1, gold, c2, houseRoofProxy);
-      // the three layers named at the south edge of the ceilings (seen with the house opened, or from the aliyot's opening)
+      cut.push(c1, gold, c2, dv, houseRoofProxy);
+      // the three layers named at the south edge of the ceilings (seen in the section: "פתח את העליות", "בית דילפא"; 1.2.2: larger, a little before the face)
       ctx.labels.push(
-        { text: "תקרת הגבים — כיור מצויר ומצופה זהב (מלכים א ו, ט; מצודות: גומות לנוי)", x: -25, y: CEIL + 0.5, z: 10.6, size: 1.1 },
-        { text: "בית דילפא — חלל שתי אמות בין התקרות", x: -25, y: CEIL + 2, z: 10.6, size: 1.1 },
-        { text: "שדרות בארזים — ארזים זה בצד זה, רצפת העלייה (רש״י ו, ט)", x: -25, y: CEIL + 3.5, z: 10.6, size: 1.1 }
+        { text: "תקרת הגבים — כיור מצויר ומצופה זהב (מלכים א ו, ט; מצודות: גומות לנוי)", x: -25, y: CEIL + 0.5, z: 11, size: 1.5 },
+        { text: "בית דילפא — חלל שתי אמות בין התקרות", x: -25, y: CEIL + 2, z: 11, size: 1.5 },
+        { text: "שדרות בארזים — ארזים זה בצד זה, רצפת העלייה (רש״י ו, ט)", x: -25, y: CEIL + 3.5, z: 11, size: 1.5 }
       );
       // over the devir only: a ceiling at 20 (I Kings 6:20 "עשרים אמה קומתו", Rashi: "עלית של בית קדשי הקדשים, נמוכה משל היכל"; Chazal in
       // Bava Batra 98b-99a measure the 20 from the cherubim's wing-line - DEV note) with a gold underside (II Chr 3:9 "והעליות חפה זהב");
@@ -1428,7 +1438,7 @@
       const aY = F + CO.DEVIR_H + 1.05, aH = CEIL - 0.05 - aY;               // the aliyah's gold lining: on its floor (dt), under the gold ceiling
       for (const s of [-1, 1]) {
         const sk = H.box(g, DE - DW, aH, 0.1, M.gold, (DE + DW) / 2, aY, s * 9.95);
-        if (s > 0) cut.push(sk);
+        if (s > 0) { cut.push(sk); sec.push(sk); }
       }
       H.box(g, 0.1, aH, 19.8, M.gold, DW + 0.05, aY, 0);
     }
@@ -1477,6 +1487,7 @@
           H.box(gA, inL, 1, inW, M.cedar, acx, y1, 0).name = "aliyah-gavim";              // the גבים: a cedar slab, its underside the coffered gold
           H.box(gA, inL - 0.2, 0.05, inW - 0.2, hei_cofferGold, acx, y1 - 0.05, 0).name = "aliyah-gavim-gold";
           H.box(gA, inL, 1, inW, M.cedar, acx, y1 + 3, 0).name = "aliyah-sdeirot";       // the שדרות: the cedars - the floor of the next story / the roof
+          H.box(gA, inL - 0.1, 1.96, inW - 0.2, hei_voidMat, acx, y1 + 1.02, 0).name = "aliyah-dilfa-void";   // 1.2.2: the void drawn dark (as the house's)
           for (const s of [-1, 1]) {
             const sk = H.box(gA, inL, y1 - y0, 0.1, M.gold, acx, y0, s * 9.95);          // the gold on the walls (II Chr 3:9)
             if (s > 0) open.walls.push(sk);
@@ -1515,7 +1526,15 @@
         get: () => open.on,
         set: (on) => {
           ctx.shared.aliyotOpen.set(on);
-          if (on) heiFly("aliyot");
+          // 1.2.2 (the user: "לאורך ולא לרוחב הבית כמו בספר"): the house's SECTION (ctx.sectionCut: its south wall off, the ceilings kept, cut at
+          // the south edge - the three layers over the heichal and over each aliyah), not the cutaway (1.2.1), which took the ceilings off
+          try {
+            if (ctx.ui && typeof ctx.ui.setSection === "function") {
+              if (on && typeof ctx.ui.setCutaway === "function") ctx.ui.setCutaway(false);
+              ctx.ui.setSection(!!on);
+            }
+          } catch (_) {}
+          if (on) heiFly("aliyotSection");
         }
       });
       gA.userData.build = buildAliyot;                         // for a caller that needs the geometry at once (headless checks)
@@ -1755,8 +1774,9 @@
       // right, the chambers, the chamber wall and the legend over the court on the left. With the section on only (sec. 11).
       yatziaSection: { pos: [-4, 23.6, 21], target: [X0, 23, 21] },
       // 1.0.1-K: the chambers' only outside door (6:8) seen from the terrace of the אוטם, as the book's p. ט (the band of beam ends above)
-      yatziaDoor: { pos: [-27, 21, 50], target: [-36.5, 20, 27] },
+      yatziaDoor: { pos: [-29, 18, 44], target: [-36.5, 16, 27] },   // 1.2.2: lower and nearer - the door was a small hole at the frame's foot
       aliyot: { pos: [260, 150, 220], target: [-25, 70, 0] },
+      aliyotSection: { pos: [-25, 78, 205], target: [-25, 72, 0] },   // 1.2.1 (the user): the section along the length, from the south (the book's fig. 17); 1.2.2: the whole 120 in the frame
       // 1.0.1-L (verifier): the target stood inside the closed chambers (x -70: the ray met the chamber wall at 135.5 of its 147.4); now 0.1 before that wall's outer face (x -80.5)
       heichalWest: { pos: [-200, 60, -60], target: [-80.6, 25, 0] }
     });
@@ -1869,4 +1889,5 @@
       }
     };
     for (const m of cut) ctx.cutaway.push(m);
+    ctx.sectionCut = sec;   // 1.2.2
   }

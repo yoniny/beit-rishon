@@ -2558,7 +2558,7 @@
     // the second roofing (Rashi 7:4 "שקופים") over the remaining 25 (z 459.5..484.5): no thick wood at all (Part 7, P3, the user: "לא היה שם עב כלל!")
     // 1.0.1-L (A24, the user: "יש לך טעות, אין עב בגג, העב הוא רק באולם העמודים וממילא לא תראה אותו, והכל דק"), which replaces the thick beams above: thin beams (Rashi 7:4 "נתונים על מרישין קטנים") 0.4 x 0.3, y 20..20.3, thin
     // ledges 0.12 x 0.1 flush with their tops ("ושקופין משני צדיהן"), and the thin boards lying on them as the book's p11L, one dark cedar surface, top 20.5 flush with the 45 boards; each board runs from beam to beam
-    const SB = 0.4, SB_H = 0.3, SB_N = 12, LEDGE = 0.12, TB_T = 0.2;   // 1.2.0: TB_N (16 thin boards a gap) is gone - three boards a row
+    const SB = 0.4, SB_H = 0.3, SB_N = 12, LEDGE = 0.12, TB_T = 0.2, TB_N = 16;
     const sbP = (zBoardsN - fZ0 - SB) / (SB_N - 1);  // 2.218
     const sbItems = [], ledgeItems = [], thinItems = [];
     for (let j = 0; j < SB_N; j++) {
@@ -2567,16 +2567,14 @@
         const L = xb - xa, xc = (xa + xb) / 2;
         sbItems.push({ x: xc, y: yRoof, z: zb, w: L - 0.03, h: SB_H, d: SB });
         if (j > 0) ledgeItems.push({ x: xc, y: yRoof + 0.2, z: zb - SB / 2 - LEDGE / 2, w: L - 0.03, h: 0.1, d: LEDGE });
-        if (j < SB_N - 1) ledgeItems.push({ x: xc, y: yRoof + 0.2, z: zb + SB / 2 + LEDGE / 2, w: L - 0.03, h: 0.1, d: LEDGE });
+        if (j < SB_N - 1) {
+          ledgeItems.push({ x: xc, y: yRoof + 0.2, z: zb + SB / 2 + LEDGE / 2, w: L - 0.03, h: 0.1, d: LEDGE });
+          // 1.2.1 (the user): the thin boards from beam to beam close the roof ("וכך הנסרים הקטנים השלימו את הגג" - the book); the book's
+          // drawing with three boards to a row only uncovers the beams for the reader (1.2.0 had read it as the count)
+          const zA = j === 0 ? zb - SB / 2 : zb, zB = j === SB_N - 2 ? zb + sbP + SB / 2 : zb + sbP;   // from beam to beam ("ההולכים מ'מריש' ל'מריש'" - the book)
+          for (let i = 0; i < TB_N; i++) thinItems.push({ x: xa + L / TB_N * (i + 0.5), y: yRoof + 0.3, z: (zA + zB) / 2, w: L / TB_N - 0.02, h: TB_T, d: zB - zA - 0.02 });
+        }
       }
-    }
-    // 1.2.0 (the user, after the book p. כ: "הנסרים הקטנים שעל המרישים... היו רק 3 בכל שורה"): the small boards lie ACROSS the beams, three
-    // to a row (one row of beams = one of the three parts), at a quarter, the middle and three quarters of the part's length, from the first
-    // beam to the last; the roof between the beams stays open under the 45 boards, as the book draws it (1.0.1-L laid 16 x 11 thin boards
-    // that closed it)
-    for (const [xa, xb] of SPX) {
-      const L = xb - xa;
-      for (let k = 1; k <= 3; k++) thinItems.push({ x: xa + L * k / 4, y: yRoof + SB_H, z: (fZ0 + zBoardsN) / 2, w: 1.2, h: TB_T, d: zBoardsN - fZ0 - 0.1 });
     }
     // 1.0.1-K review (palace-courts-5): the removable roofing of this reading (ctx.forestBoardsCut) is the 45 boards and the thin boards
     // only - the thin beams and their ledges (שקופין) stay, so "הסר את הנסרים" shows the beams under the boards

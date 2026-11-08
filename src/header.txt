@@ -11,6 +11,10 @@
  * Units: 1 = 1 amah. +x east (front), +z south (right), y up. Levels: great court 0, inner court 6, house floor 12.
  * VERSION: plugin/manifest.json is the ONE source (tools/build.mjs writes it into the bundle and index.html; minAppVersion 0.9.98.1).
  * 1.1.0 (8.11.2026): build = node tools/build.mjs (assemble + version + checks + terser minify); plugin/bundle.js is a build product - edit src/ only.
+ * 1.2.2 (8.11.2026 morning, DEV_NOTES "סבב ו'" 1.2.2): the arrows walk (ent_walk; PageUp/Down lift); the SECTION along the length (ctx.sectionCut / ui.setSection:
+ *   the south wall off, the ceilings kept, the dilfa void drawn dark) for "פתח את העליות", "בית דילפא" and the verses tour; the base's follow view off the
+ *   altar (FOL_AZ -8/118/160 relative to altarPlace; the wash stop fixed at z 22); the axis strip 1.5 wide with a label; the cloud under the devir's
+ *   ceiling; a place for the room over the devir; re-aimed views from the 77-view sweep (gates, steps, kiyor, menorot, tables, chambers' door).
  * 1.2.0 (8.11.2026, DEV_NOTES "סבב ו'"): one top bar; menu without doubles, no sources in the tree; a two-mode camera (orbit / look, no wall or floor
  *   stops, indoors the eye stays in the room by default); the book's three-layer ceiling and two aliyot with an opening pill; altarPlace, arkLayout,
  *   arkLift, incenseSmoke, devirPentEdges switches; the staffs to the west wall; the Baraita on the cards; the verse presentation trimmed to 46.

@@ -1928,12 +1928,12 @@
     // showed the carvings).
     const FP_BY_LAYOUT = {
       rabbi: {
-        shulchanot: { pos: [-32, 21.5, 1.4], target: [-41, 15, -4.6] },                 // from above the middle: Moses' table's long side and the two rows
+        shulchanot: { pos: [-29, 23, 3], target: [-41, 15, -4.6] },                 // from above the middle: Moses' table's long side and the two rows (1.2.2: 3 further back, the labels were cut)
         // 1.0.1-L (L.70): Moses' table close, from its EAST END along the aisle between the two rows (eye 3.4 above the floor): the loaves
         // "כמין תיבה פרוצה" are seen between the two towers only from the ends (K.4's south view saw the tower's plate), the table at the head
         // of the aisle "כתלמיד היושב לפני רבו"; the target on the east face of its east stack (x -40)
         shulchanMoshe: { pos: [-36.2, 15.8, -5.15], target: [-40, 14.45, -5.25] },
-        menorot: { pos: [-32, 20.5, -1], target: [-42, 15, 5] },                     // the same, mirrored: the menorot's faces (branches east-west); 1.0.1-L: Moses' menorah at x -42
+        menorot: { pos: [-29, 22, -2.5], target: [-42, 15, 5] },                     // the same, mirrored: the menorot's faces (branches east-west); 1.0.1-L: Moses' menorah at x -42; 1.2.2: 3 further back
         // 1.0.1-L (L.13): the altar of one amah from a standing eye (3 above the floor): its roof with the coals, the horns, the crown and
         // the south face (the opened side); K.4 looked at the 2-high altar's mid height. The target 0.05 before its south face (the ray test:
         // a target inside the altar counts as blocked)

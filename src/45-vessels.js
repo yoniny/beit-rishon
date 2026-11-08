@@ -601,7 +601,7 @@
     // either hand (model choice; rays checked headless)
     ctx.shared.flyPoints = ctx.shared.flyPoints || {};
     // 1.0.1-L (verifier): nearer and higher, so that the whole circle of the turn buttons is free (from 18 away, 44 of 252 steps entered the ulam's wing and the lavers)
-    ctx.shared.flyPoints.kiyorMoshe = { pos: [KX + 10, F + 12, KZ], target: [KX, F + 2, KZ] };
+    ctx.shared.flyPoints.kiyorMoshe = { pos: [KX + 16, F + 20, KZ], target: [KX, F, KZ] };   // 1.2.2 (the scan): higher and further - from 10 off at F + 12 the near bases of both rows filled the frame
   }
 
   // ------------------------------------------------------------ THE BASES' RELIEFS ------------------------------------------------------------
@@ -1191,15 +1191,21 @@
     // water: 48.6 s the round. ---
     const SP = ctx.shared.slaughterPlace, TB = SP && SP.tables;
     const STOP = TB && TB.cols && TB.size ? [Math.min.apply(null, TB.cols) - TB.size[0] / 2 - 1.5 - 2, TB.middleZ] : [43, -46];   // (43, -46)
-    const WASH = [HX, HZ - 11];                     // (34.5, 22): beside the ramp (z 10..42), 5 west of it, between the ulam and the altar
-    const ROUTE = [[HX, HZ], WASH, "wash", [HX, STOP[1]], STOP, "pour", [HX, STOP[1]], [HX, HZ]];   // home, the ramp, the corner, the tables and back
-    const WP = ROUTE.filter((p) => typeof p !== "string");   // the corners of the route (the contract's demo.path)
+    // 1.2.2: the ramp moves with the altar (40-altar.js altarPlace: dz = +10 south, -10 north, 0 middle: the ramp z 20..52, 0..32, 10..42), and
+    // the wash stop at z 22 stands beside it in all three (with the altar in the south, 2 south of the body; a stop that moved with the ramp
+    // stood 1 amah from home). The route and the timeline are built by a function and rebuilt (demo.rebuild) when the altar's place changes.
+    const altarDz = () => { const ap = ctx.shared.altarPlace; return ap && ap.dz && ap.current in ap.dz ? ap.dz[ap.current] : 0; };
+    const washZ = () => HZ - 11;
+    let WASH = [HX, washZ()];                      // (34.5, 22): beside the ramp, 5 west of it, between the ulam and the altar
+    let ROUTE = [[HX, HZ], WASH, "wash", [HX, STOP[1]], STOP, "pour", [HX, STOP[1]], [HX, HZ]];   // home, the ramp, the corner, the tables and back
+    let WP = ROUTE.filter((p) => typeof p !== "string");   // the corners of the route (the contract's demo.path)
     const SPEED = 5.0, TURN = 0.7, PAUSE0 = 1.2, PAUSE1 = 0.2, POUR = 5.0, WASHT = 4.0, FLOW = 0.35;   // FLOW: the water starts / stops in 0.35 s
     const REST_ALPHA = 0;                           // the resting heading of the small wheels: rolling east-west, like the nine resting bases
                                                     // (the wheels inside the 4 x 4, L.8); the route's first leg runs north, so the round
                                                     // begins and ends with a turn of the small wheels (L.66)
-    const TL = [];                                  // the timeline: {type, t0, dur, ...}
-    {
+    let TL = [];                                    // the timeline: {type, t0, dur, ...}
+    const buildTL = () => {
+      TL = [];
       let t = 0, alpha = REST_ALPHA, x = ROUTE[0][0], z = ROUTE[0][1];
       TL.push({ type: "pause", t0: t, dur: PAUSE0, x, z, alpha });
       t += PAUSE0;
@@ -1233,7 +1239,8 @@
         t += TURN;
       }
       TL.total = t;
-    }
+    };
+    buildTL();
     const smooth = (k) => (k <= 0 ? 0 : k >= 1 ? 1 : k * k * (3 - 2 * k));
     const poseAt = (tau, out) => {
       let s = TL[TL.length - 1];
@@ -1313,7 +1320,10 @@
     // west of each stop, low over the floor (the purpose's 8 south of it, that its long text stays inside the route's view): each stands beside its stop, clear
     // of the base, of its two pills and of the slaughter place's own labels; the size of "המכונות והכיורות" so that they read from afar
     ctx.labels.push({ text: PURPOSE_TEXT, x: STOP[0] - 7.5, y: F + 3.4, z: STOP[1] + 8, size: 2.4, layer: "mechonaPurpose" });
-    ctx.labels.push({ text: WASH_TEXT, x: WASH[0] - 7.5, y: F + 3.4, z: WASH[1] - 1.5, size: 2.4, layer: "mechonaWash" });
+    // 1.2.2: the wash label 8 west and 5 NORTH of its stop (was 1.5 north): the follow view now looks from the north-north-west, and there the
+    // label stood between the base and the bases' row behind it; nearer the eye, over the bare floor, it reads clear of both. Moved by demo.rebuild.
+    const washLabel = { text: WASH_TEXT, x: WASH[0] - 8, y: F + 3.4, z: WASH[1] - 5, size: 2.4, layer: "mechonaWash" };
+    ctx.labels.push(washLabel);
     let sprites = null, spriteTries = 0;           // the UI's sprites of the part labels (sprite.userData.label), looked up a few times
     const findSprites = () => {
       try {
@@ -1427,14 +1437,29 @@
       },
       get running() { return st.running; },
       get home() { return !st.running && !st.homing && Math.abs(pose.x - HX) < 1e-9 && Math.abs(pose.z - HZ) < 1e-9; },
-      path: WP,
-      duration: TL.total,
+      get path() { return WP; },
+      get duration() { return TL.total; },
+      rebuild() {   // 1.2.2: after the altar moved (40-altar.js altarPlace.set): the wash stop beside the ramp again; the demo parks first
+        try { if (this.running) this.reset(); } catch (_) {}
+        WASH = [HX, washZ()];
+        ROUTE = [[HX, HZ], WASH, "wash", [HX, STOP[1]], STOP, "pour", [HX, STOP[1]], [HX, HZ]];
+        WP = ROUTE.filter((p) => typeof p !== "string");
+        buildTL();
+        // the wash stop's label (and the follow view's aim at it) go with the stop
+        washLabel.z = WASH[1] - 5;
+        FOL_LABW[0] = WASH[0] - 8;
+        FOL_LABW[1] = WASH[1] - 5;
+        try {
+          const lg = ctx.root.getObjectByName("labels");
+          if (lg) for (const spr of lg.children) if (spr.userData && spr.userData.label === washLabel) { spr.position.z = washLabel.z; break; }
+        } catch (_) {}
+      },
       // 1.0.1-L (L.40 / L.64): where the base stops and when its water runs (seconds from the start of a round) - e.g. for the
       // presentation: seek(pourAt[0] - 2) shows the rinsing without waiting for the drive, seek(washAt[0] - 2) the priests' washing
       station: STOP.slice(),
-      pourAt: TL.pour.slice(),
-      washStation: WASH.slice(),
-      washAt: TL.wash.slice()
+      get pourAt() { return TL.pour.slice(); },
+      get washStation() { return WASH.slice(); },
+      get washAt() { return TL.wash.slice(); }
     };
     const explode = {
       // set(on[, instant]): animate (1.1 s) the laver and the כן up out of the base or back; instant = jump to the end state
@@ -1477,17 +1502,26 @@
     const FOL_LAG = 0.35;                           // seconds (model choice)
     const FOL_FAR = { r: 26, h: 17, ty: 3.5 };      // 1.2.0 (the user: "מזווית שונה וממרחק קצת יותר"): farther and higher (was 18 / 12)
     const FOL_NEAR = { h: 12, ty: 4.3, rWash: 22, rPour: 24, lab: 0.7 };   // 1.2.0: at the stops too (was 8 / 16 / 18)
-    const FOL_LABW = [WASH[0] - 7.5, WASH[1] - 1.5], FOL_LABP = [STOP[0] - 7.5, STOP[1] + 8];   // 1.0.2 (M): x / z of the two labels, as they are pushed above
-    const FOL_AZ = { route: 38, wash: 44, corner: 118, pour: 160 };   // 1.2.0: a three-quarter view on the way (was 12 / 18 / 110)
+    const FOL_LABW = [WASH[0] - 8, WASH[1] - 5], FOL_LABP = [STOP[0] - 7.5, STOP[1] + 8];   // 1.0.2 (M): x / z of the two labels, as they are pushed above (1.2.2: the wash label moved)
+    // 1.2.2 (the user: "תבדוק היטב שאין הסתרה של כלום בפעולה"): 1.2.0's three-quarter view (az 38 / 44) stood the camera OVER the altar's body,
+    // beside its fire, at the wash stop and along the altar's west side - in all three places of the altar (40-altar.js altarPlace: the body
+    // z dz-10..dz+10, the yesod to dz+-12, the ramp dz+10..dz+42; the stop 12 south of the body). Now the camera keeps to the free strip
+    // between the ulam's steps (x 24.5) and the yesod (x 37.5): a little WEST of north (az -8: x 30.9 / 30.7, ahead of the base) while
+    // the base is beside the altar, the stream (the east tap) just beside the body's silhouette, the altar's west face and the ramp as the
+    // backdrop on the left; it swings round the east side only once the base is 14 north of the yesod's north face (dz - 14 .. dz - 36:
+    // for the north placement that ends at the corner), over the rings, which are low; the pour view from the south-south-east as before
+    // (150 instead of 160 with the altar in the north: 3 clear of its yesod instead of 1.4). Model choice; measured on the three placements.
+    const FOL_AZ = { route: -8, wash: -8, corner: 118, pour: 160 };
     const D2R = Math.PI / 180;
     // the view for a moment of the round: the base at (x, z); out = {tx, ty, tz, az (radians), r, h}
     const folNear = (tau, w) => smooth(Math.min((tau - (w[0] - 1.6)) / 1.6, (w[1] + 1.2 - tau) / 1.2));   // in 1.6 s before the water, out 1.2 s after it
     const folView = (tau, x, z, out) => {          // (runs every frame: no allocation)
       const nW = folNear(tau, TL.wash), nP = folNear(tau, TL.pour), n = Math.max(nW, nP);
+      const dz = altarDz(), swingZ = dz - 14, pourAz = FOL_AZ.pour - 10 * Math.max(0, Math.min(1, -dz / 10));
       let az;
-      if (z <= STOP[1] + 0.01) az = FOL_AZ.corner + (FOL_AZ.pour - FOL_AZ.corner) * smooth((x - HX) / (STOP[0] - HX));   // the leg to the tables and back
-      else if (tau < TL.pour[0]) az = FOL_AZ.route + (FOL_AZ.corner - FOL_AZ.route) * smooth((-8 - z) / 22);      // going: swings at z -8 .. -30
-      else az = FOL_AZ.corner - (FOL_AZ.corner - FOL_AZ.route) * smooth((z - STOP[1]) / 26);                       // coming back: at z -46 .. -20
+      if (z <= STOP[1] + 0.01) az = FOL_AZ.corner + (pourAz - FOL_AZ.corner) * smooth((x - HX) / (STOP[0] - HX));   // the leg to the tables and back
+      else if (tau < TL.pour[0]) az = FOL_AZ.route + (FOL_AZ.corner - FOL_AZ.route) * smooth((swingZ - z) / 22);   // going: swings at dz-14 .. dz-36
+      else az = FOL_AZ.corner - (FOL_AZ.corner - FOL_AZ.route) * smooth((z - STOP[1]) / (swingZ - STOP[1]));     // coming back: at -46 .. dz-14
       az += (FOL_AZ.wash - FOL_AZ.route) * nW;
       out.az = az * D2R;
       out.r = FOL_FAR.r + ((nW >= nP ? FOL_NEAR.rWash : FOL_NEAR.rPour) - FOL_FAR.r) * n;   // 1.0.2 (M): was 13 at both

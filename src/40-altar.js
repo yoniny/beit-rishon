@@ -615,9 +615,27 @@
             f.pos = [fp0[k].pos[0], fp0[k].pos[1], fp0[k].pos[2] + dz];
             f.target = [fp0[k].target[0], fp0[k].target[1], fp0[k].target[2] + dz];
           }
+          // 1.2.2: the mechona's demonstration stops beside the ramp - its route follows (45-vessels.js demo.rebuild)
+          try { const m = ctx.shared.mechona; if (m && m.demo && typeof m.demo.rebuild === "function") m.demo.rebuild(); } catch (_) {}
+          if (axis) axis.visible = false;
           return true;
         }
       };
+      // 1.2.2 (the user: "שיהיה ברור איזה צד"): the house's axis drawn on the court - a bright strip from the ulam's front eastward, z = 0,
+      // shown by the row "מקום המזבח" for 15 s with the far view (ctx.shared.altarAxis); the altar's body north / south of it is then plain
+      // (a group registered as a label layer, so that its label shows only with the line; 1.5 wide - from the far view 0.5 was a hairline)
+      const axis = new Group();
+      axis.name = "altar-axis-line";
+      axis.visible = false;
+      const axl = new Mesh(new BoxGeometry(CO2.azE - CO2.xUlamE - 1, 0.1, 1.5), new MeshBasicMaterial({ color: 0xe39a1c, transparent: true, opacity: 1, depthWrite: false }));
+      axl.position.set((CO2.xUlamE + CO2.azE) / 2, F + 0.08, 0);
+      axl.userData.noPick = true;
+      axl.renderOrder = 3;
+      axis.add(axl);
+      ctx.root.add(axis);
+      ctx.layers.altarAxis = axis;
+      ctx.labels.push({ text: "קו ציר הבית — כנגד פתח ההיכל", x: (CO2.xUlamE + CO2.azE) / 2 + 12, y: F + 2.2, z: 0, size: 2.4, layer: "altarAxis" });
+      ctx.shared.altarAxis = { get: () => axis.visible, set: (on) => { axis.visible = !!on; } };
       ctx.shared.altarPlace = PLACE;
       PLACE.set("south");   // the user: the default - in the south, as the Rambam rules
     }

@@ -381,7 +381,10 @@ body.tm-measuring #tm-tour-box{bottom:96px}
     { v: [6, 8, 8], t: "פתח התאים והלולים", go: [{ place: "פתח התאים והלולים" }, { fp: "heichalSouth" }],
       x: "רש״י (ותרגום 'מציעתא'): 'שבחמש תאים שבדרום היה לה פתח אל החוץ בשורה התחתונה' — התא האמצעי, 'ודרך אותו פתח נכנסים לכלם'; לכל תא שלושה פתחים (מדות ד, ג). לולים — 'בנין עמוד אבנים עשוי מעלות מעלות, וההולך בהן דומה כמקיף סביבות עמוד' (רש״י). רד״ק ומצודות: הפתח בקומה התיכונה.",
       r: [["מדות ד, ג", ["MI", 4, 3]]] },
-    { v: [6, 9, 10], t: "הספון וגג הבית", go: [{ place: "גג הבית ותקרותיו" }, { fp: "heichalFront" }],
+    // 1.2.2: first the section along the length (the feature houseSection: the south wall off, the ceilings cut at the edge - גבים, בית דילפא,
+    // שדרות - and the aliyot opened), then the roof from above as before
+    { v: [6, 9, 10], t: "הספון וגג הבית", go: [{ place: "בית דילפא — בין תקרת הגבים לשדרות", f: "houseSection", lay: "aliyot" }, { place: "גג הבית ותקרותיו" }, { fp: "heichalFront" }],
+      xf: "בתצוגה: חתך לאורך הבית — תקרת הגבים, חלל בית דילפא והשדרות חתוכים בקצה הדרומי, ומעליהם רצפת העלייה.",
       x: "'גבים ושדרת' — 'שתי תקראות, אחת עשויה לנוי מלמטה, ואחת של לוחי ארזים מלמעלה', 'לדריסת הרגל, כשעולין לראות בבדק הבית' (רש״י). 'חמש אמות קומתו — של כל אחד ואחד, הרי גבהן חמש עשרה אמות, לבד עבי התקרה'; 'ויאחז את הבית — הוא כסוי הגג העליון' (רש״י); לרד״ק ולמצודות — קורות התקרות שהונחו על המגרעות." },
     { v: [6, 15, 15], t: "קירות הארז על האבן, רצפת הברושים", go: [{ fp: "wallLayers", f: "wallLayers" }, { fp: "kodesh" }],
       x: "'ויבן את קירות הבית מביתה בצלעות ארזים' — 'קירות ארז אצל קיר האבן, כדי לטוח עליו זהב... ואי אפשר לטוח זהב על גבי האבנים, כי אם בעצים ובמסמרות' (רש״י); 'שלא תראה אבן הקיר' (רד״ק). 'ויצף את קרקע הבית בצלעות ברושים' — 'הרצפה כלה' (רש״י).",
@@ -632,6 +635,18 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         ulamTables: () => {
           const o = ctx.shared.ulamTables;
           return o && fnc(o.set) ? { on: () => true, set: () => true } : null;   // 1.1.0: the tables are always shown (no "none")
+        },
+        // 1.2.2: the section along the length (70-ui.js setSection: the house's south wall off, the ceilings kept) with the aliyot opened
+        houseSection: () => {
+          const ao = ctx.shared.aliyotOpen;
+          if (!fnc(U.setSection) || !fnc(U.sectionOn) || !ao || !fnc(ao.set)) return null;
+          return {
+            on: () => !!U.sectionOn(),
+            set: (v) => {
+              if (v) { if (fnc(U.setCutaway)) U.setCutaway(false); U.setSection(true); ao.set(true); }
+              else { U.setSection(false); ao.set(false); }
+            }
+          };
         }
       };
       // 1.0.1-L (L.50): the feature a place of the panel switches on: its name in ctx.ui.places() (the ctx.shared key) -> the tour's FEATURES;

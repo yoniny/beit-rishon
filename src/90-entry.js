@@ -312,8 +312,9 @@
   }
   function cam_decideSoon(ms) { cam.decideAt = performance.now() + (ms || 400); }
   function cam_indoors() { return cam.mode === "look"; }   // ctx.camIndoors: 70-ui.js's nav buttons and keys turn in place
-  function cam_pass() {   // ctx.camPass: indoors the fade loop lets the eye see through every building surface between it and the target
-    if (!cam.roofed || flyAnim || ent_load.loading || !controls) return false;
+  function cam_pass() {   // ctx.camPass: with "מעבר דרך קירות" on, indoors the fade loop lets the eye see through the building surfaces between it and
+    // the target; in the default (the eye stays in the room) nothing is faded - the curtain stays a curtain and the cloud stays in the devir (1.2.1, the user)
+    if (cam.inside || !cam.roofed || flyAnim || ent_load.loading || !controls) return false;
     const fs = ctx && ctx.shared && ctx.shared.fadeState;
     return !(fs && fs.on === false);
   }
@@ -449,6 +450,26 @@
     q.y += d;
     cam_decideSoon(500);
   }
+  // 1.2.2 (the user: "טיול כעין הליכה עם חיצים"): ArrowUp / ArrowDown WALK - the eye and the target move together along the view's horizontal
+  // direction (PageUp / PageDown keep the eye's height; Shift + arrows the tilt, 70-ui.js; the left and right arrows turn). The pace grows
+  // with the distance of the view (a hall: ~10 amot a second; the mount from afar: faster).
+  var ent_walk = { fwd: false, back: false, fwdTo: 0, backTo: 0, v: 0, dir: new Vector3() };
+  function ent_walkSpeed() { return Math.max(9, Math.min(80, camera.position.distanceTo(controls.target) * 0.35)); }
+  function ent_walkStep() {
+    const W = ent_walk, now = performance.now(), dt = Math.min(50, ent_view.dt);
+    if (flyAnim || ent_load.loading || cam_drag) { W.v = 0; return; }
+    const dir = (W.fwd || now < W.fwdTo ? 1 : 0) - (W.back || now < W.backTo ? 1 : 0);
+    W.v += (dir * ent_walkSpeed() - W.v) * (1 - Math.exp(-dt / ENT_LIFT_EASE));
+    if (!dir && Math.abs(W.v) < 0.02) W.v = 0;
+    if (!W.v) return;
+    const p = camera.position, q = controls.target, d = W.dir.copy(q).sub(p);
+    d.y = 0;
+    if (d.lengthSq() < 1e-6) return;
+    d.normalize().multiplyScalar(W.v * dt / 1000);
+    p.add(d);
+    q.add(d);
+    cam_decideSoon(400);
+  }
   (function liftKeys() {
     const KEYS = { ArrowUp: 1, PageUp: 1, ArrowDown: -1, PageDown: -1 };
     const free = (el) => !el || el === window || el === document || el === document.body || el === document.documentElement || el === renderer.domElement ||
@@ -461,20 +482,24 @@
       const cf = document.getElementById("tm-confirm");   // the cloud's dialog (70-ui.js) is open: its keys
       if (cf && cf.style.display === "flex") return;
       e.preventDefault();
+      const walk = e.key.indexOf("Arrow") === 0;   // 1.2.2: the arrows walk, PageUp / PageDown lift
+      const S = walk ? ent_walk : ent_lift, a = walk ? "fwd" : "up", b = walk ? "back" : "down";
       if (k > 0) {
-        ent_lift.up = true;
-        if (!e.repeat) ent_lift.upTo = performance.now() + ENT_LIFT_TAP;
+        S[a] = true;
+        if (!e.repeat) S[a + "To"] = performance.now() + ENT_LIFT_TAP;
       } else {
-        ent_lift.down = true;
-        if (!e.repeat) ent_lift.downTo = performance.now() + ENT_LIFT_TAP;
+        S[b] = true;
+        if (!e.repeat) S[b + "To"] = performance.now() + ENT_LIFT_TAP;
       }
     }, true);
     window.addEventListener("keyup", (e) => {
       const k = KEYS[e.key];
-      if (k > 0) ent_lift.up = false;
-      else if (k < 0) ent_lift.down = false;
+      if (!k) return;
+      const walk = e.key.indexOf("Arrow") === 0;
+      if (walk) { if (k > 0) ent_walk.fwd = false; else ent_walk.back = false; }
+      else { if (k > 0) ent_lift.up = false; else ent_lift.down = false; }
     }, true);
-    window.addEventListener("blur", () => { ent_lift.up = ent_lift.down = false; });
+    window.addEventListener("blur", () => { ent_lift.up = ent_lift.down = false; ent_walk.fwd = ent_walk.back = false; });
   })();
   // 1.0.1-H (the user: "נתקע ולא מסתובב נכון"): pointer safety for the embedded webview. OrbitControls (r160) captures the pointer on
   // pointerdown and ends a drag only on a pointerup that reaches the canvas. Inside the host app the release can be lost (the button is let
@@ -971,6 +996,7 @@
     ent_damp(t);   // 1.0.1-L (L.87)
     ent_zoomStep();
     ent_liftStep();   // 1.0.2 (M): the eye's height (the keys, Shift + wheel)
+    ent_walkStep();   // 1.2.2: the arrows walk
     cam_update();   // 1.2.0: controls.update(), "סיבוב איטי" in place in mode "look"
     guardCamera();
     for (const fn of ctx.animated) {
