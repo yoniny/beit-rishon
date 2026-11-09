@@ -4,7 +4,7 @@
 
 שני התוספים, "בית ראשון" ו"בית שני", מעכשיו תוסף אחד. בפתיחה בוחרים בית, וכל בית נפתח במסך משלו, עם התפריט, המצגות וההסברים שלו. שום דבר לא התערבב.
 
-![מסך הבחירה](https://raw.githubusercontent.com/yoniny/beit-rishon/main/docs/post-choice.jpg)
+![מסך הבחירה](https://raw.githubusercontent.com/yoniny/beit-rishon/unified/docs/post-choice.jpg)
 
 * בית ראשון: לפי מלכים ודברי הימים, בעיקר לפי רש"י. הציורים בעקבות "מקרא מפורש"
 * בית שני: לפי מסכת מידות והרמב"ם, עם מצגת לפי סדר המשניות
@@ -17,7 +17,7 @@
 
 ![בית ראשון](https://raw.githubusercontent.com/yoniny/beit-rishon/main/docs/post-general.jpg)
 
-![בית שני](https://raw.githubusercontent.com/yoniny/beit-rishon/main/docs/post-sheni.jpg)
+![בית שני](https://raw.githubusercontent.com/yoniny/beit-rishon/unified/docs/post-sheni.jpg)
 
 מי שהתקין את "בית ראשון" יקבל את התוסף המאוחד כעדכון רגיל. את "בית שני" הישן אפשר להסיר.
 
