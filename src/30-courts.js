@@ -504,7 +504,7 @@
       ctx.shared.slaughterLayout = {
         current: "book",
         keys: ["book", "meiri", "oneRow"],
-        names: { book: "חתיכת ארז על כל עמוד — כציור הספר", meiri: "קורות מעמוד לעמוד — המאירי", oneRow: "שורה אחת ממזרח למערב — ראבי״ה והגר״א" },
+        names: { book: "כציור הספר — חתיכת ארז על כל עמוד", meiri: "המאירי — קורות מעמוד לעמוד", oneRow: "ראבי״ה והגר״א — שורה אחת" },
         set(key) {
           if (!layG[key]) return this.current;
           this.current = key;

@@ -261,13 +261,20 @@
     const PX = ACX + 4.5, PZ = ACZ - 1.5;              // the big pyre, east of the centre (model choice)
     const E1X = ACX - 5.5, E1Z = ACZ + 5.5;            // second pyre (model choice)
     const E2X = ACX - 5.5, E2Z = ACZ - 6;              // third pyre (model choice)
-    const logs = [];
-    const addPyre = (cx, cz, len, r, layers) => {
+    // 1.3.0 (the opinions table, as in the Second Temple model 1.8.0): THE NUMBER OF PYRES - Mishnah Yoma 4:6 "בכל יום היו שם ארבע
+    // מערכות, והיום חמש, דברי רבי מאיר. רבי יוסי אומר, בכל יום שלש, והיום ארבע. רבי יהודה אומר, בכל יום שתים, והיום שלש"; the Rambam
+    // (Temidin uMusafin 2:4) rules like R. Yose - the default, the three of 1.0.0. The third, R. Meir's fourth (south-east) and the Yom
+    // Kippur one (north-east) are their own instanced meshes with their own flames, shown by ctx.shared.maarachot; places: model choices.
+    const R4X = ACX + 5.5, R4Z = ACZ + 6;              // R. Meir's fourth pyre (model choice)
+    const YKX = ACX + 5.5, YKZ = ACZ - 7;              // the Yom Kippur pyre (model choice)
+    const logs = [], logs3 = [], logs4 = [], logsYK = [];
+    const addPyre = (cx, cz, len, r, layers, list) => {
+      list = list || logs;
       for (let l = 0; l < layers; l++) {
         const n = l === layers - 1 ? 2 : 3, alongX = l % 2 === 0;
         for (let i = 0; i < n; i++) {
           const off = (i - (n - 1) / 2) * len * 0.3;
-          logs.push({
+          list.push({
             x: cx + (alongX ? 0 : off),
             z: cz + (alongX ? off : 0),
             y: TOP + r + l * r * 1.9,
@@ -280,13 +287,15 @@
     };
     addPyre(PX, PZ, 4.4, 0.24, 3);
     addPyre(E1X, E1Z, 2.4, 0.17, 2);
-    addPyre(E2X, E2Z, 2.4, 0.17, 2);
-    {
+    addPyre(E2X, E2Z, 2.4, 0.17, 2, logs3);
+    addPyre(R4X, R4Z, 2.2, 0.15, 2, logs4);
+    addPyre(YKX, YKZ, 2.2, 0.15, 2, logsYK);
+    const instLogs = (list) => {
       const geo = new CylinderGeometry(1, 1, 1, 8);
-      const inst = new InstancedMesh(geo, M2.cedar, logs.length);
+      const inst = new InstancedMesh(geo, M2.cedar, list.length);
       const m42 = new Matrix4(), q = new Quaternion(), e = new Euler();
       const p = new Vector3(), s = new Vector3();
-      logs.forEach((L, i) => {
+      list.forEach((L, i) => {
         e.set(L.alongX ? 0 : Math.PI / 2, 0, L.alongX ? Math.PI / 2 : 0);
         q.setFromEuler(e);
         p.set(L.x, L.y, L.z);
@@ -296,7 +305,12 @@
       });
       inst.castShadow = inst.receiveShadow = true;
       g.add(inst);
-    }
+      return inst;
+    };
+    instLogs(logs);
+    const pyre3 = instLogs(logs3), pyre4 = instLogs(logs4), pyreYK = instLogs(logsYK);
+    pyre4.visible = false;
+    pyreYK.visible = false;
     const flames = [];
     // ===== 1.2.8 (the user: "חי יותר"): REALISTIC FIRE, the Second Temple plugin's 1.0.28 - each flame a camera-facing quad with a noise
     // shader (no textures, offline): the tongue is bent and eaten by scrolling fractal noise, deep red at the edge, orange, pale-yellow core;
@@ -358,7 +372,20 @@
       }
     }
     addFlame(E1X, TOP + 0.55, E1Z, 0.65, 1.5, 0xffb730, 0.8);
-    addFlame(E2X, TOP + 0.55, E2Z, 0.6, 1.3, 0xff791e, 0.8);
+    const flame3 = addFlame(E2X, TOP + 0.55, E2Z, 0.6, 1.3, 0xff791e, 0.8);
+    const flame4 = addFlame(R4X, TOP + 0.5, R4Z, 0.5, 1.1, 0xffb730, 0.75), flameYK = addFlame(YKX, TOP + 0.5, YKZ, 0.5, 1.1, 0xff791e, 0.75);
+    flame4.visible = flameYK.visible = false;
+    ctx.shared.maarachot = {
+      count: 3, yk: false,
+      set(count, yk) {
+        this.count = Math.max(2, Math.min(4, +count || 3));
+        this.yk = !!yk;
+        pyre3.visible = flame3.visible = this.count >= 3;
+        pyre4.visible = flame4.visible = this.count >= 4;
+        pyreYK.visible = flameYK.visible = this.yk;
+      },
+      get() { return { count: this.count, yk: this.yk }; }
+    };
     const fireLight = new PointLight(0xff9a3d, 24, 60, 1.8);
     fireLight.position.set(PX, TOP + 3.2, PZ);
     g.add(fireLight);
@@ -405,6 +432,7 @@
     );
     ctx.shared.flyPoints = ctx.shared.flyPoints || {};
     ctx.shared.flyPoints.mizbeach = { pos: [115, 52, 72], target: [ACX, TOP, ACZ] };
+    ctx.shared.flyPoints.mizbeachTop = { pos: [ACX + 3, TOP + 33, ACZ + 23], target: [ACX + 0.5, TOP, ACZ + 1.5] };   // 1.3.0: the top from above (the pyres' row); moves with the altar (FPK below)
 
     // --- 1.0.2: השיתין - the text, the sources (book id + line index, each line read in the Otzaria DB), the label and the fly point ---
     {
@@ -519,7 +547,7 @@
       const ramps = {
         title: "הכבשים הקטנים",
         keys: ["rashi", "tosafot"],
-        options: [{ key: "rashi", label: "רש״י: לסובב רק ממזרח לכבש" }, { key: "tosafot", label: "תוספות: לסובב גם ממערב לכבש" }],
+        options: [{ key: "rashi", label: "רש״י — שני כבשים" }, { key: "tosafot", label: "תוספות — גם כבש שלישי" }],
         info: RAMP_INFO,
         refs: RAMP_REFS,
         fly: "mizbeachRamps",
@@ -555,7 +583,7 @@
         title: "מראה המזבח",
         current: "stone",
         keys: ["stone", "abarbanel"],
-        options: [{ key: "stone", label: "מזבח אבנים" }, { key: "abarbanel", label: "אברבנאל: מצופה נחושת" }],
+        options: [{ key: "stone", label: "מזבח אבנים" }, { key: "abarbanel", label: "אברבנאל — מצופה נחושת" }],
         info: {
           stone: "המזבח כאן בצבע אבן: 'אבנים שלמות תבנה את מזבח ה׳ אלהיך' (דברים כז, ו); 'המזבח אין עושין אותו אלא בנין אבנים' "
             + "(רמב״ם בית הבחירה א, יג). השם כלשון הפסוק: 'כי מזבח הנחשת אשר לפני ה׳ קטן' (מלכים א ח, סד). המראה בחירת המודל.",
@@ -629,7 +657,7 @@
       const S2 = CO2.ALTAR;
       const mine = ctx.labels.slice(altLabel0);
       const base = mine.map((l) => l.z);
-      const FPK = ["mizbeach", "mizbeachSW", "mizbeachRamps", "shitin"];
+      const FPK = ["mizbeach", "mizbeachSW", "mizbeachRamps", "shitin", "mizbeachTop"];
       const fp0 = {};
       for (const k of FPK) if (ctx.shared.flyPoints[k]) fp0[k] = { pos: ctx.shared.flyPoints[k].pos.slice(), target: ctx.shared.flyPoints[k].target.slice() };
       const PLACE = {
@@ -638,9 +666,9 @@
         keys: ["south", "north", "middle"],
         dz: { south: S2 / 2, north: -S2 / 2, middle: 0 },
         names: {
-          south: "רבי אליעזר בן יעקב: כולו בדרום (וכן פסק הרמב״ם)",
-          north: "רבי יוסי: כולו בצפון",
-          middle: "רבי יהודה: ממוצע, באמצע העזרה"
+          south: "רבי אליעזר בן יעקב — כולו בדרום",
+          north: "רבי יוסי — כולו בצפון",
+          middle: "רבי יהודה — באמצע העזרה"
         },
         info: {
           south: "'כוליה מזבח בדרום קאי' — המזבח והכבש עמדו כולם בחלק הדרומי של העזרה (וכן פסק הרמב״ם). גוף המזבח מתחיל בקו ציר הבית ונמשך דרומה, והכבש ממנו הלאה לדרום; פתח ההיכל אינו חסום על ידי גוף המזבח.",

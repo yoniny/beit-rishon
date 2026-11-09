@@ -816,7 +816,7 @@
       const ulamTables = {
         current: "ryby",   // 1.1.0: no "none" any more
         keys: ["ryby", "mishnah"],
-        names: { ryby: "ר׳ יוסי בר׳ יהודה: שולחן כסף ושולחן זהב (מנחות צט.)", mishnah: "המשנה: שולחן שיש ושולחן זהב (שקלים ו, ד; מנחות יא, ז)" },
+        names: { ryby: "רבי יוסי ברבי יהודה — כסף וזהב", mishnah: "המשנה — שיש וזהב" },
         set: null
       };
       ulamTables.set = (key) => {                               // an unknown key changes nothing and returns false
@@ -1824,7 +1824,7 @@
     const pillarCapital = {
       current: "rashi",
       keys: ["rashi", "malbim"],
-      names: { rashi: "רש״י (כאיורי ׳מקרא מפורש׳)", malbim: "מלבי״ם: שבכה, שרשרות ורמונים תלויים, ושושן מצויר בכותל (ז, יט)" },
+      names: { rashi: "רש״י", malbim: "מלבי״ם" },
       set: null
     };
     pillarCapital.set = (key) => {                              // an unknown key changes nothing and returns false

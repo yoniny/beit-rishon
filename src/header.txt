@@ -11,6 +11,9 @@
  * Units: 1 = 1 amah. +x east (front), +z south (right), y up. Levels: great court 0, inner court 6, house floor 12.
  * VERSION: plugin/manifest.json is the ONE source (tools/build.mjs writes it into the bundle and index.html; minAppVersion 0.9.98.1).
  * 1.1.0 (8.11.2026): build = node tools/build.mjs (assemble + version + checks + terser minify); plugin/bundle.js is a build product - edit src/ only.
+ * 1.3.0 (9.11.2026): the bases' rows CO.mechZ 38 / 50 (were 33 / 45: the north row's eastern base stood in the small ramps); the chambers'
+ *   places from above with the roof open 20 s (70-ui.js openPill20); short names in the opinions table; the number of pyres (Yoma 4:6,
+ *   with Yom Kippur) - ctx.shared.maarachot, flyPoints.mizbeachTop.
  * 1.2.9 (9.11.2026): walk mode (90-entry.js ent_walkModeSet: eye 3 amot over the floor, mode "look", pointer lock, W S A D / ו ד ש ג strafe) and the
  *   live section (ent_sectionSet: one clipping plane, axis z cuts the south / axis x the east, slider centred on the point looked at, 70-ui.js nav box);
  *   "↺ החזר הכל" switches both off. Ported from the Second Temple plugin 1.6.0 (stage 6).

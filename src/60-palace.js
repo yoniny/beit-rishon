@@ -3053,7 +3053,7 @@
       current: "rashi",
       keys: ["rashi", "metzudot", "mzd"],
       // Hebrew names of the readings, for the UI's switch (1.0.1-L: the second reading is Malbim and Ralbag's, the third Metzudat David's)
-      names: { rashi: "רש״י (כאיורי ׳מקרא מפורש׳)", metzudot: "מלבי״ם ורלב״ג", mzd: "מצודת דוד" },
+      names: { rashi: "רש״י", metzudot: "מלבי״ם ורלב״ג", mzd: "מצודת דוד" },
       set: null
     };
     forestHouse.set = (key) => {   // shows the group of `key`, hides the others and aims the reading's fly points into it; an unknown key changes nothing and returns false

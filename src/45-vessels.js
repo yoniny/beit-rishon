@@ -153,11 +153,13 @@
     // the altar's west face, 40-altar.js), or if the block leaves the strip (the line of the house's south wall, the court wall) ---
     const mx = typeof CO2.mechX === "number" ? CO2.mechX : 30;
     const cols = [-2, -1, 0, 1, 2].map((k) => mx + k * VSL_COL_STEP);          // 21, 25.5, 30, 34.5, 39
-    const rows = Array.isArray(CO2.mechZ) && CO2.mechZ.length === 2 ? CO2.mechZ.slice().sort((a, b) => a - b) : [33, 45];
+    const rows = Array.isArray(CO2.mechZ) && CO2.mechZ.length === 2 ? CO2.mechZ.slice().sort((a, b) => a - b) : [38, 50];
     const laver = { x: typeof CO2.kiyorX === "number" ? CO2.kiyorX : mx, z: (rows[0] + rows[1]) / 2 };   // 30, 39
     const houseS = CO2.zHouseS || 27, wingS = houseS + (CO2.ULAM_WING || 15), rampW = CO2.xAltarW + 2;   // 27, 42, 41.5
     if ((rows[0] - 2 < wingS && (cols[0] - 2 < CO2.xUlamE + VSL_BLOCK_MARGIN || cols[4] + 2 > rampW - VSL_BLOCK_MARGIN)) ||
-        rows[0] - 2 < houseS || rows[1] + 2 > zS - 3 || rows[1] - rows[0] < 8)
+        rows[0] - 2 < houseS || rows[1] + 2 > zS - 3 || rows[1] - rows[0] < 8 ||
+        // 1.3.0: and the small ramps beside the big ramp's west face (40-altar.js: x rampW - 2.5 .. rampW, from the yesod to z 35.6)
+        (rows[0] - 2 < 35.6 && cols[4] + 2 > rampW - 2.5 - VSL_BLOCK_MARGIN))
       console.warn("[vessels] the block of the bases meets the wing, the ramp or the court wall, or its rows each other:", cols.join(", "), "/", rows.join(", "));
     // the moving base: in the north row, the easternmost column with a free way north, 2 amot clear of the ulam's steps (their east end
     // CO.xUlamE + 6, 12 steps x tread 0.5, 50-heichal.js) and of the altar's west face: x 34.5, z 33
@@ -1695,7 +1697,7 @@
     // on the right, the ramp in front on the left, the court's south wall with its gates behind (model choice; headless ray test, FIXES
     // L.67). Was [70, 30, -40] -> [27, 10, -10]
     // 1.0.1-L (verifier): raised over the wing's roof, so that the whole circle of the turn buttons is free and every laver shows (from [50, 30, 14], 51 of 252 steps entered a solid)
-    ctx.shared.flyPoints.mechonot = { pos: [50, F + 43, 16], target: [30, F + 1, 39] };
+    ctx.shared.flyPoints.mechonot = { pos: [50, F + 43, L.laver.z - 23], target: [L.laver.x, F + 1, L.laver.z] };   // 1.3.0: follows the block (rows 38 / 50)
     // one base close up: the moving base from the north-north-east, its free side, ~12.3 amot away, the eye 8 above the court floor (the
     // two pills above the laver, F + 7.8 and F + 8.9, and the wheels stay inside the view, by projection +0.76 / -0.86 of the half-height)
     ctx.shared.flyPoints.mechonaClose = { pos: [HX + CAM[0], F + 8, HZ + CAM[1]], target: [HX, F + 4.3, HZ] };   // CAM: see the part labels. 1.0.1-L (verifier): target 0.5 lower, the near wheel stood at the frame's edge
