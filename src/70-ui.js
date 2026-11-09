@@ -713,6 +713,8 @@
   };
   // 1.0.6 (the user): what is new by version, newest first - one who saw a version is shown only the versions after it; nothing stored -> all
   var UI_NEWS_VERS = [
+    ["1.2.9", ["מצב הליכה (🚶 בתיבת הניווט): העין בגובה אדם, העכבר מסובב את המבט, W S A D (או ו ד ש ג) או החצים הולכים — Esc משחרר את העכבר.",
+      "חתך חי: מישור חיתוך שגוררים במחוון דרך המודל, בציר צפון–דרום או מזרח–מערב — רואים את הפנים כמו בחתך אדריכלי; המישור מתחיל במקום שאליו מביטים, ו״↺ החזר הכל״ מכבה אותו."]],
     ["1.2.8", ["האש שעל המזבח — להבות חיות (שיידר רעש, כבתוסף בית שני), ועשן המערכה עולה בעמוד ישר (יומא כא:); האש שייכת לקבוצת המזבח וזזה איתו בכל קריאה של מקומו.",
       "מזבח הזהב — שתי אמות קומתו (שמות ל, ב; עד כה אמה).",
       "הרבובה — חלון בצד המערבי של הכבש (רמב״ם ב, יד), בציון שלבית ראשון אין לה מקור מאומת.",
@@ -813,6 +815,9 @@ details.tm-pl .tm-cnt{position:absolute;left:3px;top:-7px;min-width:17px;height:
 #tm-nav .tm-grp{display:flex;align-items:center;gap:3px;height:26px;padding:0 3px 0 6px;border:1px solid rgba(201,168,76,.45);border-radius:13px;background:rgba(12,16,24,.75);backdrop-filter:blur(6px);direction:rtl;color:#e8dcae;font:11.5px 'Segoe UI',Arial,sans-serif;white-space:nowrap}
 #tm-nav .tm-grp button{width:20px;height:20px;font-size:13px;border-color:rgba(201,168,76,.35)}
 #tm-nav .tm-grp .v{min-width:44px;text-align:center;color:#f3dc9a}
+#tm-nav .tm-range{width:86px;height:14px;accent-color:#c9a84c;margin:0 4px;vertical-align:middle}
+#tm-nav .tm-sec button.tm-txt{width:auto;padding:0 7px;height:20px;font-size:11px}
+#tm-nav button#tm-nav-walk.on{background:rgba(201,168,76,.55);color:#1b2030}
 #tm-nav .tm-grp.off{opacity:.55}
 #tm-nav #tm-reset-all{display:none;background:rgba(201,168,76,.42);color:#fff2c8;border-color:rgba(201,168,76,.8)}
 #tm-nav #tm-reset-all:hover{background:rgba(201,168,76,.6)}
@@ -4297,7 +4302,11 @@ body.tm-measuring canvas{cursor:crosshair}
           "[[←]] [[→]] — פנייה ימינה ושמאלה (בחוץ: סיבוב סביב היעד).",
           "[[PageUp]] [[PageDown]] — הגבהה והנמכה של גובה העין.",
           "[[Shift]] + [[↑]] [[↓]] — הטיית המבט למעלה ולמטה.",
-          "[[+]] [[−]] — זום. [[Esc]] — סגירת כרטיס הסבר."
+          "[[+]] [[−]] — זום. [[Esc]] — סגירת כרטיס הסבר.",
+          "🚶 מצב הליכה (בתיבת הניווט): העין בגובה אדם; העכבר לבדו מסובב את המבט ([[Esc]] משחרר אותו), [[W]] [[S]] [[A]] [[D]] (או ו ד ש ג, או החצים) — הליכה ותזוזה הצידה."
+        ]);
+        sec("חתך חי", [
+          "״חתך״ בתיבת הניווט — מישור חיתוך דרך המודל: כל מה שמדרום לו (בציר צפון–דרום) או ממזרח לו (בציר מזרח–מערב) נחתך, ורואים את הפנים כבחתך אדריכלי. המישור מתחיל במקום שאליו מביטים; המחוון מזיז אותו עד 80 אמה לכל צד, והכפתור שלידו מחליף ציר. ״↺ החזר הכל״ מכבה אותו. פני החתך אינם ממולאים — בחירת מודל."
         ]);
         sec("בתוך הבית", [
           "באולם או בהיכל, כשהמבט רחוק — גרירה מסובבת את המבט במקום, כמי שעומד ומביט סביבו; הגלגלת מתקדמת קדימה ואחורה.",
@@ -4930,6 +4939,65 @@ body.tm-measuring canvas{cursor:crosshair}
         tip(rb, "מדידה באמות: לחץ על שתי נקודות במודל, והמרחק ביניהן יוצג (גם האופקי והגובה). לחיצה נוספת על הכפתור מסיימת.");
         rb.addEventListener("click", () => mSet(!mOn));
         nav.appendChild(rb);
+        // 1.2.9 (from the Second Temple plugin 1.6.0, stage 6): walk mode (90-entry.js ent_walkModeSet) and the live section (ent_sectionSet).
+        // The section's slider spans 160 amot around the point looked at (the site is ~700 long - a slider over all of it would be too coarse);
+        // it is re-centred whenever the section is switched on or its axis changes, so the cut starts where the eye looks.
+        {
+          const wb = document.createElement("button");
+          wb.type = "button";
+          wb.id = "tm-nav-walk";
+          wb.textContent = "🚶";
+          tip(wb, "מצב הליכה: העין יורדת לגובה אדם ומביטה קדימה; העכבר לבדו מסובב את המבט (הלחיצה על הכפתור נועלת את העכבר למודל, Esc משחררת — ואז גרירה מסובבת), והמקשים W S A D (או ו ד ש ג, או החצים) הולכים ונעים הצידה. לחיצה נוספת — יציאה ממצב הליכה.");
+          wb.addEventListener("click", () => { const w = ctx.shared.walkMode; if (!w) return; w.set(!w.on); wb.classList.toggle("on", !!w.on); frame(true); });
+          nav.appendChild(wb);
+          const sg = document.createElement("span");
+          sg.className = "tm-grp tm-sec";
+          tip(sg, "חתך חי: מישור חיתוך שעובר במודל — כל מה שמדרום לו (בציר צפון–דרום) או ממזרח לו (בציר מזרח–מערב) נחתך, ורואים את הפנים כמו בחתך אדריכלי. המישור מתחיל במקום שאליו מביטים; הגרירה מזיזה אותו (80 אמה לכל צד), הכפתור מחליף ציר, ״חתך״ מפעיל ומכבה. פני החתך אינם ממולאים — בחירת מודל.");
+          const sb = document.createElement("button");
+          sb.type = "button";
+          sb.className = "tm-txt";
+          sb.textContent = "חתך";
+          const sr = document.createElement("input");
+          sr.type = "range";
+          sr.min = "-80"; sr.max = "80"; sr.step = "0.5"; sr.value = "0";
+          sr.className = "tm-range";
+          const ax = document.createElement("button");
+          ax.type = "button";
+          ax.className = "tm-txt";
+          const HALF = 80;
+          const center = (axis) => { const t = ctx.controls && ctx.controls.target; const c = t ? (axis === "x" ? t.x : t.z) : 0; return Math.round(c * 2) / 2; };
+          const span = (c) => { sr.min = String(c - HALF); sr.max = String(c + HALF); sr.value = String(c); };
+          const paintSec = () => {
+            const S = ctx.shared.section || {};
+            sb.classList.toggle("on", !!S.on);
+            sr.disabled = !S.on;
+            ax.textContent = S.axis === "x" ? "מזרח–מערב" : "צפון–דרום";
+            wb.classList.toggle("on", !!(ctx.shared.walkMode || {}).on);
+          };
+          sb.addEventListener("click", () => {
+            const S = ctx.shared.section;
+            if (!S) return;
+            if (!S.on) { const c = center(S.axis); span(c); S.set(true, S.axis, c); } else S.set(false, S.axis, +sr.value);
+            paintSec();
+            frame(true);
+          });
+          sr.addEventListener("input", () => { const S = ctx.shared.section; if (!S || !S.on) return; S.set(true, S.axis, +sr.value); frame(true); });
+          ax.addEventListener("click", () => {
+            const S = ctx.shared.section;
+            if (!S) return;
+            const axis = S.axis === "x" ? "z" : "x", c = center(axis);
+            span(c);
+            S.set(S.on, axis, c);
+            paintSec();
+            frame(true);
+          });
+          sg.appendChild(sb);
+          sg.appendChild(sr);
+          sg.appendChild(ax);
+          nav.appendChild(sg);
+          paintSec();
+          ctx.shared.navRepaint = paintSec;   // "↺ החזר הכל" repaints after switching both off
+        }
         // 1.0.1-K (Yossi): the wall fade - on / off, and its distance
         const fs = ctx.shared.fadeState;
         const fadeBtn = document.createElement("button");
@@ -5323,6 +5391,12 @@ body.tm-measuring canvas{cursor:crosshair}
         resetAllBtn.addEventListener("click", () => {
           const first = revealSaved.values().next().value;
           resetAll();
+          try {   // 1.2.9: the live section and walk mode go off too
+            const S = ctx.shared.section, w = ctx.shared.walkMode;
+            if (S && S.on) S.set(false, S.axis, S.v);
+            if (w && w.on) w.set(false);
+            if (ctx.shared.navRepaint) ctx.shared.navRepaint();
+          } catch (_) {}
           if (first) realFly(first.pos, first.target);
         });
         let anyOnShown = null;
@@ -5420,6 +5494,7 @@ body.tm-measuring canvas{cursor:crosshair}
               }
             }
           }
+          if ((ctx.shared.section && ctx.shared.section.on) || (ctx.shared.walkMode && ctx.shared.walkMode.on)) anyOn = true;   // 1.2.9
           if (anyOn !== anyOnShown) {
             anyOnShown = anyOn;
             resetAllBtn.style.display = anyOn ? "inline-block" : "none";

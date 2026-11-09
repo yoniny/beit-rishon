@@ -288,7 +288,7 @@
     cam.floorY = cam_floorY(q);
     // a look drag locks the mode "look" until the next flight (a drag that turned in place keeps turning in place, whatever the target's
     // distance now); a flight to a near thing (a vessel) gives "orbit"
-    cam.mode = cam.roofed && (cam.lookLock || p.distanceTo(q) > CAM_NEAR) ? "look" : "orbit";
+    cam.mode = (ent_wm.on || cam.roofed && (cam.lookLock || p.distanceTo(q) > CAM_NEAR)) ? "look" : "orbit";   // 1.2.9: walk mode is always "look"
     if (cam.mode === "look") cam.lookLock = true;
   }
   var cam_in = { dir: new Vector3() };
@@ -453,19 +453,25 @@
   // 1.2.2 (the user: "טיול כעין הליכה עם חיצים"): ArrowUp / ArrowDown WALK - the eye and the target move together along the view's horizontal
   // direction (PageUp / PageDown keep the eye's height; Shift + arrows the tilt, 70-ui.js; the left and right arrows turn). The pace grows
   // with the distance of the view (a hall: ~10 amot a second; the mount from afar: faster).
-  var ent_walk = { fwd: false, back: false, fwdTo: 0, backTo: 0, v: 0, dir: new Vector3() };
+  var ent_walk = { fwd: false, back: false, left: false, right: false, fwdTo: 0, backTo: 0, v: 0, vs: 0, dir: new Vector3(), side: new Vector3() };
   function ent_walkSpeed() { return Math.max(9, Math.min(80, camera.position.distanceTo(controls.target) * 0.35)); }
   function ent_walkStep() {
     const W = ent_walk, now = performance.now(), dt = Math.min(50, ent_view.dt);
     if (flyAnim || ent_load.loading || cam_drag) { W.v = 0; return; }
     const dir = (W.fwd || now < W.fwdTo ? 1 : 0) - (W.back || now < W.backTo ? 1 : 0);
-    W.v += (dir * ent_walkSpeed() - W.v) * (1 - Math.exp(-dt / ENT_LIFT_EASE));
+    const sd = (W.right ? 1 : 0) - (W.left ? 1 : 0);   // 1.2.9 (walk mode): A / D strafe
+    const ease = 1 - Math.exp(-dt / ENT_LIFT_EASE);
+    W.v += (dir * ent_walkSpeed() - W.v) * ease;
+    W.vs += (sd * ent_walkSpeed() * 0.8 - W.vs) * ease;
     if (!dir && Math.abs(W.v) < 0.02) W.v = 0;
-    if (!W.v) return;
+    if (!sd && Math.abs(W.vs) < 0.02) W.vs = 0;
+    if (!W.v && !W.vs) return;
     const p = camera.position, q = controls.target, d = W.dir.copy(q).sub(p);
     d.y = 0;
     if (d.lengthSq() < 1e-6) return;
-    d.normalize().multiplyScalar(W.v * dt / 1000);
+    d.normalize();
+    W.side.set(-d.z, 0, d.x).multiplyScalar(W.vs * dt / 1000);   // the right-hand side of the view
+    d.multiplyScalar(W.v * dt / 1000).add(W.side);
     p.add(d);
     q.add(d);
     cam_decideSoon(400);
@@ -474,6 +480,14 @@
     const KEYS = { ArrowUp: 1, PageUp: 1, ArrowDown: -1, PageDown: -1 };
     const free = (el) => !el || el === window || el === document || el === document.body || el === document.documentElement || el === renderer.domElement ||
       (el.nodeType === 1 && !el.isContentEditable && !/^(INPUT|TEXTAREA|SELECT)$/i.test(el.tagName || "") && !!(el.closest && el.closest("#tm-nav, #tm-compass, .tm-pill")));
+    const WK = { w: "fwd", s: "back", a: "left", d: "right", "ו": "fwd", "ד": "back", "ש": "left", "ג": "right", W: "fwd", S: "back", A: "left", D: "right" };   // 1.2.9: walk mode's keys (QWERTY and the Hebrew layout)
+    window.addEventListener("keydown", (e) => {
+      const f = WK[e.key];
+      if (!f || !ent_wm.on || e.ctrlKey || e.altKey || e.metaKey || ent_load.loading || !free(e.target)) return;
+      e.preventDefault();
+      ent_walk[f] = true;
+    }, true);
+    window.addEventListener("keyup", (e) => { const f = WK[e.key]; if (f) ent_walk[f] = false; }, true);
     window.addEventListener("keydown", (e) => {
       const k = KEYS[e.key];
       if (!k || e.defaultPrevented || e.ctrlKey || e.altKey || e.metaKey || ent_load.loading) return;
@@ -499,8 +513,95 @@
       if (walk) { if (k > 0) ent_walk.fwd = false; else ent_walk.back = false; }
       else { if (k > 0) ent_lift.up = false; else ent_lift.down = false; }
     }, true);
-    window.addEventListener("blur", () => { ent_lift.up = ent_lift.down = false; ent_walk.fwd = ent_walk.back = false; });
+    window.addEventListener("blur", () => { ent_lift.up = ent_lift.down = false; ent_walk.fwd = ent_walk.back = ent_walk.left = ent_walk.right = false; });
   })();
+  // ===== 1.2.9 (from the Second Temple plugin 1.6.0, stage 6; the user: "תוסיף כפתור מצב הליכה", "מה עם בית ראשון לאחר החתך החי?"): WALK MODE.
+  // The eye drops to 3 amot over the floor under it and looks ahead; the mode is "look" (turning in place); the mouse alone turns the view
+  // under pointer lock (requested on the canvas; Esc or the button release it), and where pointer lock is refused (a webview) dragging turns
+  // the view as in mode "look"; W / S / A / D (also ו ד ש ג and the arrows) walk and strafe at eye height through the existing walking
+  // (ent_walkStep, with its pace by distance). ctx.shared.walkMode = { on, set(on) }; the html class "tm-walk" while on (the UI's button state).
+  var ent_wm = { on: false, locked: false, eye: 3 };
+  function ent_walkModeSet(on) {
+    on = !!on;
+    if (on === ent_wm.on) return;
+    ent_wm.on = on;
+    const el = renderer.domElement;
+    if (on) {
+      const p = camera.position, q = controls.target;
+      const fy = cam_floorY(p);
+      const v = cam.tmp.copy(q).sub(p);
+      v.y = 0;
+      if (v.lengthSq() < 1e-6) v.set(1, 0, 0);
+      v.normalize();
+      p.y = (Number.isFinite(fy) ? fy : Math.max(0, p.y - 6)) + ent_wm.eye;
+      q.copy(p).addScaledVector(v, 12);
+      controls.update();
+      cam_decide();
+      try { if (el.requestPointerLock) { const r = el.requestPointerLock(); if (r && r.catch) r.catch(() => {}); } } catch (_) {}
+    } else {
+      try { if (document.pointerLockElement === el && document.exitPointerLock) document.exitPointerLock(); } catch (_) {}
+      ent_walk.fwd = ent_walk.back = ent_walk.left = ent_walk.right = false;
+      cam.lookLock = false;
+      cam_decide();
+    }
+    try { document.documentElement.classList.toggle("tm-walk", on); } catch (_) {}
+    if (ctx && ctx.shared && ctx.shared.walkMode) ctx.shared.walkMode.on = on;
+    if (ctx && ctx.shared && ctx.shared.navRepaint) try { ctx.shared.navRepaint(); } catch (_) {}   // the nav box's button state
+  }
+  document.addEventListener("pointerlockchange", () => {
+    ent_wm.locked = document.pointerLockElement === renderer.domElement;
+  });
+  document.addEventListener("mousemove", (e) => {
+    if (!ent_wm.on || !ent_wm.locked || cam_drag || flyAnim || ent_load.loading) return;
+    const k = 0.0022;
+    cam.s.setFromVector3(cam.tmp.copy(controls.target).sub(camera.position));
+    if (!(cam.s.radius > 0)) cam.s.radius = 10;
+    cam.s.theta -= e.movementX * k;
+    cam.s.phi = Math.max(0.03, Math.min(ENT_POLAR, cam.s.phi + e.movementY * k));
+    controls.target.copy(camera.position).add(cam.tmp.setFromSpherical(cam.s));
+    camera.lookAt(controls.target);
+    cam_decideSoon(400);
+  });
+  // ===== 1.2.9 (from the Second Temple plugin 1.6.0; the user: "חתך אמיתי"): THE LIVE SECTION - one clipping plane across the model, moved by
+  // a slider: everything of the model (not the sky, the ground or the labels) on the far side of the plane is cut away, and the cut faces
+  // show as the walls' inner faces (every clipped material is drawn two-sided while the section is on; no filled caps - a model choice,
+  // told in the help). Axis "z": the plane is z = v, the SOUTH of it cut (a section through the house from the south, as the cutaway);
+  // axis "x": x = v, the EAST cut (a section along the house's length, seen from the east). ctx.shared.section = { on, axis, v, set(on, axis, v) }.
+  // Shader materials (the altar's flames) and sprites (the labels) are not clipped.
+  var ent_sec = { on: false, axis: "z", v: 0, plane: new Plane(new Vector3(0, 0, -1), 0), mats: null, sides: null };
+  function ent_sectionMats() {
+    if (ent_sec.mats) return ent_sec.mats;
+    const set = new Set();
+    if (ctx && ctx.root) ctx.root.traverse((o) => {
+      if (!o.isMesh || !o.material) return;
+      for (const m of Array.isArray(o.material) ? o.material : [o.material]) if (m && !m.isShaderMaterial && !m.isSpriteMaterial) set.add(m);
+    });
+    ent_sec.mats = Array.from(set);
+    ent_sec.sides = ent_sec.mats.map((m) => m.side);
+    return ent_sec.mats;
+  }
+  function ent_sectionSet(on, axis, v) {
+    on = !!on;
+    if (axis === "x" || axis === "z") ent_sec.axis = axis;
+    if (Number.isFinite(v)) ent_sec.v = v;
+    const P = ent_sec.plane;
+    if (ent_sec.axis === "z") P.set(new Vector3(0, 0, -1), ent_sec.v);   // keeps p.z <= v (the north), cuts the south
+    else P.set(new Vector3(-1, 0, 0), ent_sec.v);                         // keeps p.x <= v (the west), cuts the east
+    const mats = ent_sectionMats();
+    if (on !== ent_sec.on) {
+      ent_sec.on = on;
+      renderer.localClippingEnabled = on || renderer.localClippingEnabled;
+      mats.forEach((m, i) => {
+        m.clippingPlanes = on ? [P] : null;
+        m.clipShadows = on;
+        m.side = on ? DoubleSide : ent_sec.sides[i];
+        m.needsUpdate = true;
+      });
+    }
+    try { document.documentElement.classList.toggle("tm-section", on); } catch (_) {}
+    if (ctx && ctx.shared && ctx.shared.section) Object.assign(ctx.shared.section, { on: ent_sec.on, axis: ent_sec.axis, v: ent_sec.v });
+    if (ctx && ctx.shared && ctx.shared.navRepaint) try { ctx.shared.navRepaint(); } catch (_) {}
+  }
   // 1.0.1-H (the user: "נתקע ולא מסתובב נכון"): pointer safety for the embedded webview. OrbitControls (r160) captures the pointer on
   // pointerdown and ends a drag only on a pointerup that reaches the canvas. Inside the host app the release can be lost (the button is let
   // go outside the webview, or the host takes the mouse) and setPointerCapture may throw before the drag listeners are attached; then the
@@ -747,7 +848,10 @@
     cutaway: [],
     interiorOnly: [],
     layers: {},
-    shared: {},
+    shared: {
+      walkMode: { on: false, set: (on) => ent_walkModeSet(on) },                                    // 1.2.9
+      section: { on: false, axis: "z", v: 0, set: (on, axis, v) => ent_sectionSet(on, axis, v) }    // 1.2.9
+    },
     flyTo,
     camIndoors: cam_indoors,   // 1.2.0: mode "look" - 70-ui.js's nav buttons and keys turn in place
     camPass: cam_pass,         // 1.2.0: indoors the fade loop of 70-ui.js lets the eye see through the buildings' walls and ceilings

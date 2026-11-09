@@ -11,6 +11,11 @@
  * Units: 1 = 1 amah. +x east (front), +z south (right), y up. Levels: great court 0, inner court 6, house floor 12.
  * VERSION: plugin/manifest.json is the ONE source (tools/build.mjs writes it into the bundle and index.html; minAppVersion 0.9.98.1).
  * 1.1.0 (8.11.2026): build = node tools/build.mjs (assemble + version + checks + terser minify); plugin/bundle.js is a build product - edit src/ only.
+ * 1.2.9 (9.11.2026): walk mode (90-entry.js ent_walkModeSet: eye 3 amot over the floor, mode "look", pointer lock, W S A D / ו ד ש ג strafe) and the
+ *   live section (ent_sectionSet: one clipping plane, axis z cuts the south / axis x the east, slider centred on the point looked at, 70-ui.js nav box);
+ *   "↺ החזר הכל" switches both off. Ported from the Second Temple plugin 1.6.0 (stage 6).
+ * 1.2.8 (9.11.2026): live flames on the altar (noise shader) and a straight smoke column, the golden altar 2 amot, the rubuva (not verified for the
+ *   First Temple), the new court's card, text selection only in the card, plugin/.otzignore keeps DEV_NOTES.md in the package.
  * 1.2.7 (8.11.2026): the forest house's second roofing after Rashi 7:4 - four lines of small beams across (three end to end), the thin pale boards
  *   along the house from beam to beam, three to a row (TB_W 2.5); the 45 stay dark.
  * 1.2.4-1.2.5 (8.11.2026): the aliyot block in two parts - over the devir the first storey stands on the devir's own ceiling set (32..36) and is ten amot
