@@ -139,13 +139,15 @@
   //            היה שולחן הרי ז' שולחנות ושולחן הח' הי' עמוד אצל הננס שבקצה מבחוץ": eight pillars in one east-west row at z -50, 2.5 apart across the altar's width
   //            (model choice), a table in each of the seven gaps and the eighth beyond the east end ("מבחוץ"; which end is a model choice); 1 x 2 tables, their
   //            long side north-south (A8), to fit the 1.5 gaps.
-  var CRT_SLAUGHTER_ROW = { z: -50, cols: [40.75, 43.25, 45.75, 48.25, 50.75, 53.25, 55.75, 58.25], tableExtraX: 59.5, tableW: 1, tableD: 2 };
+  // 1.3.2: every x of the slaughter place follows the altar (CO.ALTAR_DX - it stands "opposite the whole altar", the numbers are the 1.3.1 ones)
+  var CRT_DX = CO.ALTAR_DX || 0;
+  var CRT_SLAUGHTER_ROW = { z: -50, cols: [40.75, 43.25, 45.75, 48.25, 50.75, 53.25, 55.75, 58.25].map((x) => x + CRT_DX), tableExtraX: 59.5 + CRT_DX, tableW: 1, tableD: 2 };
   var CRT_SLAUGHTER_BEAM = { pillarH: 3.4, beamH: 0.6, beamW: 0.6, hooksPerSpan: 3 };
   var CRT_SLAUGHTER = {
-    x0: 39.5, x1: 59.5, ringsZ0: -18, ringsZ1: -42, tablesZ: -46,
-    ringRows: [-20, -24, -28, -32, -36, -40], ringCols: [43.5, 47.5, 51.5, 55.5], ringR: 0.55, ringTube: 0.07,
-    tableRows: [-43.75, -45.25, -46.75, -48.25], tableCols: [47.5, 51.5], tableW: 2, tableD: 1, tableH: 1.5,
-    pillarRows: [-50, -57], pillarCols: [43.5, 47.5, 51.5, 55.5], pillarW: 1, pillarH: 1.4, postW: 0.8, postH: 2.6, hookY: [1.7, 2.6, 3.5]   // 1.0.1-L (A7): were 2, 3.5, [3, 4, 5]
+    x0: 39.5 + CRT_DX, x1: 59.5 + CRT_DX, ringsZ0: -18, ringsZ1: -42, tablesZ: -46,
+    ringRows: [-20, -24, -28, -32, -36, -40], ringCols: [43.5, 47.5, 51.5, 55.5].map((x) => x + CRT_DX), ringR: 0.55, ringTube: 0.07,
+    tableRows: [-43.75, -45.25, -46.75, -48.25], tableCols: [47.5, 51.5].map((x) => x + CRT_DX), tableW: 2, tableD: 1, tableH: 1.5,
+    pillarRows: [-50, -57], pillarCols: [43.5, 47.5, 51.5, 55.5].map((x) => x + CRT_DX), pillarW: 1, pillarH: 1.4, postW: 0.8, postH: 2.6, hookY: [1.7, 2.6, 3.5]   // 1.0.1-L (A7): were 2, 3.5, [3, 4, 5]
   };
 
   // A wall with rectangular holes anywhere (the courts' own copy of the palace's helper, so this module does not depend on 60-palace.js):
@@ -516,15 +518,15 @@
       // from the fly point they cover no ring, table or pillar, and in the court's default view they do not lie on the altar's or the Sea's
       // label (at x 49.5, y 13 the first one lay on "מזבח הנחושת"; at x 41.5, y 8.6 the second stood at the demonstration's stop and the
       // cedar posts hid its first word)
-      lbl("בית המטבחים — הטבעות (מדות ג, ה; ה, ב; תמיד ד, א)", 56, AZ + 12, -14, 2.8);
-      lbl("שלחנות השיש (שקלים ו, ד; מדות ג, ה)", 40, AZ + 9, -39, 2.4);
-      lbl("הננסין (מדות ג, ה; תמיד ג, ה)", 60, AZ + 14, -50, 2.6);
+      lbl("בית המטבחים — הטבעות (מדות ג, ה; ה, ב; תמיד ד, א)", 56 + CRT_DX, AZ + 12, -14, 2.8);
+      lbl("שלחנות השיש (שקלים ו, ד; מדות ג, ה)", 40 + CRT_DX, AZ + 9, -39, 2.4);
+      lbl("הננסין (מדות ג, ה; תמיד ג, ה)", 60 + CRT_DX, AZ + 14, -50, 2.6);
       ctx.shared.flyPoints = ctx.shared.flyPoints || {};
       // the whole place from the south-south-east, high: the rows of rings nearly level on the screen, all 24 arches, the two lines of tables,
       // the two rows of pillars, the altar's north edge at the bottom, the chamber's face at the top and the Sea in its corner on the right
       // ("מול השולחנות והטבעות"). 46 above the floor, y 52, above the house's top (47.5), so the UI's turn buttons never put the camera
       // inside a solid (checked headless)
-      ctx.shared.flyPoints.slaughterPlace = { pos: [66, AZ + 46, -2], target: [58, AZ + 1, -36] };
+      ctx.shared.flyPoints.slaughterPlace = { pos: [66 + CRT_DX, AZ + 46, -2], target: [58 + CRT_DX, AZ + 1, -36] };
       // close: from the south over the rings, 6.5 above the floor (above the cedar posts): the arches in front, the two lines of tables, both
       // rows of pillars with their hooks, the chamber's face behind them (the turn buttons' circle, 13.2 across the floor, stays clear of it)
       ctx.shared.flyPoints.slaughterPlaceClose = { pos: [52, AZ + 6.5, -31], target: [scx, AZ + 3, -44] };

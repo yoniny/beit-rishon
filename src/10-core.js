@@ -7,8 +7,10 @@
   var CO = {
     azE: 93.5, azW: -93.5, azN: -67.5, azS: 67.5, AZ_L: 187, AZ_W: 135,
     harW: -147, harE: 353, harN: -167.5, harS: 332.5, HAR: 500,
-    // altar: bronze, 20 x 20 x 10 (II Chr 4:1); west face 21 amot east of the ulam front (after Middot 5:1), centred on the house axis (model choice)
-    xAltarW: 39.5, xAltarE: 59.5, altarZ: 0, ALTAR: 20, ALTAR_H: 10,
+    // altar: bronze, 20 x 20 x 10 (II Chr 4:1), centred on the house axis (model choice). 1.3.2 (the user: "צריך להתחיל כ־26 עד 27 אמה מן
+    // האולם... ואז יש לך מקום למכונות"): its west face 26.5 amot east of the ulam front (x 18.5 + 26.5 = 45; until 1.3.1 21, after Middot
+    // 5:1) - ALTAR_DX, the 5.5 by which it moved, moves the slaughter place opposite it (30-courts.js) and the views on it (70-ui.js) too
+    xAltarW: 45, xAltarE: 65, altarZ: 0, ALTAR: 20, ALTAR_H: 10, ALTAR_DX: 5.5,
     // the house, interior measures (I Kings 6:2-3, 6:17, 6:20). Walls (1.0.1-K, K.2): the long house walls and the west wall 7 / 6 / 5 at the
     // three stories of the chambers and 4 above their roof (Rashi 6:6 as the book - the user's reference, pp. ג, ו - draws it), the east wall
     // 6 (Middot 4:7), the ulam 6 (Rashi on Sanhedrin 100a), the chamber wall 5 (Middot 4:7)
@@ -35,7 +37,7 @@
     // the sea (I Kings 7:39): two opinions - Rashi on I Kings: north-east (z -40); Radak, Metzudot, Ralbag, Rashi on II Chr 4:10: south-east (z +40)
     seaX: 80, seaZ: 54, seaZRashi: -54, SEA_D: 10, SEA_H: 5,   // 1.0.1-L (FIXES L.7, the user: "כרש"י ובספר"): the Sea in the inner court's CORNER (מקצוע) as the book p20 draws it - its axis 11 amot from the inner faces of the east wall (x 91) and of the north / south wall (z -+65): Rashi on I Kings 7:39 "מקצוע מזרחית צפונית" -> x 80, z -54 (the default); the second reading in the south-east (Metzudat David 7:39 "משוך כלפי מקצוע מזרחית דרומית"; Radak, Ralbag; Rashi on II Chr 4:10 "לדרומה של עזרה") -> x 80, z 54 (the corner is free: FIXES L.21 put לשכת הגזית on the north wall, west of the Sea). 45-vessels.js vsl_layout computes both from the walls and keeps 1 amah from ctx.shared.lishkatHaGazit; these are this build's values (the UI's fallback; the comment line above still says +-40). Was x 34, z +-40 (1.0.1-K)
     // Moses' laver in the middle of the block of the 10 bases with their lavers, 5 to its right and 5 to its left (I Kings 7:39; Rashi on II Chr 4:6, Radak; the book p. לח)
-    kiyorX: 30, mechX: 30, mechZ: [38, 50]   // 1.3.0: the rows 5 amot south (were 33 / 45) - the north row's eastern base stood in the small ramps (x 39..41.5, z 12..35.6, 40-altar.js); 1.0.1-L (FIXES L.67 / L.74, the user: "המכונות היו כולן במקום אחד... בין כותל ההיכל הימני לכותל העזרה הימני", "הכיור בין שתי השורות"): ALL TEN bases in one block of two rows of five, as the book draws them (the picture p. לח, the plan p. ב-ג): south of the axis, directly east of the ulam's south wing, between it and the altar's ramp - the rows at z = mechZ, the five columns 4.5 apart round mechX (x 21, 25.5, 30, 34.5, 39), Moses' laver at kiyorX between the rows (z 39); 45-vessels.js vsl_layout. Was x 27, z +-8..28, one row before the ulam (1.0.1-K)
+    kiyorX: 30, mechX: 30, mechZ: [33, 45]   // 1.3.2 (the user: "והחזר אותם למקומם"): back to 33 / 45 - the small ramps moved east with the altar (x 44.5..47); before:    // 1.3.0: the rows 5 amot south (were 33 / 45) - the north row's eastern base stood in the small ramps (x 39..41.5, z 12..35.6, 40-altar.js); 1.0.1-L (FIXES L.67 / L.74, the user: "המכונות היו כולן במקום אחד... בין כותל ההיכל הימני לכותל העזרה הימני", "הכיור בין שתי השורות"): ALL TEN bases in one block of two rows of five, as the book draws them (the picture p. לח, the plan p. ב-ג): south of the axis, directly east of the ulam's south wing, between it and the altar's ramp - the rows at z = mechZ, the five columns 4.5 apart round mechX (x 21, 25.5, 30, 34.5, 39), Moses' laver at kiyorX between the rows (z 39); 45-vessels.js vsl_layout. Was x 27, z +-8..28, one row before the ulam (1.0.1-K)
   };
   // ===== textures (1.0.1-K, K.9a "load speed"): core_t0 = the moment the bundle's own code starts (three.js evaluated before it) and
   // core_texMs = the time to draw TEX - both read by the "[load]" table of 90-entry.js. The bump canvases of the ashlar textures are drawn at

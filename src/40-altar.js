@@ -1,8 +1,9 @@
   // ===== 40-altar.js: מזבח הנחושת (the bronze altar of Solomon) =====
   // II Chr 4:1 "ויעש מזבח נחשת עשרים אמה ארכו ועשרים אמה רחבו ועשר אמות קומתו". User decision: the altar is BRONZE
   // (the verse), not stone. Kings I does not describe the altar (only "המזבח" in 8:64, 9:25), so every detail beyond
-  // 20 x 20 x 10 is a model choice, marked below. Placement (CO.xAltarW/E, CO.altarZ): west face 21 amot east of the ulam front
-  // after Middot 5:1 (model choice), centred on the house axis.
+  // 20 x 20 x 10 is a model choice, marked below. Placement (CO.xAltarW/E, CO.altarZ): west face 26.5 amot east of the ulam front
+  // (1.3.2, the user: "צריך להתחיל כ־26 עד 27 אמה מן האולם... ואז יש לך מקום למכונות"; the yesod 24.5; until 1.3.1 21, after Middot 5:1),
+  // centred on the house axis. NOTE: x numbers in the comments below that predate 1.3.2 are 5.5 short (the code reads CO).
   // The ramp (כבש) and the horns (קרנות) are MODEL CHOICES: no First Temple verse mentions them; the ramp follows
   // Ex 20:23 "ולא תעלה במעלת על מזבחי" (no steps) with the size of Middot 3:3 (32 x 16) as a convention, on the SOUTH
   // (Middot 3:3 "וכבש היה לדרומו של מזבח" as a convention; user decision); the horns follow Ex 27:2 "ועשית קרנתיו על ארבע פנתיו",
@@ -42,7 +43,7 @@
     const F = LV2.AZ;                                  // court floor, y 6 (inner court level, model choice: see 10-core.js)
     const S = CO2.ALTAR;                               // 20: II Chr 4:1 "עשרים אמה ארכו ועשרים אמה רחבו"
     const AH = CO2.ALTAR_H;                            // 10: II Chr 4:1 "ועשר אמות קומתו"
-    const ACX = (CO2.xAltarW + CO2.xAltarE) / 2;       // 49.5: x 39.5..59.5 (west face 21 east of the ulam front, Middot 5:1 convention)
+    const ACX = (CO2.xAltarW + CO2.xAltarE) / 2;       // 55: x 45..65 (1.3.2: west face 26.5 east of the ulam front; was 21, Middot 5:1)
     const ACZ = CO2.altarZ;                            // 0: on the house axis (model choice)
     const TOP = F + AH;                                // 16: the top surface of the altar
 
@@ -70,8 +71,13 @@
     // 1.0.2 (add-on): bandParts now holds the yesod (the darker tone sets the lowest step apart from the body; model choice)
     const bodyParts = [], bandParts = [];   // the meshes the look switch re-dresses (body, sovev, lip, horns / yesod); the ramps are not among them
 
+    // 1.3.2 (the user: "תוסיף שיטת ר' יוסי"): the body of the verse's altar (20 x 20 with the yesod and the sovev round it) is in defG; R. Yose's
+    // reading - "בתחילה בימי שלמה לא היה אלא כ"ח כונס ועולה יסוד וסובב ומקום קרנות ומקום הילוך עד שהיה מקום המערכה כ' על כ'" (Rashi
+    // Zevachim 61b; Middot 3:1) - is yoseG, built after the ramp; ctx.shared.altarYose swaps them, the ramps and the shitin
+    const defG = new Group();
+    g.add(defG);
     // --- the body: 20 x 20 x 10, y 6..16 (II Chr 4:1) ---
-    bodyParts.push(H2.box(g, S, AH, S, BR, ACX, F, ACZ));
+    bodyParts.push(H2.box(defG, S, AH, S, BR, ACX, F, ACZ));
 
     // --- 1.0.2 (add-on): THE PROFILE - the yesod, the sovev and the red line (completions from the Mishnah, Middot 3:1) ---
     // Middot 3:1 "עלה אמה וכנס אמה, זה היסוד... עלה חמש וכנס אמה, זה הסובב... וחוט של סקרא חוגרו באמצע, להבדיל בין הדמים העליונים
@@ -103,14 +109,14 @@
     const SVH = 6;                                     // the sovev's ledge 6 above the floor: 1 + 5 (Middot 3:1 "עלה חמש וכנס אמה")
     const MID = S + 2;                                 // 22: the wall below the sovev, 1 out of the body all round (the sovev's amah)
     const YO = MID + 2 * YS;                           // 24: the yesod's outline
-    const XW = ACX - MID / 2, XE = ACX + MID / 2;      // 38.5, 60.5: the wall's west and east faces
+    const XW = ACX - MID / 2, XE = ACX + MID / 2;      // 44, 66 (1.3.2): the wall's west and east faces
     const ZN = ACZ - MID / 2, ZS = ACZ + MID / 2;      // -11, 11: its north and south faces
-    bodyParts.push(H2.box(g, MID, SVH, MID, BR, ACX, F, ACZ));   // the wall up to the sovev, y 6..12 (the body stands inside it)
+    bodyParts.push(H2.box(defG, MID, SVH, MID, BR, ACX, F, ACZ));   // the wall up to the sovev, y 6..12 (the body stands inside it)
     bandParts.push(
-      H2.box(g, YO, YS, YS, BRD, ACX, F, ZN - YS / 2),                     // north, the whole side with both corners: x 37.5..61.5, z -12..-11
-      H2.box(g, YS, YS, MID + YS, BRD, XW - YS / 2, F, ACZ + YS / 2),      // west, the whole side with the south-west corner: z -11..12
-      H2.box(g, MID, YS, YS, BRD, ACX, F, ZS + YS / 2),                    // south, to the end of the face: x 38.5..60.5, z 11..12
-      H2.box(g, YS, YS, 1, BRD, XE + YS / 2, F, ZN + 0.5)                  // east: one amah at the north-east corner, z -11..-10
+      H2.box(defG, YO, YS, YS, BRD, ACX, F, ZN - YS / 2),                     // north, the whole side with both corners: x 37.5..61.5, z -12..-11
+      H2.box(defG, YS, YS, MID + YS, BRD, XW - YS / 2, F, ACZ + YS / 2),      // west, the whole side with the south-west corner: z -11..12
+      H2.box(defG, MID, YS, YS, BRD, ACX, F, ZS + YS / 2),                    // south, to the end of the face: x 38.5..60.5, z 11..12
+      H2.box(defG, YS, YS, 1, BRD, XE + YS / 2, F, ZN + 0.5)                  // east: one amah at the north-east corner, z -11..-10
     );
     // the red line, חוט הסיקרא: "חוגרו באמצע" (Middot 3:1) - at 5 amot, half the altar's 10 (II Chr 4:1), one amah below the sovev as
     // Rambam Beit HaBechira 2:9 "כששה טפחים מסוף הסובב ולמטה"; 0.12 high and 0.02 out of the wall (model choice: thin, but seen from
@@ -118,10 +124,10 @@
     const RED = new MeshStandardMaterial({ color: 0xa8231b, roughness: 0.7, metalness: 0, emissive: 0x3a0806, emissiveIntensity: 0.6 });
     {
       const RY = F + AH / 2 - 0.06, RT = 0.02, RH = 0.12;
-      H2.box(g, MID + 2 * RT, RH, RT, RED, ACX, RY, ZN - RT / 2);
-      H2.box(g, MID + 2 * RT, RH, RT, RED, ACX, RY, ZS + RT / 2);
-      H2.box(g, RT, RH, MID, RED, XW - RT / 2, RY, ACZ);
-      H2.box(g, RT, RH, MID, RED, XE + RT / 2, RY, ACZ);
+      H2.box(defG, MID + 2 * RT, RH, RT, RED, ACX, RY, ZN - RT / 2);
+      H2.box(defG, MID + 2 * RT, RH, RT, RED, ACX, RY, ZS + RT / 2);
+      H2.box(defG, RT, RH, MID, RED, XW - RT / 2, RY, ACZ);
+      H2.box(defG, RT, RH, MID, RED, XE + RT / 2, RY, ACZ);
     }
 
     // --- a lip 0.5 high and 0.5 thick around the top edge (model choice; cf. the כרכוב of Ex 27:5) ---
@@ -129,18 +135,18 @@
     {
       const LIP = 0.5;
       bodyParts.push(
-        H2.box(g, S, LIP, LIP, BR, ACX, TOP, ACZ - S / 2 + LIP / 2),                     // north
-        H2.box(g, 2, LIP, LIP, BR, CO2.xAltarW + 1, TOP, ACZ + S / 2 - LIP / 2),         // south, west stub (x 39.5..41.5)
-        H2.box(g, 2, LIP, LIP, BR, CO2.xAltarE - 1, TOP, ACZ + S / 2 - LIP / 2),         // south, east stub (x 57.5..59.5)
-        H2.box(g, LIP, LIP, S - 2 * LIP, BR, CO2.xAltarE - LIP / 2, TOP, ACZ),           // east
-        H2.box(g, LIP, LIP, S - 2 * LIP, BR, CO2.xAltarW + LIP / 2, TOP, ACZ)            // west
+        H2.box(defG, S, LIP, LIP, BR, ACX, TOP, ACZ - S / 2 + LIP / 2),                     // north
+        H2.box(defG, 2, LIP, LIP, BR, CO2.xAltarW + 1, TOP, ACZ + S / 2 - LIP / 2),         // south, west stub (x 39.5..41.5)
+        H2.box(defG, 2, LIP, LIP, BR, CO2.xAltarE - 1, TOP, ACZ + S / 2 - LIP / 2),         // south, east stub (x 57.5..59.5)
+        H2.box(defG, LIP, LIP, S - 2 * LIP, BR, CO2.xAltarE - LIP / 2, TOP, ACZ),           // east
+        H2.box(defG, LIP, LIP, S - 2 * LIP, BR, CO2.xAltarW + LIP / 2, TOP, ACZ)            // west
       );
     }
 
     // --- four horns 1 x 1 x 1 at the corners (model choice after Ex 27:2; plan after Middot 3:1 "מקום הקרנות אמה מזה ואמה מזה";
     // height 1 a model choice after the altar baraita, Zevachim 54a) ---
     for (const sx of [-1, 1]) for (const sz of [-1, 1])
-      bodyParts.push(H2.box(g, 1, 1, 1, BR, ACX + sx * (S / 2 - 0.5), TOP, ACZ + sz * (S / 2 - 0.5)));
+      bodyParts.push(H2.box(defG, 1, 1, 1, BR, ACX + sx * (S / 2 - 0.5), TOP, ACZ + sz * (S / 2 - 0.5)));
 
     // (1.0.2 add-on: the band (כרכוב) that stood here at half the height, y 10.75..11.25, 0.2 out of the body, is now the sovev - see
     // "the profile" above; it would have been inside the wall below the sovev anyway.)
@@ -157,7 +163,7 @@
     const GAP = 0.04;                                  // "אויר מעט" / "מלא נימא", drawn 0.04 so that it can be seen up close (model choice)
     const RTOP = (z) => (AH - 0.02) * (42 - z) / 32;   // the ramp's top over the floor at z (0.02 below the altar top at z 10, as 1.0.0)
     // a solid built on a profile in the (z, height) plane, extruded over x xa..xb (the ramp's own method: local u -> world z, depth -> -x)
-    const prism = (xa, xb, pts, mat) => {
+    const prism = (xa, xb, pts, mat, parent) => {   // 1.3.2: parent - the group of the reading (rampDefG / rampYoseG)
       const sh = new Shape();
       sh.moveTo(pts[0][0], pts[0][1]);
       for (let i = 1; i < pts.length; i++) sh.lineTo(pts[i][0], pts[i][1]);
@@ -167,16 +173,20 @@
       geo.translate(xb, F, 0);
       const m = new Mesh(geo, mat);
       m.castShadow = m.receiveShadow = true;
-      g.add(m);
+      (parent || g).add(m);
       return m;
     };
+    const rampDefG = new Group(), rampYoseG = new Group();
+    rampYoseG.visible = false;
+    g.add(rampDefG);
+    g.add(rampYoseG);
     {
       const RW = 16;                                   // Middot 3:3 "וכבש היה לדרומו של מזבח, שלשים ושתים על רחב שש עשרה" (convention)
       // z 10.04: the end at the top; z 11.04 over the sovev; z 12.04 over the yesod; z 12.04..42 on the floor
       prism(ACX - RW / 2, ACX + RW / 2, [
         [ZS + YS + GAP, 0], [42, 0], [ACZ + S / 2 + GAP, RTOP(ACZ + S / 2 + GAP)],
         [ACZ + S / 2 + GAP, SVH + GAP], [ZS + GAP, SVH + GAP], [ZS + GAP, YS + GAP], [ZS + YS + GAP, YS + GAP]
-      ], AS);
+      ], AS, rampDefG);
     }
 
     // --- 1.0.2 (add-on): THE TWO SMALL RAMPS (כבשים קטנים) - Zevachim 62b (book 130, line 2129) "שני כבשים קטנים יוצאין מן הכבש,
@@ -198,14 +208,59 @@
     const toSovev = [[ZS + YS + GAP, 0], [BRZ, 0], [BRZ, 2], [ZS + GAP, SVH], [ZS + GAP, YS + GAP], [ZS + YS + GAP, YS + GAP]];
     const smallRamps = {
       // east of the big ramp, up to the sovev (x 57.5..58.75; 0.01 into the big ramp, so that no seam shows)
-      sovevEast: prism(RX1 - 0.01, RX1 + SRW, toSovev, AS),
+      sovevEast: prism(RX1 - 0.01, RX1 + SRW, toSovev, AS, rampDefG),
       // west of it, down to the southern yesod (x 40.25..41.5): from 2 amot to the yesod's top, 1 amah
-      yesod: prism(RX0 - SRW, RX0 + 0.01, [[ZS + YS + GAP, 0], [BRZ, 0], [BRZ, 2], [ZS + YS + GAP, YS]], AS),
+      yesod: prism(RX0 - SRW, RX0 + 0.01, [[ZS + YS + GAP, 0], [BRZ, 0], [BRZ, 2], [ZS + YS + GAP, YS]], AS, rampDefG),
       // Tosafot: the raised half of the same wide western ramp, up to the sovev (x 39..40.25), hidden for Rashi (the default)
-      sovevWest: prism(RX0 - 2 * SRW, RX0 - SRW + 0.01, toSovev, AS)
+      sovevWest: prism(RX0 - 2 * SRW, RX0 - SRW + 0.01, toSovev, AS, rampDefG)
     };
     smallRamps.sovevWest.visible = false;
     for (const [k, m] of Object.entries(smallRamps)) m.name = "smallRamp_" + k;
+    // 1.3.2: R. YOSE'S ALTAR - the yesod 28 (z +-14), the wall below the sovev 26 (to 6 amot), above it 24 up to the top (16), the horns
+    // and the priests' walk round the place of the pyre, 20 x 20 - the verse's measure (Rashi Zevachim 61b; Malbim on II Chr 4:1 "היינו
+    // מקום המערכה היה עשרים על עשרים"). Centred where the verse's altar is (model choice); the yesod's run as there. Its ramp is the same
+    // 32 x 16 (Middot 3:3), its top at the top's south face (z 12) - so its foot is at z 44 - and the small ramps with it.
+    const yoseG = new Group();
+    yoseG.visible = false;
+    g.add(yoseG);
+    const YT = 24, YM = 26, YY = 28, YZN = ACZ - YM / 2, YZS = ACZ + YM / 2, YXW = ACX - YM / 2, YXE = ACX + YM / 2;
+    {
+      bodyParts.push(H2.box(yoseG, YM, SVH, YM, BR, ACX, F, ACZ), H2.box(yoseG, YT, AH - SVH, YT, BR, ACX, F + SVH, ACZ));
+      bandParts.push(
+        H2.box(yoseG, YY, YS, YS, BRD, ACX, F, YZN - YS / 2),
+        H2.box(yoseG, YS, YS, YM + YS, BRD, YXW - YS / 2, F, ACZ + YS / 2),
+        H2.box(yoseG, YM, YS, YS, BRD, ACX, F, YZS + YS / 2),
+        H2.box(yoseG, YS, YS, 1, BRD, YXE + YS / 2, F, YZN + 0.5)
+      );
+      const RY = F + AH / 2 - 0.06, RT = 0.02, RH = 0.12, RED2 = new MeshStandardMaterial({ color: 0xa8231b, roughness: 0.7, metalness: 0, emissive: 0x3a0806, emissiveIntensity: 0.6 });
+      H2.box(yoseG, YM + 2 * RT, RH, RT, RED2, ACX, RY, YZN - RT / 2);
+      H2.box(yoseG, YM + 2 * RT, RH, RT, RED2, ACX, RY, YZS + RT / 2);
+      H2.box(yoseG, RT, RH, YM, RED2, YXW - RT / 2, RY, ACZ);
+      H2.box(yoseG, RT, RH, YM, RED2, YXE + RT / 2, RY, ACZ);
+      const LIP = 0.5, h = YT / 2;
+      bodyParts.push(
+        H2.box(yoseG, YT, LIP, LIP, BR, ACX, TOP, ACZ - h + LIP / 2),
+        H2.box(yoseG, h - 8, LIP, LIP, BR, ACX - (h + 8) / 2, TOP, ACZ + h - LIP / 2),
+        H2.box(yoseG, h - 8, LIP, LIP, BR, ACX + (h + 8) / 2, TOP, ACZ + h - LIP / 2),
+        H2.box(yoseG, LIP, LIP, YT - 2 * LIP, BR, ACX + h - LIP / 2, TOP, ACZ),
+        H2.box(yoseG, LIP, LIP, YT - 2 * LIP, BR, ACX - h + LIP / 2, TOP, ACZ)
+      );
+      for (const sx of [-1, 1]) for (const sz of [-1, 1]) bodyParts.push(H2.box(yoseG, 1, 1, 1, BR, ACX + sx * (h - 0.5), TOP, ACZ + sz * (h - 0.5)));
+      // its ramps: the same profiles, 2 further south
+      const YRT = (z) => (AH - 0.02) * (44 - z) / 32, YBRZ = 44 - 2 * 32 / (AH - 0.02);
+      prism(ACX - 8, ACX + 8, [
+        [YZS + YS + GAP, 0], [44, 0], [ACZ + YT / 2 + GAP, YRT(ACZ + YT / 2 + GAP)],
+        [ACZ + YT / 2 + GAP, SVH + GAP], [YZS + GAP, SVH + GAP], [YZS + GAP, YS + GAP], [YZS + YS + GAP, YS + GAP]
+      ], AS, rampYoseG);
+      const ySov = [[YZS + YS + GAP, 0], [YBRZ, 0], [YBRZ, 2], [YZS + GAP, SVH], [YZS + GAP, YS + GAP], [YZS + YS + GAP, YS + GAP]];
+      smallRamps.yoseSovevEast = prism(RX1 - 0.01, RX1 + SRW, ySov, AS, rampYoseG);
+      smallRamps.yoseYesod = prism(RX0 - SRW, RX0 + 0.01, [[YZS + YS + GAP, 0], [YBRZ, 0], [YBRZ, 2], [YZS + YS + GAP, YS]], AS, rampYoseG);
+      smallRamps.yoseSovevWest = prism(RX0 - 2 * SRW, RX0 - SRW + 0.01, ySov, AS, rampYoseG);
+      smallRamps.yoseSovevWest.visible = false;
+    }
+    ctx.layers = ctx.layers || {};
+    ctx.layers.altarDefG = defG;
+    ctx.layers.altarYoseG = yoseG;
 
     // --- 1.0.2: השיתין at the south-west corner (a completion from the Mishnah; the Mishnah describes the Second Temple's altar) ---
     // Middot 3:2 "ובקרן מערבית דרומית היו שני נקבים, כמין שני חטמין דקין, שהדמים הנתנין על יסוד מערבי ועל יסוד דרומי, יורדין בהן
@@ -225,6 +280,8 @@
     // no longer diagonal off the corner but south of it (x 37.05..38.15, z 12.55..13.65): diagonal it would lie under the bases' route
     // (x <= 36.7 there, 45-vessels.js); the small ramps begin at x 39 (model choices).
     const SHX = ACX - YO / 2, SHZ = ACZ + YO / 2;      // the south-west corner of the yesod: x 37.5, z 12
+    const shitinG = new Group();   // 1.3.2: R. Yose's altar moves them to its own corner (2 west, 2 south)
+    g.add(shitinG);
     {
       const holeMat = new MeshBasicMaterial({ color: 0x0b0907, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
       const hole = (x, z, alongX) => {
@@ -235,25 +292,25 @@
         m.position.set(x, F + 0.012, z);
         m.receiveShadow = true;
         m.name = "shitinHole";
-        g.add(m);
+        shitinG.add(m);
       };
       hole(SHX - 0.3, SHZ - 0.6, false);              // by the yesod's west face, 0.6 north of the corner
       hole(SHX + 1.1, SHZ + 0.3, true);               // by its south face, 1.1 east of the corner (the small ramps start at x 39)
       // the slab: x 37.1..38.1, z 12.6..13.6, a dark joint 0.05 round it, 0.04 above the floor (model choice, so that it reads)
       const SCX = SHX + 0.1, SCZ = SHZ + 1.1;
       const joint = new MeshBasicMaterial({ color: 0x2a2520 });
-      H2.box(g, 1.1, 0.012, 1.1, joint, SCX, F, SCZ).castShadow = false;
+      H2.box(shitinG, 1.1, 0.012, 1.1, joint, SCX, F, SCZ).castShadow = false;
       const slabMat = M2.marble.clone();
       slabMat.color.set(0xf4efe4);
-      const slab = H2.box(g, 1, 0.04, 1, slabMat, SCX, F, SCZ);   // "מקום היה שם אמה על אמה, וטבלא של שיש" (Middot 3:3)
+      const slab = H2.box(shitinG, 1, 0.04, 1, slabMat, SCX, F, SCZ);   // "מקום היה שם אמה על אמה, וטבלא של שיש" (Middot 3:3)
       slab.name = "shitinSlab";
       // "וטבעת היתה קבועה בה": a ring lying flat on the slab, held by a small staple at its north side (model choice)
       const ring = new Mesh(new TorusGeometry(0.15, 0.025, 8, 28), M2.bronze);
       ring.rotation.x = Math.PI / 2;
       ring.position.set(SCX, F + 0.04 + 0.025, SCZ + 0.05);
       ring.castShadow = true;
-      g.add(ring);
-      H2.box(g, 0.1, 0.05, 0.06, M2.bronze, SCX, F + 0.04, SCZ - 0.1);
+      shitinG.add(ring);
+      H2.box(shitinG, 0.1, 0.05, 0.06, M2.bronze, SCX, F + 0.04, SCZ - 0.1);
     }
 
     // --- the fire: three pyres (מערכות) of cedar logs (model choice as in the Second Temple model, after Yoma 45a; the First Temple
@@ -432,7 +489,7 @@
     );
     ctx.shared.flyPoints = ctx.shared.flyPoints || {};
     ctx.shared.flyPoints.mizbeach = { pos: [115, 52, 72], target: [ACX, TOP, ACZ] };
-    ctx.shared.flyPoints.mizbeachTop = { pos: [ACX + 3, TOP + 33, ACZ + 23], target: [ACX + 0.5, TOP, ACZ + 1.5] };   // 1.3.0: the top from above (the pyres' row); moves with the altar (FPK below)
+    ctx.shared.flyPoints.mizbeachTop = { pos: [ACX + 0.5, TOP + 44, ACZ + 3], target: [ACX + 0.5, TOP, ACZ + 0.5] };   // 1.3.0: the top from above (the pyres' row); 1.3.2 (the list): straight down, the 28 of R. Yose in the frame too; moves with the altar (FPK below)
 
     // --- 1.0.2: השיתין - the text, the sources (book id + line index, each line read in the Otzaria DB), the label and the fly point ---
     {
@@ -512,12 +569,28 @@
       g.add(lay);
       ctx.layers.altarProfile = lay;
       // on the east side, which the altar's fly point (from the south-east) sees: each beside its own step, 1.6 out (checked in a render)
-      ctx.labels.push(
-        { text: "הסובב", x: XE + 1.6, y: F + SVH + 1.2, z: ACZ - 3, size: 2.2, layer: "altarProfile", info: PROFILE.sovev.info, refs: PROFILE.sovev.refs },
-        { text: "חוט הסיקרא", x: XE + 1.6, y: F + AH / 2 - 0.9, z: ACZ + 3, size: 2, layer: "altarProfile", info: PROFILE.redLine.info, refs: PROFILE.redLine.refs },
-        { text: "היסוד", x: XE + 1.6, y: F + 1.6, z: ZN - 0.5, size: 2.2, layer: "altarProfile", info: PROFILE.yesod.info, refs: PROFILE.yesod.refs }
+      // 1.3.2: one set for each reading of the altar (the layers of its body - defG / yoseG)
+      for (const [ex, zn, L] of [[XE, ZN, "altarDefG"], [YXE, YZN, "altarYoseG"]]) ctx.labels.push(
+        { text: "הסובב", x: ex + 1.6, y: F + SVH + 1.2, z: ACZ - 3, size: 2.2, layers: ["altarProfile", L], info: PROFILE.sovev.info, refs: PROFILE.sovev.refs },
+        { text: "חוט הסיקרא", x: ex + 1.6, y: F + AH / 2 - 0.9, z: ACZ + 3, size: 2, layers: ["altarProfile", L], info: PROFILE.redLine.info, refs: PROFILE.redLine.refs },
+        { text: "היסוד", x: ex + 1.6, y: F + 1.6, z: zn - 0.5, size: 2.2, layers: ["altarProfile", L], info: PROFILE.yesod.info, refs: PROFILE.yesod.refs }
       );
       ctx.shared.altarProfile = PROFILE;
+      // 1.3.2 (the user: "בית ראשון: תוסיף שיטת ר' יוסי"): THE ALTAR'S MEASURES, a switch - "chronicles" (the default: the verse's 20 x 20,
+      // the yesod and the sovev round it, as 1.0.2) or "yose" (28 x 28, receding to the place of the pyre, 20 x 20)
+      ctx.shared.altarYose = {
+        current: "chronicles", keys: ["chronicles", "yose"],
+        names: { chronicles: "דברי הימים — עשרים על עשרים", yose: "רבי יוסי — עשרים ושמונה" },
+        get() { return this.current; },
+        set(k) {
+          if (k !== "yose" && k !== "chronicles") return;
+          this.current = k;
+          const y = k === "yose";
+          defG.visible = rampDefG.visible = !y;
+          yoseG.visible = rampYoseG.visible = y;
+          shitinG.position.set(y ? -2 : 0, 0, y ? 2 : 0);
+        }
+      };
       const AC = new Vector3(ACX, F + AH / 2, ACZ);
       ctx.animated.push(() => {
         const cam = ctx.camera;
@@ -556,6 +629,7 @@
         set(key) {                                     // shows or hides the western ramp to the sovev; returns the current key
           if (key !== "rashi" && key !== "tosafot") return cur;
           smallRamps.sovevWest.visible = key === "tosafot";
+          if (smallRamps.yoseSovevWest) smallRamps.yoseSovevWest.visible = key === "tosafot";
           cur = key;
           return cur;
         }

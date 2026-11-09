@@ -65,7 +65,7 @@
   //   - not modelled (1.0.1-L, L.60: his capitals and his painted lily of 7:19 ARE the option "malbim" of ctx.shared.pillarCapital, with
   //   the pillars kept inside the ulam, so the lily is painted on the wall they stand by here); Radak and Metzudot sink the shaft only half an amah into the capital (total 22.5 - the 1.0.0 /
   //   1.0.1 build; more in section 7); Radak and Metzudot read "הצלע התיכונה" (6:8) as the MIDDLE STORY (here the middle chamber of the lowest row, after
-  //   Rashi and the Targum); Rashi on II Chr 3:7 and Radak on 6:9 describe a vaulted ceiling ("כספינה הפוכה", "כמין כיפה") - flat here;
+  //   Rashi and the Targum); Rashi on II Chr 3:7 describes a vaulted ceiling ("כמו ספינה וערבה הפוכה") - BUILT since 1.3.2 over the kodesh (sec. 8; Radak on 6:9 "כמין כיפה" is not in the library export: unchecked);
   //   Malbim on II Chr 3:4: the ulam had no ceiling at all up to 120 - not modelled; Radak's main view (II Chr 3:4): only the ulam is
   //   120 high - not modelled (the "עליות" layer follows Rashi there: 30 + 90 over the whole house); Middot 4:7 (the Second Temple) has the
   //   house wall 6 throughout (the 1.0.1 build) - here the book's 7 / 6 / 5 / 4; Radak on 7:12 says "וכן עשה לבנין הבית כבנין הזה" - read
@@ -1414,10 +1414,76 @@
       // floor is the devir's own ceiling set (32..36), ten amot under the heichal's (sec. 9)
       const c1w = H.box(g, DE - DW, 1, 20, M.gold, (DE + DW) / 2, CEIL, 0);   // 1.2.3 (the user: "תקרת הגבים היתה מזהב"): the slab gold, not cedar
       c1w.name = "house-ceiling-gavim-w";
-      const c1 = H.box(g, KE - DE, 1, 20, M.gold, (KE + DE) / 2, CEIL, 0);
+      // 1.3.2 (the user: "קמורה ולא שטוחה, להעיף את השטוחה"): the heichal's ceiling VAULTED, the flat one gone. Rashi II Chr 3:7 (checked in
+      // the library): "ולכך קורא גג קירות הספון, שהגג היה כמו ספינה וערבה הפוכה, שכן מנהג לקרות את הקרוי עגל כעין ספינה" - said in the
+      // verses of the great house (II Chr 3:5-7; the devir begins at 3:8): the KODESH only. The devir keeps its own flat ceiling at 20 and the
+      // ulam its flat ceiling (Rashi says nothing of them). The vault: a half-ellipse over the 19.6 between the gold skins (VA 9.8), its crown
+      // at CEIL (42: the 30 amot - I Kings 6:2; Rashi II Chr 3:4 "עד קרוי עליה ראשונה שלשים אמות"), springing at VS 36, 24 above the floor,
+      // clear of the windows (y 32.75..35.25): the springing and the shape are model choices. Its haunches are filled up to a flat top at
+      // CEIL + 1, so "בית דילפא" stays two amot over the whole width (1.2.3), and the cedars, the roof and the aliyot are unchanged. The
+      // coffered gold underside follows the curve (uv: x and the arc length, so the coffers keep their size); over the amah traksin
+      // (x DE..xKodeshW) a flat strip of the גבים as before. userData.tmFlat: 70-ui.js's camera pass treats both as a ceiling (1.0.4).
+      const VS = CEIL - 6, VA = 9.8, VB = CEIL - VS, VSEG = 48, VX0 = CO.xKodeshW;
+      const vShape = new Shape();
+      vShape.moveTo(10, VS);
+      vShape.lineTo(10, CEIL + 1);
+      vShape.lineTo(-10, CEIL + 1);
+      vShape.lineTo(-10, VS);
+      for (let i = VSEG; i >= 0; i--) {
+        const t = (Math.PI * i) / VSEG;
+        vShape.lineTo(VA * Math.cos(t), VS + VB * Math.sin(t));
+      }
+      const vGeo = new ExtrudeGeometry(vShape, { depth: KE - VX0, bevelEnabled: false, curveSegments: 1 });
+      vGeo.rotateY(Math.PI / 2);                                             // the extrusion along +x (the section's z mirrored: symmetric)
+      vGeo.translate(VX0, 0, 0);
+      const c1 = new Mesh(vGeo, M.gold);
+      c1.castShadow = c1.receiveShadow = true;
       c1.name = "house-ceiling-gavim";
+      c1.userData.tmFlat = true;
+      g.add(c1);
+      const c1t = H.box(g, VX0 - DE, 1, 20, M.gold, (VX0 + DE) / 2, CEIL, 0);   // over the amah traksin
+      c1t.name = "house-ceiling-gavim-t";
+      const vaultUnder = (x0, x1, off) => {                                    // the coffered gold underside, off inside the curve
+        const pos = [], nrm = [], uv = [], idx = [];
+        let s = 0, pz = 0, py = 0;
+        for (let i = 0; i <= VSEG; i++) {
+          const t = (Math.PI * i) / VSEG;
+          const z = (VA - off) * Math.cos(t), y = VS + (VB - off) * Math.sin(t);
+          if (i) s += Math.hypot(z - pz, y - py);
+          pz = z;
+          py = y;
+          let nz = -Math.cos(t) / VA, ny = -Math.sin(t) / VB;                  // facing the room
+          const l = Math.hypot(nz, ny);
+          nz /= l;
+          ny /= l;
+          for (const x of [x0, x1]) {
+            pos.push(x, y, z);
+            nrm.push(0, ny, nz);
+            uv.push(x, s);
+          }
+        }
+        for (let i = 0; i < VSEG; i++) {
+          const k = 2 * i;
+          idx.push(k, k + 2, k + 1, k + 1, k + 2, k + 3);
+        }
+        const geo = new BufferGeometry();
+        geo.setAttribute("position", new BufferAttribute(new Float32Array(pos), 3));
+        geo.setAttribute("normal", new BufferAttribute(new Float32Array(nrm), 3));
+        const uvA = new Float32Array(uv);
+        for (let i = 1; i < uvA.length; i += 2) uvA[i] -= s / 2;              // the coffers centred on the crown
+        geo.setAttribute("uv", new BufferAttribute(uvA, 2));
+        geo.setIndex(idx);
+        geo.computeBoundingBox();
+        geo.computeBoundingSphere();
+        return geo;
+      };
+      const gold = new Mesh(vaultUnder(VX0, KE - 0.2, 0.05), hei_cofferGold);
+      gold.receiveShadow = true;
+      gold.name = "house-ceiling-gold";
+      gold.userData.tmFlat = true;
+      g.add(gold);
+      ctx.shared.heichalVault = { spring: VS, crown: CEIL, a: VA };          // 1.3.2: for the cards and the checks
       const goldW = hei_boxMesh(g, [{ x0: DW + 0.1, x1: DE, y0: CEIL - 0.05, y1: CEIL, z0: -9.8, z1: 9.8 }], hei_cofferGold, "house-ceiling-gold-w");
-      const gold = hei_boxMesh(g, [{ x0: CO.xKodeshW, x1: KE - 0.2, y0: CEIL - 0.05, y1: CEIL, z0: -9.8, z1: 9.8 }], hei_cofferGold, "house-ceiling-gold");
       const c2w = H.box(g, DE - DW, 1, 20, M.cedar, (DE + DW) / 2, CEIL + 3, 0);
       c2w.name = "house-ceiling-sdeirot-w";
       const c2 = H.box(g, KE - DE, 1, 20, M.cedar, (KE + DE) / 2, CEIL + 3, 0);
@@ -1430,10 +1496,12 @@
       houseRoofProxy = new Object3D();
       houseRoofProxy.name = "house-roof-proxy";
       houseRoofProxy.userData.real = roof;
-      cut.push(c1w, c1, goldW, gold, c2w, c2, houseRoofProxy);
+      cut.push(c1w, c1, c1t, goldW, gold, c2w, c2, houseRoofProxy);
       // the three layers named at the EAST end of the ceilings (1.2.3: the section is seen from the east, "פתח את העליות" / "בית דילפא")
+      // 1.3.2: the label of the גבים names the vault; Metzudat David 6:9 (checked) instead of the unchecked "גומות לנוי"
       ctx.labels.push(
-        { text: "תקרת הגבים — כיור מצויר ומצופה זהב (מלכים א ו, ט; מצודות: גומות לנוי)", x: KE + 0.8, y: CEIL + 0.3, z: 0, size: 1.3 },
+        { text: "תקרת הגבים — קמורה, מצוירת ומצופה זהב (רש״י דברי הימים ב ג, ז; מלכים א ו, ט)", x: KE + 0.8, y: CEIL + 0.3, z: 0, size: 1.3 },
+        { text: "תקרה קמורה — ״כמו ספינה וערבה הפוכה״ (רש״י)", x: -33, y: VS + 3.2, z: 0, size: 1.4 },
         { text: "בית דילפא — חלל שתי אמות בין התקרות", x: KE + 0.8, y: CEIL + 2, z: 0, size: 1.3 },
         { text: "שדרות בארזים — ארזים זה בצד זה, רצפת העלייה (רש״י ו, ט)", x: KE + 0.8, y: CEIL + 3.7, z: 0, size: 1.3 }
       );

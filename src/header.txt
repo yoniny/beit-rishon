@@ -11,6 +11,9 @@
  * Units: 1 = 1 amah. +x east (front), +z south (right), y up. Levels: great court 0, inner court 6, house floor 12.
  * VERSION: plugin/manifest.json is the ONE source (tools/build.mjs writes it into the bundle and index.html; minAppVersion 0.9.98.1).
  * 1.1.0 (8.11.2026): build = node tools/build.mjs (assemble + version + checks + terser minify); plugin/bundle.js is a build product - edit src/ only.
+ * 1.3.2 (9.11.2026): the altar 26.5 east of the ulam (CO.xAltarW 45, CO.ALTAR_DX 5.5 moves the slaughter place and the views; mechZ back to
+ *   33 / 45); R. Yose's 28 altar (ctx.shared.altarYose, defG / yoseG); the pyres in two rows (count, Yom Kippur); mizbeachTop straight down;
+ *   the heichal's ceiling vaulted after Rashi II Chr 3:7 (50-heichal.js sec. 8; userData.tmFlat for the camera pass); ceiling quotes checked.
  * 1.3.0 (9.11.2026): the bases' rows CO.mechZ 38 / 50 (were 33 / 45: the north row's eastern base stood in the small ramps); the chambers'
  *   places from above with the roof open 20 s (70-ui.js openPill20); short names in the opinions table; the number of pyres (Yoma 4:6,
  *   with Yom Kippur) - ctx.shared.maarachot, flyPoints.mizbeachTop.

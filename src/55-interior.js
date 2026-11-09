@@ -1350,7 +1350,7 @@
       int_uvBox(ek, XE - SKIN, XE, F, F + INT_HEI_DOOR_H, INT_HEI_DOOR_W / 2, HW, east);
       int_uvBox(ek, XE - SKIN, XE, F + INT_HEI_DOOR_H, F + KH, -HW, HW, east);
       mergedMesh(ek, goldCarvedEast, g, secE);   // 1.2.3: with the east wall into the section
-      // (the kodesh ceiling at y 42 and the devir ceiling at y 32 get their gold undersides in 50-heichal.js: 6:22, II Chr 3:9)
+      // (the kodesh ceiling - 1.3.2: vaulted, crown 42, springing 36 - and the devir ceiling at y 32 get their gold undersides in 50-heichal.js: 6:22, II Chr 3:9)
     }
     const wallLayerGroup = new Group();                // gates the labels of the exhibit (layer "wallLayers", FIXES K 0.5c)
     wallLayerGroup.name = "wallLayers";
