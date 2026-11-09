@@ -1,0 +1,215 @@
+{
+  "schemaVersion": 1,
+  "id": "com.beit-hamikdash.rishon-3d-model",
+  "name": "בית המקדש",
+  "version": "2.0.0",
+  "description": "בית ראשון ובית שני בתלת־ממד: מסך בחירה, מעבר מבית לבית בלי לאבד את המקום, מקורות שנפתחים באוצריא, שיטות ומחלוקות ומצגות.",
+  "author": "יוני מאיר ויוסי כהן (Yossi Cohen), shalomke",
+  "homepage": "https://github.com/yoniny/beit-rishon",
+  "icon": "icon/icon.png",
+  "entrypoint": "index.html",
+  "minAppVersion": "0.9.98.1",
+  "sdkVersion": "1.x",
+  "stability": "stable",
+  "permissions": [
+    "reader.open",
+    "library.books.read",
+    "library.content.read",
+    "library.links.read",
+    "search.fulltext.read",
+    "reader.toolbar",
+    "app.startup_contributions"
+  ],
+  "network": {
+    "enabled": false,
+    "allowlist": []
+  },
+  "contributes": {
+    "toolTab": {
+      "title": "בית המקדש",
+      "order": 50,
+      "allowOrderBeforeBuiltIns": false,
+      "defaultPinned": true,
+      "iconName": "building_24_regular"
+    },
+    "publishedDataTypes": [],
+    "startup": {
+      "programs": [
+        {
+          "id": "beit-rishon-books",
+          "version": 1,
+          "triggers": [
+            "reader.activeBookChanged"
+          ],
+          "commands": [
+            {
+              "id": "show",
+              "type": "data.choose",
+              "args": {
+                "condition": {
+                  "op": "and",
+                  "conditions": [
+                    {
+                      "op": "equals",
+                      "left": {
+                        "$context": "reader.book.source"
+                      },
+                      "right": {
+                        "$literal": "library"
+                      }
+                    },
+                    {
+                      "op": "equals",
+                      "left": {
+                        "$context": "reader.book.type"
+                      },
+                      "right": {
+                        "$literal": "text"
+                      }
+                    },
+                    {
+                      "op": "or",
+                      "conditions": [
+                        {
+                          "op": "equals",
+                          "left": {
+                            "$context": "reader.book.id"
+                          },
+                          "right": {
+                            "$literal": 10
+                          }
+                        },
+                        {
+                          "op": "equals",
+                          "left": {
+                            "$context": "reader.book.id"
+                          },
+                          "right": {
+                            "$literal": 39
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "whenTrue": {
+                  "$literal": "show"
+                },
+                "whenFalse": {
+                  "$literal": ""
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "show": {
+              "$result": "show"
+            }
+          }
+        },
+        {
+          "id": "beit-sheni-books",
+          "version": 1,
+          "triggers": [
+            "reader.activeBookChanged"
+          ],
+          "commands": [
+            {
+              "id": "show",
+              "type": "data.choose",
+              "args": {
+                "condition": {
+                  "op": "and",
+                  "conditions": [
+                    {
+                      "op": "equals",
+                      "left": {
+                        "$context": "reader.book.source"
+                      },
+                      "right": {
+                        "$literal": "library"
+                      }
+                    },
+                    {
+                      "op": "equals",
+                      "left": {
+                        "$context": "reader.book.type"
+                      },
+                      "right": {
+                        "$literal": "text"
+                      }
+                    },
+                    {
+                      "op": "or",
+                      "conditions": [
+                        {
+                          "op": "equals",
+                          "left": {
+                            "$context": "reader.book.id"
+                          },
+                          "right": {
+                            "$literal": 89
+                          }
+                        },
+                        {
+                          "op": "equals",
+                          "left": {
+                            "$context": "reader.book.id"
+                          },
+                          "right": {
+                            "$literal": 337
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "whenTrue": {
+                  "$literal": "show"
+                },
+                "whenFalse": {
+                  "$literal": ""
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "show": {
+              "$result": "show"
+            }
+          }
+        }
+      ],
+      "toolbarItems": [
+        {
+          "id": "open-beit-rishon",
+          "type": "button",
+          "title": "פתח בתוסף בית ראשון",
+          "icon": "menorah_24_regular",
+          "contexts": [
+            "reader-text"
+          ],
+          "binding": {
+            "program": "beit-rishon-books",
+            "visibleOutput": "show"
+          },
+          "openPlugin": true
+        },
+        {
+          "id": "open-beit-sheni",
+          "type": "button",
+          "title": "פתח בתוסף בית שני",
+          "icon": "building_24_regular",
+          "contexts": [
+            "reader-text"
+          ],
+          "binding": {
+            "program": "beit-sheni-books",
+            "visibleOutput": "show"
+          },
+          "openPlugin": true
+        }
+      ]
+    }
+  }
+}

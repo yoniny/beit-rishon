@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1b2547"/>
+      <stop offset="1" stop-color="#0a0f22"/>
+    </linearGradient>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff0b8"/>
+      <stop offset=".45" stop-color="#e8b54c"/>
+      <stop offset="1" stop-color="#a26d1c"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6d27a"/>
+      <stop offset="1" stop-color="#b98228"/>
+    </linearGradient>
+    <linearGradient id="op" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a220a"/>
+      <stop offset="1" stop-color="#160c03"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="44" fill="url(#bg)"/>
+  <rect x="8" y="8" width="240" height="240" rx="44" fill="none" stroke="#c9a84c" stroke-opacity=".55" stroke-width="3"/>
+  <!-- the spikes on the roof -->
+  <g fill="url(#g2)"><path d="M56 70l4-14 4 14z"/><path d="M73 70l4-14 4 14z"/><path d="M90 70l4-14 4 14z"/><path d="M107 70l4-14 4 14z"/><path d="M124 70l4-14 4 14z"/><path d="M141 70l4-14 4 14z"/><path d="M158 70l4-14 4 14z"/><path d="M175 70l4-14 4 14z"/><path d="M192 70l4-14 4 14z"/></g>
+  <!-- the cornice -->
+  <rect x="50" y="70" width="156" height="12" rx="2" fill="url(#g)"/>
+  <!-- the facade of the porch -->
+  <rect x="58" y="82" width="140" height="122" fill="url(#g)"/>
+  <rect x="58" y="82" width="140" height="122" fill="none" stroke="#7a4f12" stroke-opacity=".5" stroke-width="2"/>
+  <!-- the opening -->
+  <rect x="108" y="108" width="40" height="96" fill="url(#op)"/>
+  <rect x="116" y="128" width="24" height="76" fill="url(#g2)" opacity=".9"/>
+  <path d="M128 128V204" stroke="#6b420e" stroke-width="2"/>
+  <rect x="112" y="116" width="32" height="4" fill="#f6d27a"/>
+  <!-- the base and the steps -->
+  <rect x="46" y="204" width="164" height="8" fill="url(#g2)"/>
+  <rect x="38" y="212" width="180" height="8" fill="#b98228"/>
+</svg>

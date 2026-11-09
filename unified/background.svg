@@ -1,0 +1,179 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#070b18"/>
+      <stop offset=".55" stop-color="#16203d"/>
+      <stop offset=".8" stop-color="#3b3352"/>
+      <stop offset="1" stop-color="#7a5a45"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="800" cy="430" r="520" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f3c66b" stop-opacity=".42"/>
+      <stop offset=".45" stop-color="#d79a45" stop-opacity=".12"/>
+      <stop offset="1" stop-color="#d79a45" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="marble" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f2e6c8"/>
+      <stop offset="1" stop-color="#c9b48a"/>
+    </linearGradient>
+    <linearGradient id="marbleSide" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#a8956d"/>
+      <stop offset="1" stop-color="#d8c69c"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe8a3"/>
+      <stop offset=".5" stop-color="#e0ad45"/>
+      <stop offset="1" stop-color="#9c6b1e"/>
+    </linearGradient>
+    <linearGradient id="door" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd27a"/>
+      <stop offset=".6" stop-color="#e09a3a"/>
+      <stop offset="1" stop-color="#8a4f18"/>
+    </linearGradient>
+    <linearGradient id="court" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d9c79f"/>
+      <stop offset="1" stop-color="#9e8a63"/>
+    </linearGradient>
+    <linearGradient id="mountWall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8f7c5b"/>
+      <stop offset="1" stop-color="#3e3527"/>
+    </linearGradient>
+    <linearGradient id="hills" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#232a42"/>
+      <stop offset="1" stop-color="#151a2b"/>
+    </linearGradient>
+    <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#05070f" stop-opacity="0"/>
+      <stop offset=".55" stop-color="#05070f" stop-opacity=".15"/>
+      <stop offset="1" stop-color="#05070f" stop-opacity=".82"/>
+    </linearGradient>
+    <radialGradient id="vignette" cx="800" cy="450" r="980" gradientUnits="userSpaceOnUse">
+      <stop offset=".55" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity=".55"/>
+    </radialGradient>
+    <pattern id="ashlar" width="96" height="34" patternUnits="userSpaceOnUse">
+      <rect width="96" height="34" fill="none"/>
+      <path d="M0 33.5H96M48 0V17M0 17H96M0 17V34M96 17V34" stroke="#2c251b" stroke-width="2" stroke-opacity=".55" fill="none"/>
+      <path d="M3 3H45V14H3ZM51 3H93V14H51ZM-45 20H45V31H-45ZM51 20H141V31H51Z" stroke="#c7b48d" stroke-width="1" stroke-opacity=".18" fill="none"/>
+    </pattern>
+    <pattern id="courses" width="40" height="14" patternUnits="userSpaceOnUse">
+      <path d="M0 13.5H40M20 0V7M0 7H40M0 7V14" stroke="#7d6a48" stroke-width="1" stroke-opacity=".35" fill="none"/>
+    </pattern>
+  </defs>
+
+  <!-- sky -->
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <g fill="#fff3d6">
+    <circle cx="140" cy="90" r="1.6" opacity=".8"/><circle cx="310" cy="160" r="1.1" opacity=".6"/>
+    <circle cx="460" cy="70" r="1.3" opacity=".7"/><circle cx="620" cy="130" r="1" opacity=".5"/>
+    <circle cx="1010" cy="60" r="1.4" opacity=".7"/><circle cx="1180" cy="140" r="1.1" opacity=".55"/>
+    <circle cx="1330" cy="80" r="1.7" opacity=".8"/><circle cx="1490" cy="170" r="1.2" opacity=".6"/>
+    <circle cx="240" cy="230" r="1" opacity=".45"/><circle cx="1420" cy="250" r="1" opacity=".45"/>
+    <circle cx="880" cy="40" r="1.2" opacity=".6"/><circle cx="60" cy="200" r="1.1" opacity=".5"/>
+  </g>
+
+  <!-- distant hills -->
+  <path d="M0 560 C140 520 260 500 380 515 C520 532 600 548 700 545 L900 545 C1020 540 1120 505 1250 498 C1380 492 1500 520 1600 540 V700 H0Z" fill="url(#hills)"/>
+
+  <!-- warm light around the house -->
+  <rect width="1600" height="900" fill="url(#glow)"/>
+
+  <!-- the Temple Mount platform and its wall -->
+  <path d="M0 640 H1600 V900 H0Z" fill="url(#mountWall)"/>
+  <path d="M0 640 H1600 V900 H0Z" fill="url(#ashlar)"/>
+  <rect x="0" y="632" width="1600" height="10" fill="#b29d74"/>
+  <rect x="0" y="642" width="1600" height="4" fill="#2a2319" opacity=".5"/>
+  <!-- gates in the wall -->
+  <g fill="#1a150f">
+    <path d="M300 900 V800 a34 34 0 0 1 68 0 V900Z"/>
+    <path d="M392 900 V800 a34 34 0 0 1 68 0 V900Z"/>
+    <path d="M1140 900 V805 a32 32 0 0 1 64 0 V900Z"/>
+    <path d="M1228 900 V805 a32 32 0 0 1 64 0 V900Z"/>
+  </g>
+  <g fill="none" stroke="#c9b48a" stroke-opacity=".35" stroke-width="3">
+    <path d="M300 800 a34 34 0 0 1 68 0"/><path d="M392 800 a34 34 0 0 1 68 0"/>
+    <path d="M1140 805 a32 32 0 0 1 64 0"/><path d="M1228 805 a32 32 0 0 1 64 0"/>
+  </g>
+
+  <!-- the colonnades along the edge of the Mount -->
+  <g>
+    <rect x="0" y="588" width="470" height="12" fill="#b9a57d"/>
+    <rect x="1130" y="588" width="470" height="12" fill="#b9a57d"/>
+    <rect x="0" y="600" width="470" height="32" fill="#2b2433"/>
+    <rect x="1130" y="600" width="470" height="32" fill="#2b2433"/>
+    <g fill="#cdb98f">
+      <rect x="8" y="600" width="7" height="32"/><rect x="40" y="600" width="7" height="32"/><rect x="72" y="600" width="7" height="32"/>
+      <rect x="104" y="600" width="7" height="32"/><rect x="136" y="600" width="7" height="32"/><rect x="168" y="600" width="7" height="32"/>
+      <rect x="200" y="600" width="7" height="32"/><rect x="232" y="600" width="7" height="32"/><rect x="264" y="600" width="7" height="32"/>
+      <rect x="296" y="600" width="7" height="32"/><rect x="328" y="600" width="7" height="32"/><rect x="360" y="600" width="7" height="32"/>
+      <rect x="392" y="600" width="7" height="32"/><rect x="424" y="600" width="7" height="32"/><rect x="456" y="600" width="7" height="32"/>
+      <rect x="1137" y="600" width="7" height="32"/><rect x="1169" y="600" width="7" height="32"/><rect x="1201" y="600" width="7" height="32"/>
+      <rect x="1233" y="600" width="7" height="32"/><rect x="1265" y="600" width="7" height="32"/><rect x="1297" y="600" width="7" height="32"/>
+      <rect x="1329" y="600" width="7" height="32"/><rect x="1361" y="600" width="7" height="32"/><rect x="1393" y="600" width="7" height="32"/>
+      <rect x="1425" y="600" width="7" height="32"/><rect x="1457" y="600" width="7" height="32"/><rect x="1489" y="600" width="7" height="32"/>
+      <rect x="1521" y="600" width="7" height="32"/><rect x="1553" y="600" width="7" height="32"/><rect x="1585" y="600" width="7" height="32"/>
+    </g>
+    <path d="M0 588 L470 588 L470 580 L0 580Z" fill="#8a7756"/>
+    <path d="M1130 588 L1600 588 L1600 580 L1130 580Z" fill="#8a7756"/>
+  </g>
+
+  <!-- the house: the porch's facade, wider than the house behind it ("צר מאחריו ורחב מלפניו") -->
+  <g>
+    <!-- the narrower body behind, seen past the shoulders of the porch -->
+    <rect x="660" y="262" width="280" height="240" fill="url(#marbleSide)"/>
+    <!-- the facade of the porch -->
+    <rect x="600" y="220" width="400" height="282" fill="url(#marble)"/>
+    <rect x="600" y="220" width="400" height="282" fill="url(#courses)" opacity=".55"/>
+    <!-- the gold plating and the cornice -->
+    <rect x="592" y="210" width="416" height="14" fill="url(#gold)"/>
+    <rect x="600" y="224" width="400" height="5" fill="#8a6a2c" opacity=".45"/>
+    <!-- the spikes on the roof (כלה עורב) -->
+    <g fill="#e8bd5a">
+      <path d="M600 210 l3 -12 l3 12Z"/><path d="M618 210 l3 -12 l3 12Z"/><path d="M636 210 l3 -12 l3 12Z"/><path d="M654 210 l3 -12 l3 12Z"/>
+      <path d="M672 210 l3 -12 l3 12Z"/><path d="M690 210 l3 -12 l3 12Z"/><path d="M708 210 l3 -12 l3 12Z"/><path d="M726 210 l3 -12 l3 12Z"/>
+      <path d="M744 210 l3 -12 l3 12Z"/><path d="M762 210 l3 -12 l3 12Z"/><path d="M780 210 l3 -12 l3 12Z"/><path d="M798 210 l3 -12 l3 12Z"/>
+      <path d="M816 210 l3 -12 l3 12Z"/><path d="M834 210 l3 -12 l3 12Z"/><path d="M852 210 l3 -12 l3 12Z"/><path d="M870 210 l3 -12 l3 12Z"/>
+      <path d="M888 210 l3 -12 l3 12Z"/><path d="M906 210 l3 -12 l3 12Z"/><path d="M924 210 l3 -12 l3 12Z"/><path d="M942 210 l3 -12 l3 12Z"/>
+      <path d="M960 210 l3 -12 l3 12Z"/><path d="M978 210 l3 -12 l3 12Z"/><path d="M996 210 l3 -12 l3 12Z"/>
+    </g>
+    <!-- the opening of the porch -->
+    <rect x="752" y="300" width="96" height="202" fill="#2a1a0c"/>
+    <rect x="752" y="300" width="96" height="202" fill="url(#door)" opacity=".55"/>
+    <rect x="770" y="350" width="60" height="152" fill="url(#door)" opacity=".85"/>
+    <path d="M770 350 H830 V502 H770Z M800 350 V502" fill="none" stroke="#7a4a14" stroke-width="2"/>
+    <!-- seen through the opening: the oak beams and the golden vine over the opening of the sanctuary (מדות ג, ח) -->
+    <rect x="762" y="318" width="76" height="5" fill="url(#gold)"/>
+    <rect x="766" y="326" width="68" height="5" fill="url(#gold)"/>
+    <path d="M768 340 C776 346 782 334 790 341 C798 348 804 334 812 341 C820 348 826 336 832 340" fill="none" stroke="#f2c860" stroke-width="2.4"/>
+    <g fill="#f2c860">
+      <circle cx="779" cy="343" r="2.4"/><circle cx="800" cy="345" r="2.6"/><circle cx="821" cy="343" r="2.4"/>
+    </g>
+    <!-- the shadow line where the facade meets the court -->
+    <rect x="600" y="498" width="400" height="6" fill="#5e4c30" opacity=".5"/>
+  </g>
+
+  <!-- the walls of the courts -->
+  <g>
+    <rect x="500" y="500" width="600" height="132" fill="url(#court)"/>
+    <rect x="500" y="500" width="600" height="132" fill="url(#courses)"/>
+    <rect x="494" y="492" width="612" height="10" fill="#e6d6b0"/>
+    <rect x="494" y="502" width="612" height="3" fill="#6d5c40" opacity=".5"/>
+    <!-- gate houses -->
+    <rect x="560" y="470" width="70" height="162" fill="url(#court)"/>
+    <rect x="556" y="464" width="78" height="8" fill="#e6d6b0"/>
+    <rect x="970" y="470" width="70" height="162" fill="url(#court)"/>
+    <rect x="966" y="464" width="78" height="8" fill="#e6d6b0"/>
+    <rect x="580" y="560" width="30" height="72" fill="#2a1d10"/>
+    <rect x="990" y="560" width="30" height="72" fill="#2a1d10"/>
+    <rect x="580" y="560" width="30" height="72" fill="url(#door)" opacity=".35"/>
+    <rect x="990" y="560" width="30" height="72" fill="url(#door)" opacity=".35"/>
+    <!-- the great gate in the middle, gold-plated -->
+    <rect x="740" y="540" width="120" height="92" fill="#d9c79f"/>
+    <rect x="768" y="562" width="64" height="70" fill="url(#gold)"/>
+    <path d="M768 562 H832 V632 H768Z M800 562 V632" fill="none" stroke="#7a5216" stroke-width="2"/>
+    <rect x="734" y="532" width="132" height="9" fill="#efe1bd"/>
+  </g>
+
+  <!-- light and shade over everything -->
+  <rect width="1600" height="900" fill="url(#shade)"/>
+  <rect width="1600" height="900" fill="url(#vignette)"/>
+</svg>

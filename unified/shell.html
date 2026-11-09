@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>בית המקדש</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --color-primary:#c9a84c;--color-on-primary:#1a1200;
+    --color-surface-container-high:#171f37;--color-surface-container-highest:#1a1e30;
+    --color-surface:#0a0e1a;--color-on-surface:#e8e8e8;--color-on-surface-variant:#b8b4a6;
+    --color-surface-container:#121826;--color-outline:#2a2a3a;
+    --color-primary-subtle:rgba(201,168,76,.12);
+    --font-main:'Frank Ruhl Libre','David',serif;--font-ui:'Segoe UI',Arial,sans-serif;--font-size-base:18px;--line-height:1.5;
+    --radius-md:12px;--radius-lg:16px;
+    --topbar-h:56px;
+  }
+  @media(max-width:600px){:root{--topbar-h:44px}}
+  html,body{width:100%;height:100%;overflow:hidden;font-family:var(--font-main);font-size:var(--font-size-base);line-height:var(--line-height);direction:rtl}
+  html,body{background:var(--color-surface);color:var(--color-on-surface)}
+
+  /* the choice screen: its own bar (as the houses' bar), the picture of the house, two big buttons */
+  #home{position:fixed;inset:0;z-index:2;transition:opacity .25s}
+  #home.off{opacity:0;pointer-events:none}
+  header.topbar{
+    position:absolute;top:0;left:0;right:0;z-index:3;height:var(--topbar-h);
+    background:var(--color-surface-container-high);border-bottom:1px solid var(--color-outline);
+    box-shadow:0 1px 0 var(--color-primary-subtle);
+    padding:0 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+    font-family:var(--font-ui);user-select:none
+  }
+  header.topbar .title{font-size:16px;font-weight:600;color:var(--color-on-surface);white-space:nowrap}
+  header.topbar #version{font-size:12px;color:var(--color-on-surface-variant);white-space:nowrap;opacity:.9}
+  #scene{position:absolute;top:var(--topbar-h);left:0;right:0;bottom:0;overflow:hidden;background:#0a0e1a}
+  #scene > svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+  #pick{
+    position:absolute;left:0;right:0;bottom:6%;z-index:2;
+    display:flex;flex-direction:column;align-items:center;gap:18px;padding:0 16px
+  }
+  #pick h1{
+    font-family:var(--font-main);font-weight:700;font-size:2.1rem;line-height:1.2;color:#f6e7bf;
+    text-shadow:0 2px 14px rgba(0,0,0,.85)
+  }
+  #pick .row{display:flex;gap:22px;flex-wrap:wrap;justify-content:center}
+  .house{
+    width:300px;max-width:42vw;min-height:116px;padding:18px 20px;border-radius:var(--radius-lg);cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;
+    background:rgba(12,16,32,.78);border:1.5px solid var(--color-primary);color:#f3ead2;
+    box-shadow:0 10px 30px rgba(0,0,0,.45);backdrop-filter:blur(3px);
+    font-family:var(--font-main);transition:background .15s,transform .15s,box-shadow .15s
+  }
+  .house:hover,.house:focus-visible{background:rgba(201,168,76,.24);transform:translateY(-2px);box-shadow:0 14px 34px rgba(0,0,0,.55);outline:none}
+  .house .name{font-size:1.65rem;font-weight:700;color:#f6d77f;line-height:1.15}
+  .house .sub{font-size:1rem;color:#e6dcc0;line-height:1.35}
+  .house .back{font-family:var(--font-ui);font-size:.78rem;color:#cbbf9c;opacity:0;transition:opacity .2s}
+  .house.visited .back{opacity:1}
+  @media(max-width:640px){
+    #pick h1{font-size:1.6rem}
+    #pick .row{flex-direction:column;align-items:center;gap:12px}
+    .house{width:min(320px,86vw);max-width:none;min-height:92px;padding:12px 16px}
+    .house .name{font-size:1.35rem}
+  }
+  @media(max-height:520px){#pick{bottom:3%;gap:10px}#pick h1{font-size:1.4rem}.house{min-height:80px;padding:10px 14px}}
+
+  /* the houses: each in its own frame, both kept alive while the plugin is open */
+  iframe.house-frame{position:fixed;inset:0;width:100%;height:100%;border:0;display:block;z-index:1;
+    background:var(--color-surface);visibility:hidden;opacity:0;transition:opacity .25s}
+  iframe.house-frame.on{visibility:visible;opacity:1;z-index:4}
+</style>
+<script>
+// the theme before the first paint (the same cache the houses use), then the real one from plugin.boot / theme.changed
+(function(){
+  var KEY='tm-theme-v1';
+  function applyTheme(theme){
+    if(!theme||!theme.colorScheme)return false;
+    var cs=theme.colorScheme,r=document.documentElement;
+    var set=function(n,v){if(v)r.style.setProperty(n,v)};
+    set('--color-primary',cs.primary);set('--color-on-primary',cs.onPrimary);
+    set('--color-surface',cs.surface);set('--color-on-surface',cs.onSurface);
+    set('--color-on-surface-variant',cs.onSurfaceVariant||cs.secondary);
+    set('--color-surface-container',cs.surfaceContainer||cs.surface);
+    set('--color-surface-container-high',cs.surfaceContainerHigh||cs.surface);
+    set('--color-surface-container-highest',cs.surfaceContainerHighest||cs.surface);
+    set('--color-outline',cs.outline);
+    if(theme.typography){
+      var t=theme.typography;
+      if(t.fontFamily)r.style.setProperty('--font-main','\''+t.fontFamily+'\',\'David\',serif');
+      if(t.uiFontFamily)r.style.setProperty('--font-ui','\''+t.uiFontFamily+'\',\'Segoe UI\',Arial,sans-serif');
+      if(t.fontSize)r.style.setProperty('--font-size-base',t.fontSize+'px');
+    }
+    return true;
+  }
+  try{var c=localStorage.getItem(KEY);if(c)applyTheme(JSON.parse(c))}catch(_){}
+  window.__tmApplyTheme=applyTheme;
+})();
+</script>
+</head>
+<body>
+<div id="home">
+  <header class="topbar"><div class="title">בית המקדש</div><span id="version">v__PLUGIN_VERSION__</span></header>
+  <div id="scene">
+__BACKGROUND_SVG__
+    <div id="pick">
+      <h1>בית המקדש</h1>
+      <div class="row">
+        <button type="button" class="house" id="pick-rishon" data-house="rishon">
+          <span class="name">בית ראשון</span>
+          <span class="sub">כפירוש רש״י על ספר מלכים</span>
+          <span class="back">חוזר למקום שבו עזבת</span>
+        </button>
+        <button type="button" class="house" id="pick-sheni" data-house="sheni">
+          <span class="name">בית שני</span>
+          <span class="sub">לפי מסכת מידות והרמב״ם</span>
+          <span class="back">חוזר למקום שבו עזבת</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!--__HOUSE_SOURCES__-->
+<script>
+(function () {
+  "use strict";
+  // ---------- configuration (written by tools/build-unified.mjs) ----------
+  var CFG = /*__CONFIG__*/{
+    standalone: false,
+    houses: {
+      rishon: { name: "בית ראשון", version: "0.0.0", page: "rishon/index.html", items: ["open-beit-rishon"], books: [10, 39] },
+      sheni:  { name: "בית שני",   version: "0.0.0", page: "sheni/index.html",  items: ["open-beit-sheni"],  books: [89, 337] }
+    }
+  }/*__END_CONFIG__*/;
+  var HOUSES = ["rishon", "sheni"];
+  var OTZ = typeof window.Otzaria !== "undefined" && !!window.Otzaria && typeof window.Otzaria.on === "function";
+  var ROUTED = { "reader.toolbar_item_clicked": 1, "plugin.page_opened": 1 };
+
+  var home = document.getElementById("home");
+  var frames = {};            // house -> iframe
+  var current = "home";
+  var subs = { rishon: {}, sheni: {} };    // house -> {event: true}
+  var queued = { rishon: [], sheni: [] };  // routed events waiting for the house to subscribe
+  var boot = null;
+
+  function send(h, msg) {
+    var f = frames[h];
+    if (!f || !f.contentWindow) return;
+    try { f.contentWindow.postMessage(msg, "*"); }
+    catch (_) {
+      try { f.contentWindow.postMessage(JSON.parse(JSON.stringify(msg)), "*"); } catch (__) {}
+    }
+  }
+  // plugin.boot as the house expects it: its own version (the "what's new" window and the version in its bar)
+  function bootFor(h) {
+    if (!boot) return null;
+    var p;
+    try { p = JSON.parse(JSON.stringify(boot)); } catch (_) { p = {}; for (var k in boot) p[k] = boot[k]; }
+    p.plugin = p.plugin || {};
+    p.plugin.version = CFG.houses[h].version;
+    p.plugin.unifiedVersion = boot.plugin && boot.plugin.version;
+    return p;
+  }
+  function deliver(h, evt, payload) {
+    if (subs[h][evt]) send(h, { tm: "event", evt: evt, payload: evt === "plugin.boot" ? bootFor(h) : payload });
+  }
+
+  // ---------- which house an event of a book belongs to ----------
+  function routeOf(evt, d) {
+    var cands = [d];
+    if (d && typeof d === "object" && d.param && typeof d.param === "object") cands.push(d.param);
+    for (var i = 0; i < cands.length; i++) {
+      var o = cands[i];
+      if (!o || typeof o !== "object") continue;
+      var item = o.itemId || o.toolbarItemId || o.id;
+      for (var j = 0; j < HOUSES.length; j++) {
+        if (CFG.houses[HOUSES[j]].items.indexOf(item) >= 0) return HOUSES[j];
+      }
+      var keys = ["currentId", "currentBookId", "bookId", "currentBook", "book"];
+      for (var k = 0; k < keys.length; k++) {
+        var v = o[keys[k]];
+        if (v && typeof v === "object") v = v.id;
+        if (typeof v === "string" && /^\d+$/.test(v)) v = +v;
+        if (typeof v !== "number") continue;
+        for (var n = 0; n < HOUSES.length; n++) {
+          if (CFG.houses[HOUSES[n]].books.indexOf(v) >= 0) return HOUSES[n];
+        }
+      }
+    }
+    return current === "home" ? null : current;
+  }
+
+  // ---------- the real SDK (the top frame only) ----------
+  var hooked = {};
+  function hook(evt) {
+    if (!OTZ || hooked[evt]) return;
+    hooked[evt] = true;
+    window.Otzaria.on(evt, function (p) {
+      if (evt === "plugin.boot") {
+        boot = p;
+        try { if (p && p.theme && window.__tmApplyTheme(p.theme)) {} } catch (_) {}
+        HOUSES.forEach(function (h) { deliver(h, evt); });
+        return;
+      }
+      if (evt === "theme.changed") { try { window.__tmApplyTheme(p); } catch (_) {} }
+      if (ROUTED[evt]) {
+        var h = routeOf(evt, p);
+        if (!h) return;
+        show(h);
+        if (subs[h][evt]) deliver(h, evt, p);
+        else { queued[h].push([evt, p]); if (queued[h].length > 4) queued[h].shift(); }
+        return;
+      }
+      HOUSES.forEach(function (h) { deliver(h, evt, p); });
+    });
+  }
+  ["plugin.boot", "theme.changed", "reader.toolbar_item_clicked", "plugin.page_opened"].forEach(hook);
+
+  function callFor(h, d) {
+    var method = d.method, params = d.params;
+    // a report says which house it came from
+    if (method === "feedback.report" && params && typeof params.details === "string") {
+      params.details = "[" + CFG.houses[h].name + " " + CFG.houses[h].version + "] " + params.details;
+    }
+    var p;
+    try { p = Promise.resolve(window.Otzaria.call(method, params)); }
+    catch (e) { p = Promise.reject(e); }
+    p.then(function (value) {
+      send(h, { tm: "result", id: d.id, ok: true, value: value === undefined ? null : value });
+    }, function (err) {
+      var e = { message: String((err && err.message) || err) };
+      if (err && typeof err === "object") {
+        ["code", "name", "details"].forEach(function (k) { if (err[k] != null) { try { e[k] = JSON.parse(JSON.stringify(err[k])); } catch (_) {} } });
+      }
+      send(h, { tm: "result", id: d.id, ok: false, error: e });
+    });
+  }
+
+  // ---------- messages from the houses ----------
+  window.addEventListener("message", function (e) {
+    var d = e.data;
+    if (!d || typeof d !== "object" || typeof d.tm !== "string") return;
+    var h = d.tmHouse;
+    if (!frames[h] || e.source !== frames[h].contentWindow) return;
+    if (d.tm === "on") {
+      subs[h][d.evt] = true;
+      hook(d.evt);
+      if (d.evt === "plugin.boot" && boot) deliver(h, "plugin.boot");
+      var rest = [];
+      queued[h].forEach(function (q) { if (q[0] === d.evt) deliver(h, q[0], q[1]); else rest.push(q); });
+      queued[h] = rest;
+    } else if (d.tm === "call") {
+      if (OTZ) callFor(h, d);
+      else send(h, { tm: "result", id: d.id, ok: false, error: { message: "no Otzaria" } });
+    } else if (d.tm === "switch") {
+      show(d.to);
+    } else if (d.tm === "hello") {
+      send(h, { tm: "visible", visible: current === h });
+    }
+  });
+
+  // ---------- showing a house / the choice screen ----------
+  function frameFor(h) {
+    if (frames[h]) return frames[h];
+    var f = document.createElement("iframe");
+    f.className = "house-frame";
+    f.name = "tm-house:" + h + ":" + (OTZ ? "otz" : "web");
+    f.title = CFG.houses[h].name;
+    f.setAttribute("allow", "fullscreen; clipboard-write");
+    frames[h] = f;
+    if (CFG.standalone) {
+      var src = document.getElementById("src-" + h);
+      f.srcdoc = src ? src.value : "";
+    } else {
+      f.src = CFG.houses[h].page;
+    }
+    document.body.appendChild(f);
+    return f;
+  }
+  function show(to) {
+    if (to !== "home" && !CFG.houses[to]) return;
+    if (to === current) return;
+    current = to;
+    if (to === "home") {
+      home.classList.remove("off");
+      var b = document.getElementById("pick-" + (HOUSES.filter(function (h) { return frames[h]; })[0] || "rishon"));
+      try { b && b.focus({ preventScroll: true }); } catch (_) {}
+    } else {
+      frameFor(to);
+      home.classList.add("off");
+      var btn = document.getElementById("pick-" + to);
+      if (btn) btn.classList.add("visited");
+    }
+    HOUSES.forEach(function (h) {
+      var f = frames[h];
+      if (!f) return;
+      var on = h === to;
+      f.classList.toggle("on", on);
+      send(h, { tm: "visible", visible: on });
+      if (on) { try { f.focus(); } catch (_) {} }
+    });
+  }
+  Array.prototype.forEach.call(document.querySelectorAll(".house"), function (b) {
+    b.addEventListener("click", function () { show(b.getAttribute("data-house")); });
+  });
+  document.addEventListener("keydown", function (e) {
+    if (current !== "home") return;
+    if (e.key === "1") show("rishon");
+    else if (e.key === "2") show("sheni");
+  });
+  // for the headless tests
+  window.__tmShell = { show: show, current: function () { return current; }, frames: frames };
+})();
+</script>
+</body>
+</html>
