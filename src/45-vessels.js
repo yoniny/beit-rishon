@@ -1382,7 +1382,7 @@
       st.last = now;
       let changed = st.dirty;
       if (st.running || st.homing) {
-        st.tau += dt * (st.homing ? 3 : 1);
+        st.tau += dt * (st.homing ? 3 : 1 / ((ctx.shared && ctx.shared.demoSlow) || 1.5));   // 1.3.4 (the user: "כל ההדגמות יותר איטיות"); homing stays quick
         if (st.tau >= TL.total) {
           if (st.homing) { st.tau = 0; st.homing = false; } else st.tau -= TL.total;
         }
@@ -1463,6 +1463,7 @@
       get washStation() { return WASH.slice(); },
       get washAt() { return TL.wash.slice(); }
     };
+    (ctx.shared.demoStops || (ctx.shared.demoStops = [])).push({ id: "mechonaDemo", running: () => st.running || st.homing, stop: () => demo.reset() });   // 1.3.4: any switch parks it at once
     const explode = {
       // set(on[, instant]): animate (1.1 s) the laver and the כן up out of the base or back; instant = jump to the end state
       set(on, instant) {

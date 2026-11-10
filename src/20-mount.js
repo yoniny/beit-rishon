@@ -38,7 +38,9 @@
   var MNT_WC_WALL_H = 4;        // model choice: 4 high = 3 stone courses of 1 + 1 cedar course (the I Kings 6:36 / 7:12 pattern, repeated here by analogy)
   var MNT_STEP = 0.5;           // tread 0.5, rise 0.5 (SPEC 1, after Middot 2:3 "רום מעלה חצי אמה ושלחה חצי אמה")
   // 1.0.1 - the uses of the outer court (FIXES-1.0.1 section D): the sources name the things but give no measures, so every number is a model choice
-  var MNT_LISHKA = { L: 12, D: 10, H: 8, T: 1, ROOF: 0.5, DOOR_W: 2.5, DOOR_H: 4, X: [133, 193] }; // לשכות (Jer 35:4; 36:10; II Kings 23:11): 12 along the low wall x 10 deep
+  // 1.3.5 (the user: "תעביר את הלשכות בבית ראשון ל4 הפינות במקום באמצע"): X - the two chambers of each side stand in the court's corners,
+  // against the inner court's podium (x 98.5) and against the low east wall (its inner face x 227.5); until 1.3.4 at x 133 and 193
+  var MNT_LISHKA = { L: 12, D: 10, H: 8, T: 1, ROOF: 0.5, DOOR_W: 2.5, DOOR_H: 4, X: [104.5, 221.5] }; // לשכות (Jer 35:4; 36:10; II Kings 23:11): 12 along the low wall x 10 deep
                                 // x 8 high (7.5 of stone wall + a 0.5 cedar roof slab), walls 1 thick, a door 2.5 x 4 toward the court; two per side, centred at
                                 // x 133 / 193 (symmetric about the court's middle x 163, 28.5 from each end of the court's inside x 98.5..227.5)
   var MNT_AMUD = { x: 106, z: 8, r: 2, h: 1, pr: 0.6, ph: 3 }; // "העמוד" (II Kings 11:14; 23:3): a round stone platform 4 across (r 2) x 1 high with a short pillar
@@ -357,28 +359,33 @@
           leaf.rotation.y = -s * 1.22;
           g.add(leaf);
         }
-        lbl("לשכות (ירמיה לה, ד; לו, י)", (LK.X[0] + LK.X[1]) / 2, WC.y + LK.H + 4, zMid, 3.5); // one label per side (y 15), between the two chambers
-        // one pill per side, between the side's two chambers; both lift all four roofs, and the camera goes to look down into that side's pair
+        // 1.3.5 (the chambers in the four corners): a label and a pill on each chamber (until 1.3.4 one of each per side, between its two
+        // chambers); every pill lifts all four roofs, and the camera goes to look down into its own chamber, from the court's side
         ctx.shared.modelButtons = ctx.shared.modelButtons || [];
-        ctx.shared.modelButtons.push({
-          id: "mnt-lishka-roofs-" + (s < 0 ? "n" : "s"),
-          label: "פתח את גג הלשכות",
-          labelOn: "החזר את הגג",
-          title: "מסיר לרגע את גגות הארז של הלשכות, לצפייה בלבד, ומעביר את המבט מלמעלה אל תוך הלשכות.",
-          anchor: [(LK.X[0] + LK.X[1]) / 2, WC.y + LK.H + 1.5, zMid],
-          maxDist: 170,
-          get: () => !lishkaRoofs.visible,
-          set: (on) => {
-            lishkaRoofs.visible = !on;
-            if (on) {
-              const fly = ctx.ui && typeof ctx.ui.fly === "function" ? ctx.ui.fly : typeof ctx.flyTo === "function" ? ctx.flyTo : null;
-              if (fly) fly([(LK.X[0] + LK.X[1]) / 2 + 22, WC.y + 62, zMid + s * -28], [(LK.X[0] + LK.X[1]) / 2, WC.y + 2, zMid]);
+        for (const cx of LK.X) {
+          const west = cx < (LK.X[0] + LK.X[1]) / 2;
+          lbl("לשכות (ירמיה לה, ד; לו, י)", cx, WC.y + LK.H + 4, zMid, 3);
+          ctx.shared.modelButtons.push({
+            id: "mnt-lishka-roofs-" + (s < 0 ? "n" : "s") + (west ? "w" : "e"),
+            label: "פתח את גג הלשכות",
+            labelOn: "החזר את הגג",
+            title: "מסיר לרגע את גגות הארז של ארבע הלשכות, לצפייה בלבד, ומעביר את המבט מלמעלה אל תוך הלשכה.",
+            anchor: [cx, WC.y + LK.H + 1.5, zMid],
+            maxDist: 120,
+            get: () => !lishkaRoofs.visible,
+            under: () => !!(ctx.shared.camUnder && ctx.shared.camUnder(lishkaRoofs.children.length ? lishkaRoofs.children : [lishkaRoofs])),   // 1.3.4: not closed over the eye
+            set: (on) => {
+              lishkaRoofs.visible = !on;
+              if (on) {
+                const fly = ctx.ui && typeof ctx.ui.fly === "function" ? ctx.ui.fly : typeof ctx.flyTo === "function" ? ctx.flyTo : null;
+                if (fly) fly([cx + (west ? 9 : -9), WC.y + 44, zMid - s * 15], [cx, WC.y + 2, zMid]);
+              }
             }
-          }
-        });
+          });
+        }
       }
-      // the place item points at the NORTH pair (their doors face south, toward the default south-east camera); cam from the south-east
-      ocItem("lishkot", "לשכות (ירמיה לה, ד; לו, י)", (LK.X[0] + LK.X[1]) / 2, WC.y + LK.H / 2, -(zWallIn - LK.D / 2), [180, 34, 0]);
+      // 1.3.5: the place item is the court's middle - its view is from above, over the whole court with the four chambers in its corners
+      ocItem("lishkot", "לשכות (ירמיה לה, ד; לו, י)", (WC.x0 + WC.x1) / 2, WC.y + LK.H / 2, 0, [180, 150, 44]);
     } catch (e) {
       console.warn("[mount] outer court chambers skipped:", e);
     }

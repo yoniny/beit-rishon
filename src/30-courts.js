@@ -90,13 +90,20 @@
   // 1.0.1-L (A9, the user: "תאריך"): lengthened eastward from x 70 to x 71.8, 1.03 from the oxen's muzzles (x 72.83): vsl_layout's 1 amah holds and the Sea
   // does not move. So now 23.8 along the wall; the holy door (centred x 67.3) and the lots' ring (x 66.3) moved east with the wall, the same 0.5 and
   // 2.2 from its inner face; the seats keep their place from the west wall, the lantern re-centred on x 59.9. The numbers in the lines above are the earlier 22.
-  var CRT_GAZIT = { x0: 48, x1: 71.8, z0: -77, z1: -58, T: 1.5, H: 22, doorIn: 67.3, doorOut: 52 };
+  // 1.3.5 (the user, of the kuntres, point 12: "להגדיל את לשכת הגזית" - in both houses): 3 deeper to the north (z0 -77 -> -80), so the
+  // unconsecrated half holds the one row of 71 (below). So now 23.8 x 22.
+  var CRT_GAZIT = { x0: 48, x1: 71.8, z0: -80, z1: -58, T: 1.5, H: 22, doorIn: 67.3, doorOut: 52 };
   // the 71 seats (Sanhedrin 1:6) in a half circle round (x 58.25, the wall's centre line z -67.5), facing south: four rows (r = radius of
   // the seats' centres, n = seats, base = the step under the row; model choice: seats 0.8 wide, 1.0..1.06 amah apart - a person's seat -
   // so the half circle, 15.5 across and 7.75 deep, fits the outer half (inner faces x 49.5..68.5, z to -75.5) with a passage 1 wide along
   // the west wall from the profane door and 2.5 along the east wall); the lots' ring in the court half toward the east (x 64.5, z -62.25,
   // radius 1.8, before the holy door)
-  var CRT_GAZIT_SEATS = { x: 58.25, rows: [[4.2, 13, 0], [5.25, 16, 0.4], [6.3, 19, 0.8], [7.35, 23, 1.2]] };
+  // 1.3.5 (the user, of the kuntres, point 12; 21:30 "תקטין את הדיינים"): THE SEVENTY-ONE IN ONE ROW - Sanhedrin 4:3 "סנהדרין היתה כחצי גרן
+  // עגלה, כדי שיהו רואין זה את זה"; Rashi 36b (book 2180, line 1777): "בעגולה היו יושבין כדי שיהו כולן רואין זה את זה, לפי שאם היו יושבין
+  // בשורה אין פני הראשונים רואין זה את זה". Until 1.3.4 four rows (the lines above). Now one row on half an oval in the unconsecrated
+  // half: centre (x, z), half axes a (along the wall) and b (to the north), n seats evenly along it - 0.41 apart, so the seats are
+  // small (0.34 wide; a real row of 71 would need a radius of 22.6). A model choice.
+  var CRT_GAZIT_SEATS = { x: 59.9, z: -67.6, a: 9.2, b: 9.4, n: 71 };
   var CRT_GAZIT_LOTS = { x: 66.3, z: -62.25, r: 1.8 };   // 1.0.1-L (A9): was x 64.5
   // בית המטבחים (1.0.1-L, FIXES L.68; the sources are in the header - all Second Temple; the user's "תוסיף" makes it a model choice for
   // the First Temple). North of the altar (x 39.5..59.5, its north face z -10) and opposite it ("וכנגד כל המזבח כולו צפון"), at the
@@ -226,6 +233,31 @@
     const wallE = mnt_bandWall(g, Object.assign({ axis: "z", length: CO2.AZ_W - T, cx: CO2.azE, cz: 0, openings: [{ center: 0, width: CRT_GATE_W }] }, bandOpts)); // 130, z -65..65; east gate on the axis
     const wallW = mnt_bandWall(g, Object.assign({ axis: "z", length: CO2.AZ_W - T, cx: CO2.azW, cz: 0 }, bandOpts)); // 130; no gate on the west (Middot 1:4)
 
+    // 1.3.5 (the user, 10.11.2026 22:12: "בר שורא חובה"): BAR SHURA - Pesachim 86a (book 106, line 2736) "משכחת לה בבר שורא, דכתיב:
+    // ויאבל חל וחומה, ואמר רבי אחא ואיתימא רבי חנינא: שורא ובר שורא"; Rashi (book 2162, line 4148): "חומה קטנה לפנים מן החומה גדולה, והיא
+    // נמוכה ושוה לקרקע גובה העזרה, שקרקע העזרה הולך וגבוה ועולה במעלות"; Tosafot Yom Tov, Middot 2:3 (book 948, line 69): "כלומר שראשה
+    // תהא שוה לקרקע העזרה ותהא מוקדשת כמוה". As in the Second Temple's model: ONE low wall against the court's wall on its inside, all
+    // round, its top at the level of the court's floor. There the court of Israel lies two and a half amot under that level and the
+    // wall stands out of it; here the court has one level, so the wall's head is level with the floor - a band of darker smooth stone
+    // one amah wide at the wall's foot (0.06 proud, so that it reads), broken at the seven gates and where Lishkat HaGazit stands in
+    // the north wall. One amah thick - a model choice.
+    {
+      const bm = M2.stoneSmooth.clone();
+      bm.color.setHex(0x9d968a);
+      const xi = CO2.AZ_L / 2 - T / 2, zi = CO2.AZ_W / 2 - T / 2;   // 91, 65: the wall's inner faces
+      const band = (x0, x1, z0, z1) => { if (x1 - x0 < 0.05 || z1 - z0 < 0.05) return; const m = H2.box(g, x1 - x0, 0.06, z1 - z0, bm, (x0 + x1) / 2, AZ, (z0 + z1) / 2); m.name = "barShura"; m.castShadow = false; };
+      // along x between -xi and xi, less the spans [a, b] (sorted)
+      const run = (z0, z1, gaps) => { let x = -xi; for (const [a, b] of gaps) { band(x, a, z0, z1); x = b; } band(x, xi, z0, z1); };
+      const gates = CRT_NS_GATES.slice().sort((a, b) => a - b).map((x) => [x - CRT_GATE_W / 2 - 1.6, x + CRT_GATE_W / 2 + 1.6]);
+      const north = gates.concat([[CRT_GAZIT.x0 - 0.3, CRT_GAZIT.x1 + 0.3]]).sort((a, b) => a[0] - b[0]);
+      run(-zi, -zi + 1, north);
+      run(zi - 1, zi, gates);
+      band(xi - 1, xi, -zi + 1, -CRT_GATE_W / 2 - 1.6);
+      band(xi - 1, xi, CRT_GATE_W / 2 + 1.6, zi - 1);
+      band(-xi, -xi + 1, -zi + 1, zi - 1);
+      lbl("בר שורא — חומה קטנה לפנים מן החומה (רש״י פסחים פו.)", xi - 1.5, AZ + 3.2, 38, 2);
+    }
+
     // ---------- 7 gates (Middot 1:4 convention): square 10 x 20 openings, flat stone lintels (no arches), bronze doors (II Chr 4:9) ----------
     const portal = { T, openW: CRT_GATE_W, openH: CRT_GATE_H, doorH: CRT_GATE_H, doorMat: bronzeDoor, M: M2, H: H2, y: AZ };
     for (const gx of CRT_NS_GATES) {
@@ -244,7 +276,91 @@
     // the east gate: 6 steps (3 rise) from the outer court (החצר החיצונה) floor (level 3, 20-mount.js) up to the podium edge at x 98.5: model choice
     const wcY = ctx.shared && ctx.shared.newCourt && typeof ctx.shared.newCourt.y === "number" ? ctx.shared.newCourt.y : 3;
     const eSteps = Math.max(1, Math.round((AZ - wcY) / STEP));
-    H2.stairs(g, { width: SW, totalRise: AZ - wcY, steps: eSteps, dir: "W", x: podL / 2 + eSteps * STEP, y: wcY, z: 0, tread: STEP }); // x 101.5 -> 98.5
+    // 1.3.5 (the user: "את המדרגות שנמצאות בשער המזרחי של עזרת כהנים תעשה עגולות (זה שייך גם לבית שני)"): ROUND, as the fifteen steps of the
+    // Second Temple that went up from the women's court - "לא היו טרוטות, אלא מקפות כחצי גרן עגלה" (Middot 2:5): half discs, one on the
+    // other, their straight side at the podium's face (x 98.5) and their round side to the east; rise and tread half an amah (Middot
+    // 2:3). The top one 5.5 in radius (the gate's 10 and half an amah at each side), each one below it half an amah more - the lowest 8,
+    // clear of the king's pillar (its platform at x 104..108, z 6..10). Until 1.3.4 a straight flight 12 wide. The radii - a model choice.
+    // 1.3.5 (10.11.2026; the user, of the kuntres "בגדרי ודיני צורת הבית", point 1 - "לשנות לפי המאירי"; as the Second Temple's fifteen):
+    // THE STEPS GO ROUND AS HALF A THRESHING FLOOR, as the Meiri reads Middot 2:5 (book 6033, line 35): "מוקפות כחצי גורן, שהתחתונה קצרה,
+    // והשניה עודפת לה משני קצותיה, וכן שלישית לשניה" - the lowest the shortest, each one above it longer at both its ends. So: a block
+    // before the gate (x 98.5..105.9, z +-5.75) with a half-round hollow open to the east, its centre on the block's east face; the
+    // lowest step's edge 2.9 from the centre and each one above it half an amah more (the top one 5.4); rise and tread half an amah.
+    // Until then (the first build of 1.3.5) half discs lying one on the other, the lowest the widest. The radii and the block - a
+    // model choice. Each slab is one rise thick, the block less its own half disc.
+    {
+      const rise = (AZ - wcY) / eSteps, XW0 = podL / 2, R1 = 2.9, RT = R1 + (eSteps - 1) * STEP, XC = XW0 + 2 + RT, HZ = RT + 0.35;
+      for (let i = 0; i < eSteps; i++) {
+        const R = R1 + i * STEP;
+        const sh = new Shape();
+        sh.moveTo(XW0 - XC, -HZ);
+        sh.lineTo(0, -HZ);
+        sh.lineTo(0, -R);
+        sh.absarc(0, 0, R, -Math.PI / 2, Math.PI / 2, true);   // round the west: (0, -R) -> (-R, 0) -> (0, R)
+        sh.lineTo(0, HZ);
+        sh.lineTo(XW0 - XC, HZ);
+        sh.closePath();
+        const geo = new ExtrudeGeometry(sh, { depth: rise, bevelEnabled: false, curveSegments: 32 });
+        geo.rotateX(-Math.PI / 2);   // the shape's (u, v) -> the model's (x, -z); the depth -> up
+        const st = new Mesh(geo, M2.stoneSmooth);
+        st.name = "eastGateStep";
+        st.position.set(XC, wcY + rise * i, 0);
+        st.castShadow = st.receiveShadow = true;
+        g.add(st);
+      }
+    }
+
+    // 1.3.5 (the user, 10.11.2026 22:12: "תוסיף סנהדראות"; as in the Second Temple): THE TWO LESSER COURTS - Sanhedrin 11:2 (book 73, line 78)
+    // "שלשה בתי דינין היו שם, אחד יושב על פתח הר הבית, ואחד יושב על פתח העזרה, ואחד יושב בלשכת הגזית"; Rashi 86b (book 2180, lines
+    // 4632-4633): "על פתח הר הבית - הוא שער המזרחי שלפנים מן החיל לפני עזרת נשים", "ואחד יושב למעלה הימנו - כשעברו עזרת נשים ובאין לפני
+    // עזרת ישראל". In this model's courts: one outside the outer court's east gate (the court before the inner one - Rashi on I Kings
+    // 6:36), on the platform north of its steps; one inside the outer court before the inner court's east gate, north of its steps
+    // (the king's pillar stands south of them). Twenty-three (Sanhedrin 1:6) in half a circle on a low bench, as small figures. The
+    // places, the sides, the benches and the figures - model choices.
+    {
+      const bG = new CylinderGeometry(0.2, 0.3, 1, 10);
+      bG.translate(0, 0.5, 0);
+      const hG = new SphereGeometry(0.21, 12, 10);
+      const fM = new MeshStandardMaterial({ color: 0xffffff, roughness: 0.85 }), sM = new MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 });
+      const m4 = new Matrix4(), q = new Quaternion(), v = new Vector3(), p = new Vector3(), c3 = new Color();
+      const lesser = (cx, y, cz, R, a0, name) => {
+        const bodies = new InstancedMesh(bG, fM, 23), heads = new InstancedMesh(hG, sM, 23);
+        for (let i = 0; i < 23; i++) {
+          const a = a0 + (i + 0.5) / 23 * Math.PI, x = cx + R * Math.cos(a), z = cz + R * Math.sin(a);
+          m4.compose(p.set(x, y + 0.4, z), q, v.set(0.7, 0.8, 0.7));
+          bodies.setMatrixAt(i, m4);
+          bodies.setColorAt(i, c3.setHex([0xece4cc, 0xe3d9bb, 0xd9cfae][i % 3]));
+          m4.compose(p.set(x, y + 0.4 + 0.94, z), q, v.set(0.7, 0.7, 0.7));
+          heads.setMatrixAt(i, m4);
+          heads.setColorAt(i, c3.setHex([0xc99a73, 0xb98763, 0xd7aa86][i % 3]));
+        }
+        for (const im of [bodies, heads]) {
+          im.instanceMatrix.needsUpdate = true;
+          if (im.instanceColor) im.instanceColor.needsUpdate = true;
+          im.castShadow = true;
+          im.name = "lesserCourtFigures";
+          g.add(im);
+        }
+        const sh = new Shape();
+        sh.absarc(0, 0, R + 0.4, 0, Math.PI, false);
+        sh.lineTo(-(R - 0.4), 0);
+        sh.absarc(0, 0, R - 0.4, Math.PI, 0, true);
+        sh.lineTo(R + 0.4, 0);
+        const geo = new ExtrudeGeometry(sh, { depth: 0.4, bevelEnabled: false, curveSegments: 32 });
+        geo.rotateX(Math.PI / 2);   // the shape's y is the model's z; the bench hangs 0.4 down from its top
+        const bench = new Mesh(geo, M2.cedar);
+        bench.name = "lesserCourtBench";
+        bench.rotation.y = -a0;
+        bench.position.set(cx, y + 0.4, cz);
+        bench.castShadow = bench.receiveShadow = true;
+        g.add(bench);
+        lbl(name, cx, y + 4.2, cz, 1.7);
+      };
+      const nc = ctx.shared && ctx.shared.newCourt;
+      lesser(podL / 2 + 3.9, wcY, -11.2, 3.1, Math.PI * 0.95, "סנהדרי קטנה — על פתח העזרה (סנהדרין יא, ב)");   // the arc on its north side, open to the steps
+      if (nc && typeof nc.x1 === "number") lesser(nc.x1 + 6.5, LV2.HAR, -13, 3.4, Math.PI, "סנהדרי קטנה — על פתח הר הבית (סנהדרין יא, ב)");
+      ctx.shared.lesserCourts = { azarah: [podL / 2 + 3.9, wcY, -11.2], har: nc && typeof nc.x1 === "number" ? [nc.x1 + 6.5, LV2.HAR, -13] : null };
+    }
 
     // ---------- labels ----------
     // Rashi on I Kings 6:36: the inner court = עזרת כהנים ועזרת ישראל (Rashi on II Chr 4:9: "העזרה הגדולה. זו עזרת ישראל"); one court in the model, no split
@@ -272,7 +388,7 @@
     // priests stood for the lots ("והכהנים מוקפין ועומדין כמין (ב)כוליאר"; Rashi "בכוליאר - עגול"; the ring is a model choice: the priests
     // are not modelled); in the outer half toward the west - "וזקן יושב במערבה", "ובחצי של חל היו הסנהדרין יושבין" (Rambam 5:17) - the 71
     // seats (Sanhedrin 1:6) on a half circle ("כחצי גרן עגלה", Sanhedrin 4:3) facing south, toward the court (Tiferet Yisrael "פניהם
-    // לדרום ואחוריהן לצפון"), in four rows on rising steps (CRT_GAZIT_SEATS; one row of 71 would need a radius of 22.6 - the rows are a
+    // לדרום ואחוריהן לצפון"), in ONE row since 1.3.5 (CRT_GAZIT_SEATS: small seats on half an oval; until 1.3.4 four rows on rising steps - a
     // model choice, as in 1.0.1-K). Over the middle a raised lantern with windows (Rashi "בית
     // גבוה"; the "עלייה" under it is not modelled). Not modelled: the three rows of disciples sitting on the ground before them (Sanhedrin
     // 4:4; Tiferet Yisrael) and the two scribes standing (Sanhedrin 4:3). 1.0.1-K's two rows of columns in the court half are gone: the
@@ -298,7 +414,9 @@
       const WIN = [-8.7, -2.9, 2.9, 8.7];   // 1.0.1-L (A9): evenly along the 23.8
       crt_holedWall(H2, g, gzStone, { axis: "x", length: gx1 - gx0, height: gh, thickness: gt, cx: gcx, cz: gz1 - gt / 2, y: AZ, holes: [{ c: GZ.doorIn - gcx, b: 0.04, w: 5, h: 8.96 }].concat(W(WIN)) });    // south: the door into the court ("פתוח בקדש"), x 63..68
       crt_holedWall(H2, g, gzStone, { axis: "x", length: gx1 - gx0, height: gh, thickness: gt, cx: gcx, cz: gz0 + gt / 2, y: AZ, holes: [{ c: GZ.doorOut - gcx, b: 0.04, w: 4, h: 8.96 }].concat(W(WIN)) });   // north: the door outside ("פתוח בחול"), x 50..54
-      for (const wx of [gx0 + gt / 2, gx1 - gt / 2]) crt_holedWall(H2, g, gzStone, { axis: "z", length: gz1 - gz0 - 2 * gt, height: gh, thickness: gt, cx: wx, cz: gcz, y: AZ, holes: W([-4.75, 4.75]) });
+      // 1.3.5: the hall is no longer centred on the court wall's line (3 deeper to the north): the side walls round the hall's own middle,
+      // their windows where the court wall does not stand outside them (z -74.25 and -62.75)
+      for (const wx of [gx0 + gt / 2, gx1 - gt / 2]) crt_holedWall(H2, g, gzStone, { axis: "z", length: gz1 - gz0 - 2 * gt, height: gh, thickness: gt, cx: wx, cz: (gz0 + gz1) / 2, y: AZ, holes: W([-74.25 - (gz0 + gz1) / 2, -62.75 - (gz0 + gz1) / 2]) });
       // door leaves (cedar, ajar into the chamber; model choice)
       for (const [dx, dz, w, inward] of [[GZ.doorIn, gz1 - gt / 2, 5, -1], [GZ.doorOut, gz0 + gt / 2, 4, 1]]) for (const s of [-1, 1]) {
         const leaf = new Group();
@@ -338,6 +456,7 @@
         anchor: [(LX0 + LX1) / 2, top + 8, (LZ0 + LZ1) / 2],
         maxDist: 170,
         get: () => !gazitRoof.visible,
+        under: () => !!(ctx.shared.camUnder && ctx.shared.camUnder(gazitRoof.children.length ? gazitRoof.children : [gazitRoof])),   // 1.3.4: not closed over the eye
         set: (on) => {
           gazitRoof.visible = !on;
           if (on) {
@@ -349,38 +468,121 @@
       // "פייס במזרחה": the ring of the lots in the court half toward the east (CRT_GAZIT_LOTS; a darker stone ring, half sunk in the floor)
       const LT = CRT_GAZIT_LOTS;
       H2.ring(g, LT.r, 0.12, new MeshStandardMaterial({ color: 0x7a6650, roughness: 0.55, metalness: 0 }), LT.x, AZ, LT.z).name = "gazitLots";
-      // the 71 seats of the Sanhedrin: cedar, each 0.8 wide x 0.55 deep with a back, every seat turned toward the centre (CRT_GAZIT_SEATS.x,
-      // the wall's centre line); the half circle lies on the north (outer) side, so the middle seats face south
-      const seatGeo = (base) => {
+      // 1.3.5: THE 71 SEATS IN ONE ROW (CRT_GAZIT_SEATS; the sources there): cedar, each 0.34 wide x 0.4 deep, 0.45 high, with a back,
+      // evenly along half an oval that lies on the north (outer) side, every seat turned square to the row (its front to the inside), so
+      // the middle seats face south - "פניהם לדרום ואחוריהן לצפון" (Tiferet Yisrael)
+      const SX = CRT_GAZIT_SEATS.x, SZ = CRT_GAZIT_SEATS.z, SA = CRT_GAZIT_SEATS.a, SB = CRT_GAZIT_SEATS.b;
+      {
         const parts = [];
-        const s = new BoxGeometry(0.55, 0.9 + base, 0.8);
-        s.translate(0, (0.9 + base) / 2, 0);
+        const s = new BoxGeometry(0.4, 0.45, 0.34);
+        s.translate(0, 0.225, 0);
         parts.push(s);
-        const b = new BoxGeometry(0.1, 1.0, 0.8);
-        b.translate(-0.225, 0.9 + base + 0.5, 0);
+        const b = new BoxGeometry(0.07, 0.55, 0.34);
+        b.translate(-0.165, 0.45 + 0.275, 0);
         parts.push(b);
-        return mergeGeometries(parts);
-      };
-      const SX = CRT_GAZIT_SEATS.x;
-      const arc = (r, n) => {
-        const out = [];
-        for (let i = 0; i < n; i++) {
-          const th = Math.PI * (i + 0.5) / n;                    // 0..PI: the half circle on the north (outer) side, from east to west
-          const m = new Matrix4().makeRotationY(Math.PI + th);   // the seat's front (+x) turned toward the centre
-          m.setPosition(SX + r * Math.cos(th), AZ, gcz - r * Math.sin(th));
-          out.push(m);
+        const seat = mergeGeometries(parts);
+        // n points evenly spaced by length along the half oval, t 0 (the east end) .. PI (the west end)
+        const N = 720, acc = [0], n = CRT_GAZIT_SEATS.n;
+        let px = SA, pz = 0;
+        for (let i = 1; i <= N; i++) { const t = Math.PI * i / N, x = SA * Math.cos(t), z = SB * Math.sin(t); acc.push(acc[i - 1] + Math.hypot(x - px, z - pz)); px = x; pz = z; }
+        const inst = new InstancedMesh(seat, M2.cedar, n);
+        for (let k = 0, j = 0; k < n; k++) {
+          const want = acc[N] * (k + 0.5) / n;
+          while (j < N - 1 && acc[j + 1] < want) j++;
+          const t = Math.PI * (j + (want - acc[j]) / Math.max(1e-9, acc[j + 1] - acc[j])) / N;
+          const nx = -Math.cos(t) / SA, nz = Math.sin(t) / SB;           // the oval's inward normal (x, z) at t
+          const m = new Matrix4().makeRotationY(Math.atan2(-nz, nx));     // the seat's front (+x) along it
+          m.setPosition(SX + SA * Math.cos(t), AZ, SZ - SB * Math.sin(t));
+          inst.setMatrixAt(k, m);
         }
-        return out;
-      };
-      for (const [r, n, base] of CRT_GAZIT_SEATS.rows) {
-        const ms = arc(r, n);
-        const inst = new InstancedMesh(seatGeo(base), M2.cedar, ms.length);
-        ms.forEach((m, i) => inst.setMatrixAt(i, m));
         inst.instanceMatrix.needsUpdate = true;
         inst.castShadow = false;
         inst.receiveShadow = true;
         inst.name = "sanhedrinSeats";
         g.add(inst);
+      }
+      // 1.3.5 (the user, 10.11.2026 22:08: "את השינויים בלשכת הגזית תעתיק גם לבית ראשון"): AS IN THE SECOND TEMPLE'S HALL - small figures (the
+      // First Temple's model had none until now; the user was told): a judge on each of the 71 seats, the one in the middle marked
+      // (the Second Temple's card: "הנשיא באמצע" - a model's statement); THE THREE ROWS OF STUDENTS - Sanhedrin 4:4 "ושלש שורות של תלמידי
+      // חכמים יושבין לפניהם", 23 each (Rashi 37a, book 2180, line 1781) - in two readings, ctx.shared.sanhedrinRows.set("round" |
+      // "straight"): Rashi 37a (line 1782) "אף הן כעגולה, אלא שהגדולים יושבין על הספסלין והתלמידים על הקרקע" - the default; the Yad Ramah
+      // (book 1957, line 564) "שורות פשוטות היו ולא בעיגול"; and THE TWO SCRIBES standing before the judges, one at the right and one at
+      // the left (4:3). The figures, their sizes and the gaps between the rows - model choices. The names inside show with the roof open.
+      {
+        const bodyGeo = new CylinderGeometry(0.2, 0.3, 1, 10);
+        bodyGeo.translate(0, 0.5, 0);
+        const headGeo = new SphereGeometry(0.21, 12, 10);
+        const figMat = new MeshStandardMaterial({ color: 0xffffff, roughness: 0.85 });
+        const skinMat = new MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 });
+        const cloth = [0xece4cc, 0xe3d9bb, 0xd9cfae, 0xf1ebd8], cloth2 = [0xb9c4d2, 0xa9b6c6, 0xc6cfdb], skin = [0xc99a73, 0xb98763, 0xd7aa86];
+        const mt = new Matrix4(), q0 = new Quaternion(), sc = new Vector3(), ps = new Vector3(), col = new Color();
+        // n points evenly spaced by length on the half oval (a, b) round (SX, SZ), from t0 to t1 (0 = the east end, PI = the west end)
+        const ovalPts = (a, b, n, t0, t1) => {
+          const N = 720, acc = [0];
+          let px = a * Math.cos(t0), pz = b * Math.sin(t0);
+          for (let i = 1; i <= N; i++) { const t = t0 + (t1 - t0) * i / N, x = a * Math.cos(t), z = b * Math.sin(t); acc.push(acc[i - 1] + Math.hypot(x - px, z - pz)); px = x; pz = z; }
+          const out = [];
+          for (let k = 0, j = 0; k < n; k++) {
+            const want = acc[N] * (k + 0.5) / n;
+            while (j < N - 1 && acc[j + 1] < want) j++;
+            const t = t0 + (t1 - t0) * (j + (want - acc[j]) / Math.max(1e-9, acc[j + 1] - acc[j])) / N;
+            out.push([SX + a * Math.cos(t), SZ - b * Math.sin(t)]);
+          }
+          return out;
+        };
+        const figures = (parent, pts, y, w, h, colors, special) => {
+          const bodies = new InstancedMesh(bodyGeo, figMat, pts.length), heads = new InstancedMesh(headGeo, skinMat, pts.length);
+          pts.forEach(([x, z], i) => {
+            const sp = special === i, hh = sp ? h * 1.12 : h;
+            mt.compose(ps.set(x, y, z), q0, sc.set(w, hh, w));
+            bodies.setMatrixAt(i, mt);
+            bodies.setColorAt(i, col.setHex(sp ? 0xe6c870 : colors[(i * 7) % colors.length]));
+            mt.compose(ps.set(x, y + hh + 0.2 * w, z), q0, sc.set(w, w, w));
+            heads.setMatrixAt(i, mt);
+            heads.setColorAt(i, col.setHex(skin[(i * 5) % 3]));
+          });
+          for (const im of [bodies, heads]) {
+            im.instanceMatrix.needsUpdate = true;
+            if (im.instanceColor) im.instanceColor.needsUpdate = true;
+            im.castShadow = false;
+            im.receiveShadow = true;
+            im.name = "sanhedrinFigures";
+            parent.add(im);
+          }
+        };
+        figures(g, ovalPts(SA, SB, CRT_GAZIT_SEATS.n, 0, Math.PI), AZ + 0.45, 0.6, 0.72, cloth, (CRT_GAZIT_SEATS.n - 1) / 2);
+        const stRound = new Group(), stStraight = new Group();
+        stRound.name = "sanhedrinStudentsRound";
+        stStraight.name = "sanhedrinStudentsStraight";
+        stStraight.visible = false;
+        g.add(stRound);
+        g.add(stStraight);
+        for (const d of [1.9, 3.2, 4.5]) figures(stRound, ovalPts(SA - d, SB - d, 23, 0.1 * Math.PI, 0.9 * Math.PI), AZ, 0.6, 0.62, cloth2, -1);
+        for (const dz of [1.7, 3.0, 4.3]) figures(stStraight, Array.from({ length: 23 }, (_, i) => [SX - 7.48 + i * 0.68, SZ - dz]), AZ, 0.6, 0.62, cloth2, -1);
+        ctx.shared.sanhedrinRows = { mode: "round", set(m) { this.mode = m === "straight" ? "straight" : "round"; stRound.visible = this.mode === "round"; stStraight.visible = this.mode === "straight"; return this.mode; } };
+        // the two scribes of the judges, standing in the half circle before them
+        for (const sx of [-2.6, 2.6]) {
+          const b = new Mesh(new CylinderGeometry(0.18, 0.26, 1.9, 10), new MeshStandardMaterial({ color: 0x8fa3b8, roughness: 0.85 }));
+          b.position.set(SX + sx, AZ + 0.95, SZ - 0.6);
+          const hd = new Mesh(new SphereGeometry(0.17, 12, 10), new MeshStandardMaterial({ color: 0xc99a73, roughness: 0.8 }));
+          hd.position.set(SX + sx, AZ + 2.05, SZ - 0.6);
+          for (const m of [b, hd]) { m.castShadow = false; m.name = "sanhedrinScribe"; g.add(m); }
+        }
+        // the names inside: a layer that goes with the open roof (the pill "crt-gazit-roof")
+        const gazitIn = new Group();
+        gazitIn.name = "gazitInside";
+        gazitIn.visible = false;
+        g.add(gazitIn);
+        ctx.layers = ctx.layers || {};
+        ctx.layers.gazitInside = gazitIn;
+        const rb = (ctx.shared.modelButtons || []).find((b) => b && b.id === "crt-gazit-roof");
+        if (rb) { const set0 = rb.set; rb.set = (on) => { set0(on); gazitIn.visible = !!on; }; }
+        ctx.labels.push(
+          { text: "הסנהדרין הגדולה — שבעים ואחד בשורה אחת, כחצי גורן", x: SX, y: AZ + 5.2, z: SZ - SB + 1.2, size: 1.8, layer: "gazitInside" },
+          { text: "הנשיא", x: SX, y: AZ + 2.6, z: SZ - SB - 0.2, size: 1.1, layer: "gazitInside" },
+          { text: "סופרי הדיינין", x: SX, y: AZ + 3.3, z: SZ - 0.6, size: 1, layer: "gazitInside" },
+          { text: "שלוש שורות של תלמידי חכמים", x: SX, y: AZ + 2.2, z: SZ - 3.6, size: 1, layer: "gazitInside" }
+        );
       }
       // the label: Yoma 19a + the Rambam for the side, Yoma 25a for the two halves (FIXES L.21)
       // (y 46: 12 above the lantern, so from the court's default view it clears the row of the north gates' labels at y 31)
@@ -397,7 +599,7 @@
       ctx.shared.flyPoints.lishkatHaGazitOut = { pos: [135, 80, 50], target: [60, 12, -48] };
       ctx.shared.lishkatHaGazit = {
         x0: gx0, x1: gx1, z0: gz0, z1: gz1, y: AZ, side: "north", seats: 71,
-        seatRows: CRT_GAZIT_SEATS.rows.map((r) => ({ r: r[0], n: r[1], base: r[2] })), seatsCentre: [SX, gcz],
+        seatRow: { n: CRT_GAZIT_SEATS.n, a: SA, b: SB }, seatsCentre: [SX, SZ],   // 1.3.5: one row on half an oval (was seatRows, four)
         lots: { x: LT.x, z: LT.z, r: LT.r },
         boundaryZ: [CO2.azN - T / 2, CO2.azN + T / 2],
         doors: { court: [GZ.doorIn, gz1], outside: [GZ.doorOut, gz0] },
@@ -466,7 +668,22 @@
         hookParts.push(new CylinderGeometry(hr, hr, tipL, 8).translate(dx * (SL.postW / 2 + rodL - 0.02), hy + tipL / 2 - hr, dz * (SL.postW / 2 + rodL - 0.02)));
       }
       const hookGeo = mergeGeometries(hookParts);
-      inst(hookGeo, ironSl, pillarAt, "slaughterHooks", false, layG.book);
+      // 1.3.4 (the user, 10.11.2026: "תוסיף כפתור לאונקליות"; as the Second Temple plugin 1.9.2): every hooks' instance has a twin in a
+      // floating colour, lit by the button "האונקליות" (below) for 15 s
+      const glowM = new MeshBasicMaterial({ color: 0xffc23a, transparent: true, opacity: 0.95, depthTest: false, depthWrite: false });
+      const glows = [], m4g = new Matrix4();
+      const twin = (im) => {
+        const tw = new InstancedMesh(im.geometry, glowM, im.count);
+        for (let i = 0; i < im.count; i++) { im.getMatrixAt(i, m4g); tw.setMatrixAt(i, m4g); }
+        tw.instanceMatrix.needsUpdate = true;
+        tw.renderOrder = 30;
+        tw.visible = false;
+        tw.name = im.name + "-glow";
+        im.parent.add(tw);
+        glows.push(tw);
+        return im;
+      };
+      twin(inst(hookGeo, ironSl, pillarAt, "slaughterHooks", false, layG.book));
       // 1.0.1-L (A5, A6): the Meiri's layout - the same places, a taller stone, short beams from pillar to pillar along each row, hooks on the beams
       {
         const BM = CRT_SLAUGHTER_BEAM, by = BM.pillarH, span = SL.pillarCols[1] - SL.pillarCols[0];
@@ -486,7 +703,7 @@
         }
         parts.push(new CylinderGeometry(hr, hr, rodL, 8).translate(0, by - rodL / 2 + 0.02, 0));
         parts.push(new CylinderGeometry(hr, hr, tipL, 8).rotateX(Math.PI / 2).translate(0, by - rodL + 0.02, tipL / 2));
-        inst(mergeGeometries(parts), ironSl, beamHookAt, "slaughterHooks-meiri", false, layG.meiri);
+        twin(inst(mergeGeometries(parts), ironSl, beamHookAt, "slaughterHooks-meiri", false, layG.meiri));
       }
       // 1.0.1-L (A5, A6): the Ra'avyah's and the Gra's layout - one east-west row, a table in each gap and the eighth beyond the east end
       {
@@ -500,7 +717,7 @@
         inst(mergeGeometries(t2), M2.marble, rowTables, "slaughterTables-oneRow", true, layG.oneRow);
         inst(H2.uvWorldBox(new BoxGeometry(SL.pillarW, SL.pillarH, SL.pillarW), SL.pillarW, SL.pillarH, SL.pillarW).translate(0, SL.pillarH / 2, 0), M2.stoneSmooth, rowAt, "slaughterPillars-oneRow", true, layG.oneRow);
         inst(H2.uvWorldBox(new BoxGeometry(SL.postW, SL.postH, SL.postW), SL.postW, SL.postH, SL.postW).translate(0, SL.pillarH + SL.postH / 2, 0), M2.cedar, rowAt, "slaughterPosts-oneRow", true, layG.oneRow);
-        inst(hookGeo, ironSl, rowAt, "slaughterHooks-oneRow", false, layG.oneRow);
+        twin(inst(hookGeo, ironSl, rowAt, "slaughterHooks-oneRow", false, layG.oneRow));
       }
       // the switch (1.0.1-L, A5, A6): the UI's opinion row sets it; default "book"
       ctx.shared.slaughterLayout = {
@@ -514,6 +731,36 @@
           return key;
         }
       };
+      // 1.3.4: THE BUTTON "האונקליות" by the pillars - the eye comes close and the hooks of the layout shown are lit in a floating colour for
+      // 15 s, with the Mishnah's words (Middot 3:5); ctx.shared.onkliot(on, noFly) - the opinions row lights them too, without its own flight
+      {
+        const lg = new Group();
+        lg.visible = false;
+        g.add(lg);
+        ctx.layers.onkGlow = lg;
+        ctx.labels.push({ text: "״ואנקליות של ברזל היו קבועין בהם, ושלשה סדרים היו לכל אחד ואחד, שבהם תולין״ (מדות ג, ה)", x: scx, y: AZ + 6.6, z: -46.5, size: 1.1, layers: ["onkGlow"] });
+        const ON = { on: false, timer: null };
+        const glowSet = (on) => { ON.on = !!on; for (const t of glows) t.visible = ON.on; lg.visible = ON.on; };
+        ctx.shared.onkliot = (on, noFly) => {
+          clearTimeout(ON.timer);
+          glowSet(on !== false);
+          if (!ON.on) return;
+          const fly = ctx.ui && typeof ctx.ui.fly === "function" ? ctx.ui.fly : typeof ctx.flyTo === "function" ? ctx.flyTo : null;
+          if (fly && !noFly) fly([scx, AZ + 10.5, -36.5], [scx, AZ + 2.5, -53.5]);   // from the south, over the tables: all the pillars
+          ON.timer = setTimeout(() => glowSet(false), 15000);
+        };
+        ctx.shared.modelButtons = ctx.shared.modelButtons || [];
+        ctx.shared.modelButtons.push({
+          id: "crt-onkliot", label: "האונקליות", labelOn: "כבה את הסימון", maxDist: 70,
+          title: "״ואנקליות של ברזל היו קבועין בהם, ושלשה סדרים היו לכל אחד ואחד, שבהם תולין״ (מדות ג, ה) — המבט מתקרב, והאונקליות מסומנות בצבע צף ל־15 שניות, בשיטה שנבחרה בשורה ״בית המטבחים״.",
+          anchor: () => {
+            const p = ctx.camera && ctx.camera.position;
+            return p && p.x > SL.x0 - 30 && p.x < SL.x1 + 50 && p.z < 10 && p.z > -100 && p.y < AZ + 70 ? [SL.pillarCols[SL.pillarCols.length - 1] + 1.6, AZ + 4.9, -53.5] : null;
+          },
+          get: () => ON.on,
+          set: (on) => ctx.shared.onkliot(!!on)
+        });
+      }
       // labels (their texts are keys of the UI's LABEL_MAP). 1.0.1-L: placed from the views (headless projection with the UI's label scaling):
       // from the fly point they cover no ring, table or pillar, and in the court's default view they do not lie on the altar's or the Sea's
       // label (at x 49.5, y 13 the first one lay on "מזבח הנחושת"; at x 41.5, y 8.6 the second stood at the demonstration's stop and the
@@ -555,4 +802,35 @@
       innerE: { x: CO2.azE, z: 0 }
     });
     ctx.shared.innerCourt = { x0: CO2.azW, x1: CO2.azE, z0: CO2.azN, z1: CO2.azS, y: AZ, wallH: WH, wallT: T };
+    // 1.3.3 (from the Second Temple plugin 1.5.0; the user's list: "תחומים שנדלקים על הרצפה"): THE COURTS' ZONES - a translucent patch and a
+    // bright frame on the floor, lit for 15 s by their places (ctx.shared.zones.<key>, a feature of 70-ui.js), each with its label: the inner
+    // court, "החצר הפנימית" (I Kings 6:36) = "חצר הכהנים" (II Chr 4:9), 187 x 135 as in the model; the great court, "העזרה הגדולה" (II Chr 4:9)
+    // = "החצר הגדולה" (I Kings 7:12), the platform within its wall; the outer court, "החצר החיצונה (החצר החדשה)". The measures are the model's
+    // (model choices, as each place's card says); the colours - the Second Temple plugin's.
+    {
+      ctx.shared.zones = ctx.shared.zones || {};
+      ctx.layers = ctx.layers || {};
+      const zone = (key, x0, x1, z0, z1, y, color, text, size) => {
+        const grp = new Group();
+        grp.visible = false;
+        grp.name = key;
+        const pm = new MeshBasicMaterial({ color, transparent: true, opacity: 0.3, depthWrite: false });
+        const patch = new Mesh(new BoxGeometry(x1 - x0, 0.04, z1 - z0), pm);
+        patch.position.set((x0 + x1) / 2, y + 0.07, (z0 + z1) / 2);
+        patch.userData.noPick = true;
+        patch.renderOrder = 2;
+        grp.add(patch);
+        const fm = new MeshBasicMaterial({ color });
+        const bar = (w, d, x, z) => { const b = new Mesh(new BoxGeometry(w, 0.22, d), fm); b.position.set(x, y + 0.11, z); b.userData.noPick = true; grp.add(b); };
+        bar(x1 - x0, 0.6, (x0 + x1) / 2, z0); bar(x1 - x0, 0.6, (x0 + x1) / 2, z1); bar(0.6, z1 - z0, x0, (z0 + z1) / 2); bar(0.6, z1 - z0, x1, (z0 + z1) / 2);
+        ctx.root.add(grp);
+        ctx.layers[key] = grp;
+        ctx.shared.zones[key] = { key, on: false, get() { return grp.visible; }, set(v) { this.on = !!v; grp.visible = this.on; } };
+        ctx.labels.push({ text, x: (x0 + x1) / 2, y: y + 3, z: (z0 + z1) / 2, size: size || 3, layer: key });
+      };
+      const az = CO2.AZ_L / 2, aw = CO2.AZ_W / 2;
+      zone("zoneInner", -az, az, -aw, aw, AZ, 0xffb13a, "החצר הפנימית — חצר הכהנים (מלכים א ו, לו; דברי הימים ב ד, ט)", 4);
+      zone("zoneGreat", CO2.harW, CO2.harE, CO2.harN, CO2.harS, LV2.HAR, 0x3aa0ff, "החצר הגדולה — העזרה הגדולה (מלכים א ז, יב; דברי הימים ב ד, ט)", 6);
+      if (typeof MNT_WC_SIZE === "number") zone("zoneOuter", CO2.azE, CO2.azE + MNT_WC_SIZE, -MNT_WC_SIZE / 2, MNT_WC_SIZE / 2, LV2.HAR + (typeof MNT_WC_Y === "number" ? MNT_WC_Y : 3), 0xc07aff, "החצר החיצונה — החצר החדשה (דברי הימים ב כ, ה)", 4);
+    }
   }

@@ -180,14 +180,33 @@
     rampYoseG.visible = false;
     g.add(rampDefG);
     g.add(rampYoseG);
-    {
-      const RW = 16;                                   // Middot 3:3 "וכבש היה לדרומו של מזבח, שלשים ושתים על רחב שש עשרה" (convention)
-      // z 10.04: the end at the top; z 11.04 over the sovev; z 12.04 over the yesod; z 12.04..42 on the floor
-      prism(ACX - RW / 2, ACX + RW / 2, [
-        [ZS + YS + GAP, 0], [42, 0], [ACZ + S / 2 + GAP, RTOP(ACZ + S / 2 + GAP)],
-        [ACZ + S / 2 + GAP, SVH + GAP], [ZS + GAP, SVH + GAP], [ZS + GAP, YS + GAP], [ZS + YS + GAP, YS + GAP]
-      ], AS, rampDefG);
-    }
+    // 1.3.5 (the user, 10.11.2026 22:12, of the three readings built in the Second Temple: "אפשרות 3"): THE AIR BETWEEN THE RAMP AND THE
+    // ALTAR - three readings, each a whole prism of its own (no seam), switched by ctx.shared.rampGap.set("hair" | "tosafot" | "chaim"):
+    //  "hair" (the default, as before): "מבדל מן המזבח מלא חוט השערה" (Rashi Shemot 27:5; book 3692, line 1912), "ואויר מעט" (Rambam 2:13);
+    //  "tosafot" (Zevachim 62b d"h אויר קרקע; book 1936, line 663): "אבל הכא בעינן אויר גדול וניכר" - half an amah, over the sovev (the
+    //   measure - a model choice);
+    //  "chaim" (Tosafot Zevachim 87b; line 949): "יש אויר מפסיק יותר מכדי אמה סובב, כדי שיהא אויר קרקע מפסיקו". In the First Temple the
+    //   yesod ran along the south too (Tosafot 61b, above), so the ground shows only past the sovev's amah AND the yesod's: two amot and
+    //   a quarter (the user's choice). There the ramp's head is a plain upright face on the floor.
+    // The foot stays in its place and the slope is the same: the head only ends earlier (and lower).
+    const RAMP_GAPS = { hair: GAP, tosafot: 0.5, chaim: 1 + YS + 0.25 };
+    const rampMain = {};
+    // zf - the altar's upper face; zw - the face of the wall below the sovev; foot - the ramp's foot; top(z) - its top over the floor
+    const mainRamp = (grp, zf, zw, foot, top) => {
+      const out = {};
+      for (const k in RAMP_GAPS) {
+        const zh = zf + RAMP_GAPS[k];
+        const pts = zh >= zw + YS + GAP
+          ? [[zh, 0], [foot, 0], [zh, top(zh)]]
+          : [[zw + YS + GAP, 0], [foot, 0], [zh, top(zh)], [zh, SVH + GAP], [zw + GAP, SVH + GAP], [zw + GAP, YS + GAP], [zw + YS + GAP, YS + GAP]];
+        out[k] = prism(ACX - 8, ACX + 8, pts, AS, grp);   // Middot 3:3 "שלשים ושתים על רחב שש עשרה" (convention)
+        out[k].name = "rampMain_" + k;
+        out[k].visible = k === "hair";
+      }
+      return out;
+    };
+    // z 10.04: the end at the top; z 11.04 over the sovev; z 12.04 over the yesod; z 12.04..42 on the floor
+    rampMain.def = mainRamp(rampDefG, ACZ + S / 2, ZS, 42, RTOP);
 
     // --- 1.0.2 (add-on): THE TWO SMALL RAMPS (כבשים קטנים) - Zevachim 62b (book 130, line 2129) "שני כבשים קטנים יוצאין מן הכבש,
     // שבהן פונים ליסוד ולסובב; ומובדלין מן המזבח מלא נימא"; Rambam Beit HaBechira 2:14. Rashi there (book 2191, line 3022): "אותו
@@ -248,15 +267,69 @@
       for (const sx of [-1, 1]) for (const sz of [-1, 1]) bodyParts.push(H2.box(yoseG, 1, 1, 1, BR, ACX + sx * (h - 0.5), TOP, ACZ + sz * (h - 0.5)));
       // its ramps: the same profiles, 2 further south
       const YRT = (z) => (AH - 0.02) * (44 - z) / 32, YBRZ = 44 - 2 * 32 / (AH - 0.02);
-      prism(ACX - 8, ACX + 8, [
-        [YZS + YS + GAP, 0], [44, 0], [ACZ + YT / 2 + GAP, YRT(ACZ + YT / 2 + GAP)],
-        [ACZ + YT / 2 + GAP, SVH + GAP], [YZS + GAP, SVH + GAP], [YZS + GAP, YS + GAP], [YZS + YS + GAP, YS + GAP]
-      ], AS, rampYoseG);
+      rampMain.yose = mainRamp(rampYoseG, ACZ + YT / 2, YZS, 44, YRT);   // 1.3.5: the three readings of the air (above)
       const ySov = [[YZS + YS + GAP, 0], [YBRZ, 0], [YBRZ, 2], [YZS + GAP, SVH], [YZS + GAP, YS + GAP], [YZS + YS + GAP, YS + GAP]];
       smallRamps.yoseSovevEast = prism(RX1 - 0.01, RX1 + SRW, ySov, AS, rampYoseG);
       smallRamps.yoseYesod = prism(RX0 - SRW, RX0 + 0.01, [[YZS + YS + GAP, 0], [YBRZ, 0], [YBRZ, 2], [YZS + YS + GAP, YS]], AS, rampYoseG);
       smallRamps.yoseSovevWest = prism(RX0 - 2 * SRW, RX0 - SRW + 0.01, ySov, AS, rampYoseG);
       smallRamps.yoseSovevWest.visible = false;
+    }
+    // 1.3.5 (the user, of the kuntres' author's note 9 - "היסוד כבית קיבול"; in both houses): THE YESOD - A RECEPTACLE. Rashi on Shemot 29:12
+    // (book 3692, line 2101): "אל יסוד המזבח - כמין בליטת בית קבול עשוי לו סביב סביב, לאחר שעלה אמה מן הארץ" - a low rim on the outer edge of
+    // the yesod's top wherever the yesod runs (not under the ramps, which float a hair over it), in each reading of the altar. Its
+    // measures (0.14 high, 0.1 thick) - a model choice. (The Second Temple's small ledge at the south-east corner, Rashi Zevachim 54a,
+    // is not here: in the First Temple the yesod ran along the south - Tosafot Zevachim 61b, above.)
+    {
+      const RIM = 0.14, RT = 0.1, yr = F + YS;
+      const yesodRim = (grp, xw, xe, zn, zs) => {   // the faces of the wall below the sovev: west, east, north, south
+        const rim = (w, d, x, z) => bandParts.push(H2.box(grp, w, RIM, d, BRD, x, yr, z));
+        rim(xe - xw + 2 * YS, RT, (xw + xe) / 2, zn - YS + RT / 2);                              // the north edge, corner to corner
+        rim(RT, zs - zn + 2 * YS - 2 * RT, xw - YS + RT / 2, (zn + zs) / 2);                     // the west edge
+        rim(RX0 - 2 * SRW - (xw - YS), RT, (xw - YS + RX0 - 2 * SRW) / 2, zs + YS - RT / 2);     // the south edge, west of the ramps
+        rim(xe - (RX1 + SRW), RT, (RX1 + SRW + xe) / 2, zs + YS - RT / 2);                       // the south edge, east of the ramps
+        rim(RT, YS - RT, xe - RT / 2, zs + (YS - RT) / 2);                                       // the south run's east end
+        rim(RT, 2 * YS - RT, xe + YS - RT / 2, zn + RT / 2);                                     // the east amah: its outer edge
+        rim(YS - RT, RT, xe + (YS - RT) / 2, zn + YS - RT / 2);                                  // and its south end
+      };
+      yesodRim(defG, XW, XE, ZN, ZS);
+      yesodRim(yoseG, YXW, YXE, YZN, YZS);
+    }
+    // 1.3.5 (the user, of the kuntres, point 10: "חריצין"; as in the Second Temple): THE THREE ROVDIN - R. Hai Gaon (Beit Yosef OC 123; book
+    // 3900, line 2000): "ובין כבש למזבח היו שלש רובדין של אבן, ויורד בהם ג' פסיעות על עקב"; Binyan Tzion 12 (book 5791, lines 50-51): one
+    // where the ramp floats over the sovev, one where it floats over the yesod, one over the ground. Three dark slots 0.2 wide on the
+    // EAST half of the ramp's head (the kuntres' drawing), in the middle of each of the three amot from the altar's face. Their width,
+    // depth and places - model choices.
+    {
+      const gm = new MeshBasicMaterial({ color: 0x120e09 });
+      const slots = (grp, z0, top) => {   // z0 - the altar's upper face; top(z) - the ramp's top over the floor at z
+        const sg = new Group();
+        sg.name = "rovdin";
+        grp.add(sg);
+        for (const dz of [0.5, 1.5, 2.5]) {
+          const b = new Mesh(new BoxGeometry(8.04, 0.5, 0.2), gm);
+          b.position.set(ACX + 4.02, F + top(z0 + dz) - 0.235, z0 + dz);
+          b.rotation.x = Math.atan2(AH - 0.02, 32);
+          b.userData.noPick = true;
+          b.name = "rovdinSlot";
+          sg.add(b);
+        }
+        return sg;
+      };
+      const rov = [slots(rampDefG, ACZ + S / 2, RTOP), slots(rampYoseG, ACZ + YT / 2, (z) => (AH - 0.02) * (44 - z) / 32)];
+      // the air's reading (RAMP_GAPS, above): the prism of the reading in each altar, and the slots move with the ramp's head
+      ctx.shared.rampGap = {
+        mode: "hair", keys: Object.keys(RAMP_GAPS),
+        set(m) {
+          this.mode = Object.prototype.hasOwnProperty.call(RAMP_GAPS, m) ? m : "hair";
+          for (const r of [rampMain.def, rampMain.yose]) if (r) for (const k in r) r[k].visible = k === this.mode;
+          const d = RAMP_GAPS[this.mode] - RAMP_GAPS.hair;
+          for (const sg of rov) sg.position.set(0, -(AH - 0.02) * d / 32, d);
+          return this.mode;
+        }
+      };
+      ctx.shared.flyPoints = ctx.shared.flyPoints || {};
+      // from the east, close, a little over the top: the ramp's head, the air and the altar's face side by side (follows the altar's place)
+      ctx.shared.flyPoints.rampGap = { pos: [ACX + 17.5, F + AH + 3.2, ACZ + S / 2 + 1.6], target: [ACX + 3, F + AH - 1.4, ACZ + S / 2 + 1.1] };
     }
     ctx.layers = ctx.layers || {};
     ctx.layers.altarDefG = defG;
@@ -312,17 +385,55 @@
       shitinG.add(ring);
       H2.box(shitinG, 0.1, 0.05, 0.06, M2.bronze, SCX, F + 0.04, SCZ - 0.1);
     }
+    // 1.3.3 (the user: "ספלים — להוסיף בשיטות"): THE TWO BOWLS OF THE LIBATIONS - a completion from the Mishnah, as the shitin beside them
+    // (Sukkah 4:9 "עלה בכבש ופנה לשמאלו, שני ספלים של כסף היו שם... ומנקבין כמין שני חטמין דקין, אחד מעבה ואחד דק... מערבי של מים, מזרחי
+    // של יין"; the Bartenura there, book 588 line 227: "הספלים היו נתונים אצל הקרן סמוכים זה לזה, זה לפני זה, אחד לצד מערב ואחד לפנים
+    // ממנו"): on the top by the south-west horn, the western for the water, the eastern (the wider hole) for the wine. Two readings of the
+    // holes, as the Second Temple plugin (ctx.shared.sfalim, the row "ספלי הניסוך"): "rashi" - Rashi Sukkah 48b (book 2163, line 2274) and
+    // the Bartenura (588, 224): "חוטם אחד בספל ונקב אחד בחוטמו... ויורדין דרך החוטמין על גב המזבח ובמזבח היה נקב שבו המים והיין יורדין
+    // לשיתין" - a spout out of each bowl and a hole in the top before it; "tosafot" - Tosafot there (1903, 504): "דלמא הוא דמנקב הספלים
+    // יורדין לשיתין כמין שני נקבי החוטם ולא שהיה בולט כמין חוטם" - the holes in the bowls' bottoms. In shitinG, so that R. Yose's altar takes
+    // them to its own corner. Sizes and the exact spot (1.4 in from the south edge, beside the horn, off the ramp) - model choices.
+    const SFX = [ACX - S / 2 + 1.3, ACX - S / 2 + 2.2], SFZ = ACZ + S / 2 - 1.4;
+    {
+      const bowlPts = [[0.02, 0], [0.22, 0], [0.3, 0.1], [0.34, 0.28], [0.3, 0.36]];
+      const sil = new MeshStandardMaterial({ color: 0xe8e8ec, metalness: 0.8, roughness: 0.3, envMapIntensity: 1.2 });
+      for (const x of SFX) H2.lathe(shitinG, bowlPts, sil, x, TOP + 0.05, SFZ, 16);
+      const sfR = new Group(), sfT = new Group();
+      sfR.name = "sfalimRashi"; sfT.name = "sfalimTosafot";
+      shitinG.add(sfR, sfT);
+      sfT.visible = false;
+      const dark = new MeshBasicMaterial({ color: 0x120e08 });
+      SFX.forEach((x, i) => {
+        const sp = H2.cyl(sfR, i ? 0.045 : 0.03, i ? 0.045 : 0.03, 0.3, sil, x, TOP + 0.2, SFZ + 0.42, 8);   // the spout, over the south rim (the wine's thicker)
+        sp.rotation.x = Math.PI / 2;
+        H2.cyl(sfR, 0.06, 0.06, 0.02, dark, x, TOP + 0.01, SFZ + 0.75, 8);                                    // the hole in the top the libation runs to
+        H2.cyl(sfT, i ? 0.05 : 0.035, i ? 0.05 : 0.035, 0.02, dark, x, TOP + 0.06, SFZ, 8);                   // the hole in the bowl's bottom
+      });
+      ctx.shared.sfalim = {
+        current: "rashi", keys: ["rashi", "tosafot"],
+        names: { rashi: "רש״י וברטנורא — חוטם ונקב בגג המזבח", tosafot: "תוספות — נקב בתחתית הספל" },
+        get() { return this.current; },
+        set(k) { if (k !== "rashi" && k !== "tosafot") return false; this.current = k; sfR.visible = k === "rashi"; sfT.visible = k === "tosafot"; return true; }
+      };
+      for (const [dx, dz, L] of [[0, 0, "altarDefG"], [-2, 2, "altarYoseG"]])
+        ctx.labels.push({ text: "ספלי הניסוך — מים (מערבי) ויין (מזרחי)", x: (SFX[0] + SFX[1]) / 2 + dx, y: TOP + 1.2, z: SFZ + dz, size: 0.8, layer: L });
+    }
 
     // --- the fire: three pyres (מערכות) of cedar logs (model choice as in the Second Temple model, after Yoma 45a; the First Temple
     // verses only mention the burnt offerings on the altar: I Kings 8:64, 9:25; II Chr 7:1 "והאש ירדה מהשמים") ---
-    const PX = ACX + 4.5, PZ = ACZ - 1.5;              // the big pyre, east of the centre (model choice)
+    // 1.3.5 (the user, of the kuntres "בגדרי ודיני צורת הבית", point 20: "תשנה לפי מה שכתב"): THE GREAT PYRE IN THE SOUTH-EAST - the Rambam,
+    // Temidin uMusafin 2:7 "מסדרה במזרח המזבח... וראשי הגזרים הפנימיים היו נוגעין בדשן שבאמצע המזבח"; the Mefaresh on Tamid 31b "ומקום
+    // המערכה במזרח המזבח אצל מזרחו של כבש ורחב המערכה אינו תופס עד חצי המזבח שהרי התפוח באמצע המזבח" (both checked in the library, as in
+    // the Second Temple model). Until now east of the centre (ACX + 4.5, ACZ - 1.5); how far south - a model choice.
+    const PX = ACX + 4.0, PZ = ACZ + 3.0;              // the big pyre, in the south-east, its corner in the heap's side
     const E1X = ACX - 5.5, E1Z = ACZ + 5.5;            // second pyre (model choice)
     const E2X = ACX - 5.5, E2Z = ACZ - 6;              // third pyre (model choice)
     // 1.3.0 (the opinions table, as in the Second Temple model 1.8.0): THE NUMBER OF PYRES - Mishnah Yoma 4:6 "בכל יום היו שם ארבע
     // מערכות, והיום חמש, דברי רבי מאיר. רבי יוסי אומר, בכל יום שלש, והיום ארבע. רבי יהודה אומר, בכל יום שתים, והיום שלש"; the Rambam
     // (Temidin uMusafin 2:4) rules like R. Yose - the default, the three of 1.0.0. The third, R. Meir's fourth (south-east) and the Yom
     // Kippur one (north-east) are their own instanced meshes with their own flames, shown by ctx.shared.maarachot; places: model choices.
-    const R4X = ACX + 5.5, R4Z = ACZ + 6;              // R. Meir's fourth pyre (model choice)
+    const R4X = ACX + 5.5, R4Z = ACZ - 2.5;            // R. Meir's fourth pyre (model choice; 1.3.5: north of the great pyre, which is in the south-east now)
     const YKX = ACX + 5.5, YKZ = ACZ - 7;              // the Yom Kippur pyre (model choice)
     const logs = [], logs3 = [], logs4 = [], logsYK = [];
     const addPyre = (cx, cz, len, r, layers, list) => {
@@ -470,8 +581,56 @@
     }
     // the ash heap (תפוח) in the middle of the top (model choice, as in the Second Temple model after Tamid 2:2)
     try {
-      const ashMat = M2.altarStone.clone();
-      ashMat.color.set(0x555049);
+      // 1.3.5 (the user, 10.11.2026: "התפוח שעל המזבח צריך להיות כעין אפר (אותה הצורה רק החומר והצבע משתנים)"): THE ASH - the heap kept
+      // its shape; its material is ash - BLACK since 19:03 the same day ("האפר צריך להיות כדשן שחור"), see inside: drawn once on a
+      // canvas (a fixed seed - the same heap at every load), the same picture as its bump, no shine. Until now a plain dark copy of the altar's stone.
+      const ashMat = (() => {
+        // 10.11.2026 (the user, 19:03: "האפר צריך להיות כדשן שחור"): BLACK ASH. One drawing made twice, of the same seed - the picture in
+        // black (a black ground, darker and lighter patches, black grains with a few pale flecks, bits of charcoal), and the relief in the
+        // former grey, so the grains stand where they are seen. Shape and measures untouched.
+        let seed = 0;
+        const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+        const draw = (black) => {
+          const cv = document.createElement("canvas");
+          cv.width = cv.height = 256;
+          const c2 = cv.getContext("2d");
+          seed = 20261110;
+          const col = (v, a) => "rgba(" + v + "," + Math.max(0, v - (black ? 1 : 3)) + "," + Math.max(0, v - (black ? 2 : 9)) + "," + a + ")";
+          c2.fillStyle = black ? "#232120" : "#8f8b84";
+          c2.fillRect(0, 0, 256, 256);
+          for (let i = 0; i < 90; i++) {   // soft patches, lighter and darker
+            const x = rnd() * 256, y = rnd() * 256, r = 14 + rnd() * 34, k = rnd();
+            const v = Math.round(black ? 10 + k * 46 : 104 + k * 92);
+            const gr = c2.createRadialGradient(x, y, 0, x, y, r);
+            gr.addColorStop(0, col(v, 0.5));
+            gr.addColorStop(1, col(v, 0));
+            c2.fillStyle = gr;
+            c2.fillRect(x - r, y - r, 2 * r, 2 * r);
+          }
+          for (let i = 0; i < 5200; i++) {   // the grains
+            const k = rnd(), s = 0.6 + rnd() * 1.7;
+            const v = Math.round(black ? (k > 0.93 ? 78 + (k - 0.93) * 700 : 5 + k * 58) : 70 + k * 150);
+            c2.fillStyle = col(v, (0.35 + rnd() * 0.5).toFixed(2));
+            c2.fillRect(rnd() * 256, rnd() * 256, s, s);
+          }
+          for (let i = 0; i < 130; i++) {   // bits of charcoal
+            const s = 1 + rnd() * 2.6, a = rnd(), b = rnd(), d = rnd();
+            c2.fillStyle = black ? "rgba(" + Math.round(2 + a * 10) + "," + Math.round(2 + b * 9) + "," + Math.round(2 + d * 8) + ",0.95)"
+              : "rgba(" + Math.round(28 + a * 26) + "," + Math.round(26 + b * 22) + "," + Math.round(24 + d * 20) + ",0.9)";
+            c2.fillRect(rnd() * 256, rnd() * 256, s, s * (0.6 + rnd() * 0.9));
+          }
+          return cv;
+        };
+        const tex = new CanvasTexture(draw(true));
+        tex.colorSpace = SRGBColorSpace;
+        tex.wrapS = tex.wrapT = RepeatWrapping;
+        tex.repeat.set(5, 2);
+        tex.anisotropy = 4;
+        const bump = new CanvasTexture(draw(false));
+        bump.wrapS = bump.wrapT = RepeatWrapping;
+        bump.repeat.set(5, 2);
+        return new MeshStandardMaterial({ color: 0xffffff, map: tex, bumpMap: bump, bumpScale: 0.3, roughness: 1, metalness: 0 });
+      })();
       const geo = new SphereGeometry(2, 20, 14);
       geo.scale(1, 0.4, 1);
       const m = new Mesh(geo, ashMat);
@@ -490,15 +649,14 @@
     ctx.shared.flyPoints = ctx.shared.flyPoints || {};
     ctx.shared.flyPoints.mizbeach = { pos: [115, 52, 72], target: [ACX, TOP, ACZ] };
     ctx.shared.flyPoints.mizbeachTop = { pos: [ACX + 0.5, TOP + 44, ACZ + 3], target: [ACX + 0.5, TOP, ACZ + 0.5] };   // 1.3.0: the top from above (the pyres' row); 1.3.2 (the list): straight down, the 28 of R. Yose in the frame too; moves with the altar (FPK below)
+    // 1.3.3: the measures' frames (below) from the north-east, above: the north and east sides with their numbers, the top and the height line
+    ctx.shared.flyPoints.mizbeachMeasures = { pos: [ACX + 35, TOP + 31, ACZ - 35], target: [ACX + 1, F + 3, ACZ + 1] };
+    // 1.3.3: the libation bowls by the south-west horn, close, from the south-east above the top (the ramp's head below)
+    ctx.shared.flyPoints.sfalim = { pos: [ACX - S / 2 + 5, TOP + 7.5, ACZ + S / 2 + 3], target: [ACX - S / 2 + 1.8, TOP + 0.2, ACZ + S / 2 - 1.3] };
 
     // --- 1.0.2: השיתין - the text, the sources (book id + line index, each line read in the Otzaria DB), the label and the fly point ---
     {
-      const SHITIN_INFO = "השיתין (השלמה מן המשנה): 'ובקרן מערבית דרומית היו שני נקבים, כמין שני חטמין דקין' — הדם יורד בהם "
-        + "ויוצא לנחל קדרון (מדות ג, ב; רמב״ם בית הבחירה ב, יא). 'למטה ברצפה באותה הקרן, מקום היה שם אמה על אמה, וטבלא של שיש, "
-        + "וטבעת היתה קבועה בה, שבו יורדין לשית ומנקין אותו' (מדות ג, ג). המשנה מתארת את מזבח הבית השני, אבל השיתין היו גם בבית "
-        + "ראשון: 'שיתין מששת ימי בראשית נבראו' (סוכה מט.), ו'בשעה שכרה דוד שיתין' (סוכה נג.). בימי שלמה היה 'כמין בור כרוי אצל "
-        + "המזבח באותה זוית', וכשעלו בני הגולה 'קלטו אותו הבור לתוך המזבח ועשו נקבים כנגדן בראש המזבח' (רש״י זבחים סא:). "
-        + "כאן פי הבור מסומן בשני פתחים ברצפה לרגלי היסוד שבקרן, אחד במערב ואחד בדרום (בחירת המודל).";
+      const SHITIN_INFO = "לשון המשנה: 'ובקרן מערבית דרומית היו שני נקבים, כמין שני חטמין דקין' — הדם יורד בהם ויוצא לנחל קדרון (מדות ג, ב; רמב״ם בית הבחירה ב, יא). ועוד: 'למטה ברצפה באותה הקרן, מקום היה שם אמה על אמה, וטבלא של שיש, וטבעת היתה קבועה בה, שבו יורדין לשית ומנקין אותו' (מדות ג, ג).\nבבית ראשון: המשנה מתארת את מזבח הבית השני, אבל השיתין היו כבר בבית ראשון — 'שיתין מששת ימי בראשית נבראו' (סוכה מט.), ו'בשעה שכרה דוד שיתין' (סוכה נג.).\nרש״י: בימי שלמה היה 'כמין בור כרוי אצל המזבח באותה זוית', וכשעלו בני הגולה 'קלטו אותו הבור לתוך המזבח ועשו נקבים כנגדן בראש המזבח' (רש״י זבחים סא:).\nבמודל: פי הבור מסומן בשני פתחים ברצפה, לרגלי היסוד שבקרן — אחד במערב ואחד בדרום (בחירת המודל).";
       // 1.0.2 (fix, the review): the text no longer derives the two openings from Rashi - he has one pit beside the altar (book 2191, line 2955)
       // and the holes only in the Second Temple ("וכשעלו בני הגולה", Zevachim 61b, book 130, line 2096); the two openings are the model's mark of it
       const SHITIN_REFS = [
@@ -527,28 +685,17 @@
       const PROFILE = {
         yesod: {
           title: "היסוד",
-          info: "היסוד (השלמה מן המשנה): 'שכל מזבח שאין לו קרן וכבש ויסוד וריבוע – פסול' (זבחים סב.), ולכן גם למזבח שלמה היה יסוד. "
-            + "צורתו כמשנה: 'עלה אמה וכנס אמה, זה היסוד' (מדות ג, א). בבית שני 'קרן מזרחית דרומית לא היה לה יסוד... לפי שלא היתה "
-            + "בחלקו של טורף' (זבחים נג:). ובבית ראשון כתבו התוספות: 'היה להם יסוד לדרום שהיה משוך בחלקו של טורף חוץ "
-            + "מרוח מזרחית שלא נשתנה שהיה בלא יסוד' (תוספות זבחים סא:). לכן כאן היסוד על פני כל הצפון, כל המערב וכל הדרום, ובמזרח רק אמה אחת בקרן "
-            + "הצפונית; לקרן הדרומית המזרחית אין יסוד בצד המזרח. "
-            + "עשרים על עשרים של הפסוק (דברי הימים ב ד, א) הם כאן גוף המזבח, והיסוד והסובב בולטים סביבו, כמו שכתב רש״י על מזבח משה: "
-            + "'יסוד וסובב לא היו ממעטין בארכו ורחבו לפי שמקיפין ובולטין סביביו' (רש״י זבחים נט:). ולרש״י, כרבי יוסי במדות, "
-            + "'בתחילה בימי שלמה לא היה אלא כ\"ח' (רש״י זבחים סא:), ועשרים על עשרים הם מקום המערכה. כאן המזבח לא הורחב — בחירת המודל.",
+          info: "היסוד — השלמה מן המשנה: 'שכל מזבח שאין לו קרן וכבש ויסוד וריבוע – פסול' (זבחים סב.), ולכן גם למזבח שלמה היה יסוד. צורתו כמשנה: 'עלה אמה וכנס אמה, זה היסוד' (מדות ג, א).\nבבית שני: 'קרן מזרחית דרומית לא היה לה יסוד... לפי שלא היתה בחלקו של טורף' (זבחים נג:).\nהתוספות, על בית ראשון: 'היה להם יסוד לדרום שהיה משוך בחלקו של טורף חוץ מרוח מזרחית שלא נשתנה שהיה בלא יסוד' (תוספות זבחים סא:).\nרש״י, על מזבח משה: 'יסוד וסובב לא היו ממעטין בארכו ורחבו לפי שמקיפין ובולטין סביביו' (רש״י זבחים נט:). ולרש״י, כרבי יוסי במדות, 'בתחילה בימי שלמה לא היה אלא כ\"ח' (רש״י זבחים סא:), ועשרים על עשרים הם מקום המערכה.\nבמודל: **היסוד על פני כל הצפון, כל המערב וכל הדרום, ובמזרח רק אמה אחת בקרן הצפונית**; לקרן הדרומית המזרחית אין יסוד בצד המזרח. עשרים על עשרים של הפסוק (דברי הימים ב ד, א) הם גוף המזבח, והיסוד והסובב בולטים סביבו. המזבח לא הורחב — בחירת המודל.\nהיסוד כבית קיבול: רש״י (שמות כט, יב): 'אל יסוד המזבח. כמין בליטת בית קבול עשוי לו סביב סביב, לאחר שעלה אמה מן הארץ'. במודל: שפה נמוכה על קצה גג היסוד, בכל מקום שיש יסוד; מידות השפה — בחירת מודל.",
           refs: [
             ["זבחים סב.", { book: 130, index: 2110 }], ["מדות ג, א", { book: 89, index: 19 }], ["זבחים נג:", { book: 130, index: 1865 }],
             ["תוספות זבחים סא:", { book: 1936, index: 654 }], ["רש״י זבחים נג:", { book: 2191, index: 2590 }],
             ["רש״י זבחים נט:", { book: 2191, index: 2871 }], ["רש״י זבחים סא:", { book: 2191, index: 2952 }],
-            ["רמב״ם בית הבחירה ב, י", { book: 337, index: 33 }], ["דברי הימים ב ד, א", { book: 39, index: 57 }]
+            ["רמב״ם בית הבחירה ב, י", { book: 337, index: 33 }], ["דברי הימים ב ד, א", { book: 39, index: 57 }], ["רש״י שמות כט, יב", { book: 3692, index: 2101 }]
           ]
         },
         sovev: {
           title: "הסובב",
-          info: "הסובב (השלמה מן המשנה): 'עלה חמש וכנס אמה. זה הסובב' (מדות ג, א) — מדף של אמה סביב המזבח, שש אמות מן הרצפה. "
-            + "עליו הולך הכהן לתת את הדם בקרנות: 'עלה בכבש ופנה לסובב, ובא לו לקרן דרומית מזרחית' (זבחים נג.). "
-            + "'איזהו כרכוב?... רבי יוסי ברבי יהודה אומר: זה הסובב' (זבחים סב.), ורש״י שם במזבח משה: 'סביב הקיר משעלה שש אמות גובה... "
-            + "היקף הבליטה קטנה חוגרתו סביב לנוי וזהו סובב' (רש״י זבחים סב.). הכבש 'פורח אמה על יסוד ואמה על סובב' (זבחים סב:), "
-            + "'ואויר מעט היה מפסיק בין הכבש למזבח' (רמב״ם בית הבחירה ב, יג).",
+          info: "הסובב — השלמה מן המשנה: 'עלה חמש וכנס אמה. זה הסובב' (מדות ג, א) — מדף של אמה סביב המזבח, שש אמות מן הרצפה.\nבגמרא: עליו הולך הכהן לתת את הדם בקרנות — 'עלה בכבש ופנה לסובב, ובא לו לקרן דרומית מזרחית' (זבחים נג.); 'איזהו כרכוב?... רבי יוסי ברבי יהודה אומר: זה הסובב' (זבחים סב.). הכבש 'פורח אמה על יסוד ואמה על סובב' (זבחים סב:).\nרש״י, על מזבח משה: 'סביב הקיר משעלה שש אמות גובה... היקף הבליטה קטנה חוגרתו סביב לנוי וזהו סובב' (רש״י זבחים סב.).\nהרמב״ם: 'ואויר מעט היה מפסיק בין הכבש למזבח' (רמב״ם בית הבחירה ב, יג).",
           refs: [
             ["מדות ג, א", { book: 89, index: 19 }], ["זבחים נג.", { book: 130, index: 1844 }], ["זבחים סב.", { book: 130, index: 2109 }],
             ["רש״י זבחים סב.", { book: 2191, index: 2987 }], ["זבחים סב:", { book: 130, index: 2131 }],
@@ -557,9 +704,7 @@
         },
         redLine: {
           title: "חוט הסיקרא",
-          info: "חוט הסיקרא (השלמה מן המשנה): 'וחוט של סקרא חוגרו באמצע, להבדיל בין הדמים העליונים לדמים התחתונים' (מדות ג, א); "
-            + "'כששה טפחים מסוף הסובב ולמטה' (רמב״ם בית הבחירה ב, ט). כאן באמצע גובה המזבח, חמש אמות מן הרצפה, אמה מתחת לסובב. "
-            + "עוביו — בחירת המודל.",
+          info: "חוט הסיקרא — השלמה מן המשנה: 'וחוט של סקרא חוגרו באמצע, להבדיל בין הדמים העליונים לדמים התחתונים' (מדות ג, א); הרמב״ם: 'כששה טפחים מסוף הסובב ולמטה' (רמב״ם בית הבחירה ב, ט).\nבמודל: באמצע גובה המזבח — **חמש אמות מן הרצפה, אמה מתחת לסובב**. עוביו — בחירת המודל.",
           refs: [["מדות ג, א", { book: 89, index: 19 }], ["רמב״ם בית הבחירה ב, ט", { book: 337, index: 32 }]]
         }
       };
@@ -575,6 +720,13 @@
         { text: "חוט הסיקרא", x: ex + 1.6, y: F + AH / 2 - 0.9, z: ACZ + 3, size: 2, layers: ["altarProfile", L], info: PROFILE.redLine.info, refs: PROFILE.redLine.refs },
         { text: "היסוד", x: ex + 1.6, y: F + 1.6, z: zn - 0.5, size: 2.2, layers: ["altarProfile", L], info: PROFILE.yesod.info, refs: PROFILE.yesod.refs }
       );
+      // 1.3.5: the three rovdin's label over the ramp's head, in each reading of the altar
+      const ROVDIN = {
+        info: "שלושה רובדין: בבית יוסף (אורח חיים קכג) בשם רבינו האי: 'ובין כבש למזבח היו שלש רובדין של אבן, ויורד בהם ג׳ פסיעות על עקב'.\nובבנין ציון (סימן יב) ביאר את מקומם: אחד במקום שהכבש פורח על הסובב, אחד במקום שהוא פורח על היסוד, ואחד כנגד אוויר הקרקע.\nבמודל: **שלושה חריצים בראש הכבש, בחציו המזרחי**, ובינם שלושה רובדין המחוברים בצידם אל אמצע הכבש; צורת החריצים, רוחבם ומקומם — בחירת מודל.",
+        refs: [["בית יוסף, אורח חיים קכג", { book: 3900, index: 2000 }], ["בנין ציון, יב", { book: 5791, index: 50 }], ["זבחים סב:", { book: 130, index: 2131 }]]
+      };
+      for (const [zh, L] of [[ACZ + S / 2, "altarDefG"], [ACZ + YT / 2, "altarYoseG"]]) ctx.labels.push(
+        { text: "שלושה רובדין — חריצים בראש הכבש (רב האי גאון)", x: ACX + 5, y: F + AH + 1.5, z: zh + 1.6, size: 1.7, layers: ["altarProfile", L], info: ROVDIN.info, refs: ROVDIN.refs });
       ctx.shared.altarProfile = PROFILE;
       // 1.3.2 (the user: "בית ראשון: תוסיף שיטת ר' יוסי"): THE ALTAR'S MEASURES, a switch - "chronicles" (the default: the verse's 20 x 20,
       // the yesod and the sovev round it, as 1.0.2) or "yose" (28 x 28, receding to the place of the pyre, 20 x 20)
@@ -589,26 +741,22 @@
           defG.visible = rampDefG.visible = !y;
           yoseG.visible = rampYoseG.visible = y;
           shitinG.position.set(y ? -2 : 0, 0, y ? 2 : 0);
+          if (ctx.shared.altarMeasures) ctx.shared.altarMeasures.sync();   // 1.3.3: the measures' frames of the reading
         }
       };
       const AC = new Vector3(ACX, F + AH / 2, ACZ);
       ctx.animated.push(() => {
         const cam = ctx.camera;
-        if (cam) lay.visible = cam.position.distanceTo(AC) < 130;
+        const mg = ctx.layers.altarMeasures;   // 1.3.3: while the measures are shown their numbers stand where these labels would
+        if (cam) lay.visible = cam.position.distanceTo(AC) < 130 && !(mg && mg.visible);
       });
     }
 
     // --- 1.0.2 (add-on): the two readings of the small ramps - Rashi (the default) or Tosafot; only the western ramp to the sovev changes ---
     {
       const RAMP_INFO = {
-        rashi: "'שני כבשים קטנים יוצאין מן הכבש, שבהן פונים ליסוד ולסובב; ומובדלין מן המזבח מלא נימא' (זבחים סב:). רש״י שם: 'אותו שפונין "
-          + "בו לסובב יצא במזרחו של כבש לימין... ונמשך ועולה באלכסון עד שמגיע לסובב והפונה ליסוד יוצא למערבו... ומתחיל לצאת בשיפולו "
-          + "של כבש רחוק מן המזבח כדי שיהא נוח לשפע ולירד ליסוד' (רש״י זבחים סב:). ובמערב אין כבש לסובב: 'אבל לצד המערב אין לו [כבש] לפנות לסובב "
-          + "וצריך לעלות על ראש המזבח ועומד בדרומה של קרן' (רש״י זבחים סד.). מקום תחילתם ורוחבם — בחירת המודל.",
-        tosafot: "התוספות: 'ונראה דאין משם ראי' שלא היה כבש לסובב במערב', שאם לא כן, בדם החטאת 'כשהיה מגיע לקרן מערבית "
-          + "דרומית היה צריך לחזור על עקיבו ולכך נראה דהיה שם כבש' (תוספות זבחים סד.). ולמה מנו רק שניים? תוספות יום טוב: 'שאותו כבש עצמו "
-          + "היה רחב ומקצת ממנו מוגבה ועולה עד על הסובב גם כן' (תוספות יום טוב זבחים ו, ג). וכן הביא המשנה למלך: 'התוספות ס\"ל דגם במערבו "
-          + "היה כבש קטן פונה לסובב' (משנה למלך בית הבחירה ב, יד). כאן הכבש המערבי רחב, וחציו החיצון עולה לסובב."
+        rashi: "בגמרא: 'שני כבשים קטנים יוצאין מן הכבש, שבהן פונים ליסוד ולסובב; ומובדלין מן המזבח מלא נימא' (זבחים סב:).\nרש״י: 'אותו שפונין בו לסובב יצא במזרחו של כבש לימין... ונמשך ועולה באלכסון עד שמגיע לסובב והפונה ליסוד יוצא למערבו... ומתחיל לצאת בשיפולו של כבש רחוק מן המזבח כדי שיהא נוח לשפע ולירד ליסוד' (רש״י זבחים סב:). ובמערב **אין כבש לסובב**: 'אבל לצד המערב אין לו [כבש] לפנות לסובב וצריך לעלות על ראש המזבח ועומד בדרומה של קרן' (רש״י זבחים סד.).\nבמודל: מקום תחילתם ורוחבם — בחירת המודל.",
+        tosafot: "התוספות: 'ונראה דאין משם ראי' שלא היה כבש לסובב במערב', שאם לא כן, בדם החטאת 'כשהיה מגיע לקרן מערבית דרומית היה צריך לחזור על עקיבו ולכך נראה דהיה שם כבש' (תוספות זבחים סד.).\nתוספות יום טוב — ולמה מנו רק שניים? 'שאותו כבש עצמו היה רחב ומקצת ממנו מוגבה ועולה עד על הסובב גם כן' (תוספות יום טוב זבחים ו, ג).\nהמשנה למלך: 'התוספות ס\"ל דגם במערבו היה כבש קטן פונה לסובב' (משנה למלך בית הבחירה ב, יד).\nבמודל: **הכבש המערבי רחב, וחציו החיצון עולה לסובב**."
       };
       const R_SUGYA = [["זבחים סב:", { book: 130, index: 2129 }], ["רמב״ם בית הבחירה ב, יד", { book: 337, index: 37 }]];
       const RAMP_REFS = {
@@ -659,10 +807,8 @@
         keys: ["stone", "abarbanel"],
         options: [{ key: "stone", label: "מזבח אבנים" }, { key: "abarbanel", label: "אברבנאל — מצופה נחושת" }],
         info: {
-          stone: "המזבח כאן בצבע אבן: 'אבנים שלמות תבנה את מזבח ה׳ אלהיך' (דברים כז, ו); 'המזבח אין עושין אותו אלא בנין אבנים' "
-            + "(רמב״ם בית הבחירה א, יג). השם כלשון הפסוק: 'כי מזבח הנחשת אשר לפני ה׳ קטן' (מלכים א ח, סד). המראה בחירת המודל.",
-          abarbanel: "אברבנאל: 'ועם היותו מזבח אבנים כמו שצותה התורה, הנה קראו מזבח הנחשת, לפי שהיה מצופה נחשת, "
-            + "כמו שנקרא מזבח הזהב להיותו מצופה זהב' (אברבנאל מלכים א ח, סד). כאן המזבח כולו — היסוד, הסובב, השפה והקרנות — מצופה נחושת, וכך גם הכבש והכבשים הקטנים, שהכבש חלק מן המזבח: 'כל מזבח שאין לו קרן וכבש ויסוד וריבוע – פסול' (זבחים סב.)."
+          stone: "במודל: **המזבח בצבע אבן** — 'אבנים שלמות תבנה את מזבח ה׳ אלהיך' (דברים כז, ו); הרמב״ם: 'המזבח אין עושין אותו אלא בנין אבנים' (רמב״ם בית הבחירה א, יג).\nהשם כלשון הפסוק: 'כי מזבח הנחשת אשר לפני ה׳ קטן' (מלכים א ח, סד). המראה — בחירת המודל.",
+          abarbanel: "אברבנאל: 'ועם היותו מזבח אבנים כמו שצותה התורה, הנה קראו מזבח הנחשת, לפי שהיה מצופה נחשת, כמו שנקרא מזבח הזהב להיותו מצופה זהב' (אברבנאל מלכים א ח, סד).\nבמודל: **המזבח כולו מצופה נחושת** — היסוד, הסובב, השפה והקרנות — וכך גם הכבש והכבשים הקטנים, שהכבש חלק מן המזבח: 'כל מזבח שאין לו קרן וכבש ויסוד וריבוע – פסול' (זבחים סב.)."
         },
         // 1.0.2 (fix, the review): the name with the article is I Kings 8:64 (book 10, line 340, read in the DB); II Chr 4:1 has "ויעש מזבח נחשת"
         refs: {
@@ -720,6 +866,112 @@
       H2.box(g, 0.1, 1, 1, darkMat, rx - 0.04, F + 0.4, rz);
       ctx.labels.push({ text: "רבובה — חלון בכבש (רמב״ם ב, יד; לבית ראשון לא מאומת)", x: rx - 2, y: F + 3.2, z: rz, size: 1.2 });
     }
+    // --- 1.3.3 (the user: "הוספת את מדידת אמות המזבח לבית ראשון?"): THE ALTAR'S MEASURES DRAWN, as in the Second Temple plugin - a thin
+    // frame round every step at its own height, its number of amot on a dark plate on all four sides (read from every side and from above),
+    // by the reading of the row "מידות המזבח" (ctx.shared.altarYose): "chronicles" - the yesod 24, the wall up to the sovev 22, the body 20
+    // (II Chr 4:1 "עשרים אמה ארכו ועשרים אמה רחבו"), and a height line, "ועשר אמות קומתו", with the yesod's 1 and the sovev's 6 (Middot 3:1
+    // "עלה אמה וכנס אמה, זה היסוד... עלה חמש וכנס אמה. זה הסובב"); "yose" - 28, 26, 24, 22 ("מקום הקרנות אמה מזה ואמה מזה") and 20 ("מקום
+    // הלוך רגלי הכהנים, אמה מזה ואמה מזה"), "עד שנמצא מקום המערכה עשרים על עשרים" (Middot 3:1; Rashi Zevachim 61b, book 2191 line 2952).
+    // The frames stand where the model's surfaces are; the yesod's frame is its outline (on the east it runs one amah only - Tosafot 61b).
+    // ctx.shared.altarMeasures = { on, get(), set(v), sync(), info, refs }; shown by the place "מידות המזבח — קווי האמות" and by the row,
+    // 15 s (70-ui.js); the group is in g, so it moves with the altar's place (below), and its labels are pushed before the place's snapshot.
+    {
+      const measG = new Group();
+      measG.name = "altar-measures";
+      measG.visible = false;
+      g.add(measG);
+      ctx.layers.altarMeasures = measG;
+      // strong colours: the court's floor is white marble and the altar light stone, so the Second Temple plugin's white and pale gold
+      // did not show here (checked in a render); each step its own colour, the same in both readings
+      const COL = [0x1e40af, 0x047857, 0xbe185d, 0x6d28d9, 0xc2410c];
+      const amotTxt = (w) => w + (w === 1 ? " אמה" : w <= 10 ? " אמות" : " אמה");
+      const READ = {
+        chronicles: { w: [YO, MID, S], y: [F + 0.05, F + YS + 0.05, F + SVH + 0.05],
+          what: ["היסוד", "הכותל שעד הסובב", "גוף המזבח — ״עשרים אמה ארכו ועשרים אמה רחבו״"] },
+        yose: { w: [YY, YM, YT, YT - 2, YT - 4], y: [F + 0.05, F + YS + 0.05, F + SVH + 0.05, TOP + 0.08, TOP + 0.08],
+          what: ["היסוד", "מעל היסוד — ״כונס ועולה״", "מעל הסובב", "מקום הקרנות — ״אמה מזה ואמה מזה״", "מקום המערכה — ״עשרים על עשרים״"] }
+      };
+      const INFO = {
+        chronicles: "הפסוק: ״ויעש מזבח נחשת עשרים אמה ארכו ועשרים אמה רחבו ועשר אמות קומתו״ (דברי הימים ב ד, א).\nהשלמה מן המשנה — היסוד והסובב: ״עלה אמה וכנס אמה, זה היסוד... עלה חמש וכנס אמה. זה הסובב״ (מדות ג, א).\nרש״י: הם אינם ממעטים במידה שבפסוק — ״יסוד וסובב לא היו ממעטין בארכו ורחבו לפי שמקיפין ובולטין סביביו״ (זבחים נט:).\nבמודל, בקריאה זו: **גוף המזבח עשרים על עשרים, ועשר אמות גובהו**; לכן הכותל שעד הסובב עשרים ושתים, והיסוד עשרים וארבע. גובה היסוד אמה, והסובב שש אמות מן הרצפה. קו היסוד הוא מתארו: במזרח היסוד רק אמה אחת, בקרן הצפונית (תוספות זבחים סא:). בחירת מודל.",
+        yose: "לשון המשנה (מדות ג, א): ״אמר רבי יוסי, מתחלה לא היה אלא שמנה ועשרים על שמנה ועשרים, כונס ועולה במדה זו, עד שנמצא מקום המערכה עשרים על עשרים״.\nרש״י (זבחים סא:): ״בתחילה בימי שלמה לא היה אלא כ״ח כונס ועולה יסוד וסובב ומקום קרנות ומקום הילוך עד שהיה מקום המערכה כ׳ על כ׳״.\n״במדה זו״ — כמידות שבמשנה: ״מקום הקרנות אמה מזה ואמה מזה... מקום הלוך רגלי הכהנים, אמה מזה ואמה מזה״.\nבמודל: **עשרים ושמונה היסוד**, עשרים ושש מעליו, עשרים וארבע מעל הסובב, עשרים ושתים בתוך מקום הקרנות, **ועשרים מקום המערכה** — העשרים שבפסוק. גובהו עשר אמות, כפסוק."
+      };
+      const REFS = [["דברי הימים ב ד, א", { book: 39, index: 57 }], ["מדות ג, א", { book: 89, index: 19 }], ["רש״י זבחים סא:", { book: 2191, index: 2952 }], ["רש״י זבחים נט:", { book: 2191, index: 2871 }]];
+      const subs = {};
+      for (const key of Object.keys(READ)) {
+        const R = READ[key], grp = new Group();
+        grp.visible = key === "chronicles";
+        measG.add(grp);
+        subs[key] = grp;
+        ctx.layers["altarM_" + key] = grp;
+        const W0 = R.w[0], n = R.w.length;
+        R.w.forEach((w, i) => {
+          const half = w / 2, y = R.y[i], th = i < 3 ? 0.4 : 0.35, o = half + th / 2;   // the whole line just outside the step's edge, seen
+          const lm = new MeshBasicMaterial({ color: COL[i] });
+          const bar = (bw, bd, x, z) => { const b = new Mesh(new BoxGeometry(bw, 0.06, bd), lm); b.position.set(x, y, z); b.userData.noPick = true; grp.add(b); };
+          bar(w + 2 * th, th, ACX, ACZ - o); bar(w + 2 * th, th, ACX, ACZ + o);
+          bar(th, w, ACX - o, ACZ); bar(th, w, ACX + o, ACZ);
+          // the number on all four sides, just outside the line, each side's numbers spread along it the other way round, so that the
+          // plates of two frames never meet (as the Second Temple plugin, 1.9.1)
+          const t = -W0 / 2 + 3 + i * (W0 - 8) / (n - 1);
+          const lay = { size: 2.6, box: true, layers: ["altarMeasures", "altarM_" + key], title: R.what[i], info: INFO[key], refs: REFS };
+          for (const [lx, lz] of [[ACX + t, ACZ + half + 0.6], [ACX + half + 0.6, ACZ - t], [ACX - t, ACZ - half - 0.6], [ACX - half - 0.6, ACZ + t]])
+            ctx.labels.push(Object.assign({ text: amotTxt(w), x: lx, y: y + 0.8, z: lz }, lay));
+        });
+        // the height: a line up the north-east corner, outside the yesod, with its ticks at the yesod (1), the sovev (6) and the top (10)
+        const hx = ACX + W0 / 2 + 2.6, hz = ACZ - W0 / 2 - 2.6;
+        const hm = new MeshBasicMaterial({ color: 0x1e3a8a });
+        const post = new Mesh(new BoxGeometry(0.3, AH, 0.3), hm);
+        post.position.set(hx, F + AH / 2, hz); post.userData.noPick = true; grp.add(post);
+        for (const [hy, txt, what] of [[YS, amotTxt(YS), "גובה היסוד"], [SVH, amotTxt(SVH), "הסובב — מן הרצפה"], [AH, amotTxt(AH), "קומתו — ״ועשר אמות קומתו״"]]) {
+          const tick = new Mesh(new BoxGeometry(1.4, 0.16, 0.16), hm);
+          tick.position.set(hx - 0.5, F + hy, hz); tick.userData.noPick = true; grp.add(tick);
+          ctx.labels.push({ text: txt, x: hx + 1.8, y: F + hy, z: hz - 1.2, size: 2.2, box: true, layers: ["altarMeasures", "altarM_" + key], title: what, info: INFO[key], refs: REFS });
+        }
+        const bot = new Mesh(new BoxGeometry(1.4, 0.16, 0.16), hm);
+        bot.position.set(hx - 0.5, F + 0.06, hz); bot.userData.noPick = true; grp.add(bot);
+      }
+      ctx.shared.altarMeasures = {
+        on: false,
+        info: INFO.chronicles + "\n" + INFO.yose,
+        refs: REFS,
+        get() { return this.on; },
+        set(v) { this.on = !!v; measG.visible = this.on; this.sync(); },
+        sync() {
+          const k = (ctx.shared.altarYose && ctx.shared.altarYose.current) === "yose" ? "yose" : "chronicles";
+          for (const key of Object.keys(subs)) subs[key].visible = key === k;
+        }
+      };
+    }
+    // --- 1.3.3 (the user: "לסמן בלבד את מקום הלויים"): THE PLACE OF THE LEVITES, a marking on the floor only - no platform: II Chr 5:12
+    // "והלוים המשררים... עמדים מזרח למזבח ועמהם כהנים למאה ועשרים מחצרים בחצצרות" (book 39, line 91), at the house's dedication; and
+    // II Chr 35:15 "והמשררים בני אסף על מעמדם" - a station of their own. The Second Temple's דוכן (Middot 2:6) is not built here (30-courts.js:
+    // "No דוכן"). The strip east of the altar - 8 deep, 28 wide, 4 amot from its east face - and its tint are model choices; in g, so it
+    // moves with the altar's place; shown by the place "מקום הלויים המשוררים" for 15 s (ctx.shared.leviimPlace) ---
+    {
+      const lv = new Group();
+      lv.name = "leviim-place";
+      lv.visible = false;
+      g.add(lv);
+      ctx.layers.leviimPlace = lv;
+      const X0 = ACX + S / 2 + 4, X1 = X0 + 8, Z0 = ACZ - 14, Z1 = ACZ + 14;
+      const fill = new Mesh(new BoxGeometry(X1 - X0, 0.03, Z1 - Z0), new MeshBasicMaterial({ color: 0x2f6fd6, transparent: true, opacity: 0.3, depthWrite: false }));
+      fill.position.set((X0 + X1) / 2, F + 0.03, (Z0 + Z1) / 2);
+      fill.userData.noPick = true;
+      fill.renderOrder = 2;
+      lv.add(fill);
+      const em = new MeshBasicMaterial({ color: 0x1e40af });
+      for (const [w, d, x, z] of [[X1 - X0 + 0.4, 0.4, (X0 + X1) / 2, Z0], [X1 - X0 + 0.4, 0.4, (X0 + X1) / 2, Z1], [0.4, Z1 - Z0, X0, (Z0 + Z1) / 2], [0.4, Z1 - Z0, X1, (Z0 + Z1) / 2]]) {
+        const b = new Mesh(new BoxGeometry(w, 0.06, d), em);
+        b.position.set(x, F + 0.04, z);
+        b.userData.noPick = true;
+        lv.add(b);
+      }
+      const info = "הפסוק, בחנוכת הבית: ״והלוים המשררים לכלם לאסף להימן לידתון ולבניהם ולאחיהם מלבשים בוץ במצלתים ובנבלים וכנרות עמדים מזרח למזבח ועמהם כהנים למאה ועשרים מחצרים בחצצרות״ (דברי הימים ב ה, יב).\nובפסח של יאשיהו: ״והמשררים בני אסף על מעמדם״ (דברי הימים ב לה, טו).\nבמודל: **סימון על הרצפה בלבד, ממזרח למזבח**. הדוכן של בית שני (מידות ב, ו) אינו בנוי כאן. גודל השטח ומרחקו מן המזבח — בחירת מודל.";
+      const refs = [["דברי הימים ב ה, יב", { book: 39, index: 91 }], ["דברי הימים ב לה, טו", { book: 39, index: 822 }]];
+      ctx.labels.push({ text: "מקום הלויים המשוררים — ״עמדים מזרח למזבח״", x: (X0 + X1) / 2, y: F + 3.2, z: ACZ, size: 2.2, layer: "leviimPlace", info, refs });
+      ctx.shared.leviimPlace = { on: false, info, refs, get() { return this.on; }, set(v) { this.on = !!v; lv.visible = this.on; } };
+      ctx.shared.flyPoints.leviim = { pos: [X1 + 9, F + 22, ACZ + 27], target: [(X0 + X1) / 2 - 4, F + 1, ACZ - 1] };   // inside the court (its east wall x 91)
+    }
     // --- 1.2.0 (the user): THE PLACE OF THE ALTAR in the court - the Tannaim's dispute (Yoma 16a; Zevachim 58b-59a, 63a). All agree the
     // ramp stood at the altar's south (Rav Huna from "ירך המזבח צפונה", R. Yehuda from "ומעלותיהו פנות קדים"); they differ where the altar
     // and its ramp stood in the court's 135 amot north to south: R. Eliezer b. Yaakov - "כוליה מזבח בדרום קאי" (so the Rambam rules);
@@ -731,7 +983,7 @@
       const S2 = CO2.ALTAR;
       const mine = ctx.labels.slice(altLabel0);
       const base = mine.map((l) => l.z);
-      const FPK = ["mizbeach", "mizbeachSW", "mizbeachRamps", "shitin", "mizbeachTop"];
+      const FPK = ["mizbeach", "mizbeachSW", "mizbeachRamps", "shitin", "mizbeachTop", "mizbeachMeasures", "sfalim", "leviim", "rampGap"];   // 1.3.3: the measures' view too
       const fp0 = {};
       for (const k of FPK) if (ctx.shared.flyPoints[k]) fp0[k] = { pos: ctx.shared.flyPoints[k].pos.slice(), target: ctx.shared.flyPoints[k].target.slice() };
       const PLACE = {
@@ -745,11 +997,11 @@
           middle: "רבי יהודה — באמצע העזרה"
         },
         info: {
-          south: "'כוליה מזבח בדרום קאי' — המזבח והכבש עמדו כולם בחלק הדרומי של העזרה (וכן פסק הרמב״ם). גוף המזבח מתחיל בקו ציר הבית ונמשך דרומה, והכבש ממנו הלאה לדרום; פתח ההיכל אינו חסום על ידי גוף המזבח.",
-          north: "'כוליה מזבח בצפון קאי' — שיטת רבי יוסי (וכן רבי יוסי הגלילי ורבי אלעזר): המזבח עמד בחצי הצפוני של העזרה, והכבש נמשך ממנו לצד הדרום, אל מול פתח ההיכל.",
-          middle: "רבי יהודה: המזבח היה ממוצע ועמד באמצע העזרה ממש — חציו בצפון וחציו בדרום; גוף המזבח והכבש בקו ישר כנגד פתח ההיכל, וחוסמים את מראה הפתח."
+          south: "בגמרא: 'כוליה מזבח בדרום קאי' — המזבח והכבש עמדו כולם בחלק הדרומי של העזרה (וכן פסק הרמב״ם).\nבמודל: **גוף המזבח מתחיל בקו ציר הבית ונמשך דרומה**, והכבש ממנו הלאה לדרום; פתח ההיכל אינו חסום על ידי גוף המזבח.",
+          north: "בגמרא: 'כוליה מזבח בצפון קאי' — שיטת רבי יוסי (וכן רבי יוסי הגלילי ורבי אלעזר).\nבמודל: **המזבח בחצי הצפוני של העזרה**, והכבש נמשך ממנו לצד הדרום, אל מול פתח ההיכל.",
+          middle: "רבי יהודה: המזבח היה ממוצע ועמד באמצע העזרה ממש — חציו בצפון וחציו בדרום.\nבמודל: **גוף המזבח והכבש בקו ישר כנגד פתח ההיכל**, וחוסמים את מראה הפתח."
         },
-        lead: "מחלוקת התנאים במיקום המזבח והכבש בעזרה (יומא טז., זבחים סג.). כל התנאים מסכימים כי הכבש עמד בצדו הדרומי של המזבח עצמו (כדדרש רב הונא מ'ירך המזבח צפונה' וכדדרש רבי יהודה מ'ומעלותיהו פנות קדים'). המחלוקת היא היכן עמדו המזבח והכבש בתוך חלל העזרה (שרוחבה 135 אמות מצפון לדרום). מן ההשוואה בין השיטות עולה כי המחלוקת על מיקום המזבח (באמצע, בצפון או בדרום) אינה משפיעה רק על מיקום הכבש בחלל העזרה, אלא גם על השאלה האם גוף המזבח והכבש עמדו בקו ישר כנגד פתח ההיכל וחסמו את מראה הפתח. במודל: 'כוליה' = גוף המזבח (עשרים על עשרים); היסוד, הכבש, הכבשים הקטנים והשיתין זזים עמו (בחירת מודל).",
+        lead: "מחלוקת התנאים במקום המזבח והכבש בעזרה (יומא טז., זבחים סג.).\nהמוסכם: הכבש עמד בצדו הדרומי של המזבח עצמו — כדדרש רב הונא מ'ירך המזבח צפונה', וכדדרש רבי יהודה מ'ומעלותיהו פנות קדים'.\nהמחלוקת: היכן עמדו המזבח והכבש בתוך חלל העזרה, שרוחבה 135 אמות מצפון לדרום — באמצע, בצפון או בדרום. היא קובעת לא רק את מקום הכבש, אלא גם **אם גוף המזבח והכבש עמדו בקו ישר כנגד פתח ההיכל וחסמו את מראהו**.\nבמודל: 'כוליה' = גוף המזבח (עשרים על עשרים); היסוד, הכבש, הכבשים הקטנים והשיתין זזים עמו (בחירת מודל).",
         refs: [["יומא טז.", ["P", 107, "טז."]], ["זבחים סג.", ["P", 130, "סג."]], ["זבחים נח:", ["P", 130, "נח:"]], ["רמב״ם בית הבחירה ה, יג", ["RB", 5, 13]]],
         get() { return this.current; },
         set(key) {

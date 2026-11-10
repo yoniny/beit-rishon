@@ -1178,6 +1178,37 @@
       }
     } catch (e) { console.warn("[interior] ulam courses", e); }
 
+    // 1.3.3 (the user: "להוסיף שיטת ברירת מחדל לפותות כרש״י"): THE KEYS OF GOLD - "והפתות לדלתות הבית הפנימי לקדש הקדשים לדלתי הבית להיכל
+    // זהב" (7:50); Rashi there (book 3673, line 468): "והפתות. מפתחות, שמעתי. שמפתחין בהם את המנעול" - the default reading of the row
+    // "הפותות" (ctx.shared.potot): a key of gold in the lock of the north leaf of each doorway, the heichal's and the devir's (in both of the
+    // devir's readings). The other reading - the pivots (the Targum, Radak) or what the pivot enters (Ralbag, book 3645 line 320: "מה שיכנס
+    // ציר הדלת בו"; Metzudat Zion) - is the gold pivots built at every leaf, so it only hides the keys. The lock's place (2.2 above the floor,
+    // by the leaf's free edge), the key's form and size - model choices. Each key hangs in its leaf's group, so it turns with the leaf.
+    const pototKeys = [];
+    const pototLayer = new Group();   // gates the key's label
+    pototLayer.name = "pototKeys";
+    g.add(pototLayer);
+    ctx.layers = ctx.layers || {};
+    ctx.layers.pototKeys = pototLayer;
+    const goldKey = (parent, x, y, z, side) => {   // side +1: out of the leaf's local +z face; -1: out of its -z face
+      const k = new Group();
+      k.name = "goldKey";
+      k.position.set(x, y, z);
+      k.scale.z = side;
+      parent.add(k);
+      const part = (geo, px, py, pz, mat) => { const m = new Mesh(geo, mat || M.gold); m.position.set(px, py, pz); m.castShadow = true; k.add(m); return m; };
+      part(new BoxGeometry(0.34, 0.56, 0.04), 0, 0, 0.02);                                              // the lock's plate on the face
+      part(new BoxGeometry(0.07, 0.17, 0.01), 0, -0.08, 0.045, new MeshBasicMaterial({ color: 0x1a1206 }));   // the keyhole
+      const turn = new Group();   // the shaft and the bow turn in the lock (the demonstration of the doors, below)
+      turn.position.set(0, -0.08, 0);
+      k.add(turn);
+      k.userData.turn = turn;
+      const tp = (geo, pz) => { const m = new Mesh(geo, M.gold); m.position.set(0, 0, pz); m.castShadow = true; turn.add(m); return m; };
+      tp(new CylinderGeometry(0.035, 0.035, 0.42, 10), 0.25).rotation.x = Math.PI / 2;                 // the shaft, out of the keyhole
+      tp(new TorusGeometry(0.14, 0.035, 8, 22), 0.6).rotation.y = Math.PI / 2;                         // the bow, upright, along the shaft
+      pototKeys.push(k);
+      return k;
+    };
     // ---- פתח ההיכל (I Kings 6:33-35): opening 10 x 20 in the east wall (x -3.5..2.5), built by 50-heichal.js ----
     {
       const PX = CO.xHouseE + 0.5;        // the posts stand on the east face of the house wall (x 2.5), 1 thick -> centre x 3
@@ -1200,16 +1231,24 @@
       // boxes and the "גלילים" discs are gone. 6:34 "שני צלעים הדלת האחת גלילים": Targum and Rashi - "תרין צירין, ציר העליון וציר התחתון",
       // "גלילים. (תרגום:) סגלגלין" (two round pivots per door: the gold pivots below); Malbim - "שני לוחות" (the two boards of each leaf, built);
       // Radak, Metzudot ("אופנים"), Ralbag ("גלילים ועמודים") - both faces of each door painted "מעשה גלילים" - not built (DEV note)
+      const heiHinges = [];   // 1.3.3: [hinge, side] for the demonstration of the doors (ctx.shared.heichalDoors below)
+      let heiKey = null;
       for (const s of [-1, 1]) {
         const hinge = new Group();
         hinge.position.set(HX, F, s * DZ);
         hinge.rotation.y = 0;              // first board folded fully back (180 deg from closed): flat along the reveal, x -0.2..2.3 (1.0.1, model choice)
-        g.add(hinge);
+        heiHinges.push([hinge, s]);
+        hinge.userData.noFade = true;   // 1.3.4 (the user: "הדגמת פתיחת הדלתות לא מראה את פתיחת הדלתות בפועל"): the fade loop made the leaves see-through
+        g.add(hinge);                   // whenever the eye looked at them (the key's close-up, the doorway) - the doors are never faded
         secE.push(hinge);   // 1.2.3: the leaf (both boards) goes with the east wall into the section
         const fold = new Group();          // the second board continues westward along the same reveal, x -2.7..-0.2 (1.0.1, model choice)
         fold.position.set(-2.5, 0, 0);
         fold.rotation.y = 0;
         hinge.add(fold);
+        if (s < 0) {   // 1.3.3: the key of gold in the lock of the north leaf, by its free edge, out of its face toward the passage
+          heiKey = goldKey(fold, -2.2, 2.2, T / 2, 1);
+          ctx.labels.push({ text: "מפתח של זהב — ״והפתות״ (רש״י: מפתחות)", x: HX - 4.7, y: F + 3.7, z: s * DZ + 1.1, size: 0.9, layer: "pototKeys" });
+        }
         for (const host of [hinge, fold]) {
           // each board 2.5 x 19.8, carved gold on both faces; 1.0.1-L (L.47): the south leaf (its face toward the passage looks north) with the
           // mirrored environment, like the south wall
@@ -1226,6 +1265,116 @@
         // cylinders fit the first two readings (review Q2-2)
         secE.push(H.cyl(g, 0.14, 0.14, 0.3, M.gold, HX, F, s * DZ, 10));
         secE.push(H.cyl(g, 0.14, 0.14, 0.3, M.gold, HX, F + INT_HEI_DOOR_H - 0.3, s * DZ, 10));
+      }
+      // 1.3.3 (the user's list: "הדגמת פתיחת דלתות ההיכל", with Rashi's key - "להוסיף שיטת ברירת מחדל לפותות כרש״י"): THE DEMONSTRATION OF THE
+      // HEICHAL'S DOORS - the two doors shut across the doorway (each leaf turned a quarter round its pivots), the key of gold turns in the lock
+      // of the north door (only in Rashi's reading of "והפתות", ctx.shared.potot), and the doors open slowly into the house, as they stand,
+      // with the sound of a heavy door made here (WebAudio, no file). The devir's doors are not closed: they stood open and a curtain hung
+      // (Rashi and Radak on II Chr 3:14 - the doorway's card). ctx.shared.heichalDoors = { demo(fly), at(e), stop() }; the place "פתיחת דלתות
+      // ההיכל — הדגמה" (70-ui.js). The leaves turn round the pivots they hang on; the folding of the two boards (Malbim) stays as built.
+      // Timing and the camera - model choices.
+      {
+        const SFX = (() => {
+          let ac = null;
+          const A = () => {
+            if (!ac) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; try { ac = new C(); } catch (_) { return null; } }
+            if (ac.state === "suspended") { try { ac.resume(); } catch (_) {} }
+            return ac;
+          };
+          const noise = (a, sec) => { const b = a.createBuffer(1, Math.max(1, Math.floor(a.sampleRate * sec)), a.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; return b; };
+          const env = (a, t, peak, att, dec) => { const g2 = a.createGain(); g2.gain.setValueAtTime(0.0001, t); g2.gain.exponentialRampToValueAtTime(peak, t + att); g2.gain.exponentialRampToValueAtTime(0.0001, t + att + dec); g2.connect(a.destination); return g2; };
+          return {
+            click(at) { const a = A(); if (!a) return; const t = a.currentTime + (at || 0);
+              for (const [dt, f] of [[0, 3400], [0.08, 2300], [0.2, 1800]]) { const s2 = a.createBufferSource(); s2.buffer = noise(a, 0.06); const bp = a.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = f; bp.Q.value = 9; s2.connect(bp); bp.connect(env(a, t + dt, 0.7, 0.003, 0.05)); s2.start(t + dt); } },
+            door(at, dur) { const a = A(); if (!a) return; const t = a.currentTime + (at || 0);
+              const o = a.createOscillator(); o.type = "sawtooth"; o.frequency.setValueAtTime(62, t); o.frequency.linearRampToValueAtTime(88, t + dur * 0.6); o.frequency.linearRampToValueAtTime(70, t + dur);
+              const lfo = a.createOscillator(); lfo.frequency.value = 6.5; const lg = a.createGain(); lg.gain.value = 9; lfo.connect(lg); lg.connect(o.frequency);
+              const bp = a.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 420; bp.Q.value = 5;
+              const g2 = a.createGain(); g2.gain.setValueAtTime(0.0001, t); g2.gain.exponentialRampToValueAtTime(0.22, t + 0.4); g2.gain.setValueAtTime(0.22, t + dur - 0.5); g2.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+              o.connect(bp); bp.connect(g2); g2.connect(a.destination); o.start(t); lfo.start(t); o.stop(t + dur + 0.05); lfo.stop(t + dur + 0.05);
+              const s2 = a.createBufferSource(); s2.buffer = noise(a, dur + 0.1); const lp = a.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 140;
+              const g3 = a.createGain(); g3.gain.setValueAtTime(0.0001, t); g3.gain.exponentialRampToValueAtTime(0.5, t + 0.5); g3.gain.setValueAtTime(0.5, t + dur - 0.4); g3.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+              s2.connect(lp); lp.connect(g3); g3.connect(a.destination); s2.start(t); s2.stop(t + dur + 0.1);
+              const th = a.createOscillator(); th.type = "sine"; th.frequency.setValueAtTime(58, t + dur); th.frequency.exponentialRampToValueAtTime(32, t + dur + 0.35);
+              th.connect(env(a, t + dur, 0.8, 0.01, 0.5)); th.start(t + dur); th.stop(t + dur + 0.6); }
+          };
+        })();
+        const capG = [new Group(), new Group()];
+        capG.forEach((c, i) => { c.visible = false; g.add(c); ctx.layers["heiDoorCap" + i] = c; });
+        ctx.labels.push(
+          { text: "״והפתות לדלתות הבית... זהב״ — רש״י: ״מפתחות... שמפתחין בהם את המנעול״ (מלכים א ז, נ)", x: HX + 3, y: F + 12, z: -2.5, size: 1.1, layers: ["heiDoorCap0", "pototKeys"] },
+          { text: "״ושתי דלתות עצי ברושים שני צלעים הדלת האחת גלילים״ (מלכים א ו, לד)", x: HX + 3, y: F + 12, z: -2.5, size: 1.1, layer: "heiDoorCap1" }
+        );
+        const ease = (u) => (u <= 0 ? 0 : u >= 1 ? 1 : 0.5 - 0.5 * Math.cos(Math.PI * u));
+        const pose = (t) => { for (const [h, s2] of heiHinges) h.rotation.y = (s2 < 0 ? Math.PI / 2 : -Math.PI / 2) * (1 - ease(t)); };   // 0 shut, 1 open
+        // 1.3.4 (the Second Temple plugin's round, the user: "לא מספיק ברור איך היתה נדחפת היד כדי לפתוח"): the priest's hand on the key while
+        // it turns - a fist on the bow, the wrist and a white linen sleeve back along the shaft (out of the leaf's face, toward the ulam
+        // while the leaf is shut), turning with the key; seen only then. The form - a model choice
+        const handG = new Group();
+        handG.visible = false;
+        if (heiKey && heiKey.userData.turn) {
+          heiKey.userData.turn.add(handG);
+          const skin = new MeshStandardMaterial({ color: 0xc99d7c, roughness: 0.75 }), linen = new MeshStandardMaterial({ color: 0xf1ede2, roughness: 0.92 });
+          const hp = (geo, mat, z, rx) => { const m = new Mesh(geo, mat); m.position.set(0, 0, z); if (rx) m.rotation.x = rx; m.castShadow = true; m.userData.noPick = true; handG.add(m); return m; };
+          hp(new SphereGeometry(0.1, 14, 10), skin, 0.66).scale.set(1.0, 1.15, 1.2);           // the fist round the bow
+          hp(new CylinderGeometry(0.05, 0.055, 0.2, 10), skin, 0.84, Math.PI / 2);              // the wrist
+          hp(new CylinderGeometry(0.085, 0.105, 0.8, 14), linen, 1.33, Math.PI / 2);            // the sleeve
+        }
+        const apply = (e) => {
+          const keyOn = !ctx.shared.potot || ctx.shared.potot.current === "rashi";
+          if (heiKey && heiKey.userData.turn) heiKey.userData.turn.rotation.z = keyOn ? (Math.PI / 2) * ease((e - 1.0) / 0.8) : 0;
+          handG.visible = keyOn && e > 0.3 && e < 2.2;   // 1.3.4: the hand while the key turns
+          pose((e - 2.2) / 4.8);
+          const stage = e < 2.0 && keyOn ? 0 : e < 9.5 ? 1 : -1;
+          capG.forEach((c, i) => (c.visible = i === stage));
+        };
+        const D = ctx.shared.heichalDoors = {
+          t0: -1,
+          demo(flyToo) {
+            this.t0 = performance.now();
+            apply(0);
+            const keyOn = !ctx.shared.potot || ctx.shared.potot.current === "rashi";
+            const SL = (ctx.shared && ctx.shared.demoSlow) || 1.5;   // 1.3.4 (the user: "כל ההדגמות יותר איטיות"): the motion, the captions and the sound
+            if (keyOn) SFX.click(1.1 * SL);
+            SFX.door(2.2 * SL, 4.8 * SL);
+            if (flyToo && ctx.ui && typeof ctx.ui.fly === "function") {
+              // 1.3.4: first close to the key and the hand that turns it, then back to see both doors open
+              clearTimeout(D.__wide);
+              // 1.3.4: from the steps before the ulam, through its doorway (10 x 22), at the whole heichal doorway; the target stands in the
+              // ulam before the shut doors - nothing between it and the eye (the target inside the house pulled the eye to the leaves)
+              const wide = () => ctx.ui.fly([25, F + 9.5, 2.5], [3.5, F + 9, 0]);
+              if (keyOn && heiKey) {
+                const kp = new Vector3();
+                heiKey.updateWorldMatrix(true, false);
+                heiKey.getWorldPosition(kp);
+                ctx.ui.fly([kp.x + 2.6, kp.y + 0.6, kp.z + 1.5], [kp.x, kp.y - 0.1, kp.z]);
+                D.__wide = setTimeout(() => { if (D.t0 >= 0) wide(); }, 2300 * SL);
+              } else wide();
+            }
+          },
+          at(e) { this.t0 = -1; apply(e); },   // a still frame (checks, the presentation)
+          stop() { clearTimeout(this.__wide); this.t0 = -1; pose(1); if (heiKey && heiKey.userData.turn) heiKey.userData.turn.rotation.z = 0; handG.visible = false; capG.forEach((c) => (c.visible = false)); }
+        };
+        (ctx.shared.demoStops || (ctx.shared.demoStops = [])).push({ id: "int-doors-demo", running: () => D.t0 >= 0, stop: () => D.stop() });   // 1.3.4: any switch stops it
+        ctx.animated.push(() => {
+          if (D.t0 < 0) return;
+          const e = (performance.now() - D.t0) / 1000 / ((ctx.shared && ctx.shared.demoSlow) || 1.5);
+          apply(e);
+          if (e > 10) D.stop();
+        });
+        // 1.3.3 (the user, of the Second Temple plugin: "כפתור על הכיור להדגמה וכן בכל מקום שיש הדגמה כפתור כמו בבית ראשון"): the doors'
+        // demonstration has its button on the model too - over the doorway on the ulam's side, or the kodesh's when the camera is inside
+        {
+          const MB = Array.isArray(ctx.shared.modelButtons) ? ctx.shared.modelButtons : (ctx.shared.modelButtons = []);
+          const aE = [HX + 2.4, F + 21.5, 0], aW = [HX - 7.2, F + 21.5, 0];
+          MB.push({
+            id: "int-doors-demo", label: "הדגמה: פתיחת דלתות ההיכל", labelOn: "עצור את ההדגמה", maxDist: 90,
+            title: "שתי הדלתות סגורות, מפתח של זהב מסתובב במנעול (״והפתות״ — רש״י: מפתחות), והן נפתחות בקול של דלת כבדה (מלכים א ו, לד; ז, נ).",
+            anchor: () => (ctx.camera && ctx.camera.position.x < HX - 6 ? aW : aE),
+            get: () => D.t0 >= 0,
+            set: (on) => { if (on) D.demo(true); else D.stop(); }
+          });
+        }
       }
     }
 
@@ -1516,6 +1665,22 @@
       return { body: M2(body), crown: M2(crown), rig: M2(rig), ends: M2(ends), bread: M2(bread), spoons: M2(spoons), incense: M2(incense) };
     })();
 
+    // ---- 1.3.3 (the user: "שלחנות באולם יש, רק צריך להוסיף לחם כמו שעשית" - as in the Second Temple plugin): THE TWELVE LOAVES ON THE
+    // ULAM'S ENTRY TABLE (north: silver for R. Yose b. R. Yehuda, marble for the Mishnah) - "על של שיש נותנין לחם הפנים בכניסתו" (Shekalim
+    // 6:4); Rashi Menachot 99a (book 2186, line 4710) "בכניסתו מניחו על של כסף וכשמגיע להיכל מסדר על של משה". The same loaves as on the
+    // tables inside (tableGeo.bread: two stacks of six, their base at TBL_TOP 1.5 - the ulam's tables are 1.5 high too), without the
+    // posts and the tubes, which belong to the golden table. The moment shown - the bread on its way in - is a model choice.
+    {
+      const UT = ctx.shared.ulamTables;
+      if (UT && UT.entry && UT.group) {
+        const m = new Matrix4().makeTranslation(UT.entry.x, UT.entry.floor + (UT.entry.top - UT.entry.floor - TBL_TOP), UT.entry.z);
+        const br = new InstancedMesh(tableGeo.bread, breadMat, 1);
+        br.setMatrixAt(0, m);
+        br.castShadow = br.receiveShadow = true;
+        br.name = "ulam-table-bread";
+        UT.group.add(br);
+      }
+    }
     // ---- 1.0.1-L (L.73, the user: "תוסיף את כל הגביעים הכפתורים והפרחים שהיו במשכן (פר' תצוה)"; "ולכל מנורה בקנה היה פרח וכן בקנה
     // האמצעי למטה - עיין בספר"): THE MENORAH rebuilt with every cup, knob and flower of Ex 25:31-36, after the Baraita of its height -
     // Menachot 28b (Shmuel "משמיה דסבא"), Rashi Ex 25:35, Rambam Beit HaBechira 3:10 - and the book's menorah (p22). Menachot 28b: "גובהה
@@ -2239,6 +2404,7 @@
         hinge.rotation.y = s * 0.26;      // ~105 deg open: past the perpendicular, leaning toward the devir side of the wall (model choice)
         vg.add(hinge);
         const leaf = H.box(hinge, 3, INT_DEVIR_DOOR_H - 0.2, 0.25, s > 0 ? goldCarvedDevirDoorSouth : goldCarvedDevirDoor, -1.5, 0.1, 0);
+        if (s < 0) goldKey(hinge, -2.7, 2.2, 0.125, 1);   // 1.3.3: the key of gold in the lock of the north leaf (Rashi on 7:50)
         // 1.0.1-K (K.5): uvs in the leaf's frame (xi -3..0 from the pivot): the cell scaled to 3 x 5.9 (two registers on the 11.8), the pair of
         // cherubim in the middle of the leaf on both faces (model choice), not mirrored
         int_boxUV(leaf.geometry, leaf.position.x, leaf.position.y, 0, (nx, ny, nz, x, y) => [nz > 0.5 ? x + 2.7 : nz < -0.5 ? -x - 0.3 : x, y - 0.1]);
@@ -2258,8 +2424,27 @@
       // 1.0.1-L (verifier of L.32): in Rashi's reading the curtain rises 0.5 into the lintel. The pentagonal lintel touches y 24 only along its
       // lower vertex, in the wall's middle (x -44); at the curtain's plane its slanted underside is 0.36..0.45 higher, and through that slit, over
       // the 12-high curtain, a camera above y 24 (the view "ההיכל") saw the cloud or the devir behind it, a white line over the curtain.
-      const parH = pent ? INT_DEVIR_DOOR_H + 0.5 : INT_DEVIR_DOOR_H;
-      const par = H.box(vg, 0.12, parH, pent ? 6.9 : INT_DEVIR_CLEAR, parochetMats, XW + 0.06, F, 0);   // x -43.5..-43.38, 12 high to the opening's top
+      // 1.3.5 (the user, of the kuntres, point 26: "עשה כך" - in both houses): THE PAROCHET'S HEAD IS BENT a little toward the Holy of Holies -
+      // Sukkah 7b (book 108, line 189) "ורבנן? ההוא דניכוף ביה פורתא, דמחזי כסכך"; Rashi (book 2163, line 263) "ליכוף בה - למעלה פורתא
+      // כעין גג יעשה ממקצתה". The curtain stands to 0.7 under the doorway's head, and from there its head leans in under the lintel to
+      // the middle of the wall's thickness (0.92 long, 37.5 degrees from upright; its tip 0.03 inside the lintel, so no slit is left
+      // over it - in "pent" the standing curtain rose 0.5 into the lintel for that); 5.98 wide - between the posts. How much it bends -
+      // a model choice.
+      const PAR_BEND0 = INT_DEVIR_DOOR_H - 0.7;
+      const parH = PAR_BEND0;
+      const par = H.box(vg, 0.12, parH, pent ? 6.9 : INT_DEVIR_CLEAR, parochetMats, XW + 0.06, F, 0);   // x -43.5..-43.38, to the bend
+      {
+        const run = 0.56, rise = INT_DEVIR_DOOR_H + 0.03 - PAR_BEND0, fl = Math.hypot(run, rise);
+        const fg = new BoxGeometry(0.12, fl, 5.98);
+        fg.translate(0, fl / 2, 0);
+        int_boxUV(fg, 0, PAR_BEND0, 0, (nx, ny, nz, x, y, z) => [nx > 0.5 ? -z : z, y]);   // the weave runs on from the standing curtain
+        const flap = new Mesh(fg, parochetMats);
+        flap.name = "parochet-head";
+        flap.position.set(XW + 0.06, F + PAR_BEND0, 0);
+        flap.rotation.z = Math.atan2(run, rise);   // its top toward -x, the devir
+        flap.castShadow = flap.receiveShadow = true;
+        vg.add(flap);
+      }
       // 1.0.1-K (K.5): its weave from world positions (the heichal face u = -z, the devir face u = z, v = y - 12): the same for both readings,
       // symmetric about the doorway's middle, and continued by the swellings of the staffs (below)
       int_boxUV(par.geometry, 0, parH / 2, 0, (nx, ny, nz, x, y, z) => [nx > 0.5 ? -z : z, y]);
@@ -2278,6 +2463,20 @@
       }
     };
     ctx.shared.devirDoor.set("pent");
+    // 1.3.3: "הפותות" (7:50) - Rashi's keys (the default) or the pivots / their sockets (the gold pivots, always built)
+    ctx.shared.potot = {
+      current: "rashi", keys: ["rashi", "pivots"],
+      names: { rashi: "רש״י — מפתחות של זהב", pivots: "תרגום ורד״ק — הצירים; רלב״ג — מקום הציר" },
+      get() { return this.current; },
+      set(k) {
+        if (k !== "rashi" && k !== "pivots") return false;
+        this.current = k;
+        for (const key of pototKeys) key.visible = k === "rashi";
+        pototLayer.visible = k === "rashi";
+        return true;
+      }
+    };
+    ctx.shared.potot.set("rashi");
 
     // ---- הפרוכת: the curtain itself is built per doorway reading (buildDevirDoorway above); the bulges of the staffs are shared ----
     {
@@ -2640,8 +2839,8 @@
             keys: ["meir", "yehuda"],
             names: { meir: "רבי מאיר — ספר התורה בתוך הארון", yehuda: "רבי יהודה — ספר התורה על הארגז שבצדו" },
             info: {
-              meir: "אמה בת ששה טפחים: הארון חמישה עשר על תשעה על תשעה טפחים. הלוחות — 'ארכן ששה ורחבן ששה ועביין שלשה' — מונחות לאורכו, שתים עשרה אמות מתוך חמש עשרה; טפח לשני הכתלים, 'נשתיירו שם שני טפחים שבהן ספר תורה מונח' — ספר התורה בתוך הארון, בקצהו, 'מן הצד'; וברוחב, אחרי הלוחות והכתלים, שני טפחים פנויים 'שלא יהא ספר תורה נכנס ויוצא כשהוא דחוק'. שברי הלוחות מונחים בארון (רב הונא: 'יושב הכרובים'); העמודים — 'מבראי', מחוץ לארון (בבא בתרא יד.–יד:).",
-              yehuda: "אמה בת חמישה טפחים: הארון שנים עשר וחצי על שבעה וחצי על שבעה וחצי. הלוחות שתים עשרה לאורכו וחצי טפח לכתלים; ברוחב — שישה ללוחות, טפח לעמודי הכסף ('עמודיו עשה כסף', שיר השירים ג, י) שבתוך הארון, וחצי טפח לכתלים. ספר התורה אינו בארון: 'ארגז ששיגרו פלשתים דורון לאלהי ישראל מונח בצדו... ועליו ספר תורה מונח — מצד הוא מונח ולא בתוכו'; ושברי הלוחות בארון ('אין בארון רק' — לרבות שברי לוחות) (בבא בתרא יד.–יד:). במודל: הארגז ממערב לארון; הלוחות בטפחי אמה בת חמישה."
+              meir: "רבי מאיר — אמה בת ששה טפחים: **הארון חמישה עשר על תשעה על תשעה טפחים**.\nהלוחות — 'ארכן ששה ורחבן ששה ועביין שלשה' — מונחות לאורכו: שתים עשרה מתוך חמש עשרה, וטפח לשני הכתלים; 'נשתיירו שם שני טפחים שבהן ספר תורה מונח' — ספר התורה בתוך הארון, בקצהו, 'מן הצד'. וברוחב, אחרי הלוחות והכתלים, שני טפחים פנויים 'שלא יהא ספר תורה נכנס ויוצא כשהוא דחוק'.\nשברי הלוחות מונחים בארון (רב הונא: 'יושב הכרובים'); העמודים — 'מבראי', מחוץ לארון (בבא בתרא יד.–יד:).",
+              yehuda: "רבי יהודה — אמה בת חמישה טפחים: **הארון שנים עשר וחצי על שבעה וחצי על שבעה וחצי**.\nהלוחות שתים עשרה לאורכו, וחצי טפח לכתלים. ברוחב — שישה ללוחות, טפח לעמודי הכסף שבתוך הארון ('עמודיו עשה כסף', שיר השירים ג, י), וחצי טפח לכתלים.\nספר התורה אינו בארון: 'ארגז ששיגרו פלשתים דורון לאלהי ישראל מונח בצדו... ועליו ספר תורה מונח — מצד הוא מונח ולא בתוכו'; ושברי הלוחות בארון ('אין בארון רק' — לרבות שברי לוחות) (בבא בתרא יד.–יד:).\nבמודל: הארגז ממערב לארון; הלוחות בטפחי אמה בת חמישה."
             },
             set(key) {
               if (!(key in this.info)) return false;
@@ -2791,8 +2990,8 @@
         const bx = new Box3();
         const find = () => {
           found = true;
-          for (const o of g.children) {
-            if (o === rock || o.name === "even-shetiya" || o.isLight) continue;
+          for (const o of g.children.concat(ctx.shared.houseSlope && ctx.shared.houseSlope.group ? ctx.shared.houseSlope.group.children : [])) {   // 1.3.5: the sloping floor's group too
+            if (o === rock || o.name === "even-shetiya" || o.isLight || o.name === "houseSlope" || o.name === "houseSlopeWedge") continue;
             try { bx.setFromObject(o); } catch (_) { continue; }
             if (bx.isEmpty()) continue;
             if (bx.min.x > ARK_X - 1.6 && bx.max.x < ARK_X + 1.6 && bx.min.z > -1.9 && bx.max.z < 1.9 && bx.min.y > F - 0.05 && bx.max.y < F + 8) parts.push(o);
@@ -2865,5 +3064,91 @@
       // window (y 12..26) and the floor's staircase (z -10..-5.2) fill the height of the view (vertical field 48 deg, 90-entry.js)
       wallLayers: { pos: [WL.x0 + WL.w / 2, 20.4, HW - SKIN - 0.5], target: [WL.x0 + WL.w / 2, 17.86, -HW] }
     });
+    // 1.3.5 (the user, 10.11.2026 22:12: "פשפשים וכו להוסיף"; as in the Second Temple's model): THE SLAB OF THE SOTAH'S DUST - Sotah 2:2
+    // (book 67, line 13) "נכנס להיכל ופנה לימינו, ומקום היה שם אמה על אמה, וטבלא של שיש, וטבעת היתה קבועה בה"; Rashi, Sotah 15b (book
+    // 2172, line 851): "לאחזה בטבעתה ולהגביהה מבין הרצפה שהיא כולה באבני שיש". To the right of him who enters = the north: a marble
+    // tablet of an amah with a ring, in the floor by the door. Rashi's floor is marble; this house's is gold over cypress (I Kings
+    // 6:15, 6:30) - carried over at the user's word; the exact spot - a model choice. Built before the floor's slope (below), so it
+    // rises with the floor.
+    {
+      const sx = XE - 3.5, sz = -7.4;
+      H.box(g, 1.14, 0.07, 1.14, new MeshBasicMaterial({ color: 0x15110b }), sx, F, sz).name = "sotahSlabRim";
+      H.box(g, 1, 0.11, 1, M.marble, sx, F, sz).name = "sotahSlab";
+      H.ring(g, 0.18, 0.04, M.bronze, sx, F + 0.15, sz).name = "sotahRing";
+      ctx.labels.push({ text: "טבלא של שיש וטבעת — עפר הסוטה", x: sx, y: F + 1.7, z: sz, size: 0.9 });
+    }
+    // 1.3.5 (the user, of the kuntres "בגדרי ודיני צורת הבית", point 24 and its author's first note: "חובה לשנות"; "בשניהם"): THE HOUSE'S FLOOR
+    // SLOPES UP TO THE WEST - Rashi Menachot 99a "כתלמיד היושב לפני רבו - נמוך הימנו, כך אותם של שלמה נמוכין משל משה, דבית המקדש היה משופע
+    // ולצד מערב מגביה יותר" (book 2186, line 4703), "ומיתתי ליה פורתא - מושיבם לצד מזרח במקום נמוך" (line 4704). From the heichal's door
+    // (XE) to the devir's west wall (XDW); how much is not stated - 4 amot on the 60 (the user, 20:12: "שיפוע 4 אמות מספיק"; 1.5 was hardly seen), a model choice.
+    // HOW: everything of this module that STANDS ON THE FLOOR inside the house - the floor's own skins, the tables, the menorot, the golden
+    // altar, the ark with its staffs and their swellings, the cherubim, the stone - moves into one group whose matrix is a shear
+    // (y' = y + k (XE - x)): each thing rises by the floor's rise at its place and stands on the slope. What is fixed to the building - the
+    // walls' skins, the doors, the parochet, the ceilings - stays (their feet are covered by the rising floor). Found by their bounds: inside
+    // the house's inner footprint, the bottom within 1.3 of the floor, no higher than 11.5 (the cherubim are 10). A wedge of the cypress
+    // boards fills the room under the gold skin (I Kings 6:15 "ויצף את קרקע הבית בצלעות ברושים").
+    {
+      const SL = { x0: XE, x1: XDW, rise: 4 };
+      const k = SL.rise / (SL.x0 - SL.x1);
+      const hr = (x) => SL.rise * Math.max(0, Math.min(1, (SL.x0 - x) / (SL.x0 - SL.x1)));
+      const slopeG = new Group();
+      slopeG.name = "houseSlope";
+      slopeG.matrixAutoUpdate = false;
+      slopeG.matrix.set(1, 0, 0, 0, -k, 1, 0, k * SL.x0, 0, 0, 1, 0, 0, 0, 0, 1);
+      g.updateMatrixWorld(true);
+      const bb = new Box3(), moved = [];
+      for (const o of g.children.slice()) {
+        if (o.isLight || o.isSprite) continue;
+        try { bb.makeEmpty(); bb.setFromObject(o); } catch (_) { continue; }
+        if (bb.isEmpty()) continue;
+        const inside = bb.max.x <= SL.x0 + 0.6 && bb.min.x >= SL.x1 - 0.6 && bb.min.z >= -HW - 0.3 && bb.max.z <= HW + 0.3;
+        const low = bb.min.y >= F - 0.3 && bb.min.y <= F + 1.3 && bb.max.y - bb.min.y <= 11.5;
+        // 1.3.5 (the place scan): the two layouts of the heichal's vessels stand on the floor too - their bounds are high (the pillar of
+        // smoke over the golden altar reaches the ceiling) - and the great cherubim's wings belong to their bodies
+        const named = inside && (/^kodesh-/.test(o.name || "") || o.name === "cherub-wings");
+        if (inside && (low || named)) moved.push([o, +(bb.max.x - bb.min.x).toFixed(1), +(bb.max.y - bb.min.y).toFixed(2), +(bb.max.z - bb.min.z).toFixed(1), +((bb.min.x + bb.max.x) / 2).toFixed(1), bb.clone()]);
+      }
+      // 1.3.5 (the place scan): and what LIES ON a thing that rose rises with it - the ark's cover with its cherubim and the ark's rim
+      // (they begin 1.5 over the floor): inside the plan of a risen thing that is not a floor skin, its foot no higher than that thing's head
+      {
+        const carriers = moved.filter((m) => m[5] && m[2] > 0.5 && m[1] * m[3] < 60 && m[2] <= 11.5);
+        const b2 = new Box3();
+        for (const o of g.children.slice()) {
+          if (o.isLight || o.isSprite || moved.some((m) => m[0] === o)) continue;
+          try { b2.makeEmpty(); b2.setFromObject(o); } catch (_) { continue; }
+          if (b2.isEmpty() || b2.max.y - b2.min.y > 4) continue;
+          const on = carriers.some((m) => b2.min.x >= m[5].min.x - 0.4 && b2.max.x <= m[5].max.x + 0.4 && b2.min.z >= m[5].min.z - 0.4 && b2.max.z <= m[5].max.z + 0.4 && b2.min.y >= m[5].min.y && b2.min.y <= m[5].max.y + 0.4);
+          if (on) moved.push([o, +(b2.max.x - b2.min.x).toFixed(1), +(b2.max.y - b2.min.y).toFixed(2), +(b2.max.z - b2.min.z).toFixed(1), +((b2.min.x + b2.max.x) / 2).toFixed(1), null]);
+        }
+      }
+      g.add(slopeG);
+      for (const m of moved) slopeG.add(m[0]);
+      slopeG.updateMatrixWorld(true);
+      // 1.3.5 (the place scan): the gold keys of the devir's doors hang two amot over the floor - they go up with it on their leaves (the
+      // doors themselves are fixed to the wall, and the floor covers their feet)
+      {
+        const wp = new Vector3();
+        g.traverse((o) => {
+          if (o.name !== "goldKey" || o.userData.slopeUp) return;
+          o.getWorldPosition(wp);
+          if (wp.x <= SL.x0 && wp.x >= SL.x1 && Math.abs(wp.z) <= HW) { o.position.y += hr(wp.x); o.userData.slopeUp = true; }
+        });
+      }
+      const sh = new Shape();
+      const L = SL.x0 - SL.x1;
+      sh.moveTo(0, 0); sh.lineTo(-L, 0); sh.lineTo(-L, SL.rise); sh.closePath();
+      const wg = new ExtrudeGeometry(sh, { depth: 2 * HW - 0.1, bevelEnabled: false });
+      wg.translate(SL.x0, F - 0.02, -(HW - 0.05));
+      const wedge = new Mesh(wg, cypressMat);
+      wedge.name = "houseSlopeWedge";
+      wedge.receiveShadow = true;
+      g.add(wedge);
+      // the names in the air over what rose: the labels of this module that stand inside the house, low
+      for (const l of ctx.labels) {
+        if (!l || l.__slope || typeof l.x !== "number" || typeof l.y !== "number") continue;
+        if (l.x <= SL.x0 && l.x >= SL.x1 && Math.abs(l.z || 0) <= HW && l.y <= F + 13) { l.y += hr(l.x); l.__slope = true; }
+      }
+      ctx.shared.houseSlope = { rise: SL.rise, x0: SL.x0, x1: SL.x1, hw: HW, floor: F, at: hr, group: slopeG, moved: moved.map((m) => [m[0].name || m[0].type, m[1], m[2], m[3], m[4]]) };
+    }
     for (const m of cut) ctx.cutaway.push(m);
   }

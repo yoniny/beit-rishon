@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "id": "com.beit-hamikdash.rishon-3d-model",
   "name": "בית המקדש",
-  "version": "2.0.0",
-  "description": "בית ראשון ובית שני בתלת־ממד: מסך בחירה, מעבר מבית לבית בלי לאבד את המקום, מקורות שנפתחים באוצריא, שיטות ומחלוקות ומצגות.",
+  "version": "2.0.2",
+  "description": "מודל תלת־ממדי של שני בתי המקדש: בית ראשון כפירוש רש״י, ובית שני לפי מסכת מידות והרמב״ם. סיור, שיטות ומחלוקות, מצגות, ומקורות שנפתחים באוצריא.",
   "author": "יוני מאיר ויוסי כהן (Yossi Cohen), shalomke",
   "homepage": "https://github.com/yoniny/beit-rishon",
   "icon": "icon/icon.png",
@@ -18,7 +18,8 @@
     "library.links.read",
     "search.fulltext.read",
     "reader.toolbar",
-    "app.startup_contributions"
+    "app.startup_contributions",
+    "search.field_actions"
   ],
   "network": {
     "enabled": false,
@@ -208,6 +209,16 @@
             "visibleOutput": "show"
           },
           "openPlugin": true
+        }
+      ],
+      "searchFieldActions": [
+        {
+          "id": "temple-places",
+          "title": "בית המקדש — מקום המילים במודל",
+          "icon": "building_24_regular",
+          "fields": [
+            "fullText"
+          ]
         }
       ]
     }

@@ -95,7 +95,8 @@
   //     back to its state at the end; the view's centre moves to the middle of the free space beside the banner (viewShift: a lens shift, no camera or ray changes).
   //   - L.88: the exhibit of the vessels (ctx.shared.kelim) is on on its slides only: the place, 7:40-47, 7:49 (second stop), 7:50 and the completion slide on 7:40-50.
   //   - L.89: the slide's text, title and captions through ctx.ui.smallSources (it leaves a quote's own words); the verses are not touched.
-  //   - L.85: arkInside is a removal, which stays by its pill: no slide opens it; a press during the tour goes back at the end (OWN_FEAT). A31: one slide per version, the
+  //   - L.85: arkInside is a removal, which stays by its pill; 1.3.3 (the user: "הצגת הארון במצגת צריך שיפתח לבד ללא לחיצה"): the slides of the ark
+  //     (the place "מה שבתוך הארון", its tourFeature, and 8:6-9) open it by themselves, and it closes when the slide is left. A31: one slide per version, the
   //     ascent and then the witnesses. A32: the throne's long texts are short here (tour_SHORT); the whole text stays in the panel's card.
   //   - 1.0.2: the box starts 5 px below the fixed top bar of index.html (--topbar-h: 56 px, 44 px in a narrow window), as it did below the old 47 px header.
   var tour_PHONE_MQ = "(max-width:639px)";
@@ -378,7 +379,7 @@ body.tm-measuring #tm-tour-box{bottom:96px}
       x: "רש״י: 'קומת התא חמש אמות, וכשעולה כתל ההיכל חמש אמות, גורע את עביו, וכנס בו אמה לפנים, והניח על אותה כניסה ראשי קורות גג עלית התא, שהיא קרקעית לאמצעית' — לכן התחתונה חמש, התיכונה שש והשלישית שבע: 'נמצאת אמצעית רחבה מן התחתונה אמה, והעליונה רחבה מן התיכונה אמה'; 'לבלתי אחז בקירות הבית — שלא לדבק ראשי הקורות דרך נקבים בקירות הבית' (רש״י).",
       xf: "בחתך, מול פניו, כל קומה בצבע משלה: כותל 7 ותא 5, כותל 6 ותא 6, כותל 5 ותא 7, וכותל 4 מעל גג התאים; המגרעות בצהוב וראשי קורות הארז מונחים עליהן, וכותל התא עולה ישר. הצבעים והמקרא — בחירת מודל.",
       r: [["מדות ד, ג", ["MI", 4, 3]], ["מדות ד, ז", ["MI", 4, 7]]] },
-    { v: [6, 8, 8], t: "פתח התאים והלולים", go: [{ place: "פתח התאים והלולים" }, { fp: "heichalSouth" }],
+    { v: [6, 8, 8], t: "פתח התאים והלולים", go: [{ place: "הליכה בלולים — הדגמה", act: true }, { place: "פתח התאים והלולים" }, { fp: "heichalSouth" }],   // 1.3.5: the walk in the lulim, as its place
       x: "רש״י (ותרגום 'מציעתא'): 'שבחמש תאים שבדרום היה לה פתח אל החוץ בשורה התחתונה' — התא האמצעי, 'ודרך אותו פתח נכנסים לכלם'; לכל תא שלושה פתחים (מדות ד, ג). לולים — 'בנין עמוד אבנים עשוי מעלות מעלות, וההולך בהן דומה כמקיף סביבות עמוד' (רש״י). רד״ק ומצודות: הפתח בקומה התיכונה.",
       r: [["מדות ד, ג", ["MI", 4, 3]]] },
     // 1.2.2: first the section along the length (the feature houseSection: the south wall off, the ceilings cut at the edge - גבים, בית דילפא,
@@ -415,12 +416,12 @@ body.tm-measuring #tm-tour-box{bottom:96px}
       xf: "בתצוגה: שכבות הרצפה — אבן, ברושים וזהב." },
     { v: [6, 31, 32], t: "פתח הדביר ודלתותיו", go: [{ fp: "devirDoor" }],
       x: "'האיל מזוזות חמשית' — שני ביאורים ברש״י: 'כך שמעתי' — מפתן, שתי מזוזות, 'והמשקוף שעליו עשוי כשתים'; 'ואני אומר' — 'חמשה צלעות היו למזוזות, ולא היתה מרבעת' (ברירת המחדל במודל; השני — בטבלת 'שיטות ומחלוקות'). על הדלתות 'וירד על הכרובים' — 'היה מרדד הזהב טסין דקין לשקען בפתוחי הצורות' (רש״י). מעל הפתח משקוף בחתך המזוזות, כציור הספר — בחירת מודל: רש״י כותב 'ואינו מדבר לא במפתן ולא במשקוף', ואצל האחרים האיל הוא המשקוף: 'האיל הוא הסף העליון' (רד״ק), 'שהאיל והוא הסף אשר על הפתח' (רלב״ג)." },
-    { v: [6, 33, 35], t: "פתח ההיכל ודלתות הברושים", go: [{ fp: "heichalDoor" }],
+    { v: [6, 33, 35], t: "פתח ההיכל ודלתות הברושים", go: [{ place: "פתיחת דלתות ההיכל — הדגמה", act: true }, { fp: "heichalDoor" }],   // 1.3.5: the doors open and fold - 6:34 "שני צלעים הדלת האחת גלילים"
       x: "'מאת רבעית' — 'מזוזות ההיכל היו רבועות' (רש״י, תרגום); 'ושתי דלתות עצי ברושים' — 'כל אחת כדי חצי רחב הפתח', 'שני צלעים' — 'תרין צירין, ציר העליון, וציר התחתון' (רש״י בשם התרגום); 'מישר על המחקה' — הזהב 'שוקע במקום שקועו, ובולט במקום בליטתו' (רש״י)." },
-    { v: [6, 36, 36], t: "החצר הפנימית", go: [{ fp: "azarah" }],
+    { v: [6, 36, 36], t: "החצר הפנימית", go: [{ place: "החצר הפנימית — חצר הכהנים", act: true }, { fp: "azarah" }],   // 1.3.5: its zone lit on the floor, as its place
       x: "'ויבן את החצר הפנימית שלשה טורי גזית וטור כרתת ארזים' — 'היא עזרת הכהנים ועזרת ישראל', 'פנימית, לפי שהיתה לפנים מעזרת נשים' (רש״י); מצודות: שלוש שורות גזית ועליהן שורה של ארזים, 'וכסדר הזה בנה אותו עד כלות גבהי הכתלים'." },
     // 1.0.1-L (L.21; courts.md FOR-UI §6): no verse names the chamber: a completion, marked as such; flyPoints.lishkatHaGazit
-    { v: [6, 36, 36], compl: true, t: "לשכת הגזית — בצפון החצר", go: [{ fp: "lishkatHaGazit" }, { place: "לשכת הגזית" }, { fp: "azarah" }],
+    { v: [6, 36, 36], compl: true, t: "לשכת הגזית — בצפון החצר", go: [{ place: "לשכת הגזית", act: true }, { fp: "lishkatHaGazit" }, { fp: "azarah" }],   // 1.3.5: from above, its roof open, as its place
       x: "במלכים אין זכר ללשכת הגזית: השלמה מן המשנה והגמרא, וגם בבית ראשון: 'כי לשכה אחת היתה לה לחולדה, סמוכה ללשכת הגזית' (רש״י דברי הימים ב לד, כב). בצפון: 'שלש שבצפון: לשכת העץ, לשכת הגולה, לשכת הגזית' (יומא יט.), 'והשלש שבצפון לשכת הגזית. לשכת הגולה. לשכת העץ' (רמב״ם בית הבחירה ה, יז) — ובמשנה הנדפסת (מדות ה, ד) 'שבדרום'. בחלקו המזרחי של הכותל, מול המזבח: 'שבצפון סמוכה למזרח לשכת הגזית' (ציור תוספות יום טוב), 'נמצינו למדין שסנהדרין בצד מזבח' (מכילתא). לאורך הכותל, חציה בחצר וחציה מחוצה לה, כתרשים הספר: 'שמע מינה לשכת הגזית חציה בקדש וחציה בחול, ושמע מינה שני פתחים היו לה' (יומא כה.). מידותיה ומקומה המדויק — בחירת מודל.",
       r: [["יומא יט.", ["P", 107, "יט."]], ["רמב״ם בית הבחירה ה, יז", ["RB", 5, 17]], ["מדות ה, ד", ["MI", 5, 4]], ["יומא כה.", ["P", 107, "כה."]], ["צורת בית המקדש לתוספות יום טוב", ["L", 6028, 42]], ["מכילתא בחדש יא", ["L", 285, 1474]], ["רש״י דברי הימים ב לד, כב", ["L", 3662, 1065]]] },
     { v: [7, 1, 1], t: "בית שלמה — שלוש עשרה שנה", lay: "palace", go: [{ fp: "palace" }],
@@ -494,7 +495,7 @@ body.tm-measuring #tm-tour-box{bottom:96px}
       then: { go: [{ fp: "heichalFront" }], at: 0.45, dur: 3500 },
       x: "'בירח האתנים בחג הוא החדש השביעי' — תשרי (רש״י בשם התרגום) — הקהיל שלמה את זקני ישראל 'להעלות את ארון ברית ה׳ מעיר דוד היא ציון' — 'שנתנו שם דוד כשהביאו מבית עובד אדום' (רש״י); הכהנים נשאו את הארון, והלוים את אהל מועד — 'וגנזו שלמה' (רש״י ח, ד). המבט עולה מן הדרום — מצד עיר דוד ובית המלך — אל הבית.",
       r: [["ח, ב", ["V", 10, 8, 2]], ["ח, ד", ["V", 10, 8, 4]], ["דברי הימים ב ה, ב", ["V", 39, 5, 2]]] },
-    { v: [8, 6, 9], t: "הארון אל תחת כנפי הכרובים", go: [{ place: "הארון ובדיו" }, { fp: "kodeshHakodashim" }],
+    { v: [8, 6, 9], t: "הארון אל תחת כנפי הכרובים", go: [{ place: "הארון ובדיו", f: "arkInside" }, { fp: "kodeshHakodashim", f: "arkInside" }],   // 1.3.3 (the user): the ark opens by itself - 8:9 "אין בארון רק שני לחות האבנים"
       // "ביטול": from the heichal, low, at the two bulges of the staffs in the parochet (55-interior.js: x -43.4, y ~12.9, z +-1.4) - 8:8
       // "ויראו ראשי הבדים מן הקדש על פני הדביר"; camera = model choice
       out: [{ pos: [-38.2, 15, 2.8], target: [-43.4, 13.2, 0] }, { fp: "parochet" }, { place: "הפרוכת" }, { fp: "devirDoor" }],
@@ -774,6 +775,8 @@ body.tm-measuring #tm-tour-box{bottom:96px}
           if (c.f && !hasFeature(c.f)) continue;   // a candidate tied to a feature the model does not have
           const cam = camOf(c);
           if (cam) return { c, cam };
+          // 1.3.5 / 1.9.3: a place shown by its action alone (a walk that leads the eye itself) has no camera of its own
+          if (c.place && c.act && placeAct(placeByTitle(c.place))) return { c, cam: { pos: null, target: null, layer: null } };
         }
         return null;
       };
@@ -853,12 +856,75 @@ body.tm-measuring #tm-tour-box{bottom:96px}
       // a place's slide: its fly point / view, else its own camera, else (only a text) its group's view; with its feature when it has one
       // (1.0.1-L: 57-kelim.js gives its links as specs, ["V", 10, 7, 40]: resolved here)
       const linkRefs = (rs) => (rs || []).map(([l, r]) => [l, Array.isArray(r) ? tour_ref(r) : r]).filter((x) => x[1]);
+      // 1.3.5 / 1.9.3 (the user: "בדוק שכל הטכני באמת נמצא בשני הבתים כולל עדכון כרטיסים ומצגות"; the full scan of 10.11.2026): A PLACE'S
+      // SLIDE DOES WHAT THE PLACE'S BUTTON DOES - its own feature (pf: a zone lit on the floor, the altar's frames - a feature object of
+      // the panel, { isOn, on, off }, that is not one of the tour's named FEATURES) and its action (act: the roof opened to look down
+      // into a chamber, the cells' section, a demonstration). What the action opens is held until the slide is left (the engine's
+      // ctx.shared.holdAuto / closeAuto), a demonstration runs to its end before the next slide, and a place whose action is all it has
+      // (a walk that leads the eye itself) is not flown to. Until now such slides only flew: a closed roof seen from above, or the
+      // group's general view instead of the walk. A verse's slide shows a place so by a candidate { place, act: true }.
+      const placeOwnFeat = (p) => {
+        const F = p && p.item && p.item.feature;
+        if (!F || !fnc(F.on) || !fnc(F.isOn) || F.timed === false) return null;   // (an animation with its own end: the throne's slides)
+        if (p.feature && hasFeature(p.feature)) return null;                       // one of the tour's own features: switched on by its name
+        return F;
+      };
+      const placeAct = (p) => (p && p.item && fnc(p.item.action) ? p.item.action : null);
+      const placeOwnCam = (p) => !!(p && (p.fp || (p.item && (p.item.view || p.item.cam || p.item.tg))));
+      const placeByTitle = (t) => placesOf().find((x) => x.title === t) || null;
+      const demoRunning = () => {
+        const L = ctx.shared.demoStops;
+        if (!Array.isArray(L)) return false;
+        for (const d of L) {
+          try {
+            if (d && fnc(d.running) && d.running()) return true;
+          } catch (_) {
+          }
+        }
+        return false;
+      };
+      const runPlace = (rt, s, res) => {
+        let pf = s.pf || null, act = s.act || null;
+        if (s.actOnly) rt.actOnly = true;
+        if (res && res.c && res.c.place && res.c.act) {
+          const p = placeByTitle(res.c.place);
+          if (p) {
+            pf = pf || placeOwnFeat(p);
+            act = act || placeAct(p);
+            if (act && !placeOwnCam(p)) rt.actOnly = true;
+          }
+        }
+        if (pf && !rt.feat) {
+          try {
+            if (!pf.isOn()) {
+              pf.on();
+              rt.undo.push(() => {
+                try {
+                  if (fnc(pf.off) && pf.isOn()) pf.off();
+                } catch (_) {
+                }
+              });
+            }
+          } catch (_) {
+          }
+        }
+        if (act) {
+          const rows0 = rowsOf().map((r) => [r, r.cur]);
+          rt.undo.push(() => {
+            call(ctx.shared.stopDemos);
+            for (const [r, k] of rows0) if (r.cur !== k) setRow(r, k);   // (a place may pick a reading: the small ramps' two places)
+          });
+          call(act);
+          rt.act = true;
+        }
+      };
       const placeSlide = (p, groupCam) => {
         const f = placeFeat(p), k = camKey(p), go = f === "kelim" ? tour_KELIM_GO.slice() : [];   // 1.0.1-L (L.88): the panel's own camera there is for the card beside its panel
         if (k) go.push(f ? { fp: k, f } : { fp: k });
         go.push(f ? { place: p.title, f } : { place: p.title });
         if (groupCam) go.push({ fp: groupCam });
         return { kind: "place", part: 0, group: p.group || "", title: p.title, text: tour_SHORT[p.title] || p.info || "", refs: linkRefs(p.refs), go, lay: p.layer || null, out: tour_OUT,
+          pf: placeOwnFeat(p), act: placeAct(p), actOnly: !!(placeAct(p) && !placeOwnCam(p)),   // 1.3.5 / 1.9.3
           bubble: p.title === "כסא שלמה" || p.title === "עליית המלך לכסא" || k === "throneSteps" };
       };
       const viewSlide = (v, group) => ({ kind: "view", part: 0, group: group || "", key: v.key, title: v.label, text: (U.info && U.info[v.key]) || "", refs: (U.refs && U.refs[v.key]) || [],
@@ -931,10 +997,13 @@ body.tm-measuring #tm-tour-box{bottom:96px}
           prev = home[v.key];
         }
         const done = {};
+        const viewSlideOf = {};   // 1.3.5 / 1.9.3: a place folded into its view's slide gives it its feature and its action
         const emitView = (v, g) => {
           if (done[v.key]) return;
           done[v.key] = true;
-          out.push(viewSlide(v, g));
+          const vs = viewSlide(v, g);
+          viewSlideOf[v.key] = vs;
+          out.push(vs);
         };
         if (byKey.__general) emitView(byKey.__general, "");
         // (an older ui.js gives no groups: the grid first, in its order, then the places)
@@ -956,6 +1025,11 @@ body.tm-measuring #tm-tour-box{bottom:96px}
               fold = vk === k && ((p.item && p.item.key === k) || !p.info || p.info === (U.info && U.info[k]));
             }
             if (!fold) out.push(placeSlide(p, groupCam));
+            else if (v && viewSlideOf[v.key]) {
+              const vs = viewSlideOf[v.key];
+              if (!vs.act) vs.act = placeAct(p);
+              if (!vs.pf) vs.pf = placeOwnFeat(p);
+            }
             if (k === "mechonaClose" && !isExtras(g) && !done.__base) {
               done.__base = true;
               for (const s of baseSlides(g)) out.push(s);
@@ -973,8 +1047,11 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         if (ts.length) out.splice(throneAt >= 0 ? throneAt : out.length, 0, ...ts);
         for (const row of rowsOf()) {
           if (ts.length && isThroneRow(row)) continue;   // its readings are the version slides above
-          const def = row.options[0][0];
-          for (const [key, label, info, infoRefs] of row.options.slice(1)) {
+          // 1.3.5 / 1.9.3 (the full scan: a row that stands by default on a reading that is not its first - its first reading had no
+          // slide, and the row was left on it after its slides): the reading the row stands on is the one gone back to, and every other
+          // reading has its slide
+          const def = row.cur != null && row.options.some((o) => o[0] === row.cur) ? row.cur : row.options[0][0];
+          for (const [key, label, info, infoRefs] of row.options.filter((o) => o[0] !== def)) {
             out.push({ kind: "opinion", part: 1, row, key, def, title: label, sub: row.cap, text: info || "", refs: infoRefs || row.refs || [],
               out: tour_OUT });
           }
@@ -1380,8 +1457,14 @@ body.tm-measuring #tm-tour-box{bottom:96px}
       // returns false when the slide is skipped (the continuous mode, the devir under the cloud); its switches are then undone by leave()
       const enter = () => {
         const s = slides[idx];
-        const rt = { s, undo: [], feat: false, devirNav: false, asked: false, orbit: null, thenI: 0, lv: null, anim: null, outside: false };
+        const rt = { s, undo: [], feat: false, devirNav: false, asked: false, orbit: null, thenI: 0, lv: null, anim: null, outside: false, act: false, actOnly: false };
         cur = rt;
+        // 1.3.5 / 1.9.3: what this slide's place or reading opens for a while (a roof, a section) stays until the slide is left
+        call(ctx.shared.holdAuto, true);
+        rt.undo.push(() => {
+          call(ctx.shared.holdAuto, false);
+          call(ctx.shared.closeAuto);
+        });
         if (s.kind === "opinion") {
           // 1.0.1-K review (tour-5): a reading's own calls may switch a layer that is not its own - the forest house's onPick and fly
           // turn the palace layer on, and so does its undo, onPick(def) (70-ui.js): the layers are recorded first, and those that the
@@ -1390,6 +1473,12 @@ body.tm-measuring #tm-tour-box{bottom:96px}
           rt.lv = layerVis();
           rt.undo.push(() => {
             for (const [n, v] of rt.lv) if (layerOn(n) !== v) setLayer(n, v);
+          });
+          // 1.3.5 / 1.9.3: a reading may move another row with it (the names of the north gates show the thirteen gates) - the other rows
+          // go back after this row's own way back (pushed first, so it runs after it)
+          const rows0 = rowsOf().filter((r) => r !== s.row).map((r) => [r, r.cur]);
+          rt.undo.push(() => {
+            for (const [r, k] of rows0) if (r.cur !== k) setRow(r, k);
           });
           setRow(s.row, s.key);
           rt.undo.push(() => setRow(s.row, s.def));
@@ -1443,11 +1532,12 @@ body.tm-measuring #tm-tour-box{bottom:96px}
               if (r2) flyRes(r2);
             }
           }
-        } else if (res) {
-          flyRes(res);
+        } else {
+          runPlace(rt, s, res);   // 1.3.5 / 1.9.3: the place's own feature and action, as its button (before its flight, as there)
+          if (res && !rt.actOnly) flyRes(res);
         }
         if (s.anim) beginAnim(rt);
-        if (mode.key === "continuous" && !rt.devirNav && !s.nofly) {
+        if (mode.key === "continuous" && !rt.devirNav && !s.nofly && !rt.actOnly) {
           rt.orbit = { start: 1800, amp: tour_ORBIT * orbitSide, applied: 0, begun: false, dead: false };
           orbitSide = -orbitSide;
         }
@@ -1878,13 +1968,17 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         if (hold) return;
         if (rt) {
           thenStep(rt);
-          orbitStep(rt);
+          if (!(rt.act && demoRunning())) orbitStep(rt);   // 1.3.5 / 1.9.3: a demonstration leads the eye itself
         }
         if (tn - progAt > 120 || elapsed >= total) {
           progAt = tn;
           bar.style.width = Math.min(100, elapsed / total * 100).toFixed(1) + "%";
         }
-        if (elapsed >= total) next();
+        if (elapsed >= total) {
+          // 1.3.5 / 1.9.3: a demonstration that the slide started runs to its end first (two minutes more at most)
+          if (rt && rt.act && elapsed < total + 120000 * speed && demoRunning()) return;
+          next();
+        }
       });
       setBtn();
       openMenu(false);

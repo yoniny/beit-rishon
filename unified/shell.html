@@ -63,6 +63,31 @@
   }
   @media(max-height:520px){#pick{bottom:3%;gap:10px}#pick h1{font-size:1.4rem}.house{min-height:80px;padding:10px 14px}}
 
+  /* 2.0.2: the one-time note about the unified plugin (the user: "במסך הבחירה באופן חד פעמי! הסבר על האיחוד של התוסף") */
+  #uni-note{
+    position:absolute;z-index:5;top:18px;left:50%;transform:translateX(-50%);width:min(680px,calc(100% - 28px));
+    max-height:calc(100% - 36px);overflow:auto;
+    background:rgba(12,16,32,.94);border:1.5px solid var(--color-primary);border-radius:var(--radius-lg);
+    box-shadow:0 14px 40px rgba(0,0,0,.6);padding:16px 20px 14px;color:#efe6cc;font-family:var(--font-ui);font-size:14.5px;line-height:1.6
+  }
+  #uni-note[hidden]{display:none}
+  #uni-note h2{font-family:var(--font-main);font-size:1.25rem;line-height:1.3;color:#f6d77f;margin-bottom:8px}
+  #uni-note ul{list-style:disc;padding-inline-start:20px;display:flex;flex-direction:column;gap:6px}
+  #uni-note b{color:#f6d77f}
+  #uni-note .foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}
+  #uni-note .foot span{font-size:12.5px;color:#cbbf9c}
+  #uni-note button{
+    font-family:var(--font-ui);font-size:14px;font-weight:600;padding:7px 22px;border-radius:999px;cursor:pointer;
+    background:var(--color-primary);color:var(--color-on-primary);border:0
+  }
+  #uni-note button:hover,#uni-note button:focus-visible{filter:brightness(1.12);outline:none}
+  @media(max-width:640px){#uni-note{top:8px;padding:12px 14px;font-size:13.5px}#uni-note h2{font-size:1.1rem}}
+  /* a short message at the bottom of the choice screen (the search field's button pressed with no words) */
+  #uni-msg{position:absolute;z-index:6;left:50%;bottom:14px;transform:translateX(-50%);max-width:min(560px,calc(100% - 28px));
+    background:rgba(12,16,32,.95);border:1px solid var(--color-primary);border-radius:var(--radius-md);padding:8px 14px;
+    color:#efe6cc;font-family:var(--font-ui);font-size:13.5px;line-height:1.5;text-align:center}
+  #uni-msg[hidden]{display:none}
+
   /* the houses: each in its own frame, both kept alive while the plugin is open */
   iframe.house-frame{position:fixed;inset:0;width:100%;height:100%;border:0;display:block;z-index:1;
     background:var(--color-surface);visibility:hidden;opacity:0;transition:opacity .25s}
@@ -101,6 +126,18 @@
   <header class="topbar"><div class="title">בית המקדש</div><span id="version">v__PLUGIN_VERSION__</span></header>
   <div id="scene">
 __BACKGROUND_SVG__
+    <div id="uni-note" role="dialog" aria-labelledby="uni-note-t" hidden>
+      <h2 id="uni-note-t">התוסף אוחד: שני בתי המקדש בתוסף אחד</h2>
+      <ul>
+        <li><b>בית ראשון ובית שני — בתוסף אחד.</b> בוחרים בית במסך הזה. בסרגל העליון של כל בית יש כפתור מעבר לבית האחר וכפתור חזרה למסך הזה, וכל בית נשאר במקום שבו עזבתם.</li>
+        <li><b>חיפוש לפי מילים</b> — בסוף התפריט של כל בית: כותבים מילה מן הפסוק (מלכים א, דברי הימים ב) או מן המשנה ומן הרמב״ם (מידות, הלכות בית הבחירה), ומגיעים אל מקומה במודל.</li>
+        <li class="otz"><b>כפתור בחיפוש של אוצריא</b> — כותבים מילה בשדה החיפוש של אוצריא, לוחצים על כפתור ״בית המקדש״ שבתוך השדה, והתוסף נפתח במקומות שהמילה מדברת בהם.</li>
+        <li class="otz"><b>כפתור בעוד ספרים</b> — לא רק במלכים, בדברי הימים, במידות וברמב״ם: גם במפרשיהם, ביומא, בזבחים, במנחות, בתמיד ובעשרות ספרים נוספים. הכפתור פותח את הבית במקום שהשורה שלפניכם מקושרת אליו.</li>
+        <li>שאר החידושים — בחלון <b>״מה חדש״</b> שנפתח בכל בית.</li>
+      </ul>
+      <div class="foot"><span>ההודעה הזאת מוצגת פעם אחת.</span><button type="button" id="uni-note-ok">הבנתי</button></div>
+    </div>
+    <div id="uni-msg" role="status" hidden></div>
     <div id="pick">
       <h1>בית המקדש</h1>
       <div class="row">
@@ -119,6 +156,7 @@ __BACKGROUND_SVG__
   </div>
 </div>
 <!--__HOUSE_SOURCES__-->
+<script>/*__WORDS_INDEX__*/</script>
 <script>
 (function () {
   "use strict";
@@ -140,6 +178,7 @@ __BACKGROUND_SVG__
   var subs = { rishon: {}, sheni: {} };    // house -> {event: true}
   var queued = { rishon: [], sheni: [] };  // routed events waiting for the house to subscribe
   var boot = null;
+  var noteMaybe = null;       // 2.0.2: the one-time note's "show if not seen yet" (set below)
 
   function send(h, msg) {
     var f = frames[h];
@@ -214,6 +253,56 @@ __BACKGROUND_SVG__
   }
   ["plugin.boot", "theme.changed", "reader.toolbar_item_clicked", "plugin.page_opened"].forEach(hook);
 
+  // ---------- 2.0.2: the plugin's button inside Otzaria's search field (manifest: startup.searchFieldActions) ----------
+  // The user: "גם הוספת כפתור בשורת החיפוש" / "אני רוצה גם חיפוש בתוך אוצריא". A click on the button opens this page (the plugin has no
+  // background app) and delivers search.fieldAction.invoked with the field's text. The words are counted in both houses' sources
+  // (window.__tmWordsCount: the index written by the build - no house is loaded for it), the house with more of them opens with the
+  // words in its search section (72-words.js), and it offers the other house's results. The session of the field is ended at once:
+  // nothing is written back into Otzaria's field.
+  var helloed = { rishon: false, sheni: false }, wordsWait = { rishon: null, sheni: null }, lastHouse = null;
+  function countWords(h, q) {
+    try { return typeof window.__tmWordsCount === "function" ? window.__tmWordsCount(h, q) || 0 : 0; } catch (_) { return 0; }
+  }
+  function sendWords(h, q) {
+    if (!CFG.houses[h]) return;
+    var o = h === "rishon" ? "sheni" : "rishon";
+    var detail = { q: q, other: { house: o, name: CFG.houses[o].name, n: countWords(o, q) } };
+    show(h);
+    if (helloed[h]) send(h, { tm: "words", detail: detail });
+    else wordsWait[h] = detail;
+  }
+  var msgTimer = 0;
+  function message(text) {
+    var m = document.getElementById("uni-msg");
+    if (!m) return;
+    m.textContent = text;
+    m.hidden = false;
+    clearTimeout(msgTimer);
+    msgTimer = setTimeout(function () { m.hidden = true; }, 9000);
+  }
+  function onFieldAction(p) {
+    if (!p || typeof p !== "object") return;
+    var text = String(p.text == null ? "" : p.text);
+    if (typeof p.selectionStart === "number" && typeof p.selectionEnd === "number" && p.selectionEnd > p.selectionStart) {
+      text = text.slice(p.selectionStart, p.selectionEnd);
+    }
+    text = text.replace(/\s+/g, " ").trim().slice(0, 120);
+    if (p.sessionId != null) {
+      try { Promise.resolve(window.Otzaria.call("search.endFieldSession", { sessionId: p.sessionId })).catch(function () {}); } catch (_) {}
+    }
+    if (!text) {
+      show("home");
+      message("כותבים מילה בשדה החיפוש של אוצריא, ואז לוחצים על הכפתור ״בית המקדש״ שבשדה — והתוסף מראה את מקומה במודל.");
+      return;
+    }
+    var nr = countWords("rishon", text), ns = countWords("sheni", text);
+    var h = ns > nr ? "sheni" : nr > ns ? "rishon" : (current !== "home" ? current : lastHouse || "rishon");
+    sendWords(h, text);
+  }
+  if (OTZ) {
+    try { window.Otzaria.on("search.fieldAction.invoked", onFieldAction); } catch (_) {}
+  }
+
   function callFor(h, d) {
     var method = d.method, params = d.params;
     // a report says which house it came from
@@ -251,9 +340,12 @@ __BACKGROUND_SVG__
       if (OTZ) callFor(h, d);
       else send(h, { tm: "result", id: d.id, ok: false, error: { message: "no Otzaria" } });
     } else if (d.tm === "switch") {
-      show(d.to);
+      if (typeof d.words === "string" && d.words && CFG.houses[d.to]) sendWords(d.to, d.words);   // 2.0.2: the other house, the same words
+      else show(d.to);
     } else if (d.tm === "hello") {
       send(h, { tm: "visible", visible: current === h });
+      helloed[h] = true;
+      if (wordsWait[h]) { send(h, { tm: "words", detail: wordsWait[h] }); wordsWait[h] = null; }
     }
   });
 
@@ -283,8 +375,10 @@ __BACKGROUND_SVG__
       home.classList.remove("off");
       var b = document.getElementById("pick-" + (HOUSES.filter(function (h) { return frames[h]; })[0] || "rishon"));
       try { b && b.focus({ preventScroll: true }); } catch (_) {}
+      if (noteMaybe) noteMaybe();
     } else {
       frameFor(to);
+      lastHouse = to;
       home.classList.add("off");
       var btn = document.getElementById("pick-" + to);
       if (btn) btn.classList.add("visited");
@@ -306,8 +400,47 @@ __BACKGROUND_SVG__
     if (e.key === "1") show("rishon");
     else if (e.key === "2") show("sheni");
   });
+  // ---------- 2.0.2: the one-time note about the unified plugin ----------
+  // Shown on the choice screen until it is closed ("הבנתי") or a house is chosen while it shows; remembered in Otzaria's plugin
+  // storage (storage.get / storage.set) and in localStorage (the only store outside Otzaria) - either one saying "seen" is enough.
+  (function () {
+    var KEY = "tm.unified.note", note = document.getElementById("uni-note"), okBtn = document.getElementById("uni-note-ok");
+    if (!note || !okBtn) return;
+    if (!OTZ) Array.prototype.forEach.call(note.querySelectorAll("li.otz"), function (li) { li.style.display = "none"; });
+    var ls = function () { try { return localStorage.getItem(KEY); } catch (_) { return null; } };
+    var seen = function () {
+      try { localStorage.setItem(KEY, "1"); } catch (_) {}
+      if (OTZ) { try { Promise.resolve(window.Otzaria.call("storage.set", { key: KEY, value: "1" })).catch(function () {}); } catch (_) {} }
+    };
+    var allowed = false;   // set once the stores were asked and none says "seen"
+    var close = function () {
+      if (note.hidden) return;
+      note.hidden = true;
+      seen();
+    };
+    var open = function () {
+      if (!allowed || !note.hidden || ls() || current !== "home") return;
+      note.hidden = false;
+      try { okBtn.focus({ preventScroll: true }); } catch (_) {}
+    };
+    noteMaybe = open;   // the plugin may open straight into a house (a book's button): the note waits for the choice screen
+    okBtn.addEventListener("click", close);
+    note.addEventListener("keydown", function (e) { if (e.key === "Escape" || e.key === "Esc" || e.key === "Enter") { e.stopPropagation(); close(); } });
+    Array.prototype.forEach.call(document.querySelectorAll(".house"), function (b) { b.addEventListener("click", close); });
+    if (ls()) return;
+    if (!OTZ) { allowed = true; open(); return; }
+    var done = false;
+    var decide = function (v) { if (done) return; done = true; if (v) { try { localStorage.setItem(KEY, "1"); } catch (_) {} } else { allowed = true; open(); } };
+    try {
+      Promise.resolve(window.Otzaria.call("storage.get", { key: KEY })).then(function (r) {
+        decide(!!(r && r.success !== false && r.data));
+      }, function () { decide(false); });
+    } catch (_) { decide(false); }
+    setTimeout(function () { decide(false); }, 1200);   // no answer: the note shows (localStorage alone decides the next time)
+  })();
+
   // for the headless tests
-  window.__tmShell = { show: show, current: function () { return current; }, frames: frames };
+  window.__tmShell = { show: show, current: function () { return current; }, frames: frames, fieldAction: onFieldAction, countWords: countWords };
 })();
 </script>
 </body>

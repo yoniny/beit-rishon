@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<script src="../house-bridge.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>בית שני</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --color-primary:#c9a84c;--color-on-primary:#1a1200;
+    --color-secondary:#a09880;--color-on-secondary:#1a1800;
+    --color-surface-container-high:#171f37;--color-surface-container-highest:#1a1e30;
+    --color-surface:#0a0e1a;--color-on-surface:#e8e8e8;--color-on-surface-variant:#b8b4a6;
+    --color-surface-container:#121826;--color-outline:#2a2a3a;
+    --color-error:#b3261e;--color-on-error:#fff;
+    --color-primary-subtle:rgba(201,168,76,.12);--color-secondary-subtle:rgba(160,152,128,.12);
+    --font-main:'Frank Ruhl Libre','David',serif;--font-ui:'Segoe UI',Arial,sans-serif;--font-size-base:18px;--line-height:1.5;
+    --radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-pill:999px;
+    /* 1.0.2 (the Otzaria wiki, sdk.md "כותרת התוסף — בפס עליון"; DESIGN_GUIDE "סרגל כותרת התוסף"): the plugin's name in a fixed top bar,
+       surfaceContainerHigh, 56 px high (44 px in a narrow window), as Otzaria's AppTopBar over a book */
+    --topbar-h:56px;
+  }
+  @media(max-width:600px){:root{--topbar-h:44px}}
+  /* 1.0.2: nothing is transparent at any stage - the page, the bar and the loading view are painted from the first frame, in the theme
+     cached by the last visit (the script below) or in the defaults above; the real theme replaces them at plugin.boot at once (no colour transition: the page is busy
+     building the model then, and a transition of 0.3 s ran on for seconds in the render sequence) */
+  html,body{width:100%;height:100%;overflow:hidden;font-family:var(--font-main);font-size:var(--font-size-base);line-height:var(--line-height);direction:rtl}
+  html,body{background:var(--color-surface);color:var(--color-on-surface)}
+  #main{position:fixed;inset:0;z-index:0;background:var(--color-surface)}
+  #main canvas{display:block;width:100%;height:100%}
+  /* the bar: fixed px sizes (the guide: the bar does not grow with the reading font, typography.fontSize); "topbar" in every selector
+     that sets a px font-size (the guide's validator allows px only there) */
+  /* 1.1.0: ONE bar, three zones in a flex row (RTL: start = right): [☰ + title] [the buttons: presentation, navigation help, print,
+     report, what's new] [version]. The buttons are children of #tm-topbtns (70-ui.js topbarAdd / 75-tour.js); nothing is position:fixed
+     over the bar any more, nothing is measured or polled. The version is always visible at the left end. */
+  header.topbar{
+    position:fixed;top:0;left:0;right:0;z-index:35;height:var(--topbar-h);flex-shrink:0;
+    background:var(--color-surface-container-high);
+    border-bottom:1px solid var(--color-outline);
+    box-shadow:0 1px 0 var(--color-primary-subtle);
+    padding:0 10px 0 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+    font-family:var(--font-ui);user-select:none
+  }
+  header.topbar .tb-start{display:flex;align-items:center;gap:8px;min-width:0;flex:0 1 auto}
+  header.topbar .title{min-width:0;font-size:16px;font-weight:600;color:var(--color-on-surface);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  header.topbar #tm-topbtns{display:flex;align-items:center;gap:6px;flex:0 0 auto;position:relative}
+  header.topbar .tb-end{display:flex;align-items:center;flex:0 0 auto;min-width:0}
+  header.topbar #version{font-size:12px;font-weight:400;color:var(--color-on-surface-variant);white-space:nowrap;letter-spacing:.02em;opacity:.9}
+  /* the bar's buttons: one pill style for all of them (the presentation button is one of them); in a narrow window only their icons */
+  header.topbar .tm-topbtn{
+    display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 11px;border-radius:var(--radius-pill);box-sizing:border-box;margin:0;
+    background:var(--color-primary-subtle);border:1px solid var(--color-primary);color:var(--color-on-surface);
+    font:600 12.5px var(--font-ui);line-height:1;cursor:pointer;white-space:nowrap;transition:background .15s
+  }
+  header.topbar .tm-topbtn:hover,header.topbar .tm-topbtn.open{background:var(--color-primary);color:var(--color-on-primary)}
+  header.topbar .tm-topbtn.on{background:var(--color-primary);color:var(--color-on-primary)}
+  header.topbar .tm-topbtn svg{width:15px;height:15px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  header.topbar #tm-burger{
+    width:34px;height:34px;border-radius:50%;flex:0 0 auto;padding:0;margin:0;display:flex;align-items:center;justify-content:center;
+    background:transparent;border:1px solid var(--color-outline);color:var(--color-on-surface);cursor:pointer;font-size:18px;line-height:1
+  }
+  header.topbar #tm-burger:hover{background:var(--color-primary-subtle);border-color:var(--color-primary)}
+  @media(max-width:760px){
+    header.topbar .tm-topbtn .lbl{display:none}
+    header.topbar .tm-topbtn{padding:0 9px;gap:0}
+    header.topbar #tm-topbtns{gap:4px}
+  }
+  @media(max-width:600px){header.topbar .tm-topbtn{height:30px}header.topbar #tm-burger{width:30px;height:30px}}
+  /* while the model loads the buttons are hidden: the loading view does not cover the bar (90-entry.js adds tm-ready when it goes) */
+  html:not(.tm-ready) #tm-topbtns,html:not(.tm-ready) #tm-burger{visibility:hidden}
+  /* the loading view: below the bar, never over it */
+  #loading{
+    position:fixed;top:var(--topbar-h);left:0;right:0;bottom:0;z-index:999;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+    background:var(--color-surface);color:var(--color-on-surface);font-family:var(--font-ui);font-size:1rem;
+    transition:opacity .5s
+  }
+  .spinner{width:40px;height:40px;border:3px solid var(--color-outline);border-top-color:var(--color-primary);border-radius:50%;animation:spin .75s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  #loading .bar{width:240px;height:5px;background:var(--color-outline);border-radius:var(--radius-sm);overflow:hidden;margin-top:6px}
+  #fill{height:100%;width:0%;background:var(--color-primary);transition:width .3s}
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:100;
+    background:var(--color-surface-container-highest);border:1px solid var(--color-outline);
+    border-radius:var(--radius-md);padding:10px 18px;
+    font-size:.85rem;color:var(--color-on-surface);
+    opacity:0;transition:opacity .3s;pointer-events:none;text-align:center;white-space:nowrap
+  }
+  .toast.show{opacity:1}
+</style>
+<script>
+// 1.0.2: the theme, before the first paint. Otzaria sends it only at plugin.boot (after the page's load event and its fonts' wait), so
+// 1.0.1 showed a transparent page with the bar for the first seconds. Now the colours of the last visit (localStorage; a page whose
+// storage is unavailable gets the defaults) are applied here, in <head>, and the real theme from plugin.boot / theme.changed replaces
+// them and is cached for the next time.
+(function(){
+  var KEY='tm-theme-v1';
+  function applyTheme(theme){
+    if(!theme||!theme.colorScheme)return false;
+    var cs=theme.colorScheme,r=document.documentElement;
+    var set=function(n,v){if(v)r.style.setProperty(n,v)};
+    set('--color-primary',cs.primary);
+    set('--color-on-primary',cs.onPrimary);
+    set('--color-secondary',cs.secondary);
+    set('--color-on-secondary',cs.onSecondary);
+    set('--color-surface',cs.surface);
+    set('--color-on-surface',cs.onSurface);
+    set('--color-on-surface-variant',cs.onSurfaceVariant||cs.secondary);
+    set('--color-surface-container',cs.surfaceContainer||cs.surface);
+    set('--color-surface-container-high',cs.surfaceContainerHigh||cs.surface);
+    set('--color-surface-container-highest',cs.surfaceContainerHighest||cs.surface);
+    set('--color-error',cs.error);
+    set('--color-on-error',cs.onError);
+    set('--color-outline',cs.outline);
+    if(theme.typography){
+      var t=theme.typography;
+      if(t.fontFamily)r.style.setProperty('--font-main','\''+t.fontFamily+'\',\'David\',serif');
+      if(t.uiFontFamily)r.style.setProperty('--font-ui','\''+t.uiFontFamily+'\',\'Segoe UI\',Arial,sans-serif');
+      if(t.fontSize)r.style.setProperty('--font-size-base',t.fontSize+'px');
+    }
+    return true;
+  }
+  function remember(theme){
+    if(!theme||!theme.colorScheme)return;
+    try{
+      var t=theme.typography||{};
+      localStorage.setItem(KEY,JSON.stringify({mode:theme.mode,colorScheme:theme.colorScheme,typography:{fontFamily:t.fontFamily,uiFontFamily:t.uiFontFamily,fontSize:t.fontSize}}));
+    }catch(_){}
+  }
+  try{var c=localStorage.getItem(KEY);if(c)applyTheme(JSON.parse(c))}catch(_){}
+  function real(theme){if(applyTheme(theme)){document.documentElement.classList.add('themed');remember(theme)}}
+  if(typeof Otzaria!=='undefined'){
+    Otzaria.on('plugin.boot',function(p){real(p&&p.theme)});
+    Otzaria.on('theme.changed',real);
+  }else{
+    document.documentElement.classList.add('themed');
+  }
+})();
+</script>
+</head>
+<body>
+<header class="topbar" id="tm-topbar">
+  <div class="tb-start"><button type="button" id="tm-burger" title="הצג/הסתר לוח בקרה" aria-label="לוח בקרה">☰</button><div class="title">בית המקדש השני</div></div>
+  <nav id="tm-topbtns" aria-label="פעולות"></nav>
+  <div class="tb-end"><span id="version">v1.9.3</span></div>
+</header>
+<main id="main"></main>
+<div id="loading"><div class="spinner"></div><span id="loading-msg">טוען צבעים וחומרים...</span><div class="bar"><div id="fill"></div></div></div>
+<div id="toast" class="toast"></div>
+<script src="./bundle.js"></script>
+</body>
+</html>

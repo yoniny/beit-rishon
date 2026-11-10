@@ -12,6 +12,8 @@
 //  2. Pausing: while the house is hidden its requestAnimationFrame callbacks are held, so the hidden 3D model does not render.
 //     A house that is still loading is not paused (the loading uses frames); it pauses as soon as it is ready (html.tm-ready).
 //  3. Two buttons at the start of the house's top bar: "מעבר לבית שני / ראשון" and "מסך הבחירה".
+//  4. (2.0.2) The words of Otzaria's search field: the shell's message "words" becomes the page's event "tm-words" (and
+//     window.__tmWords until it is read); window.__tmGo(house, words) asks the shell for the other house with the same words.
 (function () {
   "use strict";
   var m = /^tm-house:(rishon|sheni):(otz|web)$/.exec(window.name || "");
@@ -119,8 +121,17 @@
     } else if (d.tm === "visible") {
       setPaused(!d.visible);
       if (d.visible) { try { window.focus(); } catch (_) {} }
+    } else if (d.tm === "words") {
+      // 2.0.2: the words of Otzaria's search field (the plugin's button in it), handed by the shell: { q, other: { house, name, n } }.
+      // The house's 72-words.js shows them in its search section; when it is not built yet it finds them in window.__tmWords.
+      window.__tmWords = d.detail || null;
+      try { window.dispatchEvent(new CustomEvent("tm-words", { detail: d.detail })); } catch (_) {}
     }
   });
+  // 2.0.2: for 72-words.js - "also in the other house": go there with the same words
+  window.__tmGo = function (house, words) {
+    post(words == null ? { tm: "switch", to: house } : { tm: "switch", to: house, words: String(words) });
+  };
 
   // ---------- 3. the buttons in the top bar ----------
   var NAMES = { rishon: "בית ראשון", sheni: "בית שני" };
@@ -179,11 +190,11 @@
       document.head.appendChild(st);
     } catch (_) {}
     placeButtons();
-    try {
-      new MutationObserver(function () {
-        if (!btnSwitch || !btnSwitch.isConnected || !btnHome.isConnected) placeButtons();
-      }).observe(document.body, { childList: true, subtree: true });
-    } catch (_) {}
+    // 2.0.1: a light check twice a second instead of a MutationObserver on the whole body - that one ran on every change of the house's
+    // page and cost about 140 ms while its panel was being built (headless measure)
+    setInterval(function () {
+      if (!btnSwitch || !btnSwitch.isConnected || !btnHome.isConnected) placeButtons();
+    }, 500);
   }
   if (document.body) startButtons();
   else document.addEventListener("DOMContentLoaded", startButtons);

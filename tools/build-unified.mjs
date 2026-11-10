@@ -9,7 +9,8 @@
 //   <out>/plugin/                 the plugin folder (manifest.json, index.html = the choice screen, house-bridge.js, icon/,
 //                                 rishon/{index.html,bundle.js}, sheni/{index.html,bundle.js}, DEV_NOTES.md, .otzignore)
 //   <out>/בית-המקדש-<ver>.otzplugin
-//   <out>/בית המקדש - לצפייה בלי אוצריא.html   one file: the choice screen and both houses inside it
+//   <out>/בית המקדש - לצפייה בלי אוצריא.html   one file: the choice screen and both houses inside it (and, in this file only,
+//                                 unified/update-check.js: the button "בדיקת עדכונים" at the end of each house's menu)
 //
 // The unified manifest is unified/manifest.json (id = בית ראשון's id, so the store updates the installed plugin); its toolbar
 // buttons and startup programs are both houses'. The shell's routing table (which button / which book -> which house) is written
@@ -35,6 +36,7 @@ if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error('bad version ' + version);
 
 // ---------- the two houses ----------
 const NAMES = { rishon: 'בית ראשון', sheni: 'בית שני' };
+const BASE_BOOKS = { rishon: [10, 39], sheni: [89, 337] };   // the books each house reads by its own table (ui_READ): I Kings, II Chronicles; Middot, the Rambam
 const houses = {};
 for (const h of ['rishon', 'sheni']) {
   const dir = path.resolve(src[h]);
@@ -44,12 +46,17 @@ for (const h of ['rishon', 'sheni']) {
   if (!html.includes('<script src="./bundle.js"></script>')) throw new Error(h + ': index.html does not load ./bundle.js as expected');
   const st = (m.contributes && m.contributes.startup) || {};
   const items = (st.toolbarItems || []).map((t) => t.id);
-  // the book ids in the toolbar programs' conditions ("reader.book.id" == N)
-  const books = [];
+  // the book ids in the toolbar programs' conditions ("reader.book.id" == N). 2.0.2: the button shows in 77 books of each house (the
+  // books with the most links to its sources; tools196/gen_manifest_books.py), some of them in both lists; the shell routes a click by
+  // the BUTTON's id, and by the book only for the house's own books (an event with no button id) - BASE_BOOKS, which must be listed
+  const listed = [];
   JSON.stringify(st.programs || [], (k, v) => {
-    if (v && typeof v === 'object' && v.op === 'equals' && v.left && v.left.$context === 'reader.book.id' && v.right) books.push(v.right.$literal);
+    if (v && typeof v === 'object' && v.op === 'equals' && v.left && v.left.$context === 'reader.book.id' && v.right != null) listed.push(typeof v.right === 'object' ? v.right.$literal : v.right);
     return v;
   });
+  const books = BASE_BOOKS[h];
+  for (const b of books) if (!listed.includes(b)) throw new Error(h + ': the manifest does not show the button in its own book ' + b);
+  log(h + ': the button shows in ' + listed.length + ' books');
   houses[h] = { dir, manifest: m, html, bundle, cfg: { name: NAMES[h], version: m.version, page: h + '/index.html', items, books } };
   log(h + ': ' + m.name + ' ' + m.version + ', buttons ' + items.join(',') + ', books ' + books.join(','));
 }
@@ -73,6 +80,10 @@ function shell(standalone, sourcesHtml) {
   s = s.split('__PLUGIN_VERSION__').join(version);
   s = s.replace('__BACKGROUND_SVG__', () => bg);
   s = s.replace('<!--__HOUSE_SOURCES__-->', () => sourcesHtml || '');
+  // 2.0.2: the words index (unified/words-index.js, written by tools196/gen_words.py with the houses' own lines): the shell counts with
+  // it in which house the words of Otzaria's search field are found. Not in the one-file HTML (no Otzaria there, no search field button).
+  if (!s.includes('/*__WORDS_INDEX__*/')) throw new Error('shell.html has no /*__WORDS_INDEX__*/');
+  s = s.replace('/*__WORDS_INDEX__*/', () => (standalone ? '' : read(path.join(U, 'words-index.js')).replace(/<\/script/gi, '<\\/script')));
   return s;
 }
 const BRIDGE_TAG = '<script src="../house-bridge.js"></script>';
@@ -118,7 +129,8 @@ if (!argv.includes('--no-pack')) {
   let parts = '';
   for (const h of ['rishon', 'sheni']) {
     let doc = houseHtml(h);
-    doc = doc.replace(BRIDGE_TAG, () => inlineScript(bridge));
+    // 10.11.2026 (the user: "בקובץ ה-HTML בלבד! הוסף מתג בסוף התפריט עם בדיקת עדכונים מגיט"): unified/update-check.js goes into this file only
+    doc = doc.replace(BRIDGE_TAG, () => inlineScript(bridge) + inlineScript(read(path.join(U, 'update-check.js')).split('__PLUGIN_VERSION__').join(version)));
     doc = doc.replace('<script src="./bundle.js"></script>', () => inlineScript(houses[h].bundle));
     parts += '<textarea id="src-' + h + '" hidden aria-hidden="true">' + esc(doc) + '</textarea>\n';
   }

@@ -371,6 +371,15 @@
     const segE = new Group();
     segE.name = "yatziaSectionEast";
     g.add(segE);
+    // 1.3.4 (the user: "המלצה 1" - the yatzia in the Rambam's reading as an option): RASHI'S YATZIA (the default, as the book) is one group -
+    // the house wall's three lower bands (stepped 7 / 6 / 5, up to the chambers' roof) and everything of sec. 4 - in two parts (the east
+    // one inside segE, for the section); ctx.shared.yatziaReading (sec. 4b) shows it or the Rambam's
+    const yrG = new Group();
+    yrG.name = "yatziaRashi";
+    g.add(yrG);
+    const yrE = new Group();
+    yrE.name = "yatziaRashiEast";
+    segE.add(yrE);
     // the cut faces at x -30.5 (the house wall's steps and the chamber wall), shown only with the section: while the eastern segment stands
     // there they would be inner faces (sec. 4); each is also in the hide-list of its wall (sec. 3; 1.0.1-K review)
     const secCaps = new Group();
@@ -447,19 +456,24 @@
       return rowsOf(k).map(([y0, y1], r) => ({ x0: DW - WT[k], x1: DW, y0, y1, z0, z1, v0: 2, skip: sk(r === 0 && "ny", drop) }));
     };
     const westBoxes = (k) => rowsOf(k).map(([y0, y1], r) => ({ x0: DW - WT[k], x1: DW, y0, y1, z0: -10, z1: 10, v0: 2, skip: sk(r === 0 && "ny", "pz") }));
-    const NW = [], SWEST = [], SEAST = [];
+    // 1.3.4: the three lower bands (k 0..2, up to the chambers' roof at 29) in Rashi's group, the top band (29..46, the windows) common
+    const NW = [], SWEST = [], SEAST = [], NWT = [], SWESTT = [], SEASTT = [];
     for (let k = 0; k < 4; k++) {
-      NW.push(...bandBoxes(-1, k, DW, KE, false, true), ...cornerBoxes(-1, k), ...westBoxes(k));   // its east end lies against the east wall
-      SWEST.push(...bandBoxes(1, k, DW, X0, false, true), ...cornerBoxes(1, k, "nz"));           // its corner's north face lies against the west wall
-      SEAST.push(...bandBoxes(1, k, X0, KE, true, true));
+      const [nw, sw, se] = k < 3 ? [NW, SWEST, SEAST] : [NWT, SWESTT, SEASTT];
+      nw.push(...bandBoxes(-1, k, DW, KE, false, true), ...cornerBoxes(-1, k), ...westBoxes(k));   // its east end lies against the east wall
+      sw.push(...bandBoxes(1, k, DW, X0, false, true), ...cornerBoxes(1, k, "nz"));           // its corner's north face lies against the west wall
+      se.push(...bandBoxes(1, k, X0, KE, true, true));
     }
-    hei_boxMesh(g, NW, M.stone, "house-wall-nw");
-    cut.push(hei_boxMesh(g, SWEST, M.stone, "house-wall-s"), hei_boxMesh(segE, SEAST, M.stone, "house-wall-s-east"));   // "פתח את הבית" removes the SOUTH wall
+    hei_boxMesh(yrG, NW, M.stone, "house-wall-nw");
+    hei_boxMesh(g, NWT, M.stone, "house-wall-nw-top");
+    cut.push(hei_boxMesh(yrG, SWEST, M.stone, "house-wall-s"), hei_boxMesh(yrE, SEAST, M.stone, "house-wall-s-east"),   // "פתח את הבית" removes the SOUTH wall
+      hei_boxMesh(g, SWESTT, M.stone, "house-wall-s-top"), hei_boxMesh(segE, SEASTT, M.stone, "house-wall-s-east-top"));
     {
       // the west wall's south end (z 10), seen only while the south wall is off (ctx.interiorOnly: 70-ui.js shows these only with the cutaway on)
-      const wc = hei_boxMesh(g, WT.map((t, k) => ({ x0: DW - t, x1: DW, y0: WY[k], y1: WY[k + 1], z0: 10, z1: 10, v0: 2, skip: "px,nx,py,ny,nz" })), M.stone, "house-wall-w-cap");
-      wc.visible = false;
-      (ctx.interiorOnly = ctx.interiorOnly || []).push(wc);
+      const capOf = (k) => ({ x0: DW - WT[k], x1: DW, y0: WY[k], y1: WY[k + 1], z0: 10, z1: 10, v0: 2, skip: "px,nx,py,ny,nz" });
+      const wc = hei_boxMesh(yrG, [0, 1, 2].map(capOf), M.stone, "house-wall-w-cap"), wcT = hei_boxMesh(g, [capOf(3)], M.stone, "house-wall-w-cap-top");
+      wc.visible = wcT.visible = false;
+      (ctx.interiorOnly = ctx.interiorOnly || []).push(wc, wcT);
       // the section's cut faces at x -30.5: the house wall's steps 7 / 6 / 5 / 4 and the chamber wall.
       // 1.0.1-K review: two meshes, each in the hide-list of the wall it closes - the house wall's steps go with the south wall into the
       // cutaway ("פתח את הבית"), the chamber wall's with the chamber walls into ctx.yatziaCut ("הסר את קירות היציע") - so that no cut face
@@ -517,12 +531,12 @@
       const BOTH = [[F, L1], [L1, YROOF]], UP = [[L1, YROOF]];
       const ow = (x0, x1, z0, z1, rows, drop) => rows.map(([y0, y1]) => ({ x0, x1, y0, y1, z0, z1, v0: 1, skip: sk(y0 === F && "ny", drop) }));
       ctx.yatziaCut.push(
-        hei_boxMesh(g, [
+        hei_boxMesh(yrG, [
           ...ow(YW, XW_IN, -ZT, -TA_IN, BOTH), ...ow(YW, XW_IN, -TA_IN, TA_IN, BOTH), ...ow(YW, XW_IN, TA_IN, ZT, BOTH),   // west
           ...ow(XW_IN, KE, -ZT, -TA_IN, BOTH, "px"),                                                                         // north (to the east wall)
           ...ow(XW_IN, DX0, TA_IN, ZT, BOTH), ...ow(DX0, DX1, TA_IN, ZT, UP), ...ow(DX1, X0, TA_IN, ZT, BOTH, "px")           // south, the door
         ], M.stone, "yatzia-walls"),
-        hei_boxMesh(segE, ow(X0, KE, TA_IN, ZT, BOTH, "nx,px"), M.stone, "yatzia-wall-s-east")
+        hei_boxMesh(yrE, ow(X0, KE, TA_IN, ZT, BOTH, "nx,px"), M.stone, "yatzia-wall-s-east")
       );
     }
     // ---- the cedar beams: the floors of stories 2 and 3 (k = 1, 2) and the roof (k = 3) ----
@@ -549,8 +563,8 @@
       }
       const beamMat = M.cedar.clone();
       beamMat.vertexColors = true;
-      hei_boxMesh(g, beams.main, beamMat, "yatzia-beams", false);           // beams never touch (the 0.06 joints): no shared-face test
-      hei_boxMesh(segE, beams.east, beamMat, "yatzia-beams-east", false);
+      hei_boxMesh(yrG, beams.main, beamMat, "yatzia-beams", false);           // beams never touch (the 0.06 joints): no shared-face test
+      hei_boxMesh(yrE, beams.east, beamMat, "yatzia-beams-east", false);
     }
     // ---- the partitions, each with a doorway 2 x 4 in its middle (model choice): five boxes face to face (beside the door below and above
     //      its head, the head), merged into one mesh per segment; their ends stay (seen when the chamber walls or the house wall are off) ----
@@ -577,20 +591,20 @@
       // (x -75.5) and the house wall (x -70.5 / -69.5 / -68.5)
       const wPartZ = [-TA_IN + wCh + PT / 2, TA_IN - wCh - PT / 2];         // -7.5, 7.5
       for (let k = 0; k < 3; k++) for (const pz of k < 2 ? wPartZ : [0]) partition(parts.main, "x", XW_IN, wx[k], pz, k);
-      hei_boxMesh(g, parts.main, M.stone, "yatzia-partitions");
-      hei_boxMesh(segE, parts.east, M.stone, "yatzia-partitions-east");
+      hei_boxMesh(yrG, parts.main, M.stone, "yatzia-partitions");
+      hei_boxMesh(yrE, parts.east, M.stone, "yatzia-partitions-east");
     }
     // לולים (Rashi on 6:8: "בנין עמוד אבנים עשוי מעלות מעלות, וההולך בהן דומה כמקיף סביבות עמוד"; 6:8 "ובלולים יעלו על התיכנה ומן
     // התיכנה אל השלשים"; Targum "ובמסבתא סלקין מן ארעיתא לעיליתא"): a stone column r 0.6 (y 12..29, up to the roof beams - model choice) in
     // the middle chamber of the lowest south row (the one with the outside door), with 24 instanced steps 1.7 long (12 per turn, 2 turns -
     // model choice) rising 12 from the floor of story 1 (12) to the floor of story 3 (24) through the stairwell of the two floors above it
-    H.cyl(g, 0.6, 0.6, YROOF - F, M.stoneSmooth, LUL_X, F, LUL_Z, 16);
+    H.cyl(yrG, 0.6, 0.6, YROOF - F, M.stoneSmooth, LUL_X, F, LUL_Z, 16);
     {
       const stepG = H.uvWorldBox(new BoxGeometry(1.7, 0.22, 0.8), 1.7, 0.22, 0.8);
       stepG.translate(1.45, 0, 0);
       const N = 24, rise = (SY[2] - F) / N, mats = [];                      // 0.5 per step
       for (let i = 0; i < N; i++) mats.push(hei_m4(LUL_X, F + (i + 1) * rise - 0.11, LUL_Z, 0, -i * Math.PI / 6, 0));
-      hei_inst(g, stepG, M.stoneSmooth, mats);
+      hei_inst(yrG, stepG, M.stoneSmooth, mats);
     }
     // hatches (the opening "to the chamber above", Rashi on 6:8): dark 2 x 2 plates on the beams at y 18 and 24, 3 west of each chamber's
     // centre (model choice: clear of the doorways and of the section's cut); the לולים chamber has the stairwell instead
@@ -607,8 +621,355 @@
       for (const z of [-(wCh + PT), 0, wCh + PT]) hm.main.push(hei_m4((wx[0] + XW_IN) / 2, ST[0] + BT + 0.03, z));   // west run, stories 1 -> 2
       for (const z of [-12, 12]) hm.main.push(hei_m4((wx[1] + XW_IN) / 2, ST[1] + BT + 0.03, z));                    // stories 2 -> 3 (two above three)
       const hg = new BoxGeometry(2, 0.06, 2);
-      hei_inst(g, hg, dark, hm.main, false);
-      hei_inst(segE, hg, dark, hm.east, false);
+      hei_inst(yrG, hg, dark, hm.main, false);
+      hei_inst(yrE, hg, dark, hm.east, false);
+    }
+
+    // ===== 1.3.4 (after the Second Temple plugin's walks, 1.9.2; the user: "תעשה הכל"): THE WALK UP THE LULIM. The walk engine is that
+    // plugin's (ctx.shared.walk = { run(keys, caps, onEnd, events), stop(), on, LEAD }): the camera at a man's eye along keys [t, eye, look]
+    // in demo seconds, a centripetal Catmull-Rom through them (a key repeated is a pause), led in from wherever the camera is (1.4 s, an eased
+    // line), the words under the picture, a wider eye (66 degrees) while it walks, and a press on the model ends it. Every demonstration runs
+    // at ctx.shared.demoSlow of its written time (90-entry.js), and registers in ctx.shared.demoStops.
+    if (!ctx.shared.walk) {
+      const SLOW = ctx.shared.demoSlow || (ctx.shared.demoSlow = 1.5);
+      const DEMO_STOPS = ctx.shared.demoStops || (ctx.shared.demoStops = []);
+      const LEAD = 1.4;
+      let S = null, capEl = null, fov0 = 0;
+      const crc = (P0, P1, P2, P3, u) => {
+        const d = (A, B) => Math.max(1e-4, Math.sqrt(Math.hypot(B[0] - A[0], B[1] - A[1], B[2] - A[2])));
+        const t1 = d(P0, P1), t2 = t1 + d(P1, P2), t3 = t2 + d(P2, P3), t = t1 + u * (t2 - t1);
+        const L = (A, B, ta, tb) => A.map((v, q) => ((tb - t) * v + (t - ta) * B[q]) / (tb - ta));
+        const A1 = L(P0, P1, 0, t1), A2 = L(P1, P2, t1, t2), A3 = L(P2, P3, t2, t3);
+        return L(L(A1, A2, 0, t2), L(A2, A3, t1, t3), t1, t2);
+      };
+      const at = (keys, t, k) => {
+        const n = keys.length;
+        if (t <= keys[0][0]) return keys[0][k];
+        if (t >= keys[n - 1][0]) return keys[n - 1][k];
+        let i = 0;
+        while (i < n - 2 && t > keys[i + 1][0]) i++;
+        const u = (t - keys[i][0]) / Math.max(1e-6, keys[i + 1][0] - keys[i][0]);
+        if (i === 0) { const e = u * u * (3 - 2 * u), a = keys[0][k], b = keys[1][k]; return [0, 1, 2].map((q) => a[q] + (b[q] - a[q]) * e); }
+        const P = (j) => keys[Math.max(1, Math.min(n - 1, j))][k];
+        return crc(P(i - 1), P(i), P(i + 1), P(i + 2), u);
+      };
+      const caption = (text) => {
+        if (!capEl) {
+          capEl = document.createElement("div");
+          capEl.id = "tm-walk-cap";
+          capEl.setAttribute("dir", "rtl");
+          Object.assign(capEl.style, { position: "fixed", left: "50%", bottom: "64px", transform: "translateX(-50%)", maxWidth: "min(760px, 74vw)",
+            background: "rgba(14,17,28,0.8)", color: "#f4ead0", font: "17px/1.55 var(--font-main, inherit)", padding: "8px 18px",
+            borderRadius: "10px", zIndex: "40", pointerEvents: "none", textAlign: "center", userSelect: "none", boxShadow: "0 2px 10px rgba(0,0,0,0.35)" });
+          document.body.appendChild(capEl);
+        }
+        if (capEl.textContent !== (text || "")) capEl.textContent = text || "";
+        capEl.style.display = text ? "block" : "none";
+      };
+      const setFov = (v) => { const cam = ctx.camera; if (cam && cam.isPerspectiveCamera && Math.abs(cam.fov - v) > 0.01) { cam.fov = v; cam.updateProjectionMatrix(); } };
+      const stop = () => {
+        if (!S) return;
+        const s2 = S;
+        S = null;
+        if (fov0) { setFov(fov0); fov0 = 0; }
+        caption("");
+        if (s2.onEnd) { try { s2.onEnd(); } catch (_) {} }
+      };
+      ctx.animated.push(() => {
+        if (!S) return;
+        const cam = ctx.camera, c = ctx.controls;
+        if (!cam) return;
+        const t = (performance.now() - S.t0) / 1000 / SLOW;
+        const e = at(S.keys, t, 1), l = at(S.keys, t, 2);
+        cam.position.set(e[0], e[1], e[2]);
+        if (c && c.target) c.target.set(l[0], l[1], l[2]);
+        cam.lookAt(l[0], l[1], l[2]);
+        let cap = "";
+        for (const [ct, txt] of S.caps) if (t >= ct) cap = txt;
+        caption(cap);
+        while (S.events.length && t >= S.events[0][0]) { const ev = S.events.shift(); try { ev[1](); } catch (_) {} if (!S) return; }
+        if (t >= S.keys[S.keys.length - 1][0] + 0.4) stop();
+      });
+      try { ctx.renderer.domElement.addEventListener("pointerdown", () => { if (S) stop(); }, true); } catch (_) {}
+      ctx.shared.walk = {
+        LEAD,
+        run(keys, caps, onEnd, events) {
+          stop();
+          const cam = ctx.camera, c = ctx.controls;
+          const k0 = [0, cam ? cam.position.toArray() : keys[0][1], c && c.target ? c.target.toArray() : keys[0][2]];
+          if (cam && cam.isPerspectiveCamera) { fov0 = cam.fov; setFov(66); }
+          S = { t0: performance.now(), onEnd,
+            keys: [k0].concat(keys.map(([t, eye, look]) => [t + LEAD, eye, look])),
+            caps: (caps || []).map(([t, txt]) => [t + LEAD, txt]),
+            events: (events || []).map(([t, fn]) => [t + LEAD, fn]).sort((a, b) => a[0] - b[0]) };
+        },
+        stop,
+        get on() { return !!S; }
+      };
+      DEMO_STOPS.push({ id: "walk", running: () => !!S, stop });
+    }
+    // The lulim (I Kings 6:8, checked in the library: "פתח הצלע התיכנה אל כתף הבית הימנית ובלולים יעלו על התיכנה ומן התיכנה אל השלשים";
+    // Rashi, book 3673, lines 226-229: "שאחד מן התחתונים שבכותל דרומי, היה לו פתח אל החוץ, ודרך אותו פתח נכנסים לכולם"; "והוא בנין עמוד אבנים
+    // עשוי מעלות מעלות, וההולך בהן דומה כמקיף סביבות עמוד, ועולין בו כמה וכמה אמות גבוה, ואין צריך לשפע כשאר סלם, כי הקיפו הוא שפוע";
+    // "אל השלשים. כמו אל השלישים"). Two parts: (1) at a man's eye, from the court through the outside door (x -36.5) into the middle
+    // chamber of the lowest south row, before the stair; (2) the climb - the yatzia section opens (ctx.shared.yatziaSection, its measures
+    // off), the eye steps out to the cut and rises with the climber, who is a light in a floating colour on the steps (the figure is not
+    // drawn): one turn to the middle storey ("על התיכנה", a pause) and one more to the third ("אל השלשים"), and off the stair eastward. At
+    // the end the section goes back as it was (its set(false) takes the eye out of the opened segment). Rashi's reading only (the Rambam's,
+    // the row "צורת היציע", draws no lulim - the walk shows Rashi's). The timing, the eye's places and the light - model choices.
+    // ctx.shared.lulimDemo(), a place of the tree and a button by the door.
+    {
+      const W = ctx.shared.walk, PER = 0.45, T0 = 7.4, PAUSE = 1.8;   // demo seconds a step; the climb's start; the pause on the middle storey
+      const SLOW = ctx.shared.demoSlow || 1.5;
+      const stepTop = (s) => F + 0.5 * (s + 1);
+      const sAt = (t) => {   // the climber's step at demo second t (-1 before the climb; 24 off the stair)
+        if (t < T0) return -1;
+        let u = (t - T0) / PER;
+        if (u > 11) u = u < 11 + PAUSE / PER ? 11 : u - PAUSE / PER;
+        return Math.min(24.5, u);
+      };
+      const onRing = (s, r, dy) => { const th = s * Math.PI / 6; return [LUL_X + r * Math.cos(th), stepTop(s) + dy, LUL_Z + r * Math.sin(th)]; };
+      const tOf = (s) => T0 + s * PER + (s > 11 ? PAUSE : 0);
+      const CX = X0 + 4.6;   // the eye in the opened segment, 4.6 east of the cut
+      const keys = [
+        [0.0, [TA_DOOR_X, F + 3.2, ZT + 6], [TA_DOOR_X, F + 2.4, TA_IN]],
+        [2.2, [TA_DOOR_X, F + 3.2, ZT - 2.2], [TA_DOOR_X + 1.5, F + 2.8, TA_IN - 1]],
+        [3.8, [TA_DOOR_X + 0.4, F + 3.2, TA_IN - 0.5], [LUL_X, F + 2.2, LUL_Z]],
+        [5.0, [TA_DOOR_X + 0.4, F + 3.2, TA_IN - 0.5], [LUL_X, F + 2.2, LUL_Z]],
+        [6.6, [CX, F + 3.4, LUL_Z + 1.2], [LUL_X, F + 1.8, LUL_Z]]
+      ];
+      for (let s2 = 0; s2 <= 24; s2 += 2) {
+        const y = stepTop(Math.min(s2, 23));
+        keys.push([tOf(s2), [CX, y + 2.6, LUL_Z + 1.2], [LUL_X, y + 0.6, LUL_Z]]);
+        if (s2 === 10) keys.push([tOf(11) + PAUSE, [CX, stepTop(11) + 2.6, LUL_Z + 1.2], [LUL_X, stepTop(11) + 0.6, LUL_Z]]);
+      }
+      const tEnd = tOf(24);
+      keys.push([tEnd + 2.6, [CX - 0.6, SY[2] + 3.2, LUL_Z + 1.6], [LUL_X + 1.5, SY[2] + 1.2, LUL_Z]]);
+      const caps = [
+        [0, "״פתח הצלע התיכנה אל כתף הבית הימנית״ (מלכים א ו, ח)"],
+        [2.2, "רש״י: ״שאחד מן התחתונים שבכותל דרומי, היה לו פתח אל החוץ, ודרך אותו פתח נכנסים לכולם״"],
+        [5.0, "״ובלולים יעלו על התיכנה״ — רש״י: ״בנין עמוד אבנים עשוי מעלות מעלות, וההולך בהן דומה כמקיף סביבות עמוד״"],
+        [tOf(11) - 0.2, "״על התיכנה״ — אל הקומה האמצעית"],
+        [tOf(11) + PAUSE, "״ומן התיכנה אל השלשים״ — רש״י: ״כמו אל השלישים״"],
+        [tEnd + 0.4, "״ועולין בו כמה וכמה אמות גבוה, ואין צריך לשפע כשאר סלם, כי הקיפו הוא שפוע״ (רש״י)"]
+      ];
+      // the climber: a light on the steps, in a floating colour (seen through the column when it passes behind it)
+      const lit = new MeshBasicMaterial({ color: 0xffc23a, transparent: true, opacity: 0.95, depthTest: false, depthWrite: false });
+      const mk = new Group();
+      mk.visible = false;
+      yrG.add(mk);
+      { const b = new Mesh(new SphereGeometry(0.32, 16, 12), lit); b.position.y = 1.0; b.renderOrder = 30; mk.add(b);
+        const d = new Mesh(new CylinderGeometry(0.55, 0.55, 0.06, 24), lit); d.position.y = 0.05; d.renderOrder = 30; mk.add(d);
+        const st = new Mesh(new CylinderGeometry(0.06, 0.06, 0.9, 8), lit); st.position.y = 0.5; st.renderOrder = 30; mk.add(st); }
+      let lOn = false, tStart = 0, secWas = null, dimsWas = null;
+      const secOn = () => {
+        const Y = ctx.shared.yatziaSection, dl = ctx.layers && ctx.layers.yatziaDims;
+        if (Y && secWas === null) { secWas = !!Y.on; if (!Y.on) Y.set(true); }
+        if (dl && dimsWas === null) { dimsWas = dl.visible; dl.visible = false; }
+      };
+      const secBack = () => {
+        const Y = ctx.shared.yatziaSection, dl = ctx.layers && ctx.layers.yatziaDims;
+        if (dl && dimsWas !== null) dl.visible = Y && Y.on ? dimsWas : dl.visible;
+        if (Y && secWas === false && Y.on) Y.set(false);
+        secWas = dimsWas = null;
+      };
+      const finish = () => { lOn = false; mk.visible = false; secBack(); };
+      ctx.shared.lulimDemo = () => {
+        if (!W) return;
+        const YR = ctx.shared.yatziaReading;
+        if (YR && YR.mode !== "rashi" && typeof YR.set === "function") YR.set("rashi");
+        lOn = true;
+        tStart = performance.now() + W.LEAD * SLOW * 1000;
+        W.run(keys, caps, finish, [[5.6, secOn]]);
+      };
+      ctx.shared.lulimStop = () => { if (lOn && W) W.stop(); finish(); };
+      ctx.animated.push(() => {
+        if (!lOn) return;
+        const t = (performance.now() - tStart) / 1000 / SLOW, s2 = sAt(t);
+        mk.visible = s2 >= 0;
+        if (s2 < 0) return;
+        if (s2 <= 23) { const p = onRing(s2, 1.45, 0); mk.position.set(p[0], p[1], p[2]); }
+        else { const f = Math.min(1, (s2 - 23) / 1.5); mk.position.set(LUL_X + 1.45 + 1.6 * f, stepTop(23), LUL_Z); }
+      });
+      (ctx.shared.demoStops || []).push({ id: "hei-lulim-demo", running: () => lOn, stop: () => ctx.shared.lulimStop() });
+      ctx.shared.modelButtons = ctx.shared.modelButtons || [];
+      ctx.shared.modelButtons.push({
+        id: "hei-lulim-demo", label: "הדגמה: עלייה בלולים", labelOn: "עצור את ההדגמה", maxDist: 90,
+        title: "״ובלולים יעלו על התיכנה ומן התיכנה אל השלשים״ (מלכים א ו, ח) — מן החוץ דרך הפתח שבתא האמצעי שבדרום, ובלולים סביב העמוד, אל הקומה האמצעית ומשם אל השלישית.",
+        anchor: () => {
+          const p = ctx.camera && ctx.camera.position, YR = ctx.shared.yatziaReading;
+          if (YR && YR.mode && YR.mode !== "rashi") return null;
+          return p && p.z > ZT + 1 && p.x > -95 && p.x < 25 && p.y < F + 60 ? [TA_DOOR_X, F + DOOR_H + 1.4, ZT + 0.6] : null;
+        },
+        get: () => lOn,
+        set: (on) => { if (on) ctx.shared.lulimDemo(); else ctx.shared.lulimStop(); }
+      });
+    }
+
+    // ============================================================ 4b. the yatzia in the Rambam's reading (1.3.4, an option) ======================================================
+    // The user ("המלצה 1"): as the booklet (the drawings of "מקרא מפורש" for the Rambam: long cells side by side, five in the north and five
+    // in the south on each storey, three, three and two in the west, and the galleries outside the outer wall) and as the Second Temple
+    // plugin draws the Rambam's own drawings (Commentary on the Mishnah, Middot 4:3-4, Kafih's edition). His words, checked in the library
+    // (book 573): on 4:3 - "כותל המסיבה וכותל התא וכותל ההיכל לא היה כותל סתום אלא שני כותלים וביניהם הרחקה"; on 4:4 - "היציע. הם
+    // הגזוזטראות המקיפות להיכל מבחוץ, והיתה גזוזטרא אמצעית יותר רחבה מן התחתונה, והעליונה יותר רחבה מן האמצעית, כדי שלא יהא אפשר
+    // להדבק בכותל, והוא מה שנאמר כי מגרעות נתן לבית"; the Mishnah (4:4) "התחתונה, חמש, ורבד שש. והאמצעית, שש, ורבד שבע. והעליונה,
+    // שבע". The measures of the strips - the Mishnah's (4:7 "כתל המסבה חמש, והמסבה שלש, כתל התא חמש, והתא שש, כתל ההיכל שש"), a Second
+    // Temple measure laid on the First (model choice, as the booklet): from the house's inner face (z +-10; the west x -63.5) six thin walls
+    // of one amah (model choice) and five strips in the north and in the south - כותל ההיכל, התא, כותל התא, המסבה, כותל המסבה - to z
+    // +-35; in the west three (to x -80.5: the book's outline there unchanged); each strip one long cell a storey, the inner three turning
+    // round the west, on the top storey two cells in the west. The storeys as Rashi's - 5 high (6:10), floors 12 / 18 / 24, the roof 29..30.
+    // The doors: one in every thin wall a storey, one in every floor (dark openings). The galleries outside the outer wall - 5, 6, 7 wide,
+    // their floors at 12 (the otem; a plinth beyond it in the west), 18, 24, each one amah beyond the one under it (the top one reaches z
+    // +-42, the ulam block's own width), a low parapet on each edge - model choices. The south part goes with "פתח את הבית" (the cutaway).
+    const yaG = new Group();
+    yaG.name = "yatziaRambam";
+    yaG.visible = false;
+    g.add(yaG);
+    {
+      const IN = 10, XI = DW, XE = KE, XWE = YW;                              // the inner faces, the east wall's face, the outline's west face
+      const WALLS = [[0, 1], [5, 6], [12, 13], [16, 17], [20, 21], [24, 25]];   // offsets from the inner face
+      const STRIPS = [[1, 5], [6, 12], [13, 16], [17, 20], [21, 24]];
+      const lo = (k) => SY[k], hi = (k) => ST[k];                               // a storey: 12..17, 18..23, 24..29
+      const DOOR_X = -36.5;                                                     // the doors in the long walls (model choice)
+      const bx = (x0, x1, y0, y1, z0, z1) => ({ x0, x1, y0, y1, z0, z1, v0: 1 });
+      // 1.3.4 (the user: "כפתור פתח את היציע גם לשיטת רמבם חסר"): the outer wall (כותל המסבה; in the west band its fourth wall) apart
+      // from the inner wall, the floors and the roof (W), so that the button "הסר את קירות היציע" takes it away with the thin walls (P)
+      const L = { nW: [], nO: [], nR: [], nP: [], sW: [], sO: [], sR: [], sP: [], wW: [], wO: [], wR: [], wP: [], gal: [], rail: [], galS: [], railS: [] }, doors = [], doorsS = [];
+      const door = (list, x, y, z, sx, sy, sz) => list.push(hei_m4(x, y, z, 0, 0, 0, sx, sy, sz));
+      const unit = new BoxGeometry(1, 1, 1);
+      for (const s of [-1, 1]) {
+        const Z = (a, b) => (s < 0 ? [-(IN + b), -(IN + a)] : [IN + a, IN + b]);
+        const W = s > 0 ? L.sW : L.nW, O = s > 0 ? L.sO : L.nO, R = s > 0 ? L.sR : L.nR, P = s > 0 ? L.sP : L.nP, D = s > 0 ? doorsS : doors;
+        for (let k = 0; k < 3; k++) {
+          const y0 = lo(k), y1 = hi(k), top = k === 2;
+          WALLS.forEach(([a, b], i) => {
+            let xw = i < 4 ? XI - b : XWE;                                      // the inner four reach their west leg's outer face
+            if (top && (i === 1 || i === 2)) xw = XI - 1;                       // on the top storey the middle two stop at the house's west face
+            (i === 0 ? W : i === 5 ? O : P).push(bx(xw, XE, y0, y1, ...Z(a, b)));
+            if (i > 0 && i < 5) door(D, DOOR_X, y0 + 1.5, s * (IN + (a + b) / 2), 1.6, 3, b - a + 0.1);   // the door between two cells
+          });
+          // a north / south cell of an inner strip ends where the west cell begins (on the top storey: at the house's west face)
+          STRIPS.slice(0, 3).forEach(([a, b]) => { const xc = top ? XI - 1 : XI - a; P.push(bx(xc, xc + 1, y0, y1, ...Z(a, b))); });
+          P.push(bx(XWE, XWE + 1, y0, y1, ...Z(17, 25)));                        // the outer two strips' west end (they do not turn)
+          if (k < 2) {
+            STRIPS.forEach(([a, b]) => door(D, DOOR_X - 9, hi(k) + 0.75, s * (IN + (a + b) / 2), 1.2, 0.6, Math.min(1.2, b - a - 0.4)));   // the door up
+            W.push(bx(XWE, XE, hi(k), lo(k + 1), ...Z(0, 25)));                   // the floor above
+          }
+        }
+        R.push(bx(XWE, XE, YROOF, YRT, ...Z(0, 25)));                            // the cells' roof (1.3.4: apart - the walls' button takes it)
+        // the galleries outside the outer wall (|z| 35), the lowest 5, the middle 6, the top 7; on the north and the south they reach round
+        // the corners to the west galleries' outer edge
+        const GW = [5, 6, 7], GO = 35, Zg = (a, b) => (s < 0 ? [-(GO + b), -(GO + a)] : [GO + a, GO + b]);
+        const GL = s > 0 ? L.galS : L.gal, RL = s > 0 ? L.railS : L.rail;
+        for (let k = 0; k < 3; k++) {
+          const w = GW[k], y = lo(k);
+          if (k > 0) GL.push(bx(XWE - w, XE, y - 1, y, ...Zg(0, w)));             // the רובד: the floor of 6, of 7
+          RL.push(bx(XWE - w, XE, y, y + 1.2, ...Zg(w - 0.3, w)));                 // the parapet on its edge
+        }
+      }
+      // the west band (x -63.5..-80.5): the inner four walls' west legs; on the top storey two cells, the line between them over the middle
+      // of the middle strip (x -72.5)
+      for (let k = 0; k < 3; k++) {
+        const y0 = lo(k), y1 = hi(k), top = k === 2;
+        WALLS.slice(0, 4).forEach(([a, b], i) => {
+          if (top && (i === 1 || i === 2)) return;
+          (i === 0 ? L.wW : i === 3 ? L.wO : L.wP).push(bx(XI - b, XI - a, y0, y1, -(IN + a), IN + a));
+          if (!top && (i === 1 || i === 2)) door(doors, XI - (a + b) / 2, y0 + 1.5, 0, b - a + 0.1, 3, 1.6);
+        });
+        if (top) {
+          L.wP.push(bx(XI - 9.5, XI - 8.5, y0, y1, -(IN + 16), IN + 16));
+          door(doors, XI - 9, y0 + 1.5, 0, 1.1, 3, 1.6);
+        } else STRIPS.slice(0, 3).forEach(([a, b]) => door(doors, XI - (a + b) / 2, hi(k) + 0.75, 7, Math.min(1.2, b - a - 0.4), 0.6, 1.2));
+        if (k < 2) L.wW.push(bx(XWE, XI, hi(k), lo(k + 1), -IN, IN));
+      }
+      L.wR.push(bx(XWE, XI, YROOF, YRT, -IN, IN));
+      // the west galleries and their plinth beyond the otem (x -85.5..-80.5, y 6..12, z +-40)
+      L.gal.push(bx(XWE - 5, XWE, AZ, F, -40, 40));
+      for (let k = 0; k < 3; k++) {
+        const w = [5, 6, 7][k], y = lo(k);
+        if (k > 0) L.gal.push(bx(XWE - w, XWE, y - 1, y, -35, 35));
+        L.rail.push(bx(XWE - w, XWE - w + 0.3, y, y + 1.2, -(35 + w), 35 + w));
+      }
+      const yaS = new Group();   // the south part, for the cutaway
+      yaS.name = "yatziaRambamSouth";
+      yaG.add(yaS);
+      // 1.3.4 (the user: "אין חתך יציע לרמבם"): the south part in two segments at X0, as Rashi's chambers - the yatzia section hides the
+      // eastern one (yaSE), and the western boxes' own faces at X0 are the cut faces
+      const yaSE = new Group();
+      yaSE.name = "yatziaRambamSouthEast";
+      yaS.add(yaSE);
+      const splitX = (list) => {
+        const w = [], e = [];
+        for (const b of list) {
+          if (b.x1 <= X0 + 1e-6) w.push(b);
+          else if (b.x0 >= X0 - 1e-6) e.push(b);
+          else { w.push(Object.assign({}, b, { x1: X0 })); e.push(Object.assign({}, b, { x0: X0 })); }
+        }
+        return { w, e };
+      };
+      const rmv = (m) => { ctx.yatziaCut.push(m); return m; };   // the button "הסר את קירות היציע"
+      // the button "הסר את קירות היציע" takes away the outer wall (כותל המסבה) and the roof: the outer strip is seen from the side, and the
+      // five strips - the thin walls with their doors - from above
+      hei_boxMesh(yaG, L.nW.concat(L.wW), M.stone, "yatzia-rambam-walls");
+      rmv(hei_boxMesh(yaG, L.nO.concat(L.wO), M.stone, "yatzia-rambam-outer"));
+      rmv(hei_boxMesh(yaG, L.nR.concat(L.wR), M.stone, "yatzia-rambam-roof"));
+      hei_boxMesh(yaG, L.nP.concat(L.wP), M.stoneSmooth, "yatzia-rambam-partitions");
+      hei_boxMesh(yaG, L.gal, M.stone, "yatzia-rambam-galleries");
+      hei_boxMesh(yaG, L.rail, M.stoneSmooth, "yatzia-rambam-parapets");
+      hei_inst(yaG, unit, dark, doors, false);
+      for (const [grp, half] of [[yaS, "w"], [yaSE, "e"]]) {
+        const sfx = half === "w" ? "-s" : "-se";
+        cut.push(
+          hei_boxMesh(grp, splitX(L.sW)[half], M.stone, "yatzia-rambam-walls" + sfx),
+          rmv(hei_boxMesh(grp, splitX(L.sO)[half], M.stone, "yatzia-rambam-outer" + sfx)),
+          rmv(hei_boxMesh(grp, splitX(L.sR)[half], M.stone, "yatzia-rambam-roof" + sfx)),
+          hei_boxMesh(grp, splitX(L.sP)[half], M.stoneSmooth, "yatzia-rambam-partitions" + sfx),
+          hei_boxMesh(grp, splitX(L.galS)[half], M.stone, "yatzia-rambam-galleries" + sfx),
+          hei_boxMesh(grp, splitX(L.railS)[half], M.stoneSmooth, "yatzia-rambam-parapets" + sfx)
+        );
+      }
+      cut.push(hei_inst(yaS, unit, dark, doorsS, false));   // (the south doors are all west of the cut)
+      ctx.shared.__yaSection = { east: yaSE };
+      // 1.3.4 (the user: "עשית הבדלי רוחב גם לרמבם כמו לרשי?"): the Rambam's measures in the section, as Rashi's (layer yatziaDimsRb, shown with
+      // the section in his reading): the five measures of Middot 4:7 across the strips at the lowest storey, and the galleries' 5 / 6 / 7 with
+      // the ledges of 6 and 7 (4:4) - where his widths differ (the strips are the same on every storey); 1 amah east of the cut, as Rashi's
+      {
+        const gR = new Group();
+        gR.name = "yatziaDimsRb";
+        gR.visible = false;
+        g.add(gR);
+        ctx.layers.yatziaDimsRb = gR;
+        const XL = X0 + 1, NY0 = SY[0] + 2.35;
+        const M47 = [["6", "כותל ההיכל", 0, 6], ["6", "התא", 6, 12], ["5", "כותל התא", 12, 17], ["3", "המסבה", 17, 20], ["5", "כותל המסבה", 20, 25]];
+        for (const [n, name, a, b] of M47) {
+          layerLabel(gR, n, XL, NY0, IN + (a + b) / 2, 2.2, { dim: "rbStrip" });
+          layerLabel(gR, name, XL, SY[0] + 0.9, IN + (a + b) / 2, 1.0, { dim: "rbStrip" });
+        }
+        const GWS = [5, 6, 7];
+        for (let k = 0; k < 3; k++) layerLabel(gR, "יציע " + GWS[k], XL, SY[k] + 2.35, 35 + GWS[k] / 2, 1.5, { dim: "rbGallery" });
+        layerLabel(gR, "רובד 6", XL, SY[1] - 0.5, 35 + 6 + 0.9, 0.9, { dim: "rbGallery" });
+        layerLabel(gR, "רובד 7", XL, SY[2] - 0.5, 35 + 7 + 0.9, 0.9, { dim: "rbGallery" });
+      }
+      ctx.layers.yatziaRambam = yaG;
+      ctx.layers.yatziaRashi = yrG;
+      ctx.labels.push(
+        { text: "התאים לשיטת הרמב״ם — שני כתלים וביניהם הרחקה", x: -40, y: YRT + 2.5, z: 36, size: 2.4, layers: ["yatziaRambam"] },
+        { text: "היציעים — חמש, שש ושבע אמות", x: -14, y: SY[2] + 3.2, z: 43, size: 2, layers: ["yatziaRambam"] }
+      );
+      // ctx.shared.yatziaReading: "rashi" (the default, the book's) / "rambam"; the section of Rashi's yatzia (sec. 11) closes with it
+      ctx.shared.yatziaReading = {
+        mode: "rashi",
+        set(m) {
+          this.mode = m === "rambam" ? "rambam" : "rashi";
+          const rb = this.mode === "rambam";
+          yrG.visible = yrE.visible = !rb;
+          yaG.visible = rb;
+          const Y = ctx.shared.yatziaSection;
+          if (Y && Y.on) Y.set(true);   // 1.3.4: the section stays, now of this reading
+          if (typeof this.onChange === "function") { try { this.onChange(this.mode); } catch (_) {} }   // 70-ui.js: the row's mark
+          return this.mode;
+        }
+      };
     }
 
     // ============================================================ 5. the windows (חלוני שקופים אטומים) ============================================================
@@ -671,7 +1032,9 @@
     //   proud of both faces like them (the K build had a plate 1.2 high on the front only, over the wall's course at 32).
     const UD_W = 10, UD_H = 22;                                 // the clear doorway (model choice, L.59; was 10 x 20)
     const UD_JAMB = 1.2, UD_LINTEL = 1;                         // the jambs' width in the opening and the lintel's height (model choice)
-    const UD_T = 0.33, UD_LW = UD_W / 2, UD_LH = UD_H - 0.9;    // a leaf: thickness, width (half the opening), height (0.45 free at foot and head)
+    // 1.3.5: the doorway's head is an arch (below), so a leaf ends at its springing, 17 over the threshold (was UD_H - 0.9 = 21.1)
+    const UD_ARCH_R = UD_W / 2, UD_SPRING = UD_H - UD_ARCH_R;   // the arch: radius 5, springing 17 over the floor (model choice)
+    const UD_T = 0.33, UD_LW = UD_W / 2, UD_LH = UD_SPRING - 0.45;    // a leaf: thickness, width (half the opening), height (0.45 free at the foot; its head at the springing)
     const UD_HX = E - 0.2, UD_DZ = UD_W / 2 - 0.185;            // the pivot axis: x 18.3, z +-4.815 (the leaf's outer face 0.02 from the jamb)
     ctx.ulamCut.push(...bandWall(g, { axis: "z", from: -ZW, to: ZW, fixed: (UI + E) / 2, thickness: E - UI, y0: F, y1: TOP, opening: { center: 0, width: UD_W + 2 * UD_JAMB, top: F + UD_H + UD_LINTEL } }));
     // gate trim (after the 1.0.19 gateTrim): stone jambs 1.2 wide in the opening (z +-5..6.2, the clear doorway z +-5), 22 high, 0.3 proud
@@ -682,6 +1045,31 @@
       const fx0 = UI - 0.3, fx1 = E + 0.3, fy1 = F + UD_H, fy2 = fy1 + UD_LINTEL, zi = UD_W / 2, zo = zi + UD_JAMB;
       const fb = (y0, y1, z0, z1) => ({ x0: fx0, x1: fx1, y0, y1, z0, z1 });
       ctx.ulamCut.push(hei_boxMesh(g, [fb(F, fy1, -zo, -zi), fb(F, fy1, zi, zo), fb(fy1, fy2, -zo, -zi), fb(fy1, fy2, -zi, zi), fb(fy1, fy2, zi, zo)], M.stoneLight, "ulam-door-frame"));
+    }
+    // 1.3.5 (the user, of the kuntres "בגדרי ודיני צורת הבית", point 2: "כיפת האולם וכיפת הפתח - בשני הבתים"): THE DOORWAY'S HEAD IS AN ARCH -
+    // Rashi on I Kings 7:5 (book 3673, line 329), of the doorways of that verse: "רבועין היו כשאר פתחי בתים, ולא עשויין כפה כעין פתחי אולם".
+    // The two corners over half a circle are filled through the frame's whole depth, in the jambs' light stone: the arch springs 5
+    // under the doorway's head and its crown is at the doorway's 22 (a model choice; the lintel beam stays over it). The arc is a hair
+    // (0.012) inside the jambs' faces, so the two surfaces do not fight where they meet. Goes with the front wall (ctx.ulamCut).
+    {
+      const R = UD_ARCH_R, ys = F + UD_SPRING, ax0 = UI - 0.28, ax1 = E + 0.28;
+      const sh = new Shape();
+      sh.moveTo(-R, ys);
+      sh.lineTo(-(R - 0.012), ys);
+      sh.absarc(0, ys, R - 0.012, Math.PI, 0, true);
+      sh.lineTo(R, ys);
+      sh.lineTo(R, F + UD_H + 0.02);
+      sh.lineTo(-R, F + UD_H + 0.02);
+      sh.closePath();
+      const ageo = new ExtrudeGeometry(sh, { depth: ax1 - ax0, bevelEnabled: false, curveSegments: 28 });
+      ageo.rotateY(Math.PI / 2);   // the shape's x -> the model's -z (symmetric), the depth -> +x
+      ageo.translate(ax0, 0, 0);
+      hei_worldUV(ageo, 0);
+      const am = new Mesh(ageo, M.stoneLight);
+      am.name = "ulam-door-arch";
+      am.castShadow = am.receiveShadow = true;
+      g.add(am);
+      ctx.ulamCut.push(am);
     }
     H.box(g, E - UI + 0.3, 0.12, UD_W, M.stoneSmooth, (UI + E + 0.3) / 2, F, 0);
     // the two cedar doors (1.0.1-L, L.59; sources above): each leaf a board 5 x 21.1 x 0.33 under a hinge group at its pivot (x 18.3, z +-4.815),
@@ -708,7 +1096,8 @@
         upright(leaf.geometry);
         ctx.ulamCut.push(leaf);
         // 1.0.1-L (verifier): each pivot joins the leaf to the frame - y 12.12..12.45 (threshold to foot), 33.55..34 (head to lintel); they stood free, 0.03 from the leaf and the upper one 0.12 under the lintel
-        pivots.push(hei_m4(UD_HX, F + 0.285, s * UD_DZ, 0, 0, 0, 1, 0.33 / 0.3, 1), hei_m4(UD_HX, F + UD_H - 0.225, s * UD_DZ, 0, 0, 0, 1, 0.45 / 0.3, 1));
+        // 1.3.5: the upper pivot runs from the leaf's head (the springing) up into the arch over the pivot's line (1.35 higher there)
+        pivots.push(hei_m4(UD_HX, F + 0.285, s * UD_DZ, 0, 0, 0, 1, 0.33 / 0.3, 1), hei_m4(UD_HX, F + UD_SPRING + 0.7, s * UD_DZ, 0, 0, 0, 1, 1.4 / 0.3, 1));
       }
       const bronze = typeof vsl_bronze === "function" ? vsl_bronze(M, 0xad733a, 0.32) : M.bronze;
       const pv = hei_inst(g, new CylinderGeometry(0.14, 0.14, 0.3, 10), bronze, pivots, false);
@@ -725,6 +1114,98 @@
     }
     hei_boxMesh(g, ulamWalls.s, M.stone, "ulam-walls-stone");     // the wings' back walls (sec. 2), the hall's side walls, the wings' outer walls
     hei_boxMesh(g, ulamWalls.c, M.cedar, "ulam-walls-cedar");
+    // 1.3.5 (the user, 10.11.2026 22:12: "פשפשים וכו להוסיף"; as in the Second Temple's model): THE TWO WICKETS OF BEIT HACHALIFOT, AT THE
+    // CORNER - Zevachim 55b (book 130, line 1920) "רבי יוסי ברבי יהודה אומר: שני פשפשין היו בבית החליפות, וגובהן שמנה, כדי להכשיר את העזרה
+    // כולה לאכילת קדשי קדשים ולשחיטת קדשים קלים"; Rashi (book 2191, lines 2692, 2699): "ובאותן שני כתלים היו שני פתחים קטנים... ופתוחין
+    // למערב", "דפתח להו בקרן זוית - של אולם, מקצת הפתח פונה לצפון ומקצתו למערב, וכן בדרום". Each wicket at the outer western corner of
+    // its wing (x -3.5, z -42 / 42): two amot of it in the western face and two in the side face, eight high, from the ulam's floor (the
+    // otem's top, which runs on there as a terrace). The corner is solid (walls six thick), so it is drawn on the faces - dark, in a
+    // frame. Its width - a model choice. Hidden while the Rambam's ulam (ctx.layers.ulamRambam) stands over that corner.
+    {
+      const wg = new Group();
+      wg.name = "ulamWickets";
+      g.add(wg);
+      (ctx.layers = ctx.layers || {}).ulamWickets = wg;
+      const wkDark = new MeshBasicMaterial({ color: 0x15110b });
+      for (const sg of [-1, 1]) {
+        H.box(wg, 0.06, 8, 2, wkDark, KE - 0.03, F, sg * (ZW - 1));                 // the part in the western face (|z| 40..42)
+        H.box(wg, 2, 8, 0.06, wkDark, KE + 1, F, sg * (ZW + 0.03));                 // the part in the side face (x -3.5..-1.5)
+        H.box(wg, 0.3, 8.4, 0.4, M.stoneSmooth, KE - 0.1, F, sg * (ZW - 2.2));      // the frame: the jamb in the western face
+        H.box(wg, 0.4, 8.4, 0.3, M.stoneSmooth, KE + 2.2, F, sg * (ZW + 0.1));      // the jamb in the side face
+        H.box(wg, 0.3, 0.4, 2.5, M.stoneSmooth, KE - 0.1, F + 8, sg * (ZW - 1.05)); // the lintel, round the corner
+        H.box(wg, 2.5, 0.4, 0.3, M.stoneSmooth, KE + 1.05, F + 8, sg * (ZW + 0.1));
+        ctx.labels.push({ text: "פשפש בית החליפות — בקרן זווית, גבוה שמונה", x: KE - 1.6, y: F + 9.9, z: sg * (ZW + 1.2), size: 1.4, layer: "ulamWickets" });
+      }
+      (ctx.animated = ctx.animated || []).push(() => {
+        const want = !(ctx.layers.ulamRambam && ctx.layers.ulamRambam.visible);
+        if (wg.visible !== want) wg.visible = want;
+      });
+    }
+    // 1.3.5 (the user, 22:12: "פשפשים וכו להוסיף"): THE LUL BEHIND THE KAPORET - Zevachim 55b (book 130, line 1924) "לול קטן היה אחורי בית
+    // הכפורת, גבוה שמונה אמות; כדי להכשיר את העזרה לאכילת קדשי קדשים, ולשחיטת קדשים קלים. והיינו דכתיב: שנים לפרבר" (I Chr 26:18 - the
+    // gatekeepers of the First Temple; Rashi, line 2703: "וקאמר שני שומרים העמידו לבר, והיינו לאותו לול"); Rashi (line 2702): "כמין חלון
+    // פתוח מן התא שאחורי בית הכפרת לאויר העזרה"; the Rosh on Tamid 27a (book 2224, line 48): "לשכה אחת היתה במערב, והיה לול קטן בכותל
+    // מערבי פתוח מן קדש הקדשים לאותה לשכה, והלשכה היתה פתוחה לעזרה כנגד הלול". Both, as in the Second Temple's model: ONE box cut
+    // through the house's western wall, the middle western chamber and its outer wall - two amot wide on the axis (a model choice),
+    // eight high from the devir's floor at its west end (F + 4, the slope; no sill here - the box ends under the top story's floor, whose
+    // partition stands on the axis). The way of the Second Temple's LULHOLE: clipping planes with clipIntersection on a CLONE of each
+    // material of the meshes that cross the box (so the live section's plane and the lul's stay apart), kept up by a frame hook; while
+    // the live section is on the hole is not cut (the section replaces the planes).
+    {
+      const LB = { x0: YW - 0.2, x1: CO.xDevirW + 0.26, y0: F + 4.02, y1: F + 12, z0: -1, z1: 1 };
+      const planes = [new Plane(new Vector3(-1, 0, 0), LB.x0), new Plane(new Vector3(1, 0, 0), -LB.x1), new Plane(new Vector3(0, -1, 0), LB.y0),
+        new Plane(new Vector3(0, 1, 0), -LB.y1), new Plane(new Vector3(0, 0, -1), LB.z0), new Plane(new Vector3(0, 0, 1), -LB.z1)];
+      const lbox = new Box3(new Vector3(LB.x0, LB.y0, LB.z0), new Vector3(LB.x1, LB.y1, LB.z1));
+      const clones = new Map();
+      let meshes = null, tick = 0;
+      // the openings' reveals (the walls are hollow boxes): thin plates just outside the box, in the two walls' thickness, and the cut
+      // ends of the chambers' floor beams
+      const hw = CO.xDevirW - WT[1], cw = hw - 6;   // -69.5: the house wall's outer face at the second story; -75.5: the chamber wall's inner face
+      const plate = (len, h, d, mat, xc, y, z) => { const m = H.box(g, len, h, d, mat, xc, y, z); m.userData.noHole = true; m.castShadow = false; return m; };
+      for (const [xa, xb] of [[hw, CO.xDevirW], [YW, cw]]) {
+        const len = xb - xa, xc = (xa + xb) / 2;
+        plate(len, LB.y1 - LB.y0 + 0.04, 0.04, M.stone, xc, LB.y0 - 0.02, -1.03);
+        plate(len, LB.y1 - LB.y0 + 0.04, 0.04, M.stone, xc, LB.y0 - 0.02, 1.03);
+        plate(len, 0.04, 2.1, M.stone, xc, LB.y0 - 0.05, 0);
+        plate(len, 0.04, 2.1, M.stone, xc, LB.y1 + 0.01, 0);
+      }
+      // the first story's wall is an amah thicker (the ledge): its part of the reveal, under the ledge
+      for (const sz of [-1.03, 1.03]) plate(WT[0] - WT[1], ST[0] - LB.y0 + 0.02, 0.04, M.stone, hw - (WT[0] - WT[1]) / 2, LB.y0 - 0.02, sz);
+      plate(WT[0] - WT[1], 0.04, 2.1, M.stone, hw - (WT[0] - WT[1]) / 2, LB.y0 - 0.05, 0);
+      for (const by of [ST[0], ST[1]]) for (const sz of [-1.03, 1.03]) plate(hw - cw, 1, 0.04, M.cedar, (hw + cw) / 2, by, sz);   // the beams 17..18 and 23..24
+      ctx.labels.push({ text: "לול קטן אחורי בית הכפורת — גבוה שמונה אמות (זבחים נה:)", x: YW - 2, y: F + 13.6, z: 0, size: 1.6 });
+      const find = () => {
+        meshes = [];
+        const bb = new Box3();
+        ctx.root.updateMatrixWorld(true);
+        ctx.root.traverse((o) => {
+          if (!o.isMesh || !o.material || o.isSprite || o.userData.noHole) return;
+          try {
+            if (o.isInstancedMesh) { if (!o.boundingBox) o.computeBoundingBox(); bb.copy(o.boundingBox).applyMatrix4(o.matrixWorld); }
+            else { if (!o.geometry.boundingBox) o.geometry.computeBoundingBox(); bb.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld); }
+            if (bb.intersectsBox(lbox)) meshes.push(o);
+          } catch (_) {}
+        });
+      };
+      const cloneOf = (m) => {
+        if (!m || m.isShaderMaterial || m.isSpriteMaterial || (m.userData && m.userData.__lul)) return m;
+        let c = clones.get(m);
+        if (!c) { c = m.clone(); c.clippingPlanes = planes; c.clipIntersection = true; c.userData = Object.assign({}, m.userData, { __lul: true }); clones.set(m, c); }
+        return c;
+      };
+      (ctx.animated = ctx.animated || []).push(() => {
+        const S = ctx.shared.section;
+        if (S && S.on) return;
+        if (!meshes || ++tick % 180 === 0) find();
+        for (const o of meshes) {
+          if (Array.isArray(o.material)) { let ch = false; const a = o.material.map((m) => { const c = cloneOf(m); if (c !== m) ch = true; return c; }); if (ch) o.material = a; }
+          else { const c = cloneOf(o.material); if (c !== o.material) o.material = c; }
+        }
+        for (const c of clones.values()) if (c.clippingPlanes !== planes) { c.clippingPlanes = planes; c.clipIntersection = true; c.needsUpdate = true; }   // after a section
+        if (ctx.renderer && !ctx.renderer.localClippingEnabled) ctx.renderer.localClippingEnabled = true;
+      });
+      ctx.shared.lul = { box: LB };
+    }
     // niches for the knives (model choice: 12 per wing, 1 x 1) on the wing's west and east faces
     {
       const nm = [];
@@ -749,7 +1230,35 @@
       const zw = 10 + UWT, zr = ZW - UWT;
       const ceil = (y) => hei_boxMesh(g, [{ x0: HE, x1: UI, y0: y, y1: y + 1, z0: -10, z1: 10 }, { x0: HE, x1: UI, y0: y, y1: y + 1, z0: -zr, z1: -zw },
         { x0: HE, x1: UI, y0: y, y1: y + 1, z0: zw, z1: zr }], M.cedar, "ulam-ceiling");
-      ctx.ulamCut.push(ceil(CEIL), ceil(CEIL + 3), hei_boxMesh(g, [{ x0: KE - 0.3, x1: E + 0.3, y0: TOP, y1: ROOF, z0: -ZW - 0.3, z1: ZW + 0.3 }], M.stone, "ulam-roof"));
+      const c1 = ceil(CEIL), c2 = ceil(CEIL + 3), roofM = hei_boxMesh(g, [{ x0: KE - 0.3, x1: E + 0.3, y0: TOP, y1: ROOF, z0: -ZW - 0.3, z1: ZW + 0.3 }], M.stone, "ulam-roof");
+      // 1.3.5 (the user, of the kuntres, point 2; "בשני הבתים"): THE ULAM'S CEILING A VAULT. Rashi on Yoma 52a, of the Second Temple's ulam
+      // (book 2157, line 1959): "כותל אולם - כותל החיצון למטה רוחב היסוד והאסקופה ולמעלה מגובה כיפת הפתח עובי החומה שעולה עד ק' אמה לבד רוחב
+      // כיפת החלל שהיא י"א אמה"; the Tosafot RID there (2109, line 159): "ומשמע מדבריו שאותן י"א אמה שהיו בין האולם ובין ההיכל כיפה היתה
+      // עליהם". Here: a barrel vault over the hall's ten amot (x 2.5..12.5), from side wall to side wall (z +-10), its crown at the cedar
+      // ceiling (a tenth under it, 30 over the floor) and its springing 5 lower - stone, under the two ceilings and the roof, which stay. Carrying
+      // Rashi's words over to the First Temple, the vault's height and its form - model choices. The wings keep their flat ceilings.
+      // ctx.shared.ulamCeiling: "vault" (the default) / "none" - the RID's own reading there ("ובינו ובין ההיכל הי' אויר מגולה ולא הי' שם
+      // תקרה ולא כיפה"): the vault, the ceilings and the roof hidden by 70-ui.js's applyHidden (ctx.ulamCeilCut). No row in the table yet
+      // (the RID speaks of the Second Temple - the user is asked).
+      const vx0 = HE + 0.01, vx1 = UI - 0.01, VR = (vx1 - vx0) / 2 - 0.012, VXC = (HE + UI) / 2, VY0 = CEIL - (UI - HE) / 2 - 0.1;   // the crown 0.1 under the cedar ceiling
+      const vsh = new Shape();
+      vsh.moveTo(vx0, VY0);
+      vsh.lineTo(VXC - VR, VY0);
+      vsh.absarc(VXC, VY0, VR, Math.PI, 0, true);
+      vsh.lineTo(vx1, VY0);
+      vsh.lineTo(vx1, CEIL - 0.02);
+      vsh.lineTo(vx0, CEIL - 0.02);
+      vsh.closePath();
+      const vgeo = new ExtrudeGeometry(vsh, { depth: 19.96, bevelEnabled: false, curveSegments: 28 });
+      vgeo.translate(0, 0, -9.98);
+      hei_worldUV(vgeo, 0);
+      const vault = new Mesh(vgeo, M.stone);
+      vault.name = "ulam-vault";
+      vault.castShadow = vault.receiveShadow = true;
+      g.add(vault);
+      ctx.ulamCut.push(c1, c2, roofM, vault);
+      ctx.ulamCeilCut = [c1, c2, roofM, vault];
+      ctx.shared.ulamCeiling = { mode: "vault", set(m) { this.mode = m === "none" ? "none" : "vault"; if (typeof this.apply === "function") this.apply(); return this.mode; } };
     }
 
     // ============================================================ 6b. the two tables in the ulam (1.0.1-L, L.72) ============================================================
@@ -817,7 +1326,10 @@
         current: "ryby",   // 1.1.0: no "none" any more
         keys: ["ryby", "mishnah"],
         names: { ryby: "רבי יוסי ברבי יהודה — כסף וזהב", mishnah: "המשנה — שיש וזהב" },
-        set: null
+        set: null,
+        // 1.3.3: where the entry table stands (55-interior.js puts the twelve loaves on it - "על של שיש נותנין לחם הפנים בכניסתו")
+        entry: { x: TB_X0 + TB_L / 2, z: -TB_Z, floor: F, top: F + TB_H },
+        group: gT
       };
       ulamTables.set = (key) => {                               // an unknown key changes nothing and returns false
         if (ulamTables.keys.indexOf(key) < 0) return false;
@@ -1807,9 +2319,9 @@
       { text: "בית החליפות", x: (HE + UI) / 2, y: 51, z: 30, size: 3 },
       { text: "בית החליפות", x: (HE + UI) / 2, y: 51, z: -30, size: 3 },
       { text: "קודש הקדשים", x: (DE + DW) / 2, y: 52, z: -18, size: 3.5 },
-      { text: "היציע (התאים)", x: -52, y: YRT + 2.5, z: ZT + 2, size: 3 },             // over the chambers' south wall (y 12..30)
-      { text: "פתח התאים", x: TA_DOOR_X, y: F + DOOR_H + 2, z: ZT + 1.5, size: 2.2, layer: "yatziaWhole" },     // over the door (y 12..15.5); hidden with the section
-      { text: "לולים", x: LUL_X, y: YRT + 1.5, z: LUL_Z, size: 2.2 },                     // over the roof, above the stair
+      { text: "היציע (התאים)", x: -52, y: YRT + 2.5, z: ZT + 2, size: 3, layers: ["yatziaRashi"] },             // over the chambers' south wall (y 12..30); 1.3.4: Rashi's reading only
+      { text: "פתח התאים", x: TA_DOOR_X, y: F + DOOR_H + 2, z: ZT + 1.5, size: 2.2, layers: ["yatziaWhole", "yatziaRashi"] },     // over the door (y 12..15.5); hidden with the section
+      { text: "לולים", x: LUL_X, y: YRT + 1.5, z: LUL_Z, size: 2.2, layers: ["yatziaRashi"] },                     // over the roof, above the stair
       { text: "חלוני שקופים אטומים", x: -35, y: WIN_Y + 4, z: zOut(3) + 3, size: 2.5 },
       { text: "האוטם", x: 22, y: 10, z: -14, size: 2.5 },
       ...ybLabels                                                   // יכין / בועז (below; 1.0.1-L: they rise with Malbim's taller capital)
@@ -1821,7 +2333,9 @@
     // over 144 eyes and pictures: it sees 22 of 28 sample points of the figure; the eye before it ([8.5, 36.5, 2]) saw 15, with the label over the
     // heichal's doorway (9 amot wide, 5 from that eye) across 18% of the frame
     const FP_CAP = {
-      rashi: { pos: [19.5, 32.5, -4.5], target: [PX, 30.5, PZ] },   // 1.2.0 (the user: the eye stood inside the capital): from the ulam's doorway, 16 away
+      // 1.3.5: the doorway's head is an arch now (springing 17, radius 5): the eye was in the old square corner (y 32.5, z -4.5), behind the
+      // arch's spandrel, and saw the stone and a sliver of the capital; it comes down to the capital's height and toward the axis
+      rashi: { pos: [19.5, 30.5, -2.2], target: [PX, 30.5, PZ] },   // 1.2.0 (the user: the eye stood inside the capital): from the ulam's doorway, 16 away
       malbim: { pos: [31, 37, 26], target: [19.5, 32, 9.5] }   // A14: from outside and from the south, so that the hat with its net stands beside the lily on the ulam's front and does not hide it
     };
     // 1.0.1-L (verifier): the view from the doorway per reading - Rashi's eye 0.5 higher than K.1's, so that the label over the heichal's doorway
@@ -1877,13 +2391,22 @@
       // amot from the cut (x -30.5), looking due west (0.6 higher than its target: the controls' polar limit 0.495 pi, i.e. 1.3 deg); the
       // view (48 deg) shows y 11.2..34.8 - the three stories, the roof and the wall's 4 above it - and z 2..40: the house wall's cut on the
       // right, the chambers, the chamber wall and the legend over the court on the left. With the section on only (sec. 11).
-      yatziaSection: { pos: [-4, 23.6, 21], target: [X0, 23, 21] },
+      yatziaSection: { pos: [-4, 23.6, 21], target: [X0, 23, 21] },   // (1.3.4: a getter below, for the Rambam's reading)
       // 1.0.1-K: the chambers' only outside door (6:8) seen from the terrace of the אוטם, as the book's p. ט (the band of beam ends above)
       yatziaDoor: { pos: [-29, 18, 44], target: [-36.5, 16, 27] },   // 1.2.2: lower and nearer - the door was a small hole at the frame's foot
       aliyot: { pos: [260, 150, 220], target: [-25, 70, 0] },
       aliyotSection: { pos: [170, 84, 0], target: [-25, 72, 0] },   // 1.2.3 (the user: "ממזרח ולא מאף כיוון אחר"): from the east, along the house's length, the whole 120 in the frame
       // 1.0.1-L (verifier): the target stood inside the closed chambers (x -70: the ray met the chamber wall at 135.5 of its 147.4); now 0.1 before that wall's outer face (x -80.5)
       heichalWest: { pos: [-200, 60, -60], target: [-80.6, 25, 0] }
+    });
+    // 1.3.4: in the Rambam's reading (his strips to z 35 and the galleries to 42) the section's eye stands 30 from the cut and looks at z 26
+    Object.defineProperty(ctx.shared.flyPoints, "yatziaSection", {
+      configurable: true, enumerable: true,
+      get() {
+        const rb = ctx.shared.yatziaReading && ctx.shared.yatziaReading.mode === "rambam";
+        return rb ? { pos: [-0.5, 23.6, 26], target: [X0, 23, 26] } : { pos: [-4, 23.6, 21], target: [X0, 23, 21] };
+      },
+      set(_) {}
     });
     // ---- 1.0.1-L (FIXES L.60): the reading of the capitals - ctx.shared.pillarCapital = { current, keys, names, set } (the shape of
     // ctx.shared.forestHouse): set("malbim") hides Rashi's capital meshes and shows the group "yb-malbim" (sec. 7), re-aims
@@ -1936,10 +2459,14 @@
       x0: X0,
       set(on) {
         const was = ysec.on;
+        const YR = ctx.shared.yatziaReading, rb = !!(YR && YR.mode === "rambam");   // 1.3.4: the section of either reading
         ysec.on = !!on;
         segE.visible = !ysec.on;                                // only this module's eastern segment (55-interior's gold skin stays)
-        secCaps.visible = ysec.on;                              // the cut faces
-        gD.visible = ysec.on;                                   // the measures (and their labels: layer "yatziaDims")
+        const yaSec = ctx.shared.__yaSection;
+        if (yaSec && yaSec.east) yaSec.east.visible = !ysec.on;   // the Rambam's eastern segment (its west boxes' faces at X0 are the cut)
+        secCaps.visible = ysec.on && !rb;                       // the cut faces (Rashi's chambers)
+        gD.visible = ysec.on && !rb;                            // the measures (and their labels: layer "yatziaDims") - Rashi's
+        if (ctx.layers.yatziaDimsRb) ctx.layers.yatziaDimsRb.visible = ysec.on && rb;   // 1.3.4: the Rambam's (sec. 4b)
         gW.visible = !ysec.on;                                  // the door's label (layer "yatziaWhole", above)
         if (was && !ysec.on && ctx.camera && ctx.camera.position && (inSeg(ctx.camera.position) || performance.now() - ysecFlewAt < 2500)) heiFly("heichalSouth");
       }
@@ -1949,13 +2476,18 @@
     // the pill: on the south chamber wall west of the cut while the section is off; with it on, over the cut's top by the chamber wall, where
     // the section's own view sees it (1.0.1-L; the old place, behind the cut face, was hidden from that view)
     const ANCH_OFF = [X0 - 3, SY[1] + 6.5, ZT + 0.5], ANCH_ON = [X0 + 0.5, YRT + 0.8, TA_IN + 1.5];
+    const ANCH_OFF_RB = [X0 - 3, SY[1] + 6.5, 42.6], ANCH_ON_RB = [X0 + 0.5, YRT + 0.8, 33.5];   // 1.3.4: outside the Rambam's galleries / over his cut
     ctx.shared.modelButtons.push({
       id: "hei-yatzia-section",
-      label: "הצג חתך של היציע (רש״י)",
+      label: "הצג חתך של היציע",   // 1.3.4: both readings
       labelOn: "הסתר את החתך",
-      title: "חותך את התאים שבדרום ואת כותל הבית ומסובב את המבט אל החתך: כותל הבית נכנס אמה בכל קומה — שבע, שש וחמש, וארבע מעל גג התאים — " +
-        "וראשי קורות הארז מונחים על המגרעות (בצהוב), ולכן התאים חמש, שש ושבע אמות, וכל קומה חמש אמות (מלכים א ו, ו; ו, י). כל קומה בצבע משלה. כלי צפייה בלבד.",
-      anchor: () => (ysec.on ? ANCH_ON : ANCH_OFF),
+      get title() {   // 1.3.4: the Rambam's reading too
+        return ctx.shared.yatziaReading && ctx.shared.yatziaReading.mode === "rambam"
+          ? "חותך את הרצועות שבדרום ומסובב את המבט אל החתך: שישה כתלים דקים וחמש רצועות — כותל ההיכל, התא, כותל התא, המסבה וכותל המסבה (מדות ד, ז) — בשלוש קומות, והיציעים מבחוץ: חמש, שש ושבע (פירוש המשניות לרמב״ם ד, ד). כלי צפייה בלבד."
+          : "חותך את התאים שבדרום ואת כותל הבית ומסובב את המבט אל החתך: כותל הבית נכנס אמה בכל קומה — שבע, שש וחמש, וארבע מעל גג התאים — " +
+        "וראשי קורות הארז מונחים על המגרעות (בצהוב), ולכן התאים חמש, שש ושבע אמות, וכל קומה חמש אמות (מלכים א ו, ו; ו, י). כל קומה בצבע משלה. כלי צפייה בלבד.";
+      },
+      anchor: () => (ctx.shared.yatziaReading && ctx.shared.yatziaReading.mode === "rambam" ? (ysec.on ? ANCH_ON_RB : ANCH_OFF_RB) : ysec.on ? ANCH_ON : ANCH_OFF),   // 1.3.4: both readings
       maxDist: 150,
       get: () => ysec.on,
       set: (on) => {

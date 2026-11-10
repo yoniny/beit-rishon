@@ -1,5 +1,8 @@
-# Publishes the plugin to the Otzaria store on every push to main that raises "version" in plugin/manifest.json
+# Publishes the plugin to the Otzaria store on every push to main that raises "version" in unified-plugin/manifest.json
 # (Otzaria/otzaria-plugin-validator: validate, build, publish; publishing needs the OTZARIA_USER / OTZARIA_PASSWORD secrets).
+# 2.0.2: the published plugin is the unified one, "בית המקדש" (בית ראשון + בית שני; the same id as בית ראשון, so the store updates the
+# installed plugin). unified-plugin/ is the built folder (tools/build-unified.mjs -> dist-unified/plugin, copied here); plugin/ is
+# בית ראשון's own build and is not published any more.
 name: Publish plugin
 on:
   push:
@@ -11,6 +14,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: Otzaria/otzaria-plugin-validator@v1
         with:
-          path: plugin
+          path: unified-plugin
           otzaria-user: ${{ secrets.OTZARIA_USER }}
           otzaria-password: ${{ secrets.OTZARIA_PASSWORD }}

@@ -56,7 +56,7 @@
     t.classList.add("show");
     setTimeout(() => t.classList.remove("show"), dur);
   }
-  function makeLabelSprite2(text, size) {
+  function makeLabelSprite2(text, size, l) {   // 1.3.3: l - the label's record; l.box draws the text on a dark plate (the altar's measures, as the Second Temple plugin)
     // 1.0.1-L (L.89): the bracket of a source in a clearly smaller font, 28 of 48 px (ui_labelText, 70-ui.js), so that a long label takes less of the view
     const font = '600 48px "Segoe UI",Arial', fontSmall = '600 28px "Segoe UI",Arial';
     const pad = 26;
@@ -67,11 +67,23 @@
     cv.width = tw + pad * 2;
     cv.height = 48 + pad * 2;
     c = cv.getContext("2d");
+    if (l && l.box) {   // a rounded dark plate with a gold rim, so that the number reads on the stone of the altar
+      const r = 22, x0 = 6, y0 = 10, x1 = cv.width - 6, y1 = cv.height - 10;
+      c.beginPath();
+      c.moveTo(x0 + r, y0); c.lineTo(x1 - r, y0); c.quadraticCurveTo(x1, y0, x1, y0 + r); c.lineTo(x1, y1 - r); c.quadraticCurveTo(x1, y1, x1 - r, y1);
+      c.lineTo(x0 + r, y1); c.quadraticCurveTo(x0, y1, x0, y1 - r); c.lineTo(x0, y0 + r); c.quadraticCurveTo(x0, y0, x0 + r, y0); c.closePath();
+      c.fillStyle = typeof l.box === "string" ? l.box : "rgba(24,16,6,.86)";
+      c.fill();
+      c.lineWidth = 4;
+      c.strokeStyle = "rgba(243,220,154,.9)";
+      c.stroke();
+    }
     lt.draw(c, cv.width - pad, cv.height / 2);
     const tex = new CanvasTexture(cv);
     tex.colorSpace = SRGBColorSpace;
     tex.anisotropy = 4;
-    const spr = new Sprite(new SpriteMaterial({ map: tex, transparent: true, depthTest: true, depthWrite: false }));
+    const spr = new Sprite(new SpriteMaterial({ map: tex, transparent: true, depthTest: !(l && l.onTop), depthWrite: false }));
+    if (l && l.onTop) spr.renderOrder = 10;   // 1.3.5 (as the Second Temple plugin 1.9.1): l.onTop - drawn over the stone it names
     const hAmot = (size || 4) * cv.height / 48;
     spr.scale.set(hAmot * cv.width / cv.height, hAmot, 1);
     return spr;
@@ -134,6 +146,7 @@
   // 1.0.1-H: the controls are built by a function so that they can be rebuilt (OrbitControls keeps its drag deltas in a closure: once a
   // NaN gets in - a drag while the canvas had no height - update() re-applies it forever; see the guard in the animation loop)
   var controls = null;
+  var ENT_MIN_POLAR = 0.2;   // 1.9.2 / 1.3.4: the steepest view from above (see makeControls)
   function makeControls(target) {
     const c = new OrbitControls(camera, renderer.domElement);
     c.target.copy(target || new Vector3(0, 30, 0));
@@ -143,7 +156,11 @@
     // between the bread stacks); the floor under the eye is the limit now, set every frame by ent_floorStep. PI - 0.06: never at the nadir, as minPolarAngle
     c.maxPolarAngle = Math.PI - 0.03;   // 1.2.0: free (the floor under the target is the limit, guardCamera)
     // 1.0.1-H: the camera never reaches the zenith (OrbitControls "sticks" at the pole: a horizontal drag there only spins the view)
-    c.minPolarAngle = 0.03;
+    // 1.9.2 / 1.3.4 (the user, with two recordings: "בעיית גלילה מטורפת... לא מצליח לגלול 360 נורמלי, עף לכל הכיוונים"): never straight down.
+    // Near the zenith a sideways drag only spins the picture round the target, and a drag on a slant tilts and spins at once; 11.5
+    // degrees from the vertical still reads as a view from above, and a drag then circles round the thing like a drone (flyTo tilts
+    // a flight's end to it, so the first frame does not jump)
+    c.minPolarAngle = ENT_MIN_POLAR;
     // 1.0.1-K: never closer than 2 amot to the target (the same floor as the UI's zoom buttons); with the DPR fix in 00-lib.js a wheel
     // notch can no longer put the camera ON the target (r160's default minDistance 0 allowed it)
     c.minDistance = 0.3;   // 1.2.0: as close as one likes
@@ -568,35 +585,50 @@
   // told in the help). Axis "z": the plane is z = v, the SOUTH of it cut (a section through the house from the south, as the cutaway);
   // axis "x": x = v, the EAST cut (a section along the house's length, seen from the east). ctx.shared.section = { on, axis, v, set(on, axis, v) }.
   // Shader materials (the altar's flames) and sprites (the labels) are not clipped.
-  var ent_sec = { on: false, axis: "z", v: 0, plane: new Plane(new Vector3(0, 0, -1), 0), mats: null, sides: null };
-  function ent_sectionMats() {
-    if (ent_sec.mats) return ent_sec.mats;
-    const set = new Set();
-    if (ctx && ctx.root) ctx.root.traverse((o) => {
-      if (!o.isMesh || !o.material) return;
-      for (const m of Array.isArray(o.material) ? o.material : [o.material]) if (m && !m.isShaderMaterial && !m.isSpriteMaterial) set.add(m);
+  // 1.3.4 (from the Second Temple plugin 1.9.1; the user: "כל סעיף 3 לעשות"): the materials are taken afresh every frame while the section
+  // is on (ent_sectionApply, from the animation loop) - the wall fade swaps a wall's material for a copy of it, and the fixed list of 1.2.9
+  // missed the copies (a faded wall stood whole across the cut); and a third axis, "y" - a plan, everything above v cut
+  var ent_sec = { on: false, axis: "z", v: 0, plane: new Plane(new Vector3(0, 0, -1), 0), sides: new Map() };
+  function ent_sectionApply() {
+    if (!ent_sec.on || !ctx || !ctx.root) return;
+    const P = ent_sec.plane;
+    ctx.root.traverse((o) => {
+      // 1.3.5 (the full scan: the dark edges of the doors' boards stood whole in the cut part): lines and points are cut as the meshes
+      if (!(o.isMesh || o.isLine || o.isPoints) || !o.material) return;
+      for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
+        if (!m || m.isShaderMaterial || m.isSpriteMaterial) continue;
+        if (m.clippingPlanes && m.clippingPlanes.length === 1 && m.clippingPlanes[0] === P) continue;
+        // 1.3.5 (as the Second Temple plugin 1.9.1): a copy made while the section is on carries the plane and the two sides of its
+        // original - its own side is taken as the front's
+        if (!ent_sec.sides.has(m)) ent_sec.sides.set(m, m.clippingPlanes && m.clippingPlanes.length ? FrontSide : m.side);
+        m.clippingPlanes = [P];
+        m.clipShadows = true;
+        m.side = DoubleSide;
+        m.needsUpdate = true;
+      }
     });
-    ent_sec.mats = Array.from(set);
-    ent_sec.sides = ent_sec.mats.map((m) => m.side);
-    return ent_sec.mats;
   }
   function ent_sectionSet(on, axis, v) {
     on = !!on;
-    if (axis === "x" || axis === "z") ent_sec.axis = axis;
+    if (axis === "x" || axis === "z" || axis === "y") ent_sec.axis = axis;
     if (Number.isFinite(v)) ent_sec.v = v;
     const P = ent_sec.plane;
-    if (ent_sec.axis === "z") P.set(new Vector3(0, 0, -1), ent_sec.v);   // keeps p.z <= v (the north), cuts the south
-    else P.set(new Vector3(-1, 0, 0), ent_sec.v);                         // keeps p.x <= v (the west), cuts the east
-    const mats = ent_sectionMats();
+    if (ent_sec.axis === "z") P.set(new Vector3(0, 0, -1), ent_sec.v);        // keeps p.z <= v (the north), cuts the south
+    else if (ent_sec.axis === "y") P.set(new Vector3(0, -1, 0), ent_sec.v);   // keeps p.y <= v - a plan, everything above cut
+    else P.set(new Vector3(-1, 0, 0), ent_sec.v);                             // keeps p.x <= v (the west), cuts the east
     if (on !== ent_sec.on) {
       ent_sec.on = on;
       renderer.localClippingEnabled = on || renderer.localClippingEnabled;
-      mats.forEach((m, i) => {
-        m.clippingPlanes = on ? [P] : null;
-        m.clipShadows = on;
-        m.side = on ? DoubleSide : ent_sec.sides[i];
-        m.needsUpdate = true;
-      });
+      if (on) ent_sectionApply();
+      else {
+        for (const [m, side] of ent_sec.sides) {
+          if (m.clippingPlanes && m.clippingPlanes.indexOf(P) >= 0) m.clippingPlanes = null;
+          m.clipShadows = false;
+          m.side = side;
+          m.needsUpdate = true;
+        }
+        ent_sec.sides.clear();
+      }
     }
     try { document.documentElement.classList.toggle("tm-section", on); } catch (_) {}
     if (ctx && ctx.shared && ctx.shared.section) Object.assign(ctx.shared.section, { on: ent_sec.on, axis: ent_sec.axis, v: ent_sec.v });
@@ -679,6 +711,17 @@
     });
   })(renderer.domElement);
   var flyAnim = null;
+  // 1.9.2 / 1.3.4: a flight's eye nearer the zenith of its target than ENT_MIN_POLAR is tilted to it - the same distance, the same side
+  // (the small offset that set the picture's up), or from the south when there is none
+  function ent_tiltFromZenith(p, q) {
+    const d = p.clone().sub(q), r = d.length();
+    if (!(r > 1e-6) || d.y <= 0) return p;
+    const h = Math.hypot(d.x, d.z), phi = Math.atan2(h, d.y);
+    if (phi >= ENT_MIN_POLAR - 1e-4) return p;
+    const ux = h > 1e-3 ? d.x / h : 0, uz = h > 1e-3 ? d.z / h : 1;
+    const nh = r * Math.sin(ENT_MIN_POLAR), ny = r * Math.cos(ENT_MIN_POLAR);
+    return new Vector3(q.x + ux * nh, q.y + ny, q.z + uz * nh);
+  }
   function flyTo(pos, target, dur = 1600) {
     cam_lookEnd();   // 1.2.0
     cam.lookLock = false;   // a flight decides afresh (cam_decide at its end)
@@ -688,7 +731,7 @@
       t0: performance.now(),
       dur,
       p0: camera.position.clone(),
-      p1: new Vector3(...pos),
+      p1: ent_tiltFromZenith(new Vector3(...pos), new Vector3(...target)),   // 1.9.2 / 1.3.4: never straight down
       c0: controls.target.clone(),
       c1: new Vector3(...target)
     };
@@ -863,6 +906,107 @@
     controls,
     renderer
   };
+  // 1.9.2 / 1.3.4 (the user's recording: a chamber's roof came back while the eye was inside it, and all one saw was the stone):
+  // ctx.shared.camUnder(list) - is the eye under one of these pieces (inside its plan, below its top)? Their boxes are taken once.
+  // ctx.shared.openFor(id, ms) - a place or a row opens a pill for a while (another call within it starts the count again; a pill the user
+  // opened himself stays open); when the time is up and the eye is under what the pill would put back (its under()), it waits 4 s more
+  ctx.shared.camUnder = (list) => {
+    if (!list || !list.length) return false;
+    const p = camera.position;
+    if (!list.__boxes || list.__boxes.n !== list.length) {
+      const bs = [];
+      for (const o of list) { try { if (o) bs.push(new Box3().setFromObject(o)); } catch (_) {} }
+      bs.n = list.length;
+      list.__boxes = bs;
+    }
+    for (const b of list.__boxes) {
+      if (b.isEmpty()) continue;
+      if (p.x > b.min.x - 1 && p.x < b.max.x + 1 && p.z > b.min.z - 1 && p.z < b.max.z + 1 && p.y < b.max.y + 0.5) return true;
+    }
+    return false;
+  };
+  ctx.shared.openFor = (id, ms) => {
+    const b = (ctx.shared.modelButtons || []).find((x) => x && x.id === id);
+    if (!b) return false;
+    const T = ctx.shared.__pillT || (ctx.shared.__pillT = {});
+    if (!b.get()) { b.set(true); T[id] = T[id] || -1; }
+    if (!T[id]) return true;   // opened by the user himself: no timer
+    if (T[id] > 0) clearTimeout(T[id]);
+    const close = () => {
+      let again = false;
+      try {
+        if (ctx.shared.__autoHold && b.get()) again = true;   // the presentation holds it until the slide is left
+        else if (b.get() && typeof b.under === "function" && b.under()) again = true;
+        else if (b.get()) b.set(false);
+      } catch (_) {}
+      T[id] = again ? setTimeout(close, 4000) : 0;
+    };
+    T[id] = setTimeout(close, ms || 15000);
+    return true;
+  };
+  // 1.3.5 (the full scan of 10.11.2026: a place's roof, section or zone stayed for the rest of its 15 s over the NEXT place's view):
+  // ctx.shared.sectionFor(axis, v, ms) - a place or a row shows a section of the model for a while (another call within it starts the
+  // count again); ctx.shared.closeAuto() - everything a place or a row opened for a while (openFor's pills, sectionFor's section) goes
+  // back at once: the next place or chip calls it before its own action. What the user opened himself (a pill, the navigation box's
+  // section) has no timer and stays. ctx.shared.holdAuto(on) - the presentation holds what a slide opened until the slide is left.
+  ctx.shared.sectionFor = (axis, v, ms) => {
+    const S = ctx.shared.__secT || (ctx.shared.__secT = { t: 0, axis: "z", v: 0 });
+    if (S.t) clearTimeout(S.t);
+    ent_sectionSet(true, axis, v);
+    S.axis = ent_sec.axis;
+    S.v = ent_sec.v;
+    if (ctx.shared.sectionPaint) try { ctx.shared.sectionPaint(); } catch (_) {}
+    const close = () => {
+      if (ctx.shared.__autoHold) { S.t = setTimeout(close, 2000); return; }
+      S.t = 0;
+      if (ent_sec.on && ent_sec.axis === S.axis && ent_sec.v === S.v) {
+        ent_sectionSet(false, S.axis, S.v);
+        if (ctx.shared.sectionPaint) try { ctx.shared.sectionPaint(); } catch (_) {}
+      }
+    };
+    S.t = setTimeout(close, ms || 15000);
+    return true;
+  };
+  ctx.shared.closeAuto = () => {
+    const T = ctx.shared.__pillT;
+    if (T) {
+      for (const id of Object.keys(T)) {
+        if (!(T[id] > 0)) continue;
+        clearTimeout(T[id]);
+        T[id] = 0;
+        const b = (ctx.shared.modelButtons || []).find((x) => x && x.id === id);
+        try { if (b && b.get()) b.set(false); } catch (_) {}
+      }
+    }
+    const S = ctx.shared.__secT;
+    if (S && S.t) {
+      clearTimeout(S.t);
+      S.t = 0;
+      if (ent_sec.on && ent_sec.axis === S.axis && ent_sec.v === S.v) {
+        ent_sectionSet(false, S.axis, S.v);
+        if (ctx.shared.sectionPaint) try { ctx.shared.sectionPaint(); } catch (_) {}
+      }
+    }
+  };
+  ctx.shared.holdAuto = (on) => { ctx.shared.__autoHold = !!on; };
+  // 1.9.2 / 1.3.4 (the user: "בלחיצה על כל מתג הוא חייב לבטל את ההדגמות ולעבור לפקודת המתג"): every demonstration registers itself in
+  // ctx.shared.demoStops ({ id, running(), stop() }); a switch - a chip of the opinions table, a place, a button of the panel, of the
+  // navigation box or of the top bar - first stops whatever runs, then does its own thing. The pills call stopDemos(their id) themselves
+  // (70-ui.js), so that a demonstration's own pill still toggles it; a pill marked keepDemos (the throne's mute) leaves the scene running.
+  // ctx.shared.demoSlow: every demonstration runs at 1.5 of its written seconds (the user: "כל ההדגמות יותר איטיות")
+  ctx.shared.demoSlow = ctx.shared.demoSlow || 1.5;
+  ctx.shared.demoStops = ctx.shared.demoStops || [];
+  ctx.shared.stopDemos = (except) => {
+    for (const d of ctx.shared.demoStops) {
+      if (except && d.id === except) continue;
+      try { if (d.running()) d.stop(); } catch (_) {}
+    }
+  };
+  document.addEventListener("click", (ev) => {
+    const t = ev.target && ev.target.closest ? ev.target.closest("button, input, select, [role='button'], .tm-op a") : null;
+    if (!t || t.closest(".tm-pill, #tm-news, #tm-help, .tm-src, .tm-srcl")) return;
+    ctx.shared.stopDemos();
+  }, true);
   // 1.0.1-K: the shadow pass's depth programs. renderer.compile() prepares the materials of the scene only; WebGLShadowMap draws every
   // shadow caster with its own MeshDepthMaterial variants (side = the caster's shadow side, instanced or not, a map / alphaMap copy for
   // alpha-tested casters), so on the 1.0.1 first frame 4 more programs compiled synchronously (~1.2 s cold on an Intel Iris Xe). This
@@ -1109,6 +1253,7 @@
       } catch (_) {
       }
     }
+    if (ent_sec.on) ent_sectionApply();   // 1.3.4: the materials swapped in since (the wall fade's copies) are cut too
     if (ent_load.printed) {
       renderer.render(scene, camera);
     } else {
