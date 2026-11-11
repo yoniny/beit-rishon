@@ -13,8 +13,15 @@
     --color-surface-container:#121826;--color-outline:#2a2a3a;
     --color-primary-subtle:rgba(201,168,76,.12);
     --font-main:'Frank Ruhl Libre','David',serif;--font-ui:'Segoe UI',Arial,sans-serif;--font-size-base:18px;--line-height:1.5;
-    --radius-md:12px;--radius-lg:16px;
+    --radius-md:12px;--radius-lg:16px;--radius-pill:999px;
     --topbar-h:56px;
+    /* the choice screen's own colours: it is a night picture, and what stands on it keeps its colours in every theme of Otzaria (the
+       bar above it follows the theme). They are variables, as the store's design check asks (DESIGN_GUIDE.md: no literal colours in
+       the rules; 11.11.2026 - the store refused the update because of them). */
+    --tm-night:#0a0e1a;--tm-title:#f6e7bf;--tm-gold:#f6d77f;
+    --tm-ink:#f3ead2;--tm-ink-soft:#e6dcc0;--tm-ink-dim:#cbbf9c;--tm-ink-note:#efe6cc;
+    --tm-card:rgba(12,16,32,.78);--tm-card-note:rgba(12,16,32,.94);--tm-card-msg:rgba(12,16,32,.95);--tm-card-hover:rgba(201,168,76,.24);
+    --tm-shade-title:rgba(0,0,0,.85);--tm-shade-card:rgba(0,0,0,.45);--tm-shade-hover:rgba(0,0,0,.55);--tm-shade-note:rgba(0,0,0,.6);
   }
   @media(max-width:600px){:root{--topbar-h:44px}}
   html,body{width:100%;height:100%;overflow:hidden;font-family:var(--font-main);font-size:var(--font-size-base);line-height:var(--line-height);direction:rtl}
@@ -32,28 +39,28 @@
   }
   header.topbar .title{font-size:16px;font-weight:600;color:var(--color-on-surface);white-space:nowrap}
   header.topbar #version{font-size:12px;color:var(--color-on-surface-variant);white-space:nowrap;opacity:.9}
-  #scene{position:absolute;top:var(--topbar-h);left:0;right:0;bottom:0;overflow:hidden;background:#0a0e1a}
+  #scene{position:absolute;top:var(--topbar-h);left:0;right:0;bottom:0;overflow:hidden;background:var(--tm-night)}
   #scene > svg{position:absolute;inset:0;width:100%;height:100%;display:block}
   #pick{
     position:absolute;left:0;right:0;bottom:6%;z-index:2;
     display:flex;flex-direction:column;align-items:center;gap:18px;padding:0 16px
   }
   #pick h1{
-    font-family:var(--font-main);font-weight:700;font-size:2.1rem;line-height:1.2;color:#f6e7bf;
-    text-shadow:0 2px 14px rgba(0,0,0,.85)
+    font-family:var(--font-main);font-weight:700;font-size:2.1rem;line-height:1.2;color:var(--tm-title);
+    text-shadow:0 2px 14px var(--tm-shade-title)
   }
   #pick .row{display:flex;gap:22px;flex-wrap:wrap;justify-content:center}
   .house{
     width:300px;max-width:42vw;min-height:116px;padding:18px 20px;border-radius:var(--radius-lg);cursor:pointer;
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;
-    background:rgba(12,16,32,.78);border:1.5px solid var(--color-primary);color:#f3ead2;
-    box-shadow:0 10px 30px rgba(0,0,0,.45);backdrop-filter:blur(3px);
+    background:var(--tm-card);border:1.5px solid var(--color-primary);color:var(--tm-ink);
+    box-shadow:0 10px 30px var(--tm-shade-card);backdrop-filter:blur(3px);
     font-family:var(--font-main);transition:background .15s,transform .15s,box-shadow .15s
   }
-  .house:hover,.house:focus-visible{background:rgba(201,168,76,.24);transform:translateY(-2px);box-shadow:0 14px 34px rgba(0,0,0,.55);outline:none}
-  .house .name{font-size:1.65rem;font-weight:700;color:#f6d77f;line-height:1.15}
-  .house .sub{font-size:1rem;color:#e6dcc0;line-height:1.35}
-  .house .back{font-family:var(--font-ui);font-size:.78rem;color:#cbbf9c;opacity:0;transition:opacity .2s}
+  .house:hover,.house:focus-visible{background:var(--tm-card-hover);transform:translateY(-2px);box-shadow:0 14px 34px var(--tm-shade-hover);outline:none}
+  .house .name{font-size:1.65rem;font-weight:700;color:var(--tm-gold);line-height:1.15}
+  .house .sub{font-size:1rem;color:var(--tm-ink-soft);line-height:1.35}
+  .house .back{font-family:var(--font-ui);font-size:0.78rem;color:var(--tm-ink-dim);opacity:0;transition:opacity .2s}
   .house.visited .back{opacity:1}
   @media(max-width:640px){
     #pick h1{font-size:1.6rem}
@@ -63,29 +70,34 @@
   }
   @media(max-height:520px){#pick{bottom:3%;gap:10px}#pick h1{font-size:1.4rem}.house{min-height:80px;padding:10px 14px}}
 
-  /* 2.0.2: the one-time note about the unified plugin (the user: "במסך הבחירה באופן חד פעמי! הסבר על האיחוד של התוסף") */
+  /* 2.0.2: the one-time note about the unified plugin (the user: "במסך הבחירה באופן חד פעמי! הסבר על האיחוד של התוסף").
+     Its text follows the reader's font size (--font-size-base: Otzaria hands 16-36, 25 by default; DESIGN_GUIDE.md), but never grows
+     beyond what the window can hold (the vh and vw limits); everything inside is in em of that size, the width too, so the lines break
+     in the same places at every size. The list scrolls inside if it still does not fit, and the button stays in sight. */
   #uni-note{
-    position:absolute;z-index:5;top:18px;left:50%;transform:translateX(-50%);width:min(680px,calc(100% - 28px));
-    max-height:calc(100% - 36px);overflow:auto;
-    background:rgba(12,16,32,.94);border:1.5px solid var(--color-primary);border-radius:var(--radius-lg);
-    box-shadow:0 14px 40px rgba(0,0,0,.6);padding:16px 20px 14px;color:#efe6cc;font-family:var(--font-ui);font-size:14.5px;line-height:1.6
+    position:absolute;z-index:5;top:18px;left:50%;transform:translateX(-50%);width:min(47em,calc(100% - 28px));
+    max-height:calc(100% - 36px);display:flex;flex-direction:column;overflow:hidden;
+    background:var(--tm-card-note);border:1.5px solid var(--color-primary);border-radius:var(--radius-lg);
+    box-shadow:0 14px 40px var(--tm-shade-note);padding:16px 20px 14px;color:var(--tm-ink-note);font-family:var(--font-ui);
+    font-size:min(0.8rem,3vh,3.8vw);line-height:1.6
   }
   #uni-note[hidden]{display:none}
-  #uni-note h2{font-family:var(--font-main);font-size:1.25rem;line-height:1.3;color:#f6d77f;margin-bottom:8px}
-  #uni-note ul{list-style:disc;padding-inline-start:20px;display:flex;flex-direction:column;gap:6px}
-  #uni-note b{color:#f6d77f}
-  #uni-note .foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}
-  #uni-note .foot span{font-size:12.5px;color:#cbbf9c}
+  #uni-note h2{flex:0 0 auto;font-family:var(--font-main);font-size:1.55em;line-height:1.3;color:var(--tm-gold);margin-bottom:8px}
+  #uni-note ul{flex:1 1 auto;min-height:0;overflow:auto;list-style:disc;padding-inline-start:20px;display:flex;flex-direction:column;gap:6px}
+  #uni-note li{flex:0 0 auto}
+  #uni-note b{color:var(--tm-gold)}
+  #uni-note .foot{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}
+  #uni-note .foot span{font-size:0.87em;color:var(--tm-ink-dim)}
   #uni-note button{
-    font-family:var(--font-ui);font-size:14px;font-weight:600;padding:7px 22px;border-radius:999px;cursor:pointer;
-    background:var(--color-primary);color:var(--color-on-primary);border:0
+    font-family:var(--font-ui);font-size:0.97em;font-weight:600;padding:7px 22px;border-radius:var(--radius-pill);cursor:pointer;
+    background:var(--color-primary);color:var(--color-on-primary);border:0;white-space:nowrap
   }
   #uni-note button:hover,#uni-note button:focus-visible{filter:brightness(1.12);outline:none}
-  @media(max-width:640px){#uni-note{top:8px;padding:12px 14px;font-size:13.5px}#uni-note h2{font-size:1.1rem}}
+  @media(max-width:640px){#uni-note{top:8px;max-height:calc(100% - 16px);padding:12px 14px;font-size:min(0.75rem,3vh,3.8vw)}#uni-note h2{font-size:1.45em}}
   /* a short message at the bottom of the choice screen (the search field's button pressed with no words) */
   #uni-msg{position:absolute;z-index:6;left:50%;bottom:14px;transform:translateX(-50%);max-width:min(560px,calc(100% - 28px));
-    background:rgba(12,16,32,.95);border:1px solid var(--color-primary);border-radius:var(--radius-md);padding:8px 14px;
-    color:#efe6cc;font-family:var(--font-ui);font-size:13.5px;line-height:1.5;text-align:center}
+    background:var(--tm-card-msg);border:1px solid var(--color-primary);border-radius:var(--radius-md);padding:8px 14px;
+    color:var(--tm-ink-note);font-family:var(--font-ui);font-size:min(0.75rem,3vh,3.8vw);line-height:1.5;text-align:center}
   #uni-msg[hidden]{display:none}
 
   /* the houses: each in its own frame, both kept alive while the plugin is open */
@@ -663,8 +675,9 @@
       if (on) { try { f.focus(); } catch (_) {} }
     });
   }
+  var noteClosedAt = 0;   // 2.0.2: when the one-time note was closed by its own button (a double click there must not open the house under it)
   Array.prototype.forEach.call(document.querySelectorAll(".house"), function (b) {
-    b.addEventListener("click", function () { show(b.getAttribute("data-house")); });
+    b.addEventListener("click", function () { if (Date.now() - noteClosedAt < 500) return; show(b.getAttribute("data-house")); });
   });
   document.addEventListener("keydown", function (e) {
     if (current !== "home") return;
@@ -695,8 +708,9 @@
       try { okBtn.focus({ preventScroll: true }); } catch (_) {}
     };
     noteMaybe = open;   // the plugin may open straight into a house (a book's button): the note waits for the choice screen
-    okBtn.addEventListener("click", close);
-    note.addEventListener("keydown", function (e) { if (e.key === "Escape" || e.key === "Esc" || e.key === "Enter") { e.stopPropagation(); close(); } });
+    var dismiss = function () { if (note.hidden) return; noteClosedAt = Date.now(); close(); };
+    okBtn.addEventListener("click", dismiss);
+    note.addEventListener("keydown", function (e) { if (e.key === "Escape" || e.key === "Esc" || e.key === "Enter") { e.stopPropagation(); dismiss(); } });
     Array.prototype.forEach.call(document.querySelectorAll(".house"), function (b) { b.addEventListener("click", close); });
     if (ls()) return;
     if (!OTZ) { allowed = true; open(); return; }

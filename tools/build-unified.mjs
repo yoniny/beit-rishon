@@ -119,6 +119,10 @@ execFileSync('node', ['--check', path.join(P, 'house-bridge.js')], { stdio: 'inh
   const walk = (d) => { for (const f of fs.readdirSync(d)) { const q = path.join(d, f); if (fs.statSync(q).isDirectory()) walk(q); else if (/\.(js|html?)$/i.test(f)) list.push(q); } };
   walk(P);
   execFileSync('node', [path.join(root, 'tools', 'safe-lines.mjs'), '--check', ...list], { stdio: 'inherit', timeout: 180000 });
+  // 2.0.2 (11.11.2026): the plugin carries the store's tag "מראה תואם לאוצריא", and the store refuses an update whose pages break its
+  // design rules (DESIGN_GUIDE.md: no literal colours, px font sizes or px radii in the rules of a <style> block - variables only).
+  // tools/design-check.py holds the same rules; a page that breaks them fails the build here and not in the store.
+  execFileSync('python3', ['-I', path.join(root, 'tools', 'design-check.py'), ...list.filter((f) => /\.html?$/i.test(f))], { stdio: 'inherit', timeout: 60000 });
 }
 log('plugin folder: ' + P);
 
