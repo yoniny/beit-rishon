@@ -8300,7 +8300,7 @@ var OtzariaPlugin = (() => { //
         }, //
         vertexShader: ( //
           /* glsl */ //
-          ` //
+          `
 
 				varying vec3 vWorldDirection;
 
@@ -8322,7 +8322,7 @@ var OtzariaPlugin = (() => { //
         ), //
         fragmentShader: ( //
           /* glsl */ //
-          ` //
+          `
 
 				uniform sampler2D tEquirect;
 
@@ -10760,7 +10760,7 @@ var OtzariaPlugin = (() => { //
       vertexShader: _getCommonVertexShader(), //
       fragmentShader: ( //
         /* glsl */ //
-        ` //
+        `
 
 			precision mediump float;
 			precision mediump int;
@@ -10837,7 +10837,7 @@ var OtzariaPlugin = (() => { //
       vertexShader: _getCommonVertexShader(), //
       fragmentShader: ( //
         /* glsl */ //
-        ` //
+        `
 
 			precision mediump float;
 			precision mediump int;
@@ -10873,7 +10873,7 @@ var OtzariaPlugin = (() => { //
       vertexShader: _getCommonVertexShader(), //
       fragmentShader: ( //
         /* glsl */ //
-        ` //
+        `
 
 			precision mediump float;
 			precision mediump int;
@@ -10899,7 +10899,7 @@ var OtzariaPlugin = (() => { //
   function _getCommonVertexShader() { //
     return ( //
       /* glsl */ //
-      ` //
+      `
 
 		precision mediump float;
 		precision mediump int;
@@ -31562,7 +31562,7 @@ var OtzariaPlugin = (() => { //
     }, //
     vertexShader: ( //
       /* glsl */ //
-      ` //
+      `
 		uniform vec3 sunPosition;
 		uniform float rayleigh;
 		uniform float turbidity;
@@ -31636,7 +31636,7 @@ var OtzariaPlugin = (() => { //
     ), //
     fragmentShader: ( //
       /* glsl */ //
-      ` //
+      `
 		varying vec3 vWorldPosition;
 		varying vec3 vSunDirection;
 		varying float vSunfade;
@@ -34541,7 +34541,24 @@ var OtzariaPlugin = (() => { //
       } //
       ctx2.labels.push({ text: "שלושה רובדין — חריצים בראש הכבש (רב האי גאון)", x: 60, y: F + 11.4, z: 12.4, size: 1.1, layer: "altarBody32", moveWithAltar: true }); //
     } //
-    ctx2.shared.rampGap = { mode: "hair", set(m) { this.mode = Object.prototype.hasOwnProperty.call(RAMP_HEADS, m) ? m : "hair"; for (const k in rampMain) rampMain[k].visible = k === this.mode; const d = RAMP_HEADS[this.mode] - RAMP_HEADS.hair; rovG.position.set(0, -9 * d / 32, d); return this.mode; } }; //
+    // 1.9.4 (the user, 11.11.2026: "הכבש של תוספות בבית ראשון נראה לי יותר מציאותי מאשר בבית שני"): the air of the Tosafot's reading was //
+    // built and not seen - the ramp's head, the sovev under it and the altar's face are one colour, with no shadow between them. The //
+    // cleft (z 10.5..11, over the sovev, the ramp's width) is drawn as it would look: dark inside, a hand's breadth below its rim. //
+    // (three thin dark faces - the cleft's floor and its two sides - and no ends: from the side one looks through it) //
+    const gapShade = new Group(); //
+    { //
+      const gh = RAMP_H(RAMP_HEADS.tosafot) - 6 - 0.3, gmat = new MeshBasicMaterial({ color: 0x1c1610 }); //
+      for (const [w, h, d, y, z] of [[15.96, 0.01, 0.46, F + 6.012, 10.75], [15.96, gh, 0.01, F + 6.01 + gh / 2, 10.512], [15.96, gh, 0.01, F + 6.01 + gh / 2, 10.988]]) { //
+        const m = new Mesh(new BoxGeometry(w, h, d), gmat); //
+        m.position.set(55.5, y, z); //
+        m.userData.noPick = true; //
+        gapShade.add(m); //
+      } //
+    } //
+    gapShade.name = "rampGapShade"; //
+    gapShade.visible = false; //
+    rampG.add(gapShade); //
+    ctx2.shared.rampGap = { mode: "hair", set(m) { this.mode = Object.prototype.hasOwnProperty.call(RAMP_HEADS, m) ? m : "hair"; for (const k in rampMain) rampMain[k].visible = k === this.mode; gapShade.visible = this.mode === "tosafot"; const d = RAMP_HEADS[this.mode] - RAMP_HEADS.hair; rovG.position.set(0, -9 * d / 32, d); return this.mode; } }; //
     wedge(63.5, 66.5, 11.55, 33, 6, rampG, RAMP_H(33)); // east small ramp to the soveiv (Rashi): leaves the big ramp where it is 2.7 high, top at the soveiv (y=F+6) //
     // 1.8.1 (the user: "הכבש ליסוד לא מחובר לכלום"): it began at the ramp's very foot, at the floor, and rose to the yesod - a loose plank. //
     // Rashi (Zevachim 62b): "והפונה ליסוד יוצא למערבו... ומתחיל לצאת בשיפולו של כבש רחוק מן המזבח כדי שיהא נוח לשפע ולירד ליסוד" - it //
@@ -36046,6 +36063,28 @@ var OtzariaPlugin = (() => { //
   function vsl_goldStd(tex, extra) { //
     return vsl_std(tex, Object.assign({}, VSL_GOLD_OPTS, extra || {})); //
   } //
+  // 1.9.4 (the user, 11.11.2026, of the menorah's "כסף": "לחיצה על המתג לא מביאה את התוצאה הרצויה"): the silver and the tin were drawn with //
+  // the gold's own colour picture, so "silver" came out pale gold. Their picture is the same drawing in grey; the relief stays. //
+  function vsl_greyTex(tex) { //
+    try { //
+      const src = tex && tex.map && tex.map.image; //
+      if (!src || !src.width) return { map: null, bumpMap: (tex && tex.bumpMap) || null }; //
+      const cv = document.createElement("canvas"); //
+      cv.width = src.width; cv.height = src.height; //
+      const g = cv.getContext("2d"); //
+      g.drawImage(src, 0, 0); //
+      const im = g.getImageData(0, 0, cv.width, cv.height), d = im.data; //
+      for (let i = 0; i < d.length; i += 4) { const y = Math.min(255, (0.3 * d[i] + 0.59 * d[i + 1] + 0.11 * d[i + 2]) * 1.1 + 8); d[i] = d[i + 1] = d[i + 2] = y; } //
+      g.putImageData(im, 0, 0); //
+      const o = tex.map, t = new CanvasTexture(cv); //
+      t.wrapS = o.wrapS; t.wrapT = o.wrapT; t.repeat.copy(o.repeat); t.offset.copy(o.offset); t.anisotropy = o.anisotropy; //
+      if ("colorSpace" in o) t.colorSpace = o.colorSpace; //
+      t.needsUpdate = true; //
+      return { map: t, bumpMap: tex.bumpMap || null }; //
+    } catch (_) { //
+      return { map: null, bumpMap: (tex && tex.bumpMap) || null }; //
+    } //
+  } //
   // 1.5.0 (the user: "העשן נתמר כקו ישר" - the First Temple's display): the incense smoke as a straight column with wisps, and the coals //
   function int_noRaycast() {} //
   function int_smokeParts() { //
@@ -36234,8 +36273,8 @@ var OtzariaPlugin = (() => { //
     const vesselGold = vsl_goldStd(TEX.gold, { color: 0xFFDC86, roughness: 0.3, emissive: 0x6b4a10, emissiveIntensity: 0.55 }); //
     const crownMat = vsl_goldStd(int_crownTex(), { bumpScale: 0.7, roughness: 0.3 }); //
     const fretMat = vsl_goldStd(int_fretTex(), { alphaTest: 0.5, side: DoubleSide, roughness: 0.25 }); //
-    const silver = (tex, bump) => vsl_std(tex, { color: 0xF4F4F8, metalness: 0.55, roughness: 0.3, envMapIntensity: 1.5, emissive: 0x6a6a72, emissiveIntensity: 0.6, bumpScale: bump || 0 });   // 1.5.0: brighter (the user: "כהה מדי") //
-    const tin = (tex, bump) => vsl_std(tex, { color: 0x9a9892, metalness: 0.55, roughness: 0.62, envMapIntensity: 0.6, emissive: 0x1a1a18, emissiveIntensity: 0.3, bumpScale: bump || 0 }); //
+    const silver = (tex, bump) => vsl_std(vsl_greyTex(tex), { color: 0xF4F4F8, metalness: 0.55, roughness: 0.3, envMapIntensity: 1.5, emissive: 0x6a6a72, emissiveIntensity: 0.6, bumpScale: bump || 0 });   // 1.5.0: brighter (the user: "כהה מדי") //
+    const tin = (tex, bump) => vsl_std(vsl_greyTex(tex), { color: 0x9a9892, metalness: 0.55, roughness: 0.62, envMapIntensity: 0.6, emissive: 0x1a1a18, emissiveIntensity: 0.3, bumpScale: bump || 0 }); //
     const METALS = { //
       gold: { men: menorahGold, tbl: vesselGold, crown: crownMat }, //
       silver: { men: silver(int_almondTex(), 0.06), tbl: silver(TEX.gold), crown: silver(int_crownTex(), 0.7) }, //
@@ -39699,11 +39738,12 @@ var OtzariaPlugin = (() => { //
   var ui_AUTO_OFF_S = 15;   // 1.0.1-L (L.27): a feature a PLACE switched on goes off by itself after this many seconds //
   // 1.0.2 (C): the window "מה חדש" - shown once for this version (ver = manifest.json's version); short plain Hebrew, one line a feature //
   var UI_NEWS = { //
-    ver: "1.9.3",   // tools/assemble.mjs writes manifest.json's version here //
-    items: ["**בית שני — מודל שלם, לפי מסכת מידות והרמב״ם**: הר הבית ושעריו, הסורג והחיל, עזרת נשים וארבע לשכותיה, חמש עשרה המעלות ושער ניקנור, העזרה ושלושה עשר שעריה, הלשכות, המזבח והכבש, האולם, ההיכל, התאים והעלייה, וקודש הקדשים.", "**כרטיס הסבר לכל מקום** — לשון המשנה והרמב״ם, דברי המפרשים, ״בקצרה״ על המחלוקות, ומה נבחר במודל; המקורות נפתחים באוצריא בלחיצה.", "**טבלת ״שיטות ומחלוקות״** — עשרות שיטות מצוירות, ולחיצה מחליפה את המודל: מקום המזבח ומידותיו, צורת התאים, צורת הבניין (לשון המשנה, או ציור הרמב״ם), תקרת האולם, חמש עשרה המעלות (המאירי או הרא״ש), לשכות עזרת נשים, בית המטבחים, שמות השערים ועוד.", "**הדגמות בהליכה** — פתיחת ארבע הדלתות של השער הגדול במפתח של זהב, הכניסה בפשפש, המסיבה אל העלייה, והמוכני של הכיור.", "**מצגת** — בשלושה מצבים: לפי הנושאים, רציפה, ולפי סדר המשניות במסכת מידות.", "**חיפוש במשנה** — שורה בסוף התפריט: כותבים מילה ממסכת מידות או מהלכות בית הבחירה לרמב״ם, ורואים את המשנה או את ההלכה, המילה מסומנת בה, ומתחתיה המקומות שבמודל; לחיצה מעבירה אל המקום. הכפתור ״חפש באוצריא״ מחפש את אותן מילים בכל הספרייה.", "@מאוחד **כפתור בחיפוש של אוצריא** — כותבים מילה בשדה החיפוש של אוצריא ולוחצים על כפתור ״בית המקדש״ שבשדה: התוסף נפתח במקומות שהמילה מדברת בהם.", "**הכפתור ״פתח בתוסף בית שני״** — במסכת מידות, בהלכות בית הבחירה, ובעוד 75 ספרים: מפרשי מידות (ברטנורא, תוספות יום טוב, תפארת ישראל, מלאכת שלמה ועוד), נושאי כליו של הרמב״ם, יומא, זבחים, מנחות, תמיד, מנחת חינוך ועוד. הכפתור פותח את המקום שהשורה שלפניכם מקושרת אליו.", "**כלי צפייה** — כפתורים על המודל לפתיחת ההיכל, הלשכות והסטיו; חתך חי; מצב הליכה; מצפן; טשטוש חומות; הדפסה, ודיווח על טעות.", "@מאוחד **שני בתי המקדש בתוסף אחד** — בסרגל העליון: מעבר לבית ראשון, וחזרה למסך הבחירה; כל בית נשאר במקום שבו עזבתם."] //
+    ver: "1.9.4",   // tools/assemble.mjs writes manifest.json's version here //
+    items: ["**המצגת** — תפריט המצגת נפתח מתחת לכפתור, ולחיצה על אחד משלושת המצבים מתחילה אותה (בגרסה הקודמת התפריט התפזר בסרגל, והמצגת לא התחילה); והיא מתחילה ממצב רגיל: מה שנשאר פתוח נסגר בתחילתה, וחוזר בסופה.", "**מבטים מתוקנים בטבלת השיטות** — לחיצה על המתג מביאה אל הדבר עצמו: ״תקרת האולם — בלי תקרה״ מלמעלה, אל תוך האולם הפתוח; ״חומר המנורה והשולחן״ מול המנורה והשולחן; ״הציור על הפרוכות״ מול הפרוכת; ״שערי בית המוקד״ מעל הלשכה, בשתי צורות הבניין; ו״הרווח שבין הכבש למזבח״ מקרוב, מלמעלה.", "**הכסף נראה כסף** — המנורה והשולחן של כסף (וכן של ברזל מחופה בעץ) צבועים באפור, ולא על גון הזהב.", "**הרווח שבין הכבש למזבח, לשיטת התוספות** — מצויר כחריץ כהה בין ראש הכבש למזבח, כדי שייראה."] //
   }; //
   // what is new by version, newest first - one who saw a version is shown only the versions after it //
   var UI_NEWS_VERS = [ //
+    ["1.9.4", ["**המצגת** — תפריט המצגת נפתח מתחת לכפתור, ולחיצה על אחד משלושת המצבים מתחילה אותה (בגרסה הקודמת התפריט התפזר בסרגל, והמצגת לא התחילה); והיא מתחילה ממצב רגיל: מה שנשאר פתוח נסגר בתחילתה, וחוזר בסופה.", "**מבטים מתוקנים בטבלת השיטות** — לחיצה על המתג מביאה אל הדבר עצמו: ״תקרת האולם — בלי תקרה״ מלמעלה, אל תוך האולם הפתוח; ״חומר המנורה והשולחן״ מול המנורה והשולחן; ״הציור על הפרוכות״ מול הפרוכת; ״שערי בית המוקד״ מעל הלשכה, בשתי צורות הבניין; ו״הרווח שבין הכבש למזבח״ מקרוב, מלמעלה.", "**הכסף נראה כסף** — המנורה והשולחן של כסף (וכן של ברזל מחופה בעץ) צבועים באפור, ולא על גון הזהב.", "**הרווח שבין הכבש למזבח, לשיטת התוספות** — מצויר כחריץ כהה בין ראש הכבש למזבח, כדי שייראה."]], //
     ["1.9.3", ["**בית שני — מודל שלם, לפי מסכת מידות והרמב״ם**: הר הבית ושעריו, הסורג והחיל, עזרת נשים וארבע לשכותיה, חמש עשרה המעלות ושער ניקנור, העזרה ושלושה עשר שעריה, הלשכות, המזבח והכבש, האולם, ההיכל, התאים והעלייה, וקודש הקדשים.", "**כרטיס הסבר לכל מקום** — לשון המשנה והרמב״ם, דברי המפרשים, ״בקצרה״ על המחלוקות, ומה נבחר במודל; המקורות נפתחים באוצריא בלחיצה.", "**טבלת ״שיטות ומחלוקות״** — עשרות שיטות מצוירות, ולחיצה מחליפה את המודל: מקום המזבח ומידותיו, צורת התאים, צורת הבניין (לשון המשנה, או ציור הרמב״ם), תקרת האולם, חמש עשרה המעלות (המאירי או הרא״ש), לשכות עזרת נשים, בית המטבחים, שמות השערים ועוד.", "**הדגמות בהליכה** — פתיחת ארבע הדלתות של השער הגדול במפתח של זהב, הכניסה בפשפש, המסיבה אל העלייה, והמוכני של הכיור.", "**מצגת** — בשלושה מצבים: לפי הנושאים, רציפה, ולפי סדר המשניות במסכת מידות.", "**חיפוש במשנה** — שורה בסוף התפריט: כותבים מילה ממסכת מידות או מהלכות בית הבחירה לרמב״ם, ורואים את המשנה או את ההלכה, המילה מסומנת בה, ומתחתיה המקומות שבמודל; לחיצה מעבירה אל המקום. הכפתור ״חפש באוצריא״ מחפש את אותן מילים בכל הספרייה.", "@מאוחד **כפתור בחיפוש של אוצריא** — כותבים מילה בשדה החיפוש של אוצריא ולוחצים על כפתור ״בית המקדש״ שבשדה: התוסף נפתח במקומות שהמילה מדברת בהם.", "**הכפתור ״פתח בתוסף בית שני״** — במסכת מידות, בהלכות בית הבחירה, ובעוד 75 ספרים: מפרשי מידות (ברטנורא, תוספות יום טוב, תפארת ישראל, מלאכת שלמה ועוד), נושאי כליו של הרמב״ם, יומא, זבחים, מנחות, תמיד, מנחת חינוך ועוד. הכפתור פותח את המקום שהשורה שלפניכם מקושרת אליו.", "**כלי צפייה** — כפתורים על המודל לפתיחת ההיכל, הלשכות והסטיו; חתך חי; מצב הליכה; מצפן; טשטוש חומות; הדפסה, ודיווח על טעות.", "@מאוחד **שני בתי המקדש בתוסף אחד** — בסרגל העליון: מעבר לבית ראשון, וחזרה למסך הבחירה; כל בית נשאר במקום שבו עזבתם."]], //
     ["1.9.2", ["הכניסה בפשפש — בהליכה, בגובה העיניים: לחכמים — לתא, ומן התא להיכל; לרבי יהודה — בתוך עובי הכותל עד בין שני השערים; ובסוף נפתחות ארבע הדלתות (מידות ד, ב–ג).", "פתיחת ארבע הדלתות — בהליכה: יד הכהן מכניסה את המפתח ומסובבת אותו, ובזמן שהדלתות נפתחות העין עולה מעליהן ומביטה מלמעלה — לרבי יהודה רואים איך כל דלת נקפלת לשני לוחות. כל הדגמה מראה את השיטה שנבחרה; המתג של השיטה האחרת מראה את שלה.", "המסיבה — נדלקת בצבע צף, וחיצים נעים מראים את הדרך שבמשנה עד פתח העלייה; ויש לה הדגמה בהליכה, בכרטיס ובכפתור על המודל (מידות ד, ה).", "המפתחות של הפשפש (תמיד ג, ו) — שלוש קריאות בטבלת השיטות: הרמב״ם (ברירת המחדל) — שני מנעולים מבחוץ; מלאכת שלמה ורבינו גרשום — מבפנים, בחור עקום בעובי הכותל; הראב״ד — הפשפש כעין חלון. בתחילת הכניסה בפשפש רואים את היד פותחת.", "בית המטבחים — שלוש שיטות בטבלה: ברטנורא (ברירת המחדל) — חתיכת ארז על כל עמוד; המאירי — קורות מעמוד לעמוד; הראבי״ה והגר״א — שורה אחת. וכפתור ״האונקליות״ על המודל מסמן אותן בצבע צף.", "האולם — בלחיצה על המקום מבט מלמעלה, והתקרה נפתחת; הכפתור ״פתח את האולם״ שעל חזיתו מסיר את החזית ומעמיד את המבט מול האולם, באמצעו.", "דיווח על טעות — חובה לסמן על איזה בית הדיווח: בית ראשון, בית שני, או שני בתי המקדש.", "כל ההדגמות לאט יותר, וכל מתג, מקום או כפתור עוצרים הדגמה שרצה, ואחר כך עושים את שלהם.", "פתחים קבועים: מן התא שבקרן מזרחית צפונית להיכל (״ואחד להיכל״, מידות ד, ג), ולרבי יהודה — המעבר בעובי הכותל.", "העלייה — הבית סגור ומבט מן הצד; העלייה והלולין מסומנים בצבע צף. בכרטיס — מתג ״מלמעלה״.", "לרבי יוסי — שורה אחת של טבעות, שמונה אמות מן המזבח; הכבש ליסוד בולט יותר, ושמו עליו.", "הסיבוב חלק יותר: המבט ״מלמעלה״ נוטה מעט, כדי שגרירה תסובב סביב הדבר ולא תסחרר; וגג לשכה אינו נסגר כשהמבט בתוכה.", "טעינה וציור מהירים יותר: חלקים חוזרים (מעקות, מדרגות, רובדים) מצוירים בבת אחת."]], //
     ["1.9.1", ["התאים והיציעים — ברירת המחדל כציורי הרמב״ם (מהדורת קאפח, מכתב ידו): שני כתלים וביניהם הרחקה, והיציעים מבחוץ — חמש, שש ושבע.", "צורת הבניין כציור הרמב״ם: מאה על מאה, ומעט צר במערב; כותל האולם לאורך הבית, והרובדים עליו (בית הבחירה ד, ה; ד, ט). שורה חדשה בטבלה, עם קריאת המשנה.", "ארבע הדלתות של השער הגדול — והדגמת הפתיחה לשתי השיטות, מן הסגירה עד הפתיחה: מפתח של זהב, הנגר, וקול של דלת כבדה (תמיד ג, ז–ח).", "הפשפשים — פתחים של ממש בכותל; לרבי יהודה — מעבר בתוך עובי הכותל, וההדגמה חותכת את המודל מעליו (מידות ד, ב).", "המוכני — הכיור יורד לבור בערב ועולה בבוקר (יומא ג, י; תמיד א, ד). לכל הדגמה — כפתור על המודל.", "הלשכות מרוהטות: בור ארבעים סאה בלשכת המצורעים, ערמת המלח, הדוד והאש בלשכת הנזירים, חביות היין ושבע המידות בלשכת השמנים, בור ההדחה בלשכת המדיחין.", "מידות המזבח — המספרים גדולים, על לוחית כהה, בארבעת הצדדים; ומזבח רבי יוסי קטן כולו, לא רק ראשו.", "גפן הזהב — עלים ואשכולות; שלחנות האולם גדולים יותר, ועל שלחן השיש לחם הפנים בכניסתו.", "גובה כותל המזרח — חמש שיטות מצוירות; יחזקאל אינו מקור למידות הבית (״בית שלישי״).", "תיקונים: מבטי המזבח עוקבים אחרי מקומו בכל שיטה; לשכת הגולה מלמעלה; שער בית המוקד מבפנים; המסיבה והעלייה — בחתך לפי גובה; אש חיה בבית המוקד."]], //
@@ -39720,7 +39760,7 @@ var OtzariaPlugin = (() => { //
     ["1.2.0", ["הלוח נבנה מחדש כמו בבית ראשון: עץ אחד של מקומות עם שורת חיפוש למעלה, וקבוצות מכווצות.", "כרטיס ההסבר בצד שמאל, עם צ׳יפים לשיטות ולמקורות; המקורות נפתחים באוצריא.", "בקר ניווט על המודל: מצפן, סיבוב במקום בתוך הבית, הליכה במקלדת.", "כפתורים על המודל: ״פתח את ההיכל״, ״פתח את הלשכות״, ״פתח את הסטיו״, ״↺ החזר הכל״.", "סרגל עליון: מצגת, ניווט, הדפסה, דיווח, מה חדש.", "המצגת בשלושה מצבים — לפי הנושאים, רציפה, ולפי סדר המשניות במסכת מידות.", "כפתור ״פתח בתוסף בית שני״ במסכת מידות וברמב״ם הלכות בית הבחירה.", "טבלת ״שיטות ומחלוקות״ עם כל הדעות; כל דעה גם כצ׳יפ על הכרטיס של נושאה."]], //
     ["1.1.0", ["השם ״בית שני״; טעינה מהירה בהרבה (הציור מתחיל רק אחרי שהכול מוכן).", "הליכה במקלדת: חצים למעלה ולמטה מתקדמים, PageUp/PageDown מגביהים, Shift עם חץ מטה את המבט.", "כפתור ״ניווט״ עם כל הוראות העכבר, המגע והמקלדת.", "המקורות נפתחים באוצריא גם ברמב״ם (בית הבחירה, תמידין ומוספין), במשנה תמיד ובגמרא (יומא, זבחים, סוכה ועוד) — לא רק במסכת מידות.", "מצגת גם לפי סדר המשניות במסכת מידות.", "תיקונים לפי המשנה והרמב״ם — ראו בקבוצה ״תיקונים לפי המשנה״ בלוח."]] //
   ]; //
-  var ui_CSS = ` //
+  var ui_CSS = `
 /* 1.1.0: #tm-burger and the bar's buttons (.tm-topbtn) are styled by index.html (header.topbar); nothing here */
 html,body{overscroll-behavior:none}
 .tm-src{font-size:.74em;opacity:.8;font-weight:400}
@@ -42550,7 +42590,7 @@ body.tm-measuring canvas{cursor:crosshair}
           options: [["o0", "כחוט השערה — רש״י והרמב״ם", "בגמרא (זבחים סב:): ״אויר יש בין כבש למזבח?״ — ״מה דם בזריקה, אף בשר בזריקה״. רש״י (שמות כז, ה): ״והכבש היה בדרום המזבח, מבדל מן המזבח מלא חוט השערה״. הרמב״ם (בית הבחירה ב, יג): ״ואויר מעט היה מפסיק בין הכבש למזבח, כדי לתן האיברים למזבח בזריקה״.\nבמודל (ברירת המחדל): ראש הכבש מגיע עד המזבח, ורווח דק מפסיק ביניהם.", [["זבחים סב:", "Zevachim.62b"], ["רש״י זבחים סב:", "Rashi_on_Zevachim.62.2"], ["רש״י שמות כז, ה", "Rashi_on_Exodus.27.5"], ["רמב״ם בית הבחירה ב, יג", "Mishneh_Torah,_The_Chosen_Temple.2.13"], ["תוספות זבחים סב:", "Tosafot_on_Zevachim.62.2"], ["תוספות זבחים פז:", "Tosafot_on_Zevachim.87.2"]]], ["o1", "תוספות — אויר גדול וניכר", "תוספות (זבחים סב:, ד״ה אויר קרקע מפסיקו): ״קרקע לאו דוקא, שהיה פורח אמה על יסוד ואמה על סובב; ובלאו קרא היה צריך אויר, משום שנאמר סביב כדבסמוך, אלא דסגי במשהו; אבל הכא בעינן אויר גדול וניכר״.\nבמודל: רווח של חצי אמה בראש הכבש, כולו מעל הסובב. שיעורו לא נתפרש — בחירת מודל.", [["זבחים סב:", "Zevachim.62b"], ["רש״י זבחים סב:", "Rashi_on_Zevachim.62.2"], ["רש״י שמות כז, ה", "Rashi_on_Exodus.27.5"], ["רמב״ם בית הבחירה ב, יג", "Mishneh_Torah,_The_Chosen_Temple.2.13"], ["תוספות זבחים סב:", "Tosafot_on_Zevachim.62.2"], ["תוספות זבחים פז:", "Tosafot_on_Zevachim.87.2"]]], ["o2", "רבינו חיים — יותר מאמת הסובב", "תוספות (זבחים פז:, ד״ה אויר יש בין כבש למזבח): ״מיהו אין נראה לרבינו חיים, שהרי יש אויר מפסיק יותר מכדי אמה סובב, כדי שיהא אויר קרקע מפסיקו, כדאמרינן לעיל: מה דם אויר קרקע מפסיקו, אף בשר אויר קרקע מפסיקו״. ורש״י שם (סב:): ״הרצפה מפסיק בינו למזבח״.\nבמודל: ראש הכבש רחוק מן המזבח אמה ורבע, והרצפה נראית דרך הרווח; רגל הכבש במקומה. שיעור הרווח, והאופן שבו הוא מתיישב עם ״פורח אמה על יסוד ואמה על סובב״ — בחירת מודל.", [["זבחים סב:", "Zevachim.62b"], ["רש״י זבחים סב:", "Rashi_on_Zevachim.62.2"], ["רש״י שמות כז, ה", "Rashi_on_Exodus.27.5"], ["רמב״ם בית הבחירה ב, יג", "Mishneh_Torah,_The_Chosen_Temple.2.13"], ["תוספות זבחים סב:", "Tosafot_on_Zevachim.62.2"], ["תוספות זבחים פז:", "Tosafot_on_Zevachim.87.2"]]]], //
           current: "o0", //
           onPick: (k) => { const G = ctx.shared.rampGap; if (G && typeof G.set === "function") G.set(["hair", "tosafot", "chaim"][+k.slice(1)] || "hair"); }, //
-          fly: (k) => { const c = {"o0": [[72.5, 27.6, 24.9], [58, 24.7, 23.6]], "o1": [[72.5, 27.6, 24.9], [58, 24.7, 23.6]], "o2": [[72.5, 27.6, 24.9], [58, 24.7, 23.6]]}[k]; if (c && c[0] && c[1]) fly(ui_altarCam(ctx, c[0], "ramp"), ui_altarCam(ctx, c[1], "ramp")); } //
+          fly: (k) => { const c = {"o0": [[67, 30, 26.5], [60, 23.5, 23.25]], "o1": [[67, 30, 26.5], [60, 23.5, 23.25]], "o2": [[67, 30, 26.5], [60, 23.5, 23.25]]}[k]; if (c && c[0] && c[1]) fly(ui_altarCam(ctx, c[0], "ramp"), ui_altarCam(ctx, c[1], "ramp")); } //
         }); //
         opRow({ //
           id: "sh16", short: "הכבשים הקטנים", cardFly: true, //
@@ -42595,7 +42635,7 @@ body.tm-measuring canvas{cursor:crosshair}
           options: [["o0", "כיפה — רש״י", "רש״י (יומא נב., ד״ה כותל אולם): ״כותל החיצון, למטה רוחב היסוד והאסקופה, ולמעלה מגובה כיפת הפתח — עובי החומה שעולה עד ק׳ אמה, לבד רוחב כיפת החלל שהיא י״א אמה״. ובתוספות רי״ד שם: ״ומשמע מדבריו שאותן י״א אמה שהיו בין האולם ובין ההיכל כיפה היתה עליהם״. ובמשנה (מידות ג, ח): ״ושרשרות של זהב היו קבועות בתקרת האולם״.\nבמודל (ברירת המחדל): כיפה על אחת עשרה האמות, לכל אורך האולם; וראש פתח האולם קשת — ״כיפת הפתח״. גובה הכיפות וצורתן — בחירת מודל.", [["מידות ג, ח", "Mishnah_Middot.3.8"], ["רש״י יומא נב.", "Rashi_on_Yoma.52.1"], ["תוספות רי״ד יומא נב.", "Tosafot_Rid_on_Yoma.52.1"]]], ["o1", "בלי תקרה — תוספות רי״ד", "תוספות רי״ד (יומא נב.), על דברי רש״י: ״ואינו נראה לי, אלא האולם לא הי׳ אלא כותל אחד שאורכו מאה אמה ועוביו ה׳ אמות, ופתח הי׳ באמצעו ארבעים אמה גובהו ועשרים אמה רחבו, ובינו ובין ההיכל הי׳ אויר מגולה, ולא הי׳ שם תקרה ולא כיפה״. וראייתו מכלונסות הארז: ״ואילו הי׳ כיפה באותן י״א אמה, א״כ הי׳ מחובר כותל האולם עם ההיכל, ולא היו צריכים לכלונסות״.\nבמודל: אין תקרה ואין בניין מעל האולם — כותל האולם עומד לבדו, וכלונסות הארז מחברים אותו אל כותל ההיכל.", [["מידות ג, ח", "Mishnah_Middot.3.8"], ["רש״י יומא נב.", "Rashi_on_Yoma.52.1"], ["תוספות רי״ד יומא נב.", "Tosafot_Rid_on_Yoma.52.1"]]]], //
           current: "o0", //
           onPick: (k) => { if (ctx.shared.ulamCeiling && typeof ctx.shared.ulamCeiling.set === "function") ctx.shared.ulamCeiling.set(k === "o1" ? "none" : "vault"); }, //
-          fly: (k) => { const c = {"o0": [[4.8, 33, 31], [7.6, 62, -28]], "o1": [[46, 126, 34], [7, 64, 0]]}[k]; if (c && c[0] && c[1]) fly(c[0], c[1]); } //
+          fly: (k) => { const c = {"o0": [[4.8, 33, 31], [7.6, 62, -28]], "o1": [[7, 160, 20], [7, 60, -2]]}[k]; if (c && c[0] && c[1]) fly(c[0], c[1]); } //
         }); //
         opRow({ //
           id: "sh21", short: "גובה ההיכל", cardFly: true, //
@@ -42685,7 +42725,7 @@ body.tm-measuring canvas{cursor:crosshair}
           options: [["o0", "זהב", "המנורה והשולחן של זהב טהור כמצוות התורה (שמות כה, כד; כה, לא). בבית שני: \"חזרו והעשירו — עשאום של זהב\" (מנחות כח:). הרמב״ם (בית הבחירה א, יט): \"היו הקהל עניים עושין אותן אפילו של בדיל, ואם העשירו עושין אותן של זהב\" — לכל הכלים.", [["מנחות כח:", "Menachot.28b"], ["רמב״ם בית הבחירה א, יט", "Mishneh_Torah,_The_Chosen_Temple.1.19"], ["רמב״ם בית הבחירה א, יח", "Mishneh_Torah,_The_Chosen_Temple.1.18"]]], ["o1", "כסף", "\"העשירו — עשאום של כסף\" (מנחות כח:; וכן ראש השנה כד:, עבודה זרה מג.): בימי בית חשמונאי, משהעשירו מעט, עשו את המנורה של כסף. במודל: המנורה והשולחן של כסף.", [["מנחות כח:", "Menachot.28b"], ["רמב״ם בית הבחירה א, יט", "Mishneh_Torah,_The_Chosen_Temple.1.19"]]], ["o2", "ברזל מחופה בעץ", "\"רבי יוסי ברבי יהודה אומר: אף של עץ לא יעשה, כדרך שעשו מלכי בית חשמונאי. אמרו לו: משם ראיה? שפודים של ברזל היו וחיפום בבעץ\" (מנחות כח:) — כשטיהרו החשמונאים את המקדש עשו מנורה של שפודי ברזל מצופים בבעץ (בדיל). במודל: המנורה והשולחן בגוון הבדיל.", [["מנחות כח:", "Menachot.28b"], ["רמב״ם בית הבחירה א, יט", "Mishneh_Torah,_The_Chosen_Temple.1.19"]]]], //
           current: "o0", //
           onPick: (k) => { if (ctx.shared.vesselMetal && typeof ctx.shared.vesselMetal.set === "function") ctx.shared.vesselMetal.set(["gold", "silver", "iron"][+k.slice(1)] || "gold"); }, //
-          fly: (k) => { const c = {"o0": [[-32.8, 25.2, 7.7], [-37, 23.7, 6.5]], "o1": [[-32.8, 25.2, 7.7], [-37, 23.7, 6.5]], "o2": [[-32.8, 25.2, 7.7], [-37, 23.7, 6.5]]}[k]; if (c && c[0] && c[1]) fly(c[0], c[1]); } //
+          fly: (k) => { const c = {"o0": [[-21, LV.HEI + houseRise(-37) + 4.8, 0], [-37, LV.HEI + houseRise(-37) + 2.2, 0]], "o1": [[-21, LV.HEI + houseRise(-37) + 4.8, 0], [-37, LV.HEI + houseRise(-37) + 2.2, 0]], "o2": [[-21, LV.HEI + houseRise(-37) + 4.8, 0], [-37, LV.HEI + houseRise(-37) + 2.2, 0]]}[k]; if (c && c[0] && c[1]) fly(c[0], c[1]); } //
         }); //
         opRow({ //
           id: "sh31", short: "הציור על הפרוכות", cardFly: true, //
@@ -42694,7 +42734,7 @@ body.tm-measuring canvas{cursor:crosshair}
           options: [["o0", "רש״י — אריה ונשר", "בתורה נאמר בפרוכת מעשה חושב וכרובים (שמות כו, לא); וביומא (עב:): ״חושב — מעשה אורג, לפיכך שני פרצופות״.\nרש״י (יומא עב:): ״שיש לה ליריעה שתי קירות ושתי צורות על שתי קירותיה אין דומות זו לזו פעמים שמצד זה ארי ומצד זה נשר״; וכן אחת הדעות בירושלמי (שקלים ח, ד): ״מעשה חושב ארי מכאן ונשר מכאן״ (כגירסת המשנה למלך).\nבמודל: נשרים לצד ההיכל ואריות לצד קודש הקדשים — כפי שקבעת בפרוכת של בית ראשון.", [["יומא עב:", "Yoma.72b"]]], ["o1", "רמב״ם — אותה צורה משני הצדדים", "המשנה למלך (הלכות כלי המקדש ח, טו): ״אך רבינו ס״ל דלעולם אף במעשה חושב ליכא צורות משתנות זו מזו״ — מעשה חושב הוא שהצורה האחת נראית משני הצדדים, ״פנים ואחור״; וכן הדעה השנייה בירושלמי (שקלים ח, ד).\nבמודל: אריות משני צדי כל פרוכת — אותו אריה, כצורה ארוגה הנראית מעברה השני בהיפוך.", [["יומא עב:", "Yoma.72b"]]], ["o2", "המעשי למלך — בלי צורות", "המשנה למלך (הלכות כלי המקדש ח, טו) תמה למה לא הזכיר הרמב״ם צורת כרובים בעשיית הפרוכת. המעשי למלך (שם) מביא בשם ספר התוה״מ: ״דגם פרוכת לא נהג לדורות כי בבית ראשון לא הי׳ שם פרוכת כותל בנין ואף דהי׳ עכ״פ נגד הפתח לא הי׳ דוגמת פרוכת המשכן ובבית שני הי׳ שני פרוכת מפני ספקו של אמה טרקסין והיו במקום בנין ולא הי׳ יכול לעשות כרובים שלא ידעו איזה הפרוכת העקרי״.\nבמודל: הפרוכות ארוגות תכלת וארגמן ותולעת שני ושש, בלי צורות.", [["מעשי למלך כלי המקדש ח, טו", "Maasei_LaMelech_on_Klei_HaMikdash.8.15"], ["יומא נד.", "Yoma.54a"]]]], //
           current: "o0", //
           onPick: (k) => { if (ctx.shared.parochetArt && typeof ctx.shared.parochetArt.set === "function") ctx.shared.parochetArt.set(["rashi", "rambam", "plain"][+k.slice(1)] || "rashi"); }, //
-          fly: (k) => { const c = {"o0": [[-45, 34, 9.8], [-45, 30, -10]], "o1": [[-45, 34, 9.8], [-45, 30, -10]], "o2": [[-45, 34, 9.8], [-45, 30, -10]]}[k]; if (c && c[0] && c[1]) fly(c[0], c[1]); } //
+          fly: (k) => { const c = {"o0": [[-20, 36, 2], [-44.5, 38, 0]], "o1": [[-20, 36, 2], [-44.5, 38, 0]], "o2": [[-20, 36, 2], [-44.5, 38, 0]]}[k]; if (c && c[0] && c[1]) fly(c[0], c[1]); } //
         }); //
         opRow({ //
           id: "sh32", short: "שערי בית המוקד", cardFly: true, //
@@ -42703,7 +42743,7 @@ body.tm-measuring canvas{cursor:crosshair}
           options: [["o0", "זה כנגד זה — הרא״ש, פירוש ראשון", "לשון המשנה (מידות א, ז): ״שנים שערים היו לבית המוקד, אחד פתוח לחיל ואחד פתוח לעזרה״.\nהרא״ש (תמיד כו:): ״כי מכוונים היו שערים זה כנגד זה, אחד פתוח להר הבית ואחד פתוח לעזרה, ושומר אחד היה יכול לראות לכאן ולכאן״.\nבמודל (ברירת המחדל): שער לחיל באמצע הכותל הצפוני, ושער לעזרה כנגדו באמצע הכותל הדרומי.", [["מידות א, ז", "Mishnah_Middot.1.7"], ["תמיד כו:", "Tamid.26b"], ["הרא״ש, תמיד כו:", "Rosh_on_Tamid.26.2"]]], ["o1", "סמוכים זה לזה — הרא״ש, פירוש שני", "לשון המשנה (מידות א, ז): ״שנים שערים היו לבית המוקד, אחד פתוח לחיל ואחד פתוח לעזרה״.\nהרא״ש (תמיד כו:): ״ותו גבי הדדי הוה קיימי — אותו הפתוח לעזרה היה עומד אצל קרן מזרחית צפונית, ואותו שפתוח להר הבית היה בחציו של כותל מזרחי, מיד שמתחיל החיל, היו סמוכין זה לזה״.\nבמודל: שער החיל בכותל המזרחי, סמוך לקו כותל העזרה מצפונו; הפתח שבצפון סתום; ולשכת אבני המזבח, שעמדה במקום השער, זזה שש אמות וחצי מערבה. שער העזרה נשאר בכותל הדרומי. מקום השערים המדויק, מידת שער החיל (חמש על עשר) והזזת הלשכה — בחירת מודל.", [["מידות א, ז", "Mishnah_Middot.1.7"], ["תמיד כו:", "Tamid.26b"], ["הרא״ש, תמיד כו:", "Rosh_on_Tamid.26.2"]]]], //
           current: "o0", //
           onPick: (k) => { const G = ctx.shared.mokedGates; if (G && typeof G.set === "function") G.set(k === "o1" ? "adjacent" : "opposite"); }, //
-          fly: (k) => { const c = {"o0": [[-18, 62, -40], [-18, 14, -67.5]], "o1": [[10, 30, -84], [-6.5, 18, -73.3]]}[k]; if (c && c[0] && c[1]) fly(c[0], c[1]); if (ctx.shared.openFor) ctx.shared.openFor("crt-lishkot-roofs", 15000); } //
+          fly: (k) => { const c = {"o0": [[-18, 62, -95], [-18, 14, -67.5]], "o1": [[10, 30, -84], [-6.5, 18, -73.3]]}[k]; if (c && c[0] && c[1]) fly(c[0], c[1]); if (ctx.shared.openFor) ctx.shared.openFor("crt-lishkot-roofs", 15000); } //
         }); //
         opRow({ //
           id: "sh33", short: "שמות שערי הצפון — אבא יוסי בן חנן", cardFly: true, //
@@ -45166,7 +45206,7 @@ body.tm-measuring canvas{cursor:crosshair}
   //     ascent and then the witnesses. A32: the throne's long texts are short here (tour_SHORT); the whole text stays in the panel's card. //
   //   - 1.0.2: the box starts 5 px below the fixed top bar of index.html (--topbar-h: 56 px, 44 px in a narrow window), as it did below the old 47 px header. //
   var tour_PHONE_MQ = "(max-width:639px)"; //
-  var tour_CSS = ` //
+  var tour_CSS = `
 /* 1.1.0: #tm-tour-btn is a bar button (index.html header.topbar .tm-topbtn, via ctx.ui.topbarAdd); the menu hangs under the bar's
    button row (#tm-topbtns is position:relative), at its start edge (right, RTL), where the presentation button is */
 #tm-tour-menu{position:absolute;top:calc(100% + 6px);right:0;left:auto;z-index:33;width:min(282px,calc(100vw - 20px));display:none;flex-direction:column;gap:5px;
@@ -45635,6 +45675,35 @@ body.tm-measuring #tm-tour-box{bottom:96px}
       const HIDE = () => [["cut", ctx.cutaway], ["yatzia", ctx.yatziaCut], ["ulam", ctx.ulamCut], ["boards", ctx.forestBoardsCut]]; //
       const anyHidden = (a) => Array.isArray(a) && a.some((m) => m && m.visible === false); //
       const mbList = () => (Array.isArray(ctx.shared.modelButtons) ? ctx.shared.modelButtons : []); //
+      // 1.3.6 / 1.9.4 (the user, 11.11.2026: "למה הוא מציג במצגת בהתחלה את החתך פתוח לא קשור למקום"; "החתך נשאר פתוח לאורך כל המצגת"): the //
+      // presentation starts from the model's regular state. Every viewing tool the viewer left on - the on-model buttons (the house or //
+      // the galleries opened, a section of the galleries, roofs, a demonstration), the live section and the walk - goes off when it //
+      // starts, and what is not a demonstration comes back when it ends (restore), as the rows and the layers do. Not touched: the //
+      // cloud (the devir's slides ask about it themselves) and a button that only mutes (keepDemos). //
+      const toolsOff = () => { //
+        const back = []; //
+        for (const b of mbList().slice()) { //
+          try { //
+            if (!b || !fnc(b.get) || !fnc(b.set) || b.keepDemos || b.id === "ui-cloud" || !b.get()) continue; //
+            b.set(false); //
+            if (!b.get() && !/^עצור/.test(String(b.labelOn || "")) && !/demo/i.test(String(b.id || ""))) back.push(() => { if (!b.get()) b.set(true); }); //
+          } catch (_) { //
+          } //
+        } //
+        try { //
+          const S = ctx.shared.section; //
+          if (S && S.on && fnc(S.set)) { //
+            const ax = S.axis, v = S.v; //
+            S.set(false, ax, v); //
+            back.push(() => { if (!S.on) S.set(true, ax, v); }); //
+          } //
+          const w = ctx.shared.walkMode; //
+          if (w && w.on && fnc(w.set)) w.set(false); //
+          if (fnc(ctx.shared.navRepaint)) ctx.shared.navRepaint(); //
+        } catch (_) { //
+        } //
+        return back; //
+      }; //
       const snapOpen = () => { //
         const o = { mb: mbList().map((b) => !!(b && fnc(b.get) && call(b.get))) }; //
         for (const [k, a] of HIDE()) o[k] = anyHidden(a); //
@@ -46546,6 +46615,13 @@ body.tm-measuring #tm-tour-box{bottom:96px}
           } catch (_) { //
           } //
         } //
+        // 1.3.6 / 1.9.4: the viewing tools that were on before the presentation come back (toolsOff) //
+        for (const f of sv.tools || []) { //
+          try { //
+            f(); //
+          } catch (_) { //
+          } //
+        } //
         // the parts' labels go with the base taken apart: as before the tour while it is apart //
         const parts = sv.parts && featState("mechonaExplode") === true; //
         if (ctx.layers.mechonaParts && layerOn("mechonaParts") !== parts) setLayer("mechonaParts", parts); //
@@ -46583,7 +46659,10 @@ body.tm-measuring #tm-tour-box{bottom:96px}
           call(U.autoOff.flush); //
           call(U.autoOff.cancel); //
         } //
+        if (fnc(ctx.shared.closeAuto)) call(ctx.shared.closeAuto);   // (1.9.4: what a place or a row opened for a while, the Second Temple's timers) //
+        const tools = toolsOff();   // 1.3.6 / 1.9.4: before the snapshot, so that the features among them are "off" in it //
         saved = snapshot(); //
+        saved.tools = tools; //
         cloudDenied = false; //
         for (const [r] of saved.rows) setRow(r, r.options[0][0]);   // the model in its default readings (Rashi first) //
         { //

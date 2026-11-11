@@ -19,19 +19,34 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 
+// the tokens of a script without its comments: what the file IS, whatever is written between the tokens
+function tokensOf(code) {
+  const acorn = require('acorn');
+  const list = [];
+  acorn.parse(code, {
+    ecmaVersion: 'latest', sourceType: 'script', allowHashBang: true,
+    onToken: (t) => { list.push(t.type.label + '\u0001' + code.slice(t.start, t.end)); }
+  });
+  return list;
+}
+
 export function safeLines(code) {
   const acorn = require('acorn');
   const spans = [];   // [start, end) of every token and block comment that may hold a line break
   acorn.parse(code, {
     ecmaVersion: 'latest', sourceType: 'script', allowHashBang: true,
-    onToken: (t) => { if (t.end - t.start > 1) spans.push([t.start, t.end]); },
+    // 1.3.6 / 1.9.4 (11.11.2026): a piece of a template literal is kept whatever its length - a piece that is one line break was skipped
+    onToken: (t) => { if (t.type.label === 'template' || t.end - t.start > 1) spans.push([t.start, t.end]); },
     onComment: (block, text, start, end) => { if (block) spans.push([start, end]); }
   });
   spans.sort((a, b) => a[0] - b[0]);
   let out = '', last = 0, k = 0, added = 0;
   for (let p = code.indexOf('\n'); p >= 0; p = code.indexOf('\n', p + 1)) {
     while (k < spans.length && spans[k][1] <= p) k++;
-    if (k < spans.length && spans[k][0] < p && p < spans[k][1]) continue;   // inside a template literal / a string / a block comment
+    // inside a template literal / a string / a block comment. 1.3.6 / 1.9.4 (11.11.2026): "<=" - a template's text that BEGINS with a
+    // line break (var css = `<line break>...) starts exactly at the break; with "<" the mark went INTO the text, and the first rule of two
+    // style texts of the Second Temple was lost (the presentation's menu fell apart; the user: "מצגת בית שני, לא מתחיל לפעול בכלל")
+    if (k < spans.length && spans[k][0] <= p && p < spans[k][1]) continue;
     let e = p;
     if (e > 0 && code[e - 1] === '\r') e--;
     let s = e;
@@ -43,6 +58,14 @@ export function safeLines(code) {
     added++;
   }
   out += code.slice(last);
+  // 1.3.6 / 1.9.4: the proof that only comments were added - the file's tokens (every string, template text, name and sign) are the
+  // same before and after, one by one. A difference stops the build
+  if (added) {
+    const A = tokensOf(code), B = tokensOf(out);
+    let bad = A.length !== B.length ? Math.min(A.length, B.length) : -1;
+    for (let i = 0; bad < 0 && i < A.length; i++) if (A[i] !== B[i]) bad = i;
+    if (bad >= 0) throw new Error('safe-lines: the rewrite changed the code itself (token ' + bad + ': ' + JSON.stringify(String(A[bad]).slice(0, 80)) + ' -> ' + JSON.stringify(String(B[bad]).slice(0, 80)) + ')');
+  }
   return { code: out, added };
 }
 

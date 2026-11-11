@@ -1190,6 +1190,11 @@
     g.add(pototLayer);
     ctx.layers = ctx.layers || {};
     ctx.layers.pototKeys = pototLayer;
+    const pototPivotLayer = new Group();   // 1.3.6: gates the pivot's label (the other reading of "והפתות")
+    pototPivotLayer.name = "pototPivots";
+    pototPivotLayer.visible = false;
+    g.add(pototPivotLayer);
+    ctx.layers.pototPivots = pototPivotLayer;
     const goldKey = (parent, x, y, z, side) => {   // side +1: out of the leaf's local +z face; -1: out of its -z face
       const k = new Group();
       k.name = "goldKey";
@@ -1247,6 +1252,9 @@
         hinge.add(fold);
         if (s < 0) {   // 1.3.3: the key of gold in the lock of the north leaf, by its free edge, out of its face toward the passage
           heiKey = goldKey(fold, -2.2, 2.2, T / 2, 1);
+          heiKey.userData.heichal = true;   // 1.3.6: the row "הפותות" looks at this key (ctx.shared.potot.view)
+          ctx.labels.push({ text: "ציר של זהב — ״והפתות״ (תרגום ורד״ק: צירים)", x: HX + 0.2, y: F + 0.85, z: s * DZ + 0.45, size: 0.26, layer: "pototPivots" });
+          pototKeys.pivot = [HX, F + 0.15, s * DZ];   // the lower pivot of the north leaf (the gold cylinder below)
           ctx.labels.push({ text: "מפתח של זהב — ״והפתות״ (רש״י: מפתחות)", x: HX - 4.7, y: F + 3.7, z: s * DZ + 1.1, size: 0.9, layer: "pototKeys" });
         }
         for (const host of [hinge, fold]) {
@@ -2473,7 +2481,29 @@
         this.current = k;
         for (const key of pototKeys) key.visible = k === "rashi";
         pototLayer.visible = k === "rashi";
+        pototPivotLayer.visible = k === "pivots";
         return true;
+      },
+      // 1.3.6 (the scan after the user's "לחיצה על המתג לא מביאה את התוצאה הרצויה"): where the row's eye stands. Rashi - close to the key in
+      // the lock of the heichal's north leaf: its place and the face it comes out of are read from the model as the leaf stands (open
+      // along the reveal, or shut in the demonstration), the eye 2.6 before that face, 1.5 to its outer side and a little above. The
+      // pivots - close to the lower pivot of the same leaf, from the ulam, through the doorway. (Model choices, checked in pictures.)
+      view(k) {
+        const key = pototKeys.find((x) => x.userData.heichal);
+        if ((k || this.current) === "rashi" && key) {
+          const kp = new Vector3(), n = new Vector3();
+          key.updateWorldMatrix(true, false);
+          key.getWorldPosition(kp);
+          key.getWorldDirection(n);
+          n.y = 0;
+          if (n.lengthSq() < 1e-6) n.set(0, 0, 1);
+          n.normalize();
+          let tx = n.z, tz = -n.x;
+          if (tx < 0) { tx = -tx; tz = -tz; }   // to the east, the side of the ulam
+          return { pos: [kp.x + 2.6 * n.x + 1.5 * tx, kp.y + 0.6, kp.z + 2.6 * n.z + 1.5 * tz], target: [kp.x, kp.y - 0.1, kp.z] };
+        }
+        const pv = pototKeys.pivot;
+        return pv ? { pos: [pv[0] + 2.1, pv[1] + 1.0, pv[2] + 2.3], target: [pv[0], pv[1] + 0.3, pv[2] + 0.15] } : null;
       }
     };
     ctx.shared.potot.set("rashi");

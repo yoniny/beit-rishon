@@ -787,7 +787,10 @@
       // they meet the yesod and the sovev, which is where the two readings differ (1.0.2 fix, the review: the old view down the ramp's
       // axis, [ACX, F + 24, 62], showed them as thin strips and both readings looked the same; checked in renders with the card open on
       // the left, both readings; model choice) = [24, 28, 44] looking at [42, 8, 16]
-      ctx.shared.flyPoints.mizbeachRamps = { pos: [SHX - 13.5, F + 22, SHZ + 32], target: [RX0 + 0.5, F + 2, ZS + 5] };
+      // 1.3.6 (the scan of 11.11.2026): that view was far and high, over the mechonot and their label, and the small ramps were two thin
+      // strips. Now close: from the south-west and above, at the place where the western ramps meet the altar = [37.5, 22, 33] looking at
+      // [46.6, 9, 25.5] (in pictures: Rashi - the one ramp at the foot; the Tosafot - the second above it, rising to the sovev)
+      ctx.shared.flyPoints.mizbeachRamps = { pos: [RX0 - 9.5, F + 16, ZS + 12], target: [RX0 - 0.4, F + 3, ZS + 4.5] };
       // the south-west corner from outside: the yesod's corner, the sovev, the red line, the western small ramps and the shitin
       ctx.shared.flyPoints.mizbeachSW = { pos: [SHX - 14, F + 10, SHZ + 15], target: [SHX + 2.5, F + 3, SHZ - 3] };
     }

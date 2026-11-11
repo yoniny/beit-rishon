@@ -733,6 +733,35 @@ body.tm-measuring #tm-tour-box{bottom:96px}
       const HIDE = () => [["cut", ctx.cutaway], ["yatzia", ctx.yatziaCut], ["ulam", ctx.ulamCut], ["boards", ctx.forestBoardsCut]];
       const anyHidden = (a) => Array.isArray(a) && a.some((m) => m && m.visible === false);
       const mbList = () => (Array.isArray(ctx.shared.modelButtons) ? ctx.shared.modelButtons : []);
+      // 1.3.6 / 1.9.4 (the user, 11.11.2026: "למה הוא מציג במצגת בהתחלה את החתך פתוח לא קשור למקום"; "החתך נשאר פתוח לאורך כל המצגת"): the
+      // presentation starts from the model's regular state. Every viewing tool the viewer left on - the on-model buttons (the house or
+      // the galleries opened, a section of the galleries, roofs, a demonstration), the live section and the walk - goes off when it
+      // starts, and what is not a demonstration comes back when it ends (restore), as the rows and the layers do. Not touched: the
+      // cloud (the devir's slides ask about it themselves) and a button that only mutes (keepDemos).
+      const toolsOff = () => {
+        const back = [];
+        for (const b of mbList().slice()) {
+          try {
+            if (!b || !fnc(b.get) || !fnc(b.set) || b.keepDemos || b.id === "ui-cloud" || !b.get()) continue;
+            b.set(false);
+            if (!b.get() && !/^עצור/.test(String(b.labelOn || "")) && !/demo/i.test(String(b.id || ""))) back.push(() => { if (!b.get()) b.set(true); });
+          } catch (_) {
+          }
+        }
+        try {
+          const S = ctx.shared.section;
+          if (S && S.on && fnc(S.set)) {
+            const ax = S.axis, v = S.v;
+            S.set(false, ax, v);
+            back.push(() => { if (!S.on) S.set(true, ax, v); });
+          }
+          const w = ctx.shared.walkMode;
+          if (w && w.on && fnc(w.set)) w.set(false);
+          if (fnc(ctx.shared.navRepaint)) ctx.shared.navRepaint();
+        } catch (_) {
+        }
+        return back;
+      };
       const snapOpen = () => {
         const o = { mb: mbList().map((b) => !!(b && fnc(b.get) && call(b.get))) };
         for (const [k, a] of HIDE()) o[k] = anyHidden(a);
@@ -1644,6 +1673,13 @@ body.tm-measuring #tm-tour-box{bottom:96px}
           } catch (_) {
           }
         }
+        // 1.3.6 / 1.9.4: the viewing tools that were on before the presentation come back (toolsOff)
+        for (const f of sv.tools || []) {
+          try {
+            f();
+          } catch (_) {
+          }
+        }
         // the parts' labels go with the base taken apart: as before the tour while it is apart
         const parts = sv.parts && featState("mechonaExplode") === true;
         if (ctx.layers.mechonaParts && layerOn("mechonaParts") !== parts) setLayer("mechonaParts", parts);
@@ -1681,7 +1717,10 @@ body.tm-measuring #tm-tour-box{bottom:96px}
           call(U.autoOff.flush);
           call(U.autoOff.cancel);
         }
+        if (fnc(ctx.shared.closeAuto)) call(ctx.shared.closeAuto);   // (1.9.4: what a place or a row opened for a while, the Second Temple's timers)
+        const tools = toolsOff();   // 1.3.6 / 1.9.4: before the snapshot, so that the features among them are "off" in it
         saved = snapshot();
+        saved.tools = tools;
         cloudDenied = false;
         for (const [r] of saved.rows) setRow(r, r.options[0][0]);   // the model in its default readings (Rashi first)
         {

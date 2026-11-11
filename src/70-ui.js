@@ -858,6 +858,8 @@
   };
   // 1.0.6 (the user): what is new by version, newest first - one who saw a version is shown only the versions after it; nothing stored -> all
   var UI_NEWS_VERS = [
+    ["1.3.6", ["**המצגת מתחילה ממצב רגיל** — חתך, גג או קיר שנשארו פתוחים נסגרים בתחילת המצגת, וחוזרים למקומם בסופה.",
+      "**מבטים מתוקנים בטבלת השיטות** — ״הפותות״: מקרוב, אל המפתח של זהב שבמנעול הדלת (רש״י), או אל הציר שבתחתיתה (תרגום ורד״ק), ולציר תווית משלו; ״הכבשים הקטנים״: מקרוב, אל המקום שבו הם מגיעים אל המזבח."]],
     ["1.3.5", ["**חיפוש בפסוקים** — שורה חדשה בסוף התפריט: כותבים מילה מפסוקי הבניין שבמלכים א ובדברי הימים ב, ורואים את הפסוק, המילה מסומנת בו, ומתחתיו המקומות שבמודל; לחיצה מעבירה אל המקום. הכפתור ״חפש באוצריא״ מחפש את אותן מילים בכל הספרייה.",
       "@מאוחד **כפתור בחיפוש של אוצריא** — כותבים מילה בשדה החיפוש של אוצריא ולוחצים על כפתור ״בית המקדש״ שבשדה: התוסף נפתח במקומות שהמילה מדברת בהם.",
       "**הכפתור ״פתח בתוסף בית ראשון״ — בעוד 75 ספרים**: מפרשי מלכים א ודברי הימים ב (רש״י, רד״ק, רלב״ג, מלבי״ם, מצודות ועוד), תרגום יונתן, מדרשים, יומא, מנחות ובבא בתרא. הכפתור פותח את המקום שהשורה שלפניכם מקושרת אליו.",
@@ -1819,7 +1821,7 @@ body.tm-measuring canvas{cursor:crosshair}
         [/^מזבח הנחושת/, ["altarPlace", "altarYose", "altarLook", "altarRamps", "maarachot", "maarachotYK"]],   // 1.2.3: the place's chips on the altar's own label too
         [/^(?:היסוד|הסובב|הכבשים הקטנים|כבש קטן|שני כבשים קטנים)/, ["altarRamps"]],
         [/^ספלי הניסוך/, ["sfalim"]],   // 1.3.3
-        [/^מפתח של זהב/, ["potot"]],   // 1.3.3   // 1.0.2: the labels of 40-altar.js's yesod / sovev / ramps, if it gives them
+        [/^מפתח של זהב/, ["potot"]], [/^ציר של זהב/, ["potot"]],   // 1.3.3   // 1.0.2: the labels of 40-altar.js's yesod / sovev / ramps, if it gives them
         [/^בית יער הלבנון/, ["forestHouse"]],
         [/^כסא שלמה/, ["throneVersion"]],
         [/^(?:היציע|התאים לשיטת הרמב״ם|היציעים|לולים)/, ["yatziaShape"]]   // 1.3.4
@@ -4169,7 +4171,8 @@ body.tm-measuring canvas{cursor:crosshair}
           ["התנין של כסף", { p: "עליית המלך לכסא" }],
           ["שבעים כסאות הזקנים", { p: "כסא שלמה" }],
           ["ספלי הניסוך — מים (מערבי) ויין (מזרחי)", { p: "ספלי הניסוך — השלמה מן המשנה" }],
-          ["מפתח של זהב — ״והפתות״ (רש״י: מפתחות)", { p: "פתח ההיכל ודלתותיו" }]   // 1.3.3
+          ["מפתח של זהב — ״והפתות״ (רש״י: מפתחות)", { p: "פתח ההיכל ודלתותיו" }],
+          ["ציר של זהב — ״והפתות״", { p: "פתח ההיכל ודלתותיו" }]   // 1.3.6   // 1.3.3
         ];
         // the target of a label: {key} for setInfo(key) or {text, refs}; null when the label has no explanation
         const labelTarget = (l) => {
@@ -4594,7 +4597,12 @@ body.tm-measuring canvas{cursor:crosshair}
               ],
               current: pt.current || "rashi",
               onPick: (k) => { pt.set(k); },
-              fly: () => flyView(ctx.shared.flyPoints && ctx.shared.flyPoints.heichalDoor ? "heichalDoor" : "kodesh")
+              // 1.3.6: close to the key (Rashi) or to the lower pivot (the Targum and Radak) - the general view of the doorway showed neither
+              fly: (k) => {
+                const v = typeof pt.view === "function" ? pt.view(k) : null;
+                if (v && v.pos && v.target) fly(v.pos, v.target);
+                else flyView(ctx.shared.flyPoints && ctx.shared.flyPoints.heichalDoor ? "heichalDoor" : "kodesh");
+              }
             });
           }
         }
