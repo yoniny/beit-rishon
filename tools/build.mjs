@@ -39,8 +39,15 @@ execFileSync('node', ['--check', readable], { stdio: 'inherit' });
 execFileSync('node', [path.join(root, 'tools', 'check.mjs')], { stdio: 'inherit' });
 // 4. minify
 const out = path.join(plugin, 'bundle.js');
+// 2.0.2: every code line ends with " //" (tools/safe-lines.mjs: the store's validator hangs on a line where a division follows "]"
+// and no other "/" comes after it), and the validator's own search is timed on the result (in a child process: a bad line never returns)
+const { safeLines } = await import('./safe-lines.mjs');
+const checkLines = () => {
+  execFileSync('node', [path.join(root, 'tools', 'safe-lines.mjs'), '--check', out], { stdio: 'inherit', timeout: 120000 });
+};
 if (noMin) {
-  fs.writeFileSync(out, code, 'utf8');
+  fs.writeFileSync(out, safeLines(code).code, 'utf8');
+  checkLines();
   log('plugin/bundle.js written READABLE (--no-min): ' + code.length + ' chars');
 } else {
   const { minify } = await import('terser');
@@ -51,8 +58,11 @@ if (noMin) {
     sourceMap: false
   });
   if (!res.code) throw new Error('terser produced no code');
-  fs.writeFileSync(out, res.code, 'utf8');
+  const safe = safeLines(res.code);
+  fs.writeFileSync(out, safe.code, 'utf8');
   execFileSync('node', ['--check', out], { stdio: 'inherit' });
+  checkLines();
+  log('plugin/bundle.js: ' + safe.added + ' line ends closed with // (safe-lines.mjs)');
   log('plugin/bundle.js minified: ' + code.length + ' -> ' + res.code.length + ' chars');
 }
 // 5. index.html

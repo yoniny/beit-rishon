@@ -112,6 +112,14 @@ try { execFileSync('convert', [path.join(P, 'icon', 'icon.png'), '-strip', path.
 fs.copyFileSync(path.join(U, 'DEV_NOTES.md'), path.join(P, 'DEV_NOTES.md'));
 fs.writeFileSync(path.join(P, '.otzignore'), "# the store's packer leaves *.md out; the maintainers' notes travel with the plugin\n!DEV_NOTES.md\n", 'utf8');
 execFileSync('node', ['--check', path.join(P, 'house-bridge.js')], { stdio: 'inherit' });
+// 2.0.2: the store's validator must be able to read every file (tools/safe-lines.mjs --check: its own search for regular-expression
+// literals, timed; a file on which it does not come back fails the build here and not in the store's run)
+{
+  const list = [];
+  const walk = (d) => { for (const f of fs.readdirSync(d)) { const q = path.join(d, f); if (fs.statSync(q).isDirectory()) walk(q); else if (/\.(js|html?)$/i.test(f)) list.push(q); } };
+  walk(P);
+  execFileSync('node', [path.join(root, 'tools', 'safe-lines.mjs'), '--check', ...list], { stdio: 'inherit', timeout: 180000 });
+}
 log('plugin folder: ' + P);
 
 // ---------- the .otzplugin ----------
