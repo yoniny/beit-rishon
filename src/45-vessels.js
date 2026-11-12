@@ -1463,7 +1463,8 @@
       get washStation() { return WASH.slice(); },
       get washAt() { return TL.wash.slice(); }
     };
-    (ctx.shared.demoStops || (ctx.shared.demoStops = [])).push({ id: "mechonaDemo", running: () => st.running || st.homing, stop: () => demo.reset() });   // 1.3.4: any switch parks it at once
+    (ctx.shared.demoStops || (ctx.shared.demoStops = [])).push({ id: "mechonaDemo", running: () => st.running || st.homing, stop: () => demo.reset(),
+      roundLeft: () => Math.max(0, TL.total - st.tau) });   // TOUR_DEMO_HOLD_206: it goes round and round - a slide of the presentation shows one round   // 1.3.4: any switch parks it at once
     const explode = {
       // set(on[, instant]): animate (1.1 s) the laver and the כן up out of the base or back; instant = jump to the end state
       set(on, instant) {

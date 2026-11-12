@@ -930,6 +930,25 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         }
         return false;
       };
+      // TOUR_DEMO_HOLD_206 b: does a demonstration hold this slide now? One that goes round and round (its entry has roundLeft(), the
+      // seconds left of its present round) holds it for one round, counted from the moment the slide first saw it running
+      const demoHolds = (rt) => {
+        const L = ctx.shared.demoStops;
+        if (!rt || rt.anim || !Array.isArray(L)) return false;   // (a slide with a timeline: the timeline is its length)
+        for (const d of L) {
+          try {
+            if (!d || !fnc(d.running) || !d.running()) continue;
+            if (fnc(d.roundLeft)) {
+              const R = rt.rounds || (rt.rounds = {});
+              if (R[d.id] === undefined) R[d.id] = elapsed + Math.max(0, +d.roundLeft() || 0) * 1000;
+              if (elapsed >= R[d.id]) continue;
+            }
+            return true;
+          } catch (_) {
+          }
+        }
+        return false;
+      };
       const runPlace = (rt, s, res) => {
         let pf = s.pf || null, act = s.act || null;
         if (s.actOnly) rt.actOnly = true;
@@ -1605,7 +1624,7 @@ body.tm-measuring #tm-tour-box{bottom:96px}
       // returns false when the slide is skipped (the continuous mode, the devir under the cloud); its switches are then undone by leave()
       const enter = () => {
         const s = slides[idx];
-        const rt = { s, undo: [], feat: false, devirNav: false, asked: false, orbit: null, thenI: 0, lv: null, anim: null, outside: false, act: false, actOnly: false };
+        const rt = { s, undo: [], feat: false, devirNav: false, asked: false, orbit: null, thenI: 0, lv: null, anim: null, outside: false, act: false, actOnly: false, demoSeen: false, demoEnd: null, thenAbs: null };
         cur = rt;
         // 1.3.5 / 1.9.3: what this slide's place or reading opens for a while (a roof, a section) stays until the slide is left
         call(ctx.shared.holdAuto, true);
@@ -1698,7 +1717,8 @@ body.tm-measuring #tm-tour-box{bottom:96px}
       // the slide's further cameras (8:1-5: from the south up to the house; 1.0.1-L: a list, each at its part of the slide)
       const thenStep = (rt) => {
         const th = rt.s.then;
-        if (!th || rt.thenI >= th.length || elapsed < total * th[rt.thenI].at) return;
+        // TOUR_DEMO_HOLD_206: after a demonstration the further views that waited for it have times of their own (rt.thenAbs)
+        if (!th || rt.thenI >= th.length || elapsed < (rt.thenAbs ? rt.thenAbs[rt.thenI] : total * th[rt.thenI].at)) return;
         const t = th[rt.thenI++];
         const r2 = pick(t.go);
         if (!r2) return;
@@ -2133,8 +2153,26 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         if (rt) animStep(rt);   // 1.0.1-L: (held too: the timeline stays at the same moment)
         if (hold) return;
         if (rt) {
-          thenStep(rt);
-          if (!(rt.act && demoRunning())) orbitStep(rt);   // 1.3.5 / 1.9.3: a demonstration leads the eye itself
+          // TOUR_DEMO_HOLD_206 (the user, 12.11.2026 16:00: "כל מקום שיש הדגמה חייב להיות ארוך עד סוף ההדגמה"): ANY demonstration that
+          // runs in a slide holds it - also one that a reading's choice or a feature of the slide started (until 2.0.5 only a place's
+          // action, rt.act, did: the readings of the wickets and of the doors, and the base that brings the laver, were cut after ten
+          // seconds). While it runs it leads the eye itself: no orbit, and the slide's further views wait; when it ends they come one
+          // after the other, three seconds each; with none, its end rests two seconds.
+          const demo = demoHolds(rt);
+          if (demo) rt.demoSeen = true;
+          else if (rt.demoSeen && rt.demoEnd == null) {
+            rt.demoEnd = elapsed;
+            const th = rt.s.then, n = th ? th.length - rt.thenI : 0;
+            if (n > 0) {
+              rt.thenAbs = [];
+              for (let j = rt.thenI; j < th.length; j++) rt.thenAbs[j] = elapsed + 300 + (j - rt.thenI) * 3000;
+              total = Math.max(total, elapsed + 300 + n * 3000);
+            } else total = Math.max(total, elapsed + 2000);
+          }
+          if (!demo) {
+            thenStep(rt);
+            if (!rt.demoSeen) orbitStep(rt);   // (after a demonstration the eye stays where it left it)
+          }
         }
         if (tn - progAt > 120 || elapsed >= total) {
           progAt = tn;
@@ -2142,7 +2180,7 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         }
         if (elapsed >= total) {
           // 1.3.5 / 1.9.3: a demonstration that the slide started runs to its end first (two minutes more at most)
-          if (rt && rt.act && elapsed < total + 120000 * speed && demoRunning()) return;
+          if (rt && elapsed < total + 120000 * speed && demoHolds(rt)) return;   // TOUR_DEMO_HOLD_206: any demonstration, not only a place's action
           next();
         }
       });
