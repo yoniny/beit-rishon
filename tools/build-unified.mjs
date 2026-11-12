@@ -12,9 +12,12 @@
 //   <out>/בית המקדש - לצפייה בלי אוצריא.html   one file: the choice screen and both houses inside it (and, in this file only,
 //                                 unified/update-check.js: the button "בדיקת עדכונים" at the end of each house's menu)
 //
-// The unified manifest is unified/manifest.json (id = בית ראשון's id, so the store updates the installed plugin); its toolbar
-// buttons and startup programs are both houses'. The shell's routing table (which button / which book -> which house) is written
-// here from the two manifests.
+// The unified manifest is unified/manifest.json (id = בית ראשון's id, so the store updates the installed plugin).
+// 2.0.4: ONE button in the books, "פתח בתוסף בית המקדש" (the user, 11.11.2026: "אם יש ספרים הנמצאים בשתי הבתים תאחד ותסיר כפתורים").
+// Otzaria allows a plugin two toolbar items, each bound to one program of at most 77 book ids: the manifest carries two items of the
+// SAME title on two DISJOINT programs, written here from unified/books.json (each house's own books; the books of both houses with
+// their default house; tools204/gen_unified_books.py). The shell's routing table (which book -> which house; the houses' base books
+// and their lines, for the links of the line being read in a book of both) is written here too.
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -38,6 +41,9 @@ if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error('bad version ' + version);
 const NAMES = { rishon: 'בית ראשון', sheni: 'בית שני' };
 const BASE_BOOKS = { rishon: [10, 39], sheni: [89, 337] };   // the books each house reads by its own table (ui_READ): I Kings, II Chronicles; Middot, the Rambam
 const houses = {};
+// the houses' base books with their titles and the lines their places are mapped from (unified/base-books.json, written by
+// tools196/gen_words.py with the houses' own 72-words.js): for the links of the line being read in a book of both houses
+const BASE = JSON.parse(read(path.join(U, 'base-books.json')));
 for (const h of ['rishon', 'sheni']) {
   const dir = path.resolve(src[h]);
   const m = JSON.parse(read(path.join(dir, 'manifest.json')));
@@ -57,23 +63,51 @@ for (const h of ['rishon', 'sheni']) {
   const books = BASE_BOOKS[h];
   for (const b of books) if (!listed.includes(b)) throw new Error(h + ': the manifest does not show the button in its own book ' + b);
   log(h + ': the button shows in ' + listed.length + ' books');
-  houses[h] = { dir, manifest: m, html, bundle, cfg: { name: NAMES[h], version: m.version, page: h + '/index.html', items, books } };
+  houses[h] = { dir, manifest: m, html, bundle, cfg: { name: NAMES[h], version: m.version, page: h + '/index.html', items, books, base: BASE[h] } };
+  for (const b of books) if (!houses[h].cfg.base.some((x) => x.id === b)) throw new Error(h + ': the words table has no base book ' + b);
   log(h + ': ' + m.name + ' ' + m.version + ', buttons ' + items.join(',') + ', books ' + books.join(','));
 }
-// the unified manifest carries both houses' toolbar buttons and programs: make sure they are the houses' current ones
+// ---------- 2.0.4: one button in the books ----------
+const BOOKS = JSON.parse(read(path.join(U, 'books.json')));
+const UNI_ITEM = { title: 'פתח בתוסף בית המקדש', icon: 'building_24_regular' };
+const MAX_BOOKS = 77;   // a program holds 256 value nodes: 13 for the two fixed checks, 2 a group of 16, 3 a book (tools196/gen_manifest_books.py)
 {
   const st = manifest.contributes.startup;
-  st.programs = [...houses.rishon.manifest.contributes.startup.programs, ...houses.sheni.manifest.contributes.startup.programs];
-  st.toolbarItems = [...houses.rishon.manifest.contributes.startup.toolbarItems, ...houses.sheni.manifest.contributes.startup.toolbarItems];
+  const common = Object.keys(BOOKS.common).map(Number);
+  const all = [...BOOKS.rishon, ...BOOKS.sheni, ...common];
+  if (new Set(all).size !== all.length || !all.every((i) => Number.isInteger(i) && i > 0)) throw new Error('books.json: a book twice, or not a number');
+  for (const h of ['rishon', 'sheni']) for (const b of BASE_BOOKS[h]) if (!BOOKS[h].includes(b)) throw new Error('books.json: ' + h + ' lacks its own book ' + b);
+  for (const k of common) if (!NAMES[BOOKS.common[k]]) throw new Error('books.json: the book ' + k + ' of both houses has no default house');
+  if (all.length > 2 * MAX_BOOKS) throw new Error('books.json: ' + all.length + ' books - two programs hold ' + 2 * MAX_BOOKS);
+  // the first item's list: the First Temple's own books and, in its free places, books from the end of the other list; the second: the rest
+  const first = [...BOOKS.rishon], rest = [...BOOKS.sheni, ...common];
+  while (first.length < MAX_BOOKS && rest.length > MAX_BOOKS) first.push(rest.pop());
+  if (first.length > MAX_BOOKS || rest.length > MAX_BOOKS) throw new Error('books.json: the lists do not fit two programs');
+  const program = (tpl, ids) => {
+    const p = JSON.parse(JSON.stringify(tpl));
+    const cond = p.commands[0].args.condition;
+    if (p.commands.length !== 1 || cond.op !== 'and' || cond.conditions.length !== 3 || !JSON.stringify(cond.conditions[2]).includes('reader.book.id')) throw new Error(p.id + ': not the program of the books as tools196/gen_manifest_books.py writes it');
+    const groups = [];
+    for (let i = 0; i < ids.length; i += 16) groups.push({ op: 'or', conditions: ids.slice(i, i + 16).map((n) => ({ op: 'equals', left: { $context: 'reader.book.id' }, right: n })) });
+    cond.conditions[2] = { op: 'or', conditions: groups };
+    p.version = 2;   // (1 until 2.0.3: each house's own list)
+    return p;
+  };
+  const tR = houses.rishon.manifest.contributes.startup, tS = houses.sheni.manifest.contributes.startup;
+  if (tR.programs.length !== 1 || tS.programs.length !== 1 || tR.toolbarItems.length !== 1 || tS.toolbarItems.length !== 1) throw new Error('each house must bring one program and one toolbar item');
+  st.programs = [program(tR.programs[0], first), program(tS.programs[0], rest)];
+  st.toolbarItems = [tR.toolbarItems[0], tS.toolbarItems[0]].map((t) => Object.assign({}, t, UNI_ITEM));
   const perms = new Set([...manifest.permissions, ...houses.rishon.manifest.permissions, ...houses.sheni.manifest.permissions]);
   manifest.permissions = [...perms];
+  for (const h of ['rishon', 'sheni']) houses[h].cfg.books = BOOKS[h];
+  log('one button: ' + first.length + ' + ' + rest.length + ' books (' + BOOKS.rishon.length + ' of the First Temple, ' + BOOKS.sheni.length + ' of the Second, ' + common.length + ' of both)');
 }
 
 // ---------- the shell ----------
 const bridge = read(path.join(U, 'house-bridge.js'));
 const bg = read(path.join(U, 'background.svg')).replace(/<\?xml[^>]*>\s*/, '').trim();
 function shell(standalone, sourcesHtml) {
-  const cfg = { standalone, houses: {} };
+  const cfg = { standalone, houses: {}, common: BOOKS.common };
   for (const h of ['rishon', 'sheni']) cfg.houses[h] = houses[h].cfg;
   let s = read(path.join(U, 'shell.html'));
   s = s.replace(/\/\*__CONFIG__\*\/[\s\S]*?\/\*__END_CONFIG__\*\//, () => JSON.stringify(cfg));

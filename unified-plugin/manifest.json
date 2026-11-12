@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "com.beit-hamikdash.rishon-3d-model",
   "name": "בית המקדש",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "מודל תלת־ממדי של שני בתי המקדש: בית ראשון כפירוש רש״י, ובית שני לפי מסכת מידות והרמב״ם. סיור, שיטות ומחלוקות, מצגות, ומקורות שנפתחים באוצריא.",
   "author": "יוני מאיר ויוסי כהן (Yossi Cohen), shalomke",
   "homepage": "https://github.com/yoniny/beit-rishon",
@@ -38,7 +38,7 @@
       "programs": [
         {
           "id": "beit-rishon-books",
-          "version": 1,
+          "version": 2,
           "triggers": [
             "reader.activeBookChanged"
           ],
@@ -166,13 +166,6 @@
                               "left": {
                                 "$context": "reader.book.id"
                               },
-                              "right": 7414
-                            },
-                            {
-                              "op": "equals",
-                              "left": {
-                                "$context": "reader.book.id"
-                              },
                               "right": 3232
                             },
                             {
@@ -181,19 +174,19 @@
                                 "$context": "reader.book.id"
                               },
                               "right": 3522
-                            }
-                          ]
-                        },
-                        {
-                          "op": "or",
-                          "conditions": [
+                            },
                             {
                               "op": "equals",
                               "left": {
                                 "$context": "reader.book.id"
                               },
                               "right": 3737
-                            },
+                            }
+                          ]
+                        },
+                        {
+                          "op": "or",
+                          "conditions": [
                             {
                               "op": "equals",
                               "left": {
@@ -262,13 +255,6 @@
                               "left": {
                                 "$context": "reader.book.id"
                               },
-                              "right": 3190
-                            },
-                            {
-                              "op": "equals",
-                              "left": {
-                                "$context": "reader.book.id"
-                              },
                               "right": 275
                             },
                             {
@@ -297,18 +283,6 @@
                               "left": {
                                 "$context": "reader.book.id"
                               },
-                              "right": 7577
-                            }
-                          ]
-                        },
-                        {
-                          "op": "or",
-                          "conditions": [
-                            {
-                              "op": "equals",
-                              "left": {
-                                "$context": "reader.book.id"
-                              },
                               "right": 3396
                             },
                             {
@@ -323,15 +297,13 @@
                               "left": {
                                 "$context": "reader.book.id"
                               },
-                              "right": 3258
-                            },
-                            {
-                              "op": "equals",
-                              "left": {
-                                "$context": "reader.book.id"
-                              },
                               "right": 247
-                            },
+                            }
+                          ]
+                        },
+                        {
+                          "op": "or",
+                          "conditions": [
                             {
                               "op": "equals",
                               "left": {
@@ -407,25 +379,6 @@
                               "left": {
                                 "$context": "reader.book.id"
                               },
-                              "right": 3684
-                            },
-                            {
-                              "op": "equals",
-                              "left": {
-                                "$context": "reader.book.id"
-                              },
-                              "right": 107
-                            }
-                          ]
-                        },
-                        {
-                          "op": "or",
-                          "conditions": [
-                            {
-                              "op": "equals",
-                              "left": {
-                                "$context": "reader.book.id"
-                              },
                               "right": 3406
                             },
                             {
@@ -462,20 +415,18 @@
                                 "$context": "reader.book.id"
                               },
                               "right": 7915
-                            },
+                            }
+                          ]
+                        },
+                        {
+                          "op": "or",
+                          "conditions": [
                             {
                               "op": "equals",
                               "left": {
                                 "$context": "reader.book.id"
                               },
                               "right": 5994
-                            },
-                            {
-                              "op": "equals",
-                              "left": {
-                                "$context": "reader.book.id"
-                              },
-                              "right": 7576
                             },
                             {
                               "op": "equals",
@@ -496,21 +447,7 @@
                               "left": {
                                 "$context": "reader.book.id"
                               },
-                              "right": 131
-                            },
-                            {
-                              "op": "equals",
-                              "left": {
-                                "$context": "reader.book.id"
-                              },
                               "right": 3900
-                            },
-                            {
-                              "op": "equals",
-                              "left": {
-                                "$context": "reader.book.id"
-                              },
-                              "right": 7582
                             },
                             {
                               "op": "equals",
@@ -532,12 +469,7 @@
                                 "$context": "reader.book.id"
                               },
                               "right": 3698
-                            }
-                          ]
-                        },
-                        {
-                          "op": "or",
-                          "conditions": [
+                            },
                             {
                               "op": "equals",
                               "left": {
@@ -558,20 +490,6 @@
                                 "$context": "reader.book.id"
                               },
                               "right": 7553
-                            },
-                            {
-                              "op": "equals",
-                              "left": {
-                                "$context": "reader.book.id"
-                              },
-                              "right": 7549
-                            },
-                            {
-                              "op": "equals",
-                              "left": {
-                                "$context": "reader.book.id"
-                              },
-                              "right": 155
                             },
                             {
                               "op": "equals",
@@ -614,7 +532,12 @@
                                 "$context": "reader.book.id"
                               },
                               "right": 3510
-                            },
+                            }
+                          ]
+                        },
+                        {
+                          "op": "or",
+                          "conditions": [
                             {
                               "op": "equals",
                               "left": {
@@ -628,6 +551,83 @@
                                 "$context": "reader.book.id"
                               },
                               "right": 5850
+                            },
+                            {
+                              "op": "equals",
+                              "left": {
+                                "$context": "reader.book.id"
+                              },
+                              "right": 7582
+                            },
+                            {
+                              "op": "equals",
+                              "left": {
+                                "$context": "reader.book.id"
+                              },
+                              "right": 7577
+                            },
+                            {
+                              "op": "equals",
+                              "left": {
+                                "$context": "reader.book.id"
+                              },
+                              "right": 7576
+                            },
+                            {
+                              "op": "equals",
+                              "left": {
+                                "$context": "reader.book.id"
+                              },
+                              "right": 7549
+                            },
+                            {
+                              "op": "equals",
+                              "left": {
+                                "$context": "reader.book.id"
+                              },
+                              "right": 7414
+                            },
+                            {
+                              "op": "equals",
+                              "left": {
+                                "$context": "reader.book.id"
+                              },
+                              "right": 3684
+                            },
+                            {
+                              "op": "equals",
+                              "left": {
+                                "$context": "reader.book.id"
+                              },
+                              "right": 3258
+                            },
+                            {
+                              "op": "equals",
+                              "left": {
+                                "$context": "reader.book.id"
+                              },
+                              "right": 3190
+                            },
+                            {
+                              "op": "equals",
+                              "left": {
+                                "$context": "reader.book.id"
+                              },
+                              "right": 155
+                            },
+                            {
+                              "op": "equals",
+                              "left": {
+                                "$context": "reader.book.id"
+                              },
+                              "right": 131
+                            },
+                            {
+                              "op": "equals",
+                              "left": {
+                                "$context": "reader.book.id"
+                              },
+                              "right": 107
                             }
                           ]
                         }
@@ -648,7 +648,7 @@
         },
         {
           "id": "beit-sheni-books",
-          "version": 1,
+          "version": 2,
           "triggers": [
             "reader.activeBookChanged"
           ],
@@ -706,13 +706,6 @@
                               "left": {
                                 "$context": "reader.book.id"
                               },
-                              "right": 7414
-                            },
-                            {
-                              "op": "equals",
-                              "left": {
-                                "$context": "reader.book.id"
-                              },
                               "right": 4260
                             },
                             {
@@ -721,13 +714,6 @@
                                 "$context": "reader.book.id"
                               },
                               "right": 4304
-                            },
-                            {
-                              "op": "equals",
-                              "left": {
-                                "$context": "reader.book.id"
-                              },
-                              "right": 7576
                             },
                             {
                               "op": "equals",
@@ -791,12 +777,7 @@
                                 "$context": "reader.book.id"
                               },
                               "right": 5029
-                            }
-                          ]
-                        },
-                        {
-                          "op": "or",
-                          "conditions": [
+                            },
                             {
                               "op": "equals",
                               "left": {
@@ -810,21 +791,12 @@
                                 "$context": "reader.book.id"
                               },
                               "right": 1074
-                            },
-                            {
-                              "op": "equals",
-                              "left": {
-                                "$context": "reader.book.id"
-                              },
-                              "right": 3190
-                            },
-                            {
-                              "op": "equals",
-                              "left": {
-                                "$context": "reader.book.id"
-                              },
-                              "right": 107
-                            },
+                            }
+                          ]
+                        },
+                        {
+                          "op": "or",
+                          "conditions": [
                             {
                               "op": "equals",
                               "left": {
@@ -893,40 +865,14 @@
                               "left": {
                                 "$context": "reader.book.id"
                               },
-                              "right": 7582
-                            },
-                            {
-                              "op": "equals",
-                              "left": {
-                                "$context": "reader.book.id"
-                              },
-                              "right": 131
-                            },
-                            {
-                              "op": "equals",
-                              "left": {
-                                "$context": "reader.book.id"
-                              },
                               "right": 138
-                            }
-                          ]
-                        },
-                        {
-                          "op": "or",
-                          "conditions": [
+                            },
                             {
                               "op": "equals",
                               "left": {
                                 "$context": "reader.book.id"
                               },
                               "right": 4466
-                            },
-                            {
-                              "op": "equals",
-                              "left": {
-                                "$context": "reader.book.id"
-                              },
-                              "right": 7577
                             },
                             {
                               "op": "equals",
@@ -962,7 +908,12 @@
                                 "$context": "reader.book.id"
                               },
                               "right": 4305
-                            },
+                            }
+                          ]
+                        },
+                        {
+                          "op": "or",
+                          "conditions": [
                             {
                               "op": "equals",
                               "left": {
@@ -996,13 +947,6 @@
                               "left": {
                                 "$context": "reader.book.id"
                               },
-                              "right": 7549
-                            },
-                            {
-                              "op": "equals",
-                              "left": {
-                                "$context": "reader.book.id"
-                              },
                               "right": 341
                             },
                             {
@@ -1025,12 +969,7 @@
                                 "$context": "reader.book.id"
                               },
                               "right": 7079
-                            }
-                          ]
-                        },
-                        {
-                          "op": "or",
-                          "conditions": [
+                            },
                             {
                               "op": "equals",
                               "left": {
@@ -1071,13 +1010,6 @@
                               "left": {
                                 "$context": "reader.book.id"
                               },
-                              "right": 3684
-                            },
-                            {
-                              "op": "equals",
-                              "left": {
-                                "$context": "reader.book.id"
-                              },
                               "right": 1268
                             },
                             {
@@ -1093,7 +1025,12 @@
                                 "$context": "reader.book.id"
                               },
                               "right": 4173
-                            },
+                            }
+                          ]
+                        },
+                        {
+                          "op": "or",
+                          "conditions": [
                             {
                               "op": "equals",
                               "left": {
@@ -1142,12 +1079,7 @@
                                 "$context": "reader.book.id"
                               },
                               "right": 1202
-                            }
-                          ]
-                        },
-                        {
-                          "op": "or",
-                          "conditions": [
+                            },
                             {
                               "op": "equals",
                               "left": {
@@ -1167,13 +1099,6 @@
                               "left": {
                                 "$context": "reader.book.id"
                               },
-                              "right": 155
-                            },
-                            {
-                              "op": "equals",
-                              "left": {
-                                "$context": "reader.book.id"
-                              },
                               "right": 2985
                             },
                             {
@@ -1182,13 +1107,6 @@
                                 "$context": "reader.book.id"
                               },
                               "right": 7178
-                            },
-                            {
-                              "op": "equals",
-                              "left": {
-                                "$context": "reader.book.id"
-                              },
-                              "right": 3258
                             },
                             {
                               "op": "equals",
@@ -1224,7 +1142,12 @@
                                 "$context": "reader.book.id"
                               },
                               "right": 127
-                            },
+                            }
+                          ]
+                        },
+                        {
+                          "op": "or",
+                          "conditions": [
                             {
                               "op": "equals",
                               "left": {
@@ -1238,6 +1161,83 @@
                                 "$context": "reader.book.id"
                               },
                               "right": 7225
+                            },
+                            {
+                              "op": "equals",
+                              "left": {
+                                "$context": "reader.book.id"
+                              },
+                              "right": 6029
+                            },
+                            {
+                              "op": "equals",
+                              "left": {
+                                "$context": "reader.book.id"
+                              },
+                              "right": 3791
+                            },
+                            {
+                              "op": "equals",
+                              "left": {
+                                "$context": "reader.book.id"
+                              },
+                              "right": 8423
+                            },
+                            {
+                              "op": "equals",
+                              "left": {
+                                "$context": "reader.book.id"
+                              },
+                              "right": 6030
+                            },
+                            {
+                              "op": "equals",
+                              "left": {
+                                "$context": "reader.book.id"
+                              },
+                              "right": 154
+                            },
+                            {
+                              "op": "equals",
+                              "left": {
+                                "$context": "reader.book.id"
+                              },
+                              "right": 7040
+                            },
+                            {
+                              "op": "equals",
+                              "left": {
+                                "$context": "reader.book.id"
+                              },
+                              "right": 2494
+                            },
+                            {
+                              "op": "equals",
+                              "left": {
+                                "$context": "reader.book.id"
+                              },
+                              "right": 2885
+                            },
+                            {
+                              "op": "equals",
+                              "left": {
+                                "$context": "reader.book.id"
+                              },
+                              "right": 7554
+                            },
+                            {
+                              "op": "equals",
+                              "left": {
+                                "$context": "reader.book.id"
+                              },
+                              "right": 156
+                            },
+                            {
+                              "op": "equals",
+                              "left": {
+                                "$context": "reader.book.id"
+                              },
+                              "right": 2989
                             }
                           ]
                         }
@@ -1261,8 +1261,8 @@
         {
           "id": "open-beit-rishon",
           "type": "button",
-          "title": "פתח בתוסף בית ראשון",
-          "icon": "menorah_24_regular",
+          "title": "פתח בתוסף בית המקדש",
+          "icon": "building_24_regular",
           "contexts": [
             "reader-text"
           ],
@@ -1275,7 +1275,7 @@
         {
           "id": "open-beit-sheni",
           "type": "button",
-          "title": "פתח בתוסף בית שני",
+          "title": "פתח בתוסף בית המקדש",
           "icon": "building_24_regular",
           "contexts": [
             "reader-text"
@@ -1290,10 +1290,11 @@
       "searchFieldActions": [
         {
           "id": "temple-places",
-          "title": "בית המקדש — מקום המילים במודל",
+          "title": "בית המקדש — המקום במודל",
           "icon": "building_24_regular",
           "fields": [
-            "fullText"
+            "fullText",
+            "findRef"
           ]
         }
       ]

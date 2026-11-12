@@ -135,7 +135,7 @@
 </head>
 <body>
 <div id="home">
-  <header class="topbar"><div class="title">בית המקדש</div><span id="version">v2.0.3</span></header>
+  <header class="topbar"><div class="title">בית המקדש</div><span id="version">v2.0.4</span></header>
   <div id="scene">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
   <defs>
@@ -450,7 +450,7 @@
 (function () {
   "use strict";
   // ---------- configuration (written by tools/build-unified.mjs) ----------
-  var CFG = {"standalone":false,"houses":{"rishon":{"name":"בית ראשון","version":"1.3.6","page":"rishon/index.html","items":["open-beit-rishon"],"books":[10,39]},"sheni":{"name":"בית שני","version":"1.9.4","page":"sheni/index.html","items":["open-beit-sheni"],"books":[89,337]}}};
+  var CFG = {"standalone":false,"houses":{"rishon":{"name":"בית ראשון","version":"1.3.7","page":"rishon/index.html","items":["open-beit-rishon"],"books":[10,39,3345,3673,3540,3206,3394,3645,3449,3574,3662,3318,6049,3232,3522,3737,3364,3025,244,3441,3560,6050,3875,3619,3639,275,3509,240,3248,3396,282,247,7715,276,259,3770,5851,3627,268,7558,3295,3705,3406,3058,7556,262,7910,7915,5994,3084,7914,3900,124,257,3698,3023,265,7553,7909,3119,3260,697,3432,3510,285,5850],"base":[{"id":10,"t":"מלכים א","w":[[186,377],[388,393]]},{"id":39,"t":"דברי הימים ב","w":[[39,198],[418,515],[633,633]]}]},"sheni":{"name":"בית שני","version":"1.9.5","page":"sheni/index.html","items":["open-beit-sheni"],"books":[89,337,5474,4260,4304,819,5308,4095,643,948,1210,645,7163,5029,7001,1074,3167,750,130,4606,1145,2,3886,5069,1342,138,4466,573,7007,7027,3,4305,3263,340,1329,7165,341,5252,3877,7079,338,7100,2982,3797,4303,1268,3891,4173,344,6797,2988,5664,4,5,1202,5822,7021,2985,7178,944,4767,4531,8404,127,106,7225,6029,3791,8423,6030,154,7040,2494,2885,7554,156,2989],"base":[{"id":89,"t":"משנה מדות","w":[[2,39]]},{"id":337,"t":"משנה תורה, הלכות בית הבחירה","w":[[3,146]]}]}},"common":{"107":"sheni","131":"sheni","155":"sheni","3190":"sheni","3258":"rishon","3684":"sheni","7414":"sheni","7549":"sheni","7576":"sheni","7577":"sheni","7582":"sheni"}};
   var HOUSES = ["rishon", "sheni"];
   var OTZ = typeof window.Otzaria !== "undefined" && !!window.Otzaria && typeof window.Otzaria.on === "function";
   var ROUTED = { "reader.toolbar_item_clicked": 1, "plugin.page_opened": 1 };
@@ -486,28 +486,125 @@
   }
 
   // ---------- which house an event of a book belongs to ----------
-  function routeOf(evt, d) {
-    var cands = [d];
+  // 2.0.4: ONE button in the books, "פתח בתוסף בית המקדש" (the user, 11.11.2026: "אם יש ספרים הנמצאים בשתי הבתים תאחד ותסיר
+  // כפתורים"): two toolbar items of one title on two disjoint lists of books (Otzaria's limit is 77 books an item), so the item
+  // says nothing about the house. The house is chosen by the BOOK: each house's own books (CFG.houses[h].books), and in a book of
+  // both houses (CFG.common) by the links of the line being read - the house whose base books are linked nearest to the line; no
+  // link near it -> the house written for the book. The event goes on to the house with ITS item's id (a house knows its button).
+  var ALL_ITEMS = [];
+  HOUSES.forEach(function (h) { ALL_ITEMS = ALL_ITEMS.concat(CFG.houses[h].items || []); });
+  function num(x) { return typeof x === "number" && isFinite(x) ? x : typeof x === "string" && /^\d+$/.test(x) ? +x : null; }
+  function normT(t) { return String(t == null ? "" : t).replace(/[֑-ׇ]/g, "").replace(/[׳״'"`]/g, "").replace(/\s+/g, " ").trim(); }
+  // the reading position of an event (or of its param): the item, the book's id and title, the line
+  function readingOf(d) {
+    var r = { item: null, id: null, title: "", index: null }, cands = [d];
     if (d && typeof d === "object" && d.param && typeof d.param === "object") cands.push(d.param);
     for (var i = 0; i < cands.length; i++) {
       var o = cands[i];
       if (!o || typeof o !== "object") continue;
-      var item = o.itemId || o.toolbarItemId || o.id;
-      for (var j = 0; j < HOUSES.length; j++) {
-        if (CFG.houses[HOUSES[j]].items.indexOf(item) >= 0) return HOUSES[j];
-      }
+      var it = o.itemId || o.toolbarItemId || o.id;
+      if (r.item == null && typeof it === "string" && ALL_ITEMS.indexOf(it) >= 0) r.item = it;
+      var uid = /^id:(\d+)$/.exec(String(o.currentBookUid || o.bookUid || ""));
+      if (r.id == null && uid) r.id = +uid[1];
       var keys = ["currentId", "currentBookId", "bookId", "currentBook", "book"];
-      for (var k = 0; k < keys.length; k++) {
+      for (var k = 0; k < keys.length && r.id == null; k++) {
         var v = o[keys[k]];
         if (v && typeof v === "object") v = v.id;
-        if (typeof v === "string" && /^\d+$/.test(v)) v = +v;
-        if (typeof v !== "number") continue;
-        for (var n = 0; n < HOUSES.length; n++) {
-          if (CFG.houses[HOUSES[n]].books.indexOf(v) >= 0) return HOUSES[n];
-        }
+        r.id = num(v);
       }
+      var tk = ["currentBook", "currentBookId", "bookId", "title"];
+      for (var t = 0; t < tk.length && !r.title; t++) {
+        var s = o[tk[t]];
+        if (typeof s === "string" && s && !/^(?:id:)?\d+$/.test(s)) r.title = s;
+      }
+      var ik = ["currentIndex", "index", "lineIndex"];
+      for (var x = 0; x < ik.length && r.index == null; x++) r.index = num(o[ik[x]]);
     }
-    return current === "home" ? null : current;
+    return r;
+  }
+  function houseOfBook(id) {
+    if (id == null) return null;
+    for (var j = 0; j < HOUSES.length; j++) if ((CFG.houses[HOUSES[j]].books || []).indexOf(id) >= 0) return HOUSES[j];
+    return null;
+  }
+  function linksOf(r) { return r && r.success !== false && r.data && Array.isArray(r.data.links) ? r.data.links : []; }
+  function inLines(b, line) { for (var i = 0; i < b.w.length; i++) if (line >= b.w[i][0] && line <= b.w[i][1]) return true; return false; }
+  // a book of both houses: the house whose base books are linked nearest to the line (the distances as in the houses' own search,
+  // 72-words.js: first the links going out of the lines around it; then, for a book that is only linked TO, the base books' links
+  // into it) - null when no link is within thirty lines, or the two are as near
+  function houseByLinks(rd) {
+    var NEAR = 30, i = rd.index, best = { rishon: Infinity, sheni: Infinity }, titles = [], owner = {};
+    HOUSES.forEach(function (h) { (CFG.houses[h].base || []).forEach(function (b) { titles.push(b.t); owner[normT(b.t)] = { h: h, b: b }; }); });
+    var ask = function (params) {
+      try { return Promise.resolve(window.Otzaria.call("library.getLinks", params)).catch(function () { return null; }); }
+      catch (_) { return Promise.resolve(null); }
+    };
+    var verdict = function () {
+      var r = best.rishon, s = best.sheni;
+      return Math.min(r, s) > NEAR || r === s ? null : r < s ? "rishon" : "sheni";
+    };
+    return ask({ bookUid: "id:" + rd.id, startLine: Math.max(0, i - NEAR), endLine: i + NEAR, targetTitles: titles }).then(function (r1) {
+      linksOf(r1).forEach(function (L) {
+        var o = owner[normT(L.targetTitle)], src = +L.sourceLine;
+        if (!o || !inLines(o.b, +L.targetLine)) return;
+        var d = src >= i ? src - i : (i - src) * 1.5 + 0.5;
+        if (d < best[o.h]) best[o.h] = d;
+      });
+      if (Math.min(best.rishon, best.sheni) <= 3 || !rd.title) return verdict();
+      var jobs = [];
+      HOUSES.forEach(function (h) {
+        (CFG.houses[h].base || []).forEach(function (b) {
+          b.w.forEach(function (w) {
+            jobs.push(ask({ bookUid: "id:" + b.id, startLine: w[0], endLine: w[1], targetTitles: [rd.title] }).then(function (r2) {
+              linksOf(r2).forEach(function (L) {
+                var tl = +L.targetLine, te = L.targetLineEnd != null ? +L.targetLineEnd : tl;
+                var d = i >= tl && i <= te ? 0 : tl <= i ? i - te : (tl - i) * 1.5 + 0.5;
+                if (d < best[h]) best[h] = d;
+              });
+            }));
+          });
+        });
+      });
+      return Promise.all(jobs).then(verdict);
+    });
+  }
+  var decided = {};   // "book:line" -> { at, p }: one click is told twice (the toolbar's event and plugin.page_opened) - one answer for both
+  function routeOf(evt, d) {   // -> a promise of the house (or of null: stay where we are)
+    var rd = readingOf(d);
+    var own = houseOfBook(rd.id);
+    if (own) return Promise.resolve(own);
+    var pref = rd.id != null && CFG.common ? CFG.common[rd.id] : null;
+    if (pref && CFG.houses[pref]) {
+      var key = rd.id + ":" + rd.index, now = Date.now(), c = decided[key];
+      if (c && now - c.at < 4000) return c.p;
+      var p = !OTZ || rd.index == null ? Promise.resolve(pref) : Promise.race([
+        houseByLinks(rd),
+        new Promise(function (res) { setTimeout(function () { res(null); }, 3500); })
+      ]).then(function (h) { return h || pref; }, function () { return pref; });
+      decided[key] = { at: now, p: p };
+      return p;
+    }
+    if (rd.item) {   // a book the lists do not hold (an older manifest's): the item's own house, as until 2.0.3
+      for (var j = 0; j < HOUSES.length; j++) if (CFG.houses[HOUSES[j]].items.indexOf(rd.item) >= 0) return Promise.resolve(HOUSES[j]);
+    }
+    return Promise.resolve(current === "home" ? null : current);
+  }
+  // the event as the house expects it: with its own button's id
+  function retarget(p, h) {
+    var q;
+    try { q = JSON.parse(JSON.stringify(p)); } catch (_) { return p; }
+    var own = CFG.houses[h].items[0];
+    [q, q && q.param].forEach(function (o) {
+      if (!o || typeof o !== "object") return;
+      ["itemId", "toolbarItemId"].forEach(function (k) { if (typeof o[k] === "string" && ALL_ITEMS.indexOf(o[k]) >= 0) o[k] = own; });
+    });
+    return q;
+  }
+  function toHouse(h, evt, p) {
+    var q = retarget(p, h);
+    show(h);
+    if (subs[h][evt]) deliver(h, evt, q);
+    else { queued[h].push([evt, q]); if (queued[h].length > 4) queued[h].shift(); }
   }
 
   // ---------- the real SDK (the top frame only) ----------
@@ -524,11 +621,7 @@
       }
       if (evt === "theme.changed") { try { window.__tmApplyTheme(p); } catch (_) {} }
       if (ROUTED[evt]) {
-        var h = routeOf(evt, p);
-        if (!h) return;
-        show(h);
-        if (subs[h][evt]) deliver(h, evt, p);
-        else { queued[h].push([evt, p]); if (queued[h].length > 4) queued[h].shift(); }
+        routeOf(evt, p).then(function (h) { if (h) toHouse(h, evt, p); });
         return;
       }
       HOUSES.forEach(function (h) { deliver(h, evt, p); });
@@ -542,7 +635,46 @@
   // (window.__tmWordsCount: the index written by the build - no house is loaded for it), the house with more of them opens with the
   // words in its search section (72-words.js), and it offers the other house's results. The session of the field is ended at once:
   // nothing is written back into Otzaria's field.
+  // 2.0.4: the button also shows in Otzaria's "find a source" field (the manifest: fields fullText, findRef - the user, 11.11.2026:
+  // "כפתור החיפוש בתוכנת אוצריא לא מופיע"; a field shows three plugins' buttons, and his full-text field had six before ours). What is
+  // written there is a reference, not words: "מדות ב ג", "מלכים א פרק ו", "בית הבחירה ה, יב". A reference to one of the houses' four
+  // base books opens its house at that place, as the books' button does on that line (the house reads currentRef: ui_refToVerse).
   var helloed = { rishon: false, sheni: false }, wordsWait = { rishon: null, sheni: null }, lastHouse = null;
+  var REF_BOOKS = [   // the base books as people write them (compared without marks and commas); the longer names first
+    ["משנה תורה הלכות בית הבחירה", 337], ["רמבם הלכות בית הבחירה", 337], ["רמבם בית הבחירה", 337], ["הלכות בית הבחירה", 337], ["בית הבחירה", 337],
+    ["משנה מידות", 89], ["משנה מדות", 89], ["מסכת מידות", 89], ["מסכת מדות", 89], ["מידות", 89], ["מדות", 89],
+    ["דברי הימים ב", 39], ["דהי ב", 39], ["מלכים א", 10]
+  ];
+  var REF_CHAPTERS = { 337: 8, 89: 5, 39: 36, 10: 22 };   // the books' chapters: "מדות אמה" is words, not chapter 46
+  var GEM = { "א": 1, "ב": 2, "ג": 3, "ד": 4, "ה": 5, "ו": 6, "ז": 7, "ח": 8, "ט": 9, "י": 10, "כ": 20, "ל": 30, "מ": 40, "נ": 50, "ס": 60, "ע": 70, "פ": 80, "צ": 90, "ק": 100, "ר": 200, "ש": 300, "ת": 400 };
+  function numOf(w) {
+    if (/^\d{1,3}$/.test(w)) return +w;
+    if (!/^[א-ת]{1,3}$/.test(w)) return 0;
+    var n = 0;
+    for (var i = 0; i < w.length; i++) n += GEM[w[i]] || 0;
+    return n;
+  }
+  function lettersOf(n) {   // 1..399 in letters, no marks (15 = טו, 16 = טז)
+    var L = [[300, "ש"], [200, "ר"], [100, "ק"], [90, "צ"], [80, "פ"], [70, "ע"], [60, "ס"], [50, "נ"], [40, "מ"], [30, "ל"], [20, "כ"], [10, "י"], [9, "ט"], [8, "ח"], [7, "ז"], [6, "ו"], [5, "ה"], [4, "ד"], [3, "ג"], [2, "ב"], [1, "א"]], s = "";
+    for (var i = 0; i < L.length; i++) while (n >= L[i][0]) { if (n === 15 || n === 16) { s += n === 15 ? "טו" : "טז"; n = 0; break; } s += L[i][1]; n -= L[i][0]; }
+    return s;
+  }
+  function refOf(text) {   // -> { house, id, title, ch, v } or null (not a reference to a base book: the text is words)
+    var t = normT(text).replace(/[,.:;()\[\]־–-]+/g, " ").replace(/\s+/g, " ").trim();
+    for (var i = 0; i < REF_BOOKS.length; i++) {
+      var a = REF_BOOKS[i][0];
+      if (t.indexOf(a + " ") !== 0) continue;
+      var rest = t.slice(a.length).trim().split(" ").filter(function (w) { return w && ["פרק", "פסוק", "משנה", "הלכה"].indexOf(w) < 0; });
+      var ch = rest.length ? numOf(rest[0]) : 0, v = rest.length > 1 ? numOf(rest[1]) : 0;
+      if (!ch || ch > REF_CHAPTERS[REF_BOOKS[i][1]] || rest.length > 2 || (rest.length > 1 && !v)) return null;
+      for (var j = 0; j < HOUSES.length; j++) {
+        var base = CFG.houses[HOUSES[j]].base || [];
+        for (var k = 0; k < base.length; k++) if (base[k].id === REF_BOOKS[i][1]) return { house: HOUSES[j], id: base[k].id, title: base[k].t, ch: ch, v: v };
+      }
+      return null;
+    }
+    return null;
+  }
   function countWords(h, q) {
     try { return typeof window.__tmWordsCount === "function" ? window.__tmWordsCount(h, q) || 0 : 0; } catch (_) { return 0; }
   }
@@ -575,7 +707,15 @@
     }
     if (!text) {
       show("home");
-      message("כותבים מילה בשדה החיפוש של אוצריא, ואז לוחצים על הכפתור ״בית המקדש״ שבשדה — והתוסף מראה את מקומה במודל.");
+      message(p.field === "findRef"
+        ? "כותבים מראה מקום בשדה של אוצריא — למשל ״מדות ב ג״ או ״מלכים א ו״ — ואז לוחצים על הכפתור ״בית המקדש״ שבשדה, והתוסף מראה את המקום במודל."
+        : "כותבים מילה בשדה החיפוש של אוצריא, ואז לוחצים על הכפתור ״בית המקדש״ שבשדה — והתוסף מראה את מקומה במודל.");
+      return;
+    }
+    var rf = refOf(text);
+    if (rf) {   // a reference: the house of that book, at the place of that verse / mishnah (the house's own table of the reading)
+      toHouse(rf.house, "reader.toolbar_item_clicked", { itemId: CFG.houses[rf.house].items[0], currentId: rf.id, currentBook: rf.title,
+        currentRef: rf.title + " פרק " + lettersOf(rf.ch) + (rf.v ? " פסוק " + lettersOf(rf.v) : "") });
       return;
     }
     var nr = countWords("rishon", text), ns = countWords("sheni", text);
@@ -725,7 +865,7 @@
   })();
 
   // for the headless tests
-  window.__tmShell = { show: show, current: function () { return current; }, frames: frames, fieldAction: onFieldAction, countWords: countWords };
+  window.__tmShell = { show: show, current: function () { return current; }, frames: frames, fieldAction: onFieldAction, countWords: countWords, refOf: refOf, routeOf: routeOf };
 })();
 </script>
 </body>

@@ -52,10 +52,12 @@
     const BR = M2.altarStone.clone();   // 1.0.1-L (the user: a stone altar in colour; the name stays): was M2.bronze
     BR.roughness = 0.9;
     const BRD = M2.altarStone.clone();
-    BRD.color.set(0xb0a58e);
-    BRD.roughness = 0.95;
+    // 1.3.7 (the user, 18:21: "תאחד צבעים במזבח"): the yesod and the sovev in the body's own stone - no tint (until 1.3.6: 0xb0a58e)
+    BRD.roughness = 0.9;
     const AS = M2.altarStone.clone();
-    AS.color.set(0xbfb39c);
+    // 1.3.7 (the user, 18:17: "הצבע של הכבש בבית ראשון שונה מהצבע של הכבש בבית שני, וגם מהצבע של המזבח עצמו"): the ramps are of the
+    // altar's own stone - no tint (until 1.3.6: 0xbfb39c, a leftover of the days the altar beside them was bronze)
+    AS.roughness = 0.9;
     // 1.0.2: Abarbanel's look - stone plated with bronze (Abarbanel on I Kings 8:64 "לפי שהיה מצופה נחשת"). A clone of M.bronze
     // (10-core.js: metalness 0.95 rendered the shaded faces black); rendered, M.bronze's 0.75 still left the north and west faces
     // almost black on a body this big, so metalness 0.55 with a stronger warm emissive here (checked in a render); roughness .5;
@@ -76,6 +78,15 @@
     // Zevachim 61b; Middot 3:1) - is yoseG, built after the ramp; ctx.shared.altarYose swaps them, the ramps and the shitin
     const defG = new Group();
     g.add(defG);
+    // 1.3.7 (a remark sent on to the user, 11.11.2026: "היה ראוי להוסיף בבית ראשון את שיטת ר"ת בזבחים שגם בבית ראשון לא היה יסוד ברוח
+    // דרומית, ושמקום המזבח לפי זה היה בצד הדרומי מזרחי של המזבח שהיה בבית שני"; the user: "אפשרות ב" - a row of the table, the yesod AND
+    // the altar's place): R. TAM'S READING - Tosafot Zevachim 61b (book 1936, line 654): "וקשה לר"ת דא"כ היה המזבח ד' אמות בחלקו של
+    // יהודה דמסתמא בבית ראשון לא היה יסוד לקרן דרומית מזרחית לפי שלא היה בחלקו של טורף... וגרס ר"ת מן הצפון מן המערב". For him the
+    // First Temple's yesod ran as the Second's (Middot 3:1 "מהלך על פני כל הצפון ועל פני כל המערב, ואוכל בדרום אמה אחת, ובמזרח אמה
+    // אחת"), and since the returnees' four amot were added on the north (not on the south), Solomon's altar stood four amot further
+    // SOUTH than under Tosafot's conclusion (the default). RTM holds the pieces that the reading swaps; RTM.sync() shows the right ones
+    // (with the air's reading and the small ramps' reading); ctx.shared.altarRTam (at the end of the file) is the switch.
+    const RTM = { on: false, south: [], stubs: [], rimS: [], rimStub: [], main: {}, small: {} };
     // --- the body: 20 x 20 x 10, y 6..16 (II Chr 4:1) ---
     bodyParts.push(H2.box(defG, S, AH, S, BR, ACX, F, ACZ));
 
@@ -115,9 +126,11 @@
     bandParts.push(
       H2.box(defG, YO, YS, YS, BRD, ACX, F, ZN - YS / 2),                     // north, the whole side with both corners: x 37.5..61.5, z -12..-11
       H2.box(defG, YS, YS, MID + YS, BRD, XW - YS / 2, F, ACZ + YS / 2),      // west, the whole side with the south-west corner: z -11..12
-      H2.box(defG, MID, YS, YS, BRD, ACX, F, ZS + YS / 2),                    // south, to the end of the face: x 38.5..60.5, z 11..12
+      (RTM.south[0] = H2.box(defG, MID, YS, YS, BRD, ACX, F, ZS + YS / 2)),   // south, to the end of the face: x 38.5..60.5, z 11..12 (hidden in R. Tam's reading)
       H2.box(defG, YS, YS, 1, BRD, XE + YS / 2, F, ZN + 0.5)                  // east: one amah at the north-east corner, z -11..-10
     );
+    // 1.3.7 R. Tam's reading: "ואוכל בדרום אמה אחת" - the amah beyond the west run's corner square (as the east one; a model choice)
+    { const m = H2.box(defG, YS, YS, YS, BRD, XW + YS / 2, F, ZS + YS / 2); m.visible = false; bandParts.push(m); RTM.stubs.push(m); }
     // the red line, חוט הסיקרא: "חוגרו באמצע" (Middot 3:1) - at 5 amot, half the altar's 10 (II Chr 4:1), one amah below the sovev as
     // Rambam Beit HaBechira 2:9 "כששה טפחים מסוף הסובב ולמטה"; 0.12 high and 0.02 out of the wall (model choice: thin, but seen from
     // the court); red in both looks
@@ -176,6 +189,43 @@
       (parent || g).add(m);
       return m;
     };
+    // 1.3.7 (the user, 11.11.2026 16:48: "אפשר להנכיח את החריצים ללא הדגשה? - א"כ תעשה"): THE THREE ROVDIN ARE REAL GROOVES (their
+    // sources: below, where the three dark slots stood until 1.3.6). A big ramp is built of its two halves - the west one on the plain
+    // profile, the east one with three notches in its top (0.2 wide, half an amah deep, their walls square to the slope; in the
+    // middle of each of the three amot from the altar's face, and they keep their distance from the ramp's head in every reading of
+    // the air) - merged into one mesh of the ramp's own stone: the grooves are seen by their own walls and the light that falls in
+    // them, with no paint. Their width, depth and places - model choices.
+    const ROV_DZ = [0.5, 1.5, 2.5], ROV_W = 0.2, ROV_D = 0.5;
+    // pts - the profile (z, height): [.., the foot (pts[1]), the head's top (pts[2]), ..]; zh - the head; top(z) - the top over the floor
+    const prismGrooved = (pts, zh, top, parent) => {
+      const th = Math.atan2(top(zh) - top(zh + 1), 1), ct = Math.cos(th), st = Math.sin(th);
+      const cut = pts.slice(0, 2);
+      for (const dz of ROV_DZ.slice().sort((p, q) => q - p)) {   // from the foot up to the head: the lower lip, down, across, up, the upper lip
+        const zc = zh - GAP + dz, yc = top(zc);
+        const bz = zc + ct * ROV_W / 2, by = yc - st * ROV_W / 2, az = zc - ct * ROV_W / 2, ay = yc + st * ROV_W / 2;
+        cut.push([bz, by], [bz - st * ROV_D, by - ct * ROV_D], [az - st * ROV_D, ay - ct * ROV_D], [az, ay]);
+      }
+      for (let i = 2; i < pts.length; i++) cut.push(pts[i]);
+      const XA = ACX - 8, XM = ACX, XB = ACX + 8;   // Middot 3:3 "שלשים ושתים על רחב שש עשרה" (convention)
+      const geoOf = (xa, xb, p) => {
+        const sh = new Shape();
+        sh.moveTo(p[0][0], p[0][1]);
+        for (let i = 1; i < p.length; i++) sh.lineTo(p[i][0], p[i][1]);
+        sh.closePath();
+        const geo = new ExtrudeGeometry(sh, { depth: xb - xa, bevelEnabled: false });
+        // the stone's pattern runs on across the two halves (the side walls' v counts from the half's own east end)
+        const uv = geo.attributes.uv, sg = geo.groups && geo.groups[1];
+        if (uv && sg && XB - xb > 1e-6) { for (let i = sg.start; i < sg.start + sg.count; i++) uv.setY(i, uv.getY(i) - (XB - xb)); uv.needsUpdate = true; }
+        geo.rotateY(-Math.PI / 2);
+        geo.translate(xb, F, 0);
+        geo.clearGroups();
+        return geo;
+      };
+      const m = new Mesh(mergeGeometries([geoOf(XA, XM, pts), geoOf(XM, XB, cut)]), AS);
+      m.castShadow = m.receiveShadow = true;
+      (parent || g).add(m);
+      return m;
+    };
     const rampDefG = new Group(), rampYoseG = new Group();
     rampYoseG.visible = false;
     g.add(rampDefG);
@@ -199,7 +249,7 @@
         const pts = zh >= zw + YS + GAP
           ? [[zh, 0], [foot, 0], [zh, top(zh)]]
           : [[zw + YS + GAP, 0], [foot, 0], [zh, top(zh)], [zh, SVH + GAP], [zw + GAP, SVH + GAP], [zw + GAP, YS + GAP], [zw + YS + GAP, YS + GAP]];
-        out[k] = prism(ACX - 8, ACX + 8, pts, AS, grp);   // Middot 3:3 "שלשים ושתים על רחב שש עשרה" (convention)
+        out[k] = prismGrooved(pts, zh, top, grp);   // 1.3.7: with the three rovdin's grooves in its east half
         out[k].name = "rampMain_" + k;
         out[k].visible = k === "hair";
       }
@@ -235,6 +285,49 @@
     };
     smallRamps.sovevWest.visible = false;
     for (const [k, m] of Object.entries(smallRamps)) m.name = "smallRamp_" + k;
+    // 1.3.7 R. TAM'S READING (RTM, above): no yesod under the ramps. The big ramp floats over the sovev only and stands on the floor from
+    // the wall's face; R. Chaim's air is then the sovev's amah and a quarter (as in the Second Temple model). The small ramps to the
+    // sovev lose the step over the yesod; the one to the yesod runs ASKEW from the big ramp's side to the one amah of yesod in the
+    // south-west corner (as the Second Temple model's walk, after the drawings of Tosafot Yom Tov and Tiferet Yisrael). With Tosafot's
+    // third ramp the raised half is the one beside the big ramp and the walk to the yesod the outer one - a model choice.
+    const RAMP_GAPS_RT = { hair: GAP, tosafot: 0.5, chaim: 1 + 0.25 };
+    const mainRampRT = (grp, zf, zw, foot, top) => {
+      const out = {};
+      for (const k in RAMP_GAPS_RT) {
+        const zh = zf + RAMP_GAPS_RT[k];
+        const pts = zh >= zw + GAP ? [[zh, 0], [foot, 0], [zh, top(zh)]] : [[zw + GAP, 0], [foot, 0], [zh, top(zh)], [zh, SVH + GAP], [zw + GAP, SVH + GAP]];
+        out[k] = prismGrooved(pts, zh, top, grp);
+        out[k].name = "rampMainRT_" + k;
+        out[k].visible = false;
+      }
+      return out;
+    };
+    // a small ramp whose head is moved sideways: every point is pushed in x in proportion to its way from zFar (no push) to zNear (dx)
+    const askew = (m, zFar, zNear, dx) => {
+      const p = m.geometry.attributes.position;
+      for (let i = 0; i < p.count; i++) p.setX(i, p.getX(i) + dx * (zFar - p.getZ(i)) / (zFar - zNear));
+      p.needsUpdate = true;
+      m.geometry.computeVertexNormals();
+      m.geometry.computeBoundingBox();
+      m.geometry.computeBoundingSphere();
+      return m;
+    };
+    // zs - the south face of the wall below the sovev; brz - where the small ramps leave the big one; xw - that wall's west face
+    const smallRT = (grp, zs, brz, xw, tag) => {
+      const sov = [[zs + GAP, 0], [brz, 0], [brz, 2], [zs + GAP, SVH]];
+      const yes = [[zs + YS + GAP, 0], [brz, 0], [brz, 2], [zs + YS + GAP, YS]];
+      const xEnd = xw + YS - SRW / 2;   // the walk's head: its east edge on the east end of the south's one amah
+      const o = {
+        sovevEast: prism(RX1 - 0.01, RX1 + SRW, sov, AS, grp),
+        yesodNear: askew(prism(RX0 - SRW, RX0 + 0.01, yes, AS, grp), brz, zs + YS + GAP, xEnd - (RX0 - SRW / 2)),               // Rashi: the walk leaves the big ramp's side
+        sovevWest: prism(RX0 - SRW, RX0 + 0.01, sov, AS, grp),                                                                   // Tosafot: the raised half, beside the big ramp
+        yesodFar: askew(prism(RX0 - 2 * SRW, RX0 - SRW + 0.01, yes, AS, grp), brz, zs + YS + GAP, xEnd - (RX0 - 1.5 * SRW))     // and the walk to the yesod outside it
+      };
+      for (const k in o) { o[k].visible = false; o[k].name = "smallRampRT_" + tag + "_" + k; }
+      return o;
+    };
+    RTM.main.def = mainRampRT(rampDefG, ACZ + S / 2, ZS, 42, RTOP);
+    RTM.small.def = smallRT(rampDefG, ZS, BRZ, XW, "def");
     // 1.3.2: R. YOSE'S ALTAR - the yesod 28 (z +-14), the wall below the sovev 26 (to 6 amot), above it 24 up to the top (16), the horns
     // and the priests' walk round the place of the pyre, 20 x 20 - the verse's measure (Rashi Zevachim 61b; Malbim on II Chr 4:1 "היינו
     // מקום המערכה היה עשרים על עשרים"). Centred where the verse's altar is (model choice); the yesod's run as there. Its ramp is the same
@@ -248,9 +341,10 @@
       bandParts.push(
         H2.box(yoseG, YY, YS, YS, BRD, ACX, F, YZN - YS / 2),
         H2.box(yoseG, YS, YS, YM + YS, BRD, YXW - YS / 2, F, ACZ + YS / 2),
-        H2.box(yoseG, YM, YS, YS, BRD, ACX, F, YZS + YS / 2),
+        (RTM.south[1] = H2.box(yoseG, YM, YS, YS, BRD, ACX, F, YZS + YS / 2)),
         H2.box(yoseG, YS, YS, 1, BRD, YXE + YS / 2, F, YZN + 0.5)
       );
+      { const m = H2.box(yoseG, YS, YS, YS, BRD, YXW + YS / 2, F, YZS + YS / 2); m.visible = false; bandParts.push(m); RTM.stubs.push(m); }   // 1.3.7: R. Tam's reading
       const RY = F + AH / 2 - 0.06, RT = 0.02, RH = 0.12, RED2 = new MeshStandardMaterial({ color: 0xa8231b, roughness: 0.7, metalness: 0, emissive: 0x3a0806, emissiveIntensity: 0.6 });
       H2.box(yoseG, YM + 2 * RT, RH, RT, RED2, ACX, RY, YZN - RT / 2);
       H2.box(yoseG, YM + 2 * RT, RH, RT, RED2, ACX, RY, YZS + RT / 2);
@@ -273,7 +367,34 @@
       smallRamps.yoseYesod = prism(RX0 - SRW, RX0 + 0.01, [[YZS + YS + GAP, 0], [YBRZ, 0], [YBRZ, 2], [YZS + YS + GAP, YS]], AS, rampYoseG);
       smallRamps.yoseSovevWest = prism(RX0 - 2 * SRW, RX0 - SRW + 0.01, ySov, AS, rampYoseG);
       smallRamps.yoseSovevWest.visible = false;
+      RTM.main.yose = mainRampRT(rampYoseG, ACZ + YT / 2, YZS, 44, YRT);   // 1.3.7: R. Tam's reading in R. Yose's altar
+      RTM.small.yose = smallRT(rampYoseG, YZS, YBRZ, YXW, "yose");
     }
+    // 1.3.7: what is seen of the yesod's south and of the ramps - by R. Tam's reading (RTM.on), the air's (rampGap) and the small ramps'
+    RTM.sync = () => {
+      const rt = RTM.on;
+      const gm = (ctx.shared.rampGap && ctx.shared.rampGap.mode) || "hair";
+      const third = !!(ctx.shared.altarRamps && ctx.shared.altarRamps.current === "tosafot");
+      for (const r of [rampMain.def, rampMain.yose]) if (r) for (const k in r) r[k].visible = !rt && k === gm;
+      for (const r of [RTM.main.def, RTM.main.yose]) if (r) for (const k in r) r[k].visible = rt && k === gm;
+      smallRamps.sovevEast.visible = smallRamps.yesod.visible = !rt;
+      smallRamps.sovevWest.visible = !rt && third;
+      if (smallRamps.yoseSovevEast) {
+        smallRamps.yoseSovevEast.visible = smallRamps.yoseYesod.visible = !rt;
+        smallRamps.yoseSovevWest.visible = !rt && third;
+      }
+      for (const k of ["def", "yose"]) {
+        const s = RTM.small[k];
+        if (!s) continue;
+        s.sovevEast.visible = rt;
+        s.yesodNear.visible = rt && !third;
+        s.sovevWest.visible = s.yesodFar.visible = rt && third;
+      }
+      for (const m of RTM.south) if (m) m.visible = !rt;
+      for (const m of RTM.rimS) m.visible = !rt;
+      for (const m of RTM.stubs) m.visible = rt;
+      for (const m of RTM.rimStub) m.visible = rt;
+    };
     // 1.3.5 (the user, of the kuntres' author's note 9 - "היסוד כבית קיבול"; in both houses): THE YESOD - A RECEPTACLE. Rashi on Shemot 29:12
     // (book 3692, line 2101): "אל יסוד המזבח - כמין בליטת בית קבול עשוי לו סביב סביב, לאחר שעלה אמה מן הארץ" - a low rim on the outer edge of
     // the yesod's top wherever the yesod runs (not under the ramps, which float a hair over it), in each reading of the altar. Its
@@ -282,12 +403,17 @@
     {
       const RIM = 0.14, RT = 0.1, yr = F + YS;
       const yesodRim = (grp, xw, xe, zn, zs) => {   // the faces of the wall below the sovev: west, east, north, south
-        const rim = (w, d, x, z) => bandParts.push(H2.box(grp, w, RIM, d, BRD, x, yr, z));
+        const rim = (w, d, x, z) => { const m = H2.box(grp, w, RIM, d, BRD, x, yr, z); bandParts.push(m); return m; };
         rim(xe - xw + 2 * YS, RT, (xw + xe) / 2, zn - YS + RT / 2);                              // the north edge, corner to corner
         rim(RT, zs - zn + 2 * YS - 2 * RT, xw - YS + RT / 2, (zn + zs) / 2);                     // the west edge
-        rim(RX0 - 2 * SRW - (xw - YS), RT, (xw - YS + RX0 - 2 * SRW) / 2, zs + YS - RT / 2);     // the south edge, west of the ramps
-        rim(xe - (RX1 + SRW), RT, (RX1 + SRW + xe) / 2, zs + YS - RT / 2);                       // the south edge, east of the ramps
-        rim(RT, YS - RT, xe - RT / 2, zs + (YS - RT) / 2);                                       // the south run's east end
+        RTM.rimS.push(                                                                           // 1.3.7: hidden in R. Tam's reading
+          rim(RX0 - 2 * SRW - (xw - YS), RT, (xw - YS + RX0 - 2 * SRW) / 2, zs + YS - RT / 2),   // the south edge, west of the ramps
+          rim(xe - (RX1 + SRW), RT, (RX1 + SRW + xe) / 2, zs + YS - RT / 2),                     // the south edge, east of the ramps
+          rim(RT, YS - RT, xe - RT / 2, zs + (YS - RT) / 2)                                      // the south run's east end
+        );
+        // 1.3.7 R. Tam's reading: the rim on the south edge of the corner square (up to where the walk to the yesod comes) and on the
+        // east end of the south's one amah
+        for (const m of [rim(YS - (SRW - YS), RT, xw - YS + (YS - (SRW - YS)) / 2, zs + YS - RT / 2), rim(RT, YS, xw + YS - RT / 2, zs + YS / 2)]) { m.visible = false; RTM.rimStub.push(m); }
         rim(RT, 2 * YS - RT, xe + YS - RT / 2, zn + RT / 2);                                     // the east amah: its outer edge
         rim(YS - RT, RT, xe + (YS - RT) / 2, zn + YS - RT / 2);                                  // and its south end
       };
@@ -296,34 +422,16 @@
     }
     // 1.3.5 (the user, of the kuntres, point 10: "חריצין"; as in the Second Temple): THE THREE ROVDIN - R. Hai Gaon (Beit Yosef OC 123; book
     // 3900, line 2000): "ובין כבש למזבח היו שלש רובדין של אבן, ויורד בהם ג' פסיעות על עקב"; Binyan Tzion 12 (book 5791, lines 50-51): one
-    // where the ramp floats over the sovev, one where it floats over the yesod, one over the ground. Three dark slots 0.2 wide on the
+    // where the ramp floats over the sovev, one where it floats over the yesod, one over the ground. Three grooves 0.2 wide on the
     // EAST half of the ramp's head (the kuntres' drawing), in the middle of each of the three amot from the altar's face. Their width,
-    // depth and places - model choices.
+    // depth and places - model choices. 1.3.7: real grooves, cut in each ramp itself (prismGrooved, above); until 1.3.6 three dark boxes.
     {
-      const gm = new MeshBasicMaterial({ color: 0x120e09 });
-      const slots = (grp, z0, top) => {   // z0 - the altar's upper face; top(z) - the ramp's top over the floor at z
-        const sg = new Group();
-        sg.name = "rovdin";
-        grp.add(sg);
-        for (const dz of [0.5, 1.5, 2.5]) {
-          const b = new Mesh(new BoxGeometry(8.04, 0.5, 0.2), gm);
-          b.position.set(ACX + 4.02, F + top(z0 + dz) - 0.235, z0 + dz);
-          b.rotation.x = Math.atan2(AH - 0.02, 32);
-          b.userData.noPick = true;
-          b.name = "rovdinSlot";
-          sg.add(b);
-        }
-        return sg;
-      };
-      const rov = [slots(rampDefG, ACZ + S / 2, RTOP), slots(rampYoseG, ACZ + YT / 2, (z) => (AH - 0.02) * (44 - z) / 32)];
-      // the air's reading (RAMP_GAPS, above): the prism of the reading in each altar, and the slots move with the ramp's head
+      // the air's reading (RAMP_GAPS, above): the prism of the reading in each altar (its grooves are cut in it)
       ctx.shared.rampGap = {
         mode: "hair", keys: Object.keys(RAMP_GAPS),
         set(m) {
           this.mode = Object.prototype.hasOwnProperty.call(RAMP_GAPS, m) ? m : "hair";
-          for (const r of [rampMain.def, rampMain.yose]) if (r) for (const k in r) r[k].visible = k === this.mode;
-          const d = RAMP_GAPS[this.mode] - RAMP_GAPS.hair;
-          for (const sg of rov) sg.position.set(0, -(AH - 0.02) * d / 32, d);
+          RTM.sync();   // 1.3.7: the prism of the air's reading AND of the yesod's reading (R. Tam, above)
           return this.mode;
         }
       };
@@ -685,7 +793,7 @@
       const PROFILE = {
         yesod: {
           title: "היסוד",
-          info: "היסוד — השלמה מן המשנה: 'שכל מזבח שאין לו קרן וכבש ויסוד וריבוע – פסול' (זבחים סב.), ולכן גם למזבח שלמה היה יסוד. צורתו כמשנה: 'עלה אמה וכנס אמה, זה היסוד' (מדות ג, א).\nבבית שני: 'קרן מזרחית דרומית לא היה לה יסוד... לפי שלא היתה בחלקו של טורף' (זבחים נג:).\nהתוספות, על בית ראשון: 'היה להם יסוד לדרום שהיה משוך בחלקו של טורף חוץ מרוח מזרחית שלא נשתנה שהיה בלא יסוד' (תוספות זבחים סא:).\nרש״י, על מזבח משה: 'יסוד וסובב לא היו ממעטין בארכו ורחבו לפי שמקיפין ובולטין סביביו' (רש״י זבחים נט:). ולרש״י, כרבי יוסי במדות, 'בתחילה בימי שלמה לא היה אלא כ\"ח' (רש״י זבחים סא:), ועשרים על עשרים הם מקום המערכה.\nבמודל: **היסוד על פני כל הצפון, כל המערב וכל הדרום, ובמזרח רק אמה אחת בקרן הצפונית**; לקרן הדרומית המזרחית אין יסוד בצד המזרח. עשרים על עשרים של הפסוק (דברי הימים ב ד, א) הם גוף המזבח, והיסוד והסובב בולטים סביבו. המזבח לא הורחב — בחירת המודל.\nהיסוד כבית קיבול: רש״י (שמות כט, יב): 'אל יסוד המזבח. כמין בליטת בית קבול עשוי לו סביב סביב, לאחר שעלה אמה מן הארץ'. במודל: שפה נמוכה על קצה גג היסוד, בכל מקום שיש יסוד; מידות השפה — בחירת מודל.",
+          info: "היסוד — השלמה מן המשנה: 'שכל מזבח שאין לו קרן וכבש ויסוד וריבוע – פסול' (זבחים סב.), ולכן גם למזבח שלמה היה יסוד. צורתו כמשנה: 'עלה אמה וכנס אמה, זה היסוד' (מדות ג, א).\nבבית שני: 'קרן מזרחית דרומית לא היה לה יסוד... לפי שלא היתה בחלקו של טורף' (זבחים נג:).\nהתוספות, על בית ראשון: 'היה להם יסוד לדרום שהיה משוך בחלקו של טורף חוץ מרוח מזרחית שלא נשתנה שהיה בלא יסוד' (תוספות זבחים סא:). בקצרה — רבינו תם (שם): 'דמסתמא בבית ראשון לא היה יסוד לקרן דרומית מזרחית', כבבית שני; ראו בטבלת השיטות, בשורה ״יסוד המזבח בדרום — ומקום המזבח״.\nרש״י, על מזבח משה: 'יסוד וסובב לא היו ממעטין בארכו ורחבו לפי שמקיפין ובולטין סביביו' (רש״י זבחים נט:). ולרש״י, כרבי יוסי במדות, 'בתחילה בימי שלמה לא היה אלא כ\"ח' (רש״י זבחים סא:), ועשרים על עשרים הם מקום המערכה.\nבמודל: **היסוד על פני כל הצפון, כל המערב וכל הדרום, ובמזרח רק אמה אחת בקרן הצפונית**; לקרן הדרומית המזרחית אין יסוד בצד המזרח. עשרים על עשרים של הפסוק (דברי הימים ב ד, א) הם גוף המזבח, והיסוד והסובב בולטים סביבו. המזבח לא הורחב — בחירת המודל.\nהיסוד כבית קיבול: רש״י (שמות כט, יב): 'אל יסוד המזבח. כמין בליטת בית קבול עשוי לו סביב סביב, לאחר שעלה אמה מן הארץ'. במודל: שפה נמוכה על קצה גג היסוד, בכל מקום שיש יסוד; מידות השפה — בחירת מודל.",
           refs: [
             ["זבחים סב.", { book: 130, index: 2110 }], ["מדות ג, א", { book: 89, index: 19 }], ["זבחים נג:", { book: 130, index: 1865 }],
             ["תוספות זבחים סא:", { book: 1936, index: 654 }], ["רש״י זבחים נג:", { book: 2191, index: 2590 }],
@@ -776,9 +884,8 @@
         get() { return cur; },
         set(key) {                                     // shows or hides the western ramp to the sovev; returns the current key
           if (key !== "rashi" && key !== "tosafot") return cur;
-          smallRamps.sovevWest.visible = key === "tosafot";
-          if (smallRamps.yoseSovevWest) smallRamps.yoseSovevWest.visible = key === "tosafot";
           cur = key;
+          RTM.sync();   // 1.3.7: the western ramp to the sovev, in the yesod's reading that is on (R. Tam's ramps too)
           return cur;
         }
       };
@@ -986,7 +1093,11 @@
       const S2 = CO2.ALTAR;
       const mine = ctx.labels.slice(altLabel0);
       const base = mine.map((l) => l.z);
-      const FPK = ["mizbeach", "mizbeachSW", "mizbeachRamps", "shitin", "mizbeachTop", "mizbeachMeasures", "sfalim", "leviim", "rampGap"];   // 1.3.3: the measures' view too
+      // 1.3.7: R. Tam's row - from the north-east, above (checked in renders, both readings): the north face against the house's axis
+      // (drawn for 15 s by the row - the four amot show as the strip between the line and the altar), the east face, and the foot
+      // of the south-east corner, where the south yesod ends or is not
+      ctx.shared.flyPoints.mizbeachSE = { pos: [ACX + 37, F + 24, ACZ - 12], target: [ACX + 5, F + 1, ACZ + 2] };
+      const FPK = ["mizbeach", "mizbeachSW", "mizbeachSE", "mizbeachRamps", "shitin", "mizbeachTop", "mizbeachMeasures", "sfalim", "leviim", "rampGap"];   // 1.3.3: the measures' view too
       const fp0 = {};
       for (const k of FPK) if (ctx.shared.flyPoints[k]) fp0[k] = { pos: ctx.shared.flyPoints[k].pos.slice(), target: ctx.shared.flyPoints[k].target.slice() };
       const PLACE = {
@@ -1010,7 +1121,7 @@
         set(key) {
           if (!(key in this.dz)) return false;
           this.current = key;
-          const dz = this.dz[key];
+          const dz = this.dz[key] + (this.extra || 0);   // 1.3.7: R. Tam's reading - four amot further south (ctx.shared.altarRTam, below)
           g.position.z = dz;
           g.updateMatrixWorld(true);
           let lg = null;
@@ -1051,5 +1162,19 @@
       ctx.shared.altarAxis = { get: () => axis.visible, set: (on) => { axis.visible = !!on; } };
       ctx.shared.altarPlace = PLACE;
       PLACE.set("south");   // the user: the default - in the south, as the Rambam rules
+      // 1.3.7: R. TAM'S READING OF THE YESOD AND OF THE ALTAR'S PLACE (RTM, above) - the row "יסוד המזבח בדרום — ומקום המזבח" (70-ui.js)
+      ctx.shared.altarRTam = {
+        current: "tosafot", keys: ["tosafot", "rtam"],
+        get() { return this.current; },
+        set(k) {
+          if (k !== "tosafot" && k !== "rtam") return this.current;
+          this.current = k;
+          RTM.on = k === "rtam";
+          PLACE.extra = RTM.on ? 4 : 0;
+          if (ctx.shared.rampGap) ctx.shared.rampGap.set(ctx.shared.rampGap.mode); else RTM.sync();
+          PLACE.set(PLACE.current);
+          return this.current;
+        }
+      };
     }
   }

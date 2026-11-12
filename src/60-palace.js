@@ -459,11 +459,23 @@
       .ell(0.035, 0.03, 0.04, 0.8, 0.9, 0)                         // nose
       .ell(0.03, 0.025, 0.03, 0.66, 0.99, 0.07).ell(0.03, 0.025, 0.03, 0.66, 0.99, -0.07)   // brows
       .ell(0.045, 0.055, 0.03, 0.5, 1.08, 0.11).ell(0.045, 0.055, 0.03, 0.5, 1.08, -0.11);   // ears
+    if (!lo) {
+      // THRONE_DETAILS_137 - 1.3.7 (the user, 11.11.2026, of "פרטים בדמויות: רעמה לאריה, עיניים, פה...": "מצוינות"; all gold - "ז. גוונים
+      // הכל זהב"): the mane in tufts round the face and down the chest, the eyes under the brows, the lower jaw a little open with two
+      // teeth, the toes (below). The small figures of the elders' chairs (lo) stay plain.
+      for (let i = 0; i < 16; i++) { const a = i * 2 * Math.PI / 16; f.ell(0.065, 0.075, 0.065, 0.4, 0.9 + 0.22 * Math.cos(a), 0.235 * Math.sin(a), 0.25, a, 0, 6, 4); }
+      for (let i = 0; i < 9; i++) { const a = (i + 0.5) * 2 * Math.PI / 9; f.ell(0.05, 0.06, 0.055, 0.49, 0.93 + 0.15 * Math.cos(a), 0.17 * Math.sin(a), 0.2, a, 0, 5, 3); }
+      for (let i = 0; i < 5; i++) f.ell(0.05, 0.08, 0.06, 0.5 - 0.02 * i, 0.74 - 0.075 * i, (i % 2 ? 1 : -1) * 0.07, 0.5, 0, 0, 5, 3);
+      for (const e of [-1, 1]) f.ell(0.022, 0.022, 0.02, 0.69, 0.955, e * 0.075, 0, 0, 0, 5, 3).cone(0.012, 0.76, 0.8, e * 0.04, 0.765, 0.765, e * 0.04, 4);
+      f.ell(0.075, 0.022, 0.065, 0.69, 0.775, 0, -0.25);
+    }
+    const toes = (x, z) => { if (!lo) for (const dz of [-0.04, 0, 0.04]) f.ell(0.028, 0.03, 0.022, x, 0.035, z + dz, 0, 0, 0, 5, 3); };
     for (const s of [-1, 1]) {
       if (s === omit) { /* the moving part's leg */ }
-      else if (paw !== s) f.rod(0.085, 0.065, 0.32, 0.56, s * 0.12, 0.36, 0.06, s * 0.12).ell(0.085, 0.05, 0.07, 0.4, 0.04, s * 0.12);
+      else if (paw !== s) { f.rod(0.085, 0.065, 0.32, 0.56, s * 0.12, 0.36, 0.06, s * 0.12).ell(0.085, 0.05, 0.07, 0.4, 0.04, s * 0.12); toes(0.47, s * 0.12); }
       else f.rod(0.085, 0.065, 0.32, 0.62, s * 0.13, 0.5, 0.74, s * 0.38).ell(0.085, 0.06, 0.08, 0.53, 0.75, s * 0.43);   // the stretched paw
       f.rod(0.1, 0.065, -0.32, 0.56, s * 0.11, -0.3, 0.06, s * 0.12).ell(0.085, 0.05, 0.07, -0.26, 0.04, s * 0.12);       // hind legs
+      toes(-0.19, s * 0.12);
     }
     f.path(0.035, 0.025, [[-0.46, 0.7, 0], [-0.66, 0.44, 0], [-0.76, 0.6, 0]]).ell(0.06, 0.08, 0.06, -0.77, 0.67, 0);       // tail and tuft
     return f.geo();
@@ -480,8 +492,18 @@
       .ell(0.024, 0.035, 0.022, 0.25, 0.775, 0)                    // its hooked tip
       .ell(0.075, 0.05, 0.07, 0.03, 0.72, 0)                       // the neck ruff
       .ell(0.18, 0.04, 0.12, -0.19, 0.24, 0, 0.5);                 // tail, slanting down
+    if (!lo) {
+      // 1.3.7 (the figures' details): the eyes under a brow, feathers on the breast in rows, the tail's feathers, the toes (below)
+      for (const e of [-1, 1]) f.ell(0.016, 0.016, 0.014, 0.115, 0.865, e * 0.055, 0, 0, 0, 5, 3).ell(0.03, 0.01, 0.02, 0.11, 0.887, e * 0.05, -0.3, 0, 0, 5, 3);
+      for (let r = 0; r < 4; r++) for (let c = -1; c <= 1; c++) {
+        const y = 0.66 - 0.1 * r, k = (y - 0.5) / 0.27, x = 0.15 * Math.sqrt(Math.max(0.05, 1 - k * k)) - 0.012;
+        f.ell(0.014, 0.06, 0.04, x * 0.99, y, c * 0.055 + (r % 2 ? 0.027 : 0), -0.2, 0, 0, 6, 3);
+      }
+      for (const e of [-1, 1]) f.ell(0.19, 0.012, 0.035, -0.2, 0.235, e * 0.075, 0.5, 0, e * 0.25, 5, 3);
+    }
     for (const s of [-1, 1]) {
       f.rod(0.035, 0.028, 0.02, 0.3, s * 0.06, 0.04, 0.04, s * 0.07).ell(0.07, 0.025, 0.05, 0.08, 0.025, s * 0.07);   // legs and talons
+      if (!lo) for (const dz of [-0.03, 0, 0.03]) f.cone(0.014, 0.1, 0.022, s * 0.07 + dz, 0.19, 0.004, s * 0.07 + 1.7 * dz, 4);
       if (omit === 2 || s === omit) continue;   // the moving part's wing (2: both wings)
       // a wing: a flat covert from the shoulder and the primaries beyond it, thin front to back, turned out about x by a1 / a2
       // (raised: the coverts 0.55 and the primaries 0.95 from upright; stretched: 1.3 and 1.5 - nearly level)
@@ -499,61 +521,75 @@
   // דרגא תניינא רביע דיבא דדהבא ולקבליה רביע תלה דדהבא. ועל דרגא תליתאה רביע נמרא די דהבא ולקבליה רביע אינקה דדהבא. ועל דרגא רביעאה רביע
   // נשרא דדהבא ולקבליה טווסא דדהבא. ועל דרגא חמישיתא רביע שונרא דדהבא ולקבליה תרנגולא דדהבא. ועל דרגא שתיתאה רביע בר נצא דדהבא ולקבליה
   // ציפר דדהבא" (the pairs of Isaiah 11:6-7). kind: ox, lion, wolf, lamb, leopard, kid, eagle, peacock, cat, rooster, hawk, bird, dove
-  function pal_beastGeo(kind) {
+  function pal_beastGeo(kind, omit = 0) {   // 1.3.7: omit = +1 / -1 - that foreleg (a bird: that folded wing) is left out, a moving limb supplies it
     const f = pal_fig();
     // a lying four-footed body: length L, height H, width W; the forelegs stretched forward on the ground, the haunches at the sides
     const lying = (L, H, W) => {
       f.ell(L / 2, H / 2, W / 2, 0, H / 2 + 0.02, 0);
       for (const s of [-1, 1]) {
-        f.rod(0.05 * H / 0.4, 0.04 * H / 0.4, L * 0.28, 0.06, s * W * 0.3, L * 0.5 + 0.1, 0.045, s * W * 0.3);
-        f.ell(0.06 * H / 0.4, 0.035, 0.05 * H / 0.4, L * 0.5 + 0.13, 0.035, s * W * 0.3);
+        if (s !== omit) {
+          f.rod(0.05 * H / 0.4, 0.04 * H / 0.4, L * 0.28, 0.06, s * W * 0.3, L * 0.5 + 0.1, 0.045, s * W * 0.3);
+          f.ell(0.06 * H / 0.4, 0.035, 0.05 * H / 0.4, L * 0.5 + 0.13, 0.035, s * W * 0.3);
+        }
         f.ell(L * 0.17, H * 0.32, W * 0.2, -L * 0.28, H * 0.38, s * W * 0.38);
       }
     };
+    const eyes = (x, y, z, r) => { for (const e of [-1, 1]) f.ell(r, r, r * 0.9, x, y, e * z, 0, 0, 0, 5, 3); };   // 1.3.7 (the figures' details)
     const bird = (bl, bh, bw, by, hx, hy, hr) => {   // a sitting bird: body, head, beak, folded wings, legs hidden under it
       f.ell(bl, bh, bw, 0, by, 0, -0.12).ell(hr, hr * 1.05, hr * 0.92, hx, hy, 0).cone(hr * 0.45, hx + hr * 0.7, hy - hr * 0.1, 0, hx + hr * 1.7, hy - hr * 0.25, 0);
-      for (const s of [-1, 1]) f.ell(bl * 0.85, bh * 0.75, 0.035, -bl * 0.15, by + bh * 0.1, s * bw * 0.85, -0.25);
+      eyes(hx + hr * 0.5, hy + hr * 0.28, hr * 0.68, hr * 0.2);
+      for (const s of [-1, 1]) if (s !== omit) f.ell(bl * 0.85, bh * 0.75, 0.035, -bl * 0.15, by + bh * 0.1, s * bw * 0.85, -0.25);
     };
     if (kind === "ox") {
       lying(1.0, 0.5, 0.46);
-      f.rod(0.13, 0.11, 0.42, 0.42, 0, 0.56, 0.5, 0)               // neck
+      f.rod(0.13, 0.11, 0.3, 0.35, 0, 0.56, 0.5, 0, 12)            // neck (1.3.7: round, and from inside the body - its flat end showed as a block)
         .ell(0.16, 0.14, 0.14, 0.62, 0.52, 0).ell(0.1, 0.09, 0.12, 0.75, 0.45, 0)   // head, muzzle
         .ell(0.06, 0.025, 0.04, 0.57, 0.6, 0.16).ell(0.06, 0.025, 0.04, 0.57, 0.6, -0.16)   // ears
         .path(0.035, 0.012, [[0.62, 0.62, 0.08], [0.63, 0.68, 0.2], [0.68, 0.78, 0.26]]).path(0.035, 0.012, [[0.62, 0.62, -0.08], [0.63, 0.68, -0.2], [0.68, 0.78, -0.26]])   // horns
         .path(0.025, 0.02, [[-0.48, 0.4, 0], [-0.58, 0.2, 0.05], [-0.56, 0.05, 0.12]]);   // tail
+      eyes(0.7, 0.585, 0.105, 0.024);
+      eyes(0.845, 0.455, 0.045, 0.016);                                              // nostrils
+      for (const e of [-1, 1]) if (e !== omit) for (const dz of [-0.03, 0.03]) f.ell(0.045, 0.036, 0.028, 0.7, 0.036, e * 0.138 + dz, 0, 0, 0, 6, 4);   // the cloven hooves of the forelegs
     } else if (kind === "lion") {
       lying(0.95, 0.42, 0.38);
       f.ell(0.18, 0.26, 0.23, 0.43, 0.5, 0, 0.2).ell(0.13, 0.13, 0.12, 0.54, 0.56, 0).ell(0.08, 0.065, 0.085, 0.66, 0.51, 0)
         .ell(0.03, 0.04, 0.025, 0.47, 0.7, 0.09).ell(0.03, 0.04, 0.025, 0.47, 0.7, -0.09)
         .path(0.03, 0.022, [[-0.46, 0.22, 0], [-0.7, 0.05, 0.08], [-0.86, 0.05, 0.18]]).ell(0.06, 0.05, 0.06, -0.9, 0.06, 0.2);
+      eyes(0.62, 0.62, 0.065, 0.02);
+      for (let i = 0; i < 14; i++) { const a = i * 2 * Math.PI / 14; f.ell(0.055, 0.065, 0.055, 0.41, 0.52 + 0.2 * Math.cos(a), 0.185 * Math.sin(a), 0.2, a, 0, 6, 4); }   // the mane in tufts
     } else if (kind === "wolf") {
       lying(0.95, 0.34, 0.3);
-      f.rod(0.09, 0.08, 0.4, 0.3, 0, 0.52, 0.4, 0).ell(0.12, 0.1, 0.1, 0.56, 0.44, 0).cone(0.065, 0.64, 0.42, 0, 0.86, 0.38, 0)
+      f.rod(0.09, 0.08, 0.28, 0.2, 0, 0.52, 0.4, 0, 10).ell(0.12, 0.1, 0.1, 0.56, 0.44, 0).cone(0.065, 0.64, 0.42, 0, 0.86, 0.38, 0)
         .cone(0.04, 0.53, 0.51, 0.06, 0.51, 0.67, 0.08).cone(0.04, 0.53, 0.51, -0.06, 0.51, 0.67, -0.08)   // pointed ears
         .ell(0.25, 0.075, 0.075, -0.62, 0.13, 0.04, 0.25);                                                     // bushy tail
+      eyes(0.62, 0.485, 0.07, 0.017);
     } else if (kind === "lamb") {
       lying(0.72, 0.42, 0.42);
       for (const [x, y, z] of [[0.15, 0.4, 0.1], [-0.05, 0.42, -0.1], [-0.2, 0.38, 0.12], [0.05, 0.36, 0.2], [-0.12, 0.34, -0.2], [0.2, 0.33, -0.17]]) f.ell(0.11, 0.09, 0.11, x, y, z, 0, 0, 0, 7, 5);   // the wool
       f.ell(0.1, 0.11, 0.085, 0.44, 0.44, 0).ell(0.055, 0.05, 0.05, 0.52, 0.4, 0)
         .ell(0.07, 0.02, 0.035, 0.42, 0.47, 0.12, 0, 0, 0.4).ell(0.07, 0.02, 0.035, 0.42, 0.47, -0.12, 0, 0, -0.4);   // drooping ears
+      eyes(0.5, 0.485, 0.058, 0.016);
     } else if (kind === "leopard") {
       lying(1.05, 0.3, 0.28);
-      f.rod(0.08, 0.075, 0.44, 0.24, 0, 0.56, 0.32, 0).ell(0.11, 0.1, 0.1, 0.62, 0.36, 0).ell(0.06, 0.05, 0.06, 0.71, 0.33, 0)
+      f.rod(0.08, 0.075, 0.315, 0.157, 0, 0.56, 0.32, 0, 10).ell(0.11, 0.1, 0.1, 0.62, 0.36, 0).ell(0.06, 0.05, 0.06, 0.71, 0.33, 0)
         .ell(0.032, 0.035, 0.025, 0.58, 0.45, 0.06).ell(0.032, 0.035, 0.025, 0.58, 0.45, -0.06)
         .path(0.03, 0.02, [[-0.5, 0.2, 0], [-0.78, 0.07, 0.1], [-0.95, 0.12, 0.24], [-0.98, 0.26, 0.3]]);   // the long tail
       for (const [x, z] of [[0.25, 0.1], [0.05, -0.12], [-0.15, 0.1], [-0.3, -0.06], [0.15, -0.05]]) f.ell(0.035, 0.012, 0.035, x, 0.315, z);   // spots, raised
+      eyes(0.685, 0.405, 0.062, 0.017);
     } else if (kind === "kid") {
       lying(0.66, 0.34, 0.3);
-      f.rod(0.07, 0.06, 0.28, 0.32, 0, 0.38, 0.42, 0).ell(0.095, 0.1, 0.08, 0.42, 0.46, 0).ell(0.06, 0.05, 0.055, 0.5, 0.41, 0)
+      f.rod(0.07, 0.06, 0.18, 0.22, 0, 0.38, 0.42, 0, 10).ell(0.095, 0.1, 0.08, 0.42, 0.46, 0).ell(0.06, 0.05, 0.055, 0.5, 0.41, 0)
         .path(0.022, 0.006, [[0.4, 0.54, 0.035], [0.36, 0.62, 0.045], [0.31, 0.66, 0.05]]).path(0.022, 0.006, [[0.4, 0.54, -0.035], [0.36, 0.62, -0.045], [0.31, 0.66, -0.05]])   // short horns
         .cone(0.03, 0.49, 0.37, 0, 0.5, 0.28, 0)                                                                    // beard
         .ell(0.06, 0.02, 0.03, 0.39, 0.49, 0.1, 0, 0, 0.3).ell(0.06, 0.02, 0.03, 0.39, 0.49, -0.1, 0, 0, -0.3)
         .rod(0.02, 0.01, -0.32, 0.3, 0, -0.36, 0.4, 0);                                                             // short tail
+      eyes(0.475, 0.5, 0.055, 0.015);
     } else if (kind === "cat") {
       lying(0.6, 0.28, 0.24);
       f.ell(0.1, 0.095, 0.095, 0.37, 0.36, 0).ell(0.045, 0.035, 0.05, 0.45, 0.33, 0)
         .cone(0.035, 0.37, 0.43, 0.055, 0.37, 0.53, 0.07).cone(0.035, 0.37, 0.43, -0.055, 0.37, 0.53, -0.07)   // pointed ears
         .path(0.025, 0.018, [[-0.3, 0.12, 0], [-0.38, 0.05, 0.14], [-0.15, 0.03, 0.2], [0.1, 0.04, 0.18]]);   // the tail round the body
+      eyes(0.44, 0.395, 0.052, 0.016);
     } else if (kind === "eagle" || kind === "hawk") {
       const k = kind === "hawk" ? 0.75 : 1;
       bird(0.2 * k, 0.15 * k, 0.14 * k, 0.17 * k, 0.17 * k, 0.33 * k, 0.075 * k);
@@ -562,12 +598,19 @@
     } else if (kind === "peacock") {
       bird(0.16, 0.13, 0.12, 0.16, 0.2, 0.62, 0.05);
       f.rod(0.04, 0.03, 0.1, 0.24, 0, 0.19, 0.58, 0);                                                                // the long neck
-      for (const z of [-0.025, 0, 0.025]) f.rod(0.006, 0.006, 0.19, 0.66, z, 0.17, 0.74, z * 2).ell(0.012, 0.012, 0.012, 0.17, 0.745, z * 2);   // crest
-      const fan = new CylinderGeometry(0.5, 0.5, 0.025, 16, 1, false, 0, Math.PI);                                // the tail spread as a fan
+      for (const z of [-0.04, -0.02, 0, 0.02, 0.04]) f.rod(0.006, 0.006, 0.19, 0.66, z * 0.6, 0.17, 0.76, z * 1.6).ell(0.014, 0.014, 0.014, 0.17, 0.765, z * 1.6);   // crest (1.3.7: five)
+      // THRONE_PALMS_137 - 1.3.7 (the user, of "זנב פרוש וציצה": "מצוינות"): the tail spread wide - a fan of thirteen feathers, each with its
+      // "eye", over a thin half disc (until 1.3.6 a plain half disc with seven knobs)
+      const fan = new CylinderGeometry(0.46, 0.46, 0.02, 20, 1, false, 0, Math.PI);
       fan.rotateZ(Math.PI / 2);
       fan.translate(-0.16, 0.18, 0);
       f.add(fan);
-      for (let i = 0; i < 7; i++) { const a = Math.PI * (i + 0.5) / 7; f.ell(0.015, 0.045, 0.045, -0.145, 0.18 + 0.38 * Math.sin(a), 0.38 * Math.cos(a)); }   // its "eyes"
+      for (let i = 0; i < 13; i++) {
+        const a = Math.PI * (i + 0.5) / 13, sy = Math.sin(a), cz = Math.cos(a);
+        f.rod(0.012, 0.006, -0.15, 0.2, 0, -0.15, 0.18 + 0.66 * sy, 0.66 * cz, 4);
+        f.ell(0.016, 0.075, 0.05, -0.146, 0.18 + 0.58 * sy, 0.58 * cz, 0, a - Math.PI / 2, 0, 6, 4);
+        f.ell(0.02, 0.03, 0.03, -0.14, 0.18 + 0.58 * sy, 0.58 * cz, 0, 0, 0, 5, 4);
+      }
     } else if (kind === "rooster") {
       bird(0.15, 0.13, 0.11, 0.17, 0.12, 0.4, 0.065);
       f.ell(0.055, 0.035, 0.012, 0.12, 0.48, 0).ell(0.022, 0.03, 0.012, 0.17, 0.33, 0)                             // comb, wattle
@@ -580,11 +623,13 @@
       lying(0.95, 0.5, 0.5);
       f.ell(0.19, 0.17, 0.17, 0.5, 0.48, 0).ell(0.1, 0.08, 0.09, 0.66, 0.42, 0)             // head, snout
         .ell(0.05, 0.05, 0.03, 0.46, 0.63, 0.11).ell(0.05, 0.05, 0.03, 0.46, 0.63, -0.11);   // round ears
+      eyes(0.63, 0.545, 0.095, 0.021);
     } else if (kind === "deer") {   // the צבי: a slender lying body, a long neck and small antlers
       lying(0.8, 0.34, 0.26);
-      f.rod(0.07, 0.06, 0.34, 0.3, 0, 0.5, 0.62, 0).ell(0.1, 0.09, 0.075, 0.56, 0.68, 0).ell(0.05, 0.04, 0.045, 0.66, 0.65, 0)   // neck, head, muzzle
+      f.rod(0.07, 0.06, 0.286, 0.193, 0, 0.5, 0.62, 0, 10).ell(0.1, 0.09, 0.075, 0.56, 0.68, 0).ell(0.05, 0.04, 0.045, 0.66, 0.65, 0)   // neck, head, muzzle
         .ell(0.05, 0.02, 0.03, 0.52, 0.74, 0.08, 0, 0, 0.5).ell(0.05, 0.02, 0.03, 0.52, 0.74, -0.08, 0, 0, -0.5);                 // ears
       for (const s of [-1, 1]) f.path(0.02, 0.008, [[0.54, 0.76, s * 0.04], [0.5, 0.92, s * 0.1], [0.44, 1.02, s * 0.16]]).path(0.015, 0.006, [[0.5, 0.92, s * 0.1], [0.56, 1.0, s * 0.14]]);   // antlers
+      eyes(0.61, 0.71, 0.056, 0.016);
     } else if (kind === "dove") {
       bird(0.14, 0.11, 0.1, 0.12, 0.13, 0.26, 0.06);
       f.ell(0.13, 0.022, 0.08, -0.17, 0.12, 0, 0.25);
@@ -620,6 +665,18 @@
   function pal_oxLegGeo() {
     const f = pal_fig();
     f.rod(0.0625, 0.05, 0, 0, 0, 0.33, 0, 0).ell(0.075, 0.04, 0.0625, 0.35, 0, 0);
+    return f.geo();
+  }
+  // 1.3.7: the moving foreleg of a lying creature of length L and height H (the leg pal_beastGeo's `omit` leaves out), its shoulder at the
+  // origin, along +x; and the moving wing of a sitting bird (body length bl, height bh), its shoulder at the origin, along +x
+  function pal_beastLegGeo(L, H) {
+    const f = pal_fig(), n = L * 0.22 + 0.1, k = H / 0.4;
+    f.rod(0.05 * k, 0.04 * k, 0, 0, 0, n, 0, 0).ell(0.06 * k, 0.035, 0.05 * k, n + 0.03, -0.01, 0);
+    return f.geo();
+  }
+  function pal_birdWingGeo(bl, bh) {
+    const f = pal_fig();
+    f.ell(bl * 0.85, bh * 0.75, 0.035, bl * 0.85, 0, 0);
     return f.geo();
   }
   // 1.0.1-L (the user: "הוספת רעש, בעדי שקר?"): the witnesses' noise, generated (no files; the plugin is offline): a low rumble of wheels (brown noise through a low-pass, swelling) and lions' roars (falling sawtooth
@@ -908,6 +965,96 @@
     return f.geo();
   }
   // a palm tree ("ואילני תמרים" - Panim Acherim, Beit HaMidrash), 3.4 high on y 0: the trunk (with a cluster of dates) and eight fronds; two geometries
+  // 1.3.7 (the user, 11.11.2026 19:00: "הדקלים בבית המדרש ב לא מספיק 'חיים'"; 19:03 of the proposals: "מצוינות"): A LIVELIER DATE PALM - the
+  // trunk in rings of leaf bases, leaning a little; a full crown of feathered fronds in three tiers (rising, arching, hanging); clusters
+  // of dates under it; the white linen round the trunk in folds, its hem waving, embroidered (pal_linenTex). The crown's parts are built
+  // round the crown's foot (their origin), so that the crown can sway. All the forms and measures: model choices.
+  var PAL_PALM_H = 4.4, PAL_PALM_LEAN = 0.22;
+  function pal_palmParts() {
+    const HT = PAL_PALM_H, lean = (y) => PAL_PALM_LEAN * (y / HT) * (y / HT);
+    const hs = (n) => { const x = Math.sin(n * 91.7 + 13.1) * 43758.5453; return x - Math.floor(x); };
+    const t = pal_fig(), N = 24;
+    for (let i = 0; i < N; i++) {
+      const y0 = HT * i / N, y1 = HT * (i + 1) / N, r = 0.2 - 0.075 * i / N;
+      t.rod(r * 0.84, r * 1.14, lean(y0), y0, 0, lean(y1), y1, 0, 10);   // every ring flares upward: the leaf bases' rim
+    }
+    t.ell(0.2, 0.16, 0.2, lean(HT), HT + 0.02, 0, 0, 0, 0, 10, 6);        // the crown's heart
+    const FP = [], FI = [];
+    const frond = (az, elev, L, W, droop) => {   // a feathered blade: the midrib and two edges that go in and out (the leaflets), a little folded
+      const S = 12, ca = Math.cos(az), sa = Math.sin(az), base = FP.length / 3;
+      for (let i = 0; i <= S; i++) {
+        const tt = i / S, u = 0.12 + L * tt * Math.cos(elev), v = L * tt * Math.sin(elev) - droop * L * tt * tt;
+        const w = W * Math.pow(Math.sin(Math.PI * (0.07 + 0.9 * tt)), 0.75) * (i % 2 ? 1 : 0.6);
+        const cx = u * ca, cz = u * sa;
+        FP.push(cx - w * sa, v - 0.3 * w, cz + w * ca, cx, v, cz, cx + w * sa, v - 0.3 * w, cz - w * ca);
+        if (i < S) { const a = base + 3 * i; FI.push(a, a + 3, a + 1, a + 1, a + 3, a + 4, a + 1, a + 4, a + 2, a + 2, a + 4, a + 5); }
+      }
+    };
+    for (let i = 0; i < 7; i++) frond(i * 2 * Math.PI / 7 + 0.3, 0.95 + 0.25 * hs(i), 1.7 + 0.3 * hs(i + 9), 0.2, 0.5);
+    for (let i = 0; i < 10; i++) frond(i * 2 * Math.PI / 10 + 0.1, 0.42 + 0.3 * hs(i + 20), 2.25 + 0.3 * hs(i + 30), 0.24, 0.6);
+    for (let i = 0; i < 9; i++) frond(i * 2 * Math.PI / 9 + 0.55, -0.05 + 0.28 * hs(i + 40), 2.1 + 0.3 * hs(i + 50), 0.22, 0.48);
+    const fg = new BufferGeometry();
+    fg.setAttribute("position", new BufferAttribute(new Float32Array(FP), 3));
+    fg.setIndex(FI);
+    fg.computeVertexNormals();
+    const dt = pal_fig();   // four clusters of dates hanging under the crown
+    for (let c = 0; c < 4; c++) {
+      const a = c * Math.PI / 2 + 0.7, ca = Math.cos(a), sa = Math.sin(a);
+      dt.path(0.025, 0.015, [[0.1 * ca, -0.05, 0.1 * sa], [0.42 * ca, -0.12, 0.42 * sa], [0.5 * ca, -0.45, 0.5 * sa]], 5);
+      for (let j = 0; j < 16; j++) {
+        const r = 0.11 * hs(c * 31 + j), b = hs(c * 17 + j * 3) * 6.283, y = -0.45 - 0.42 * hs(c * 7 + j * 5);
+        dt.ell(0.045, 0.06, 0.045, 0.5 * ca + r * Math.cos(b), y, 0.5 * sa + r * Math.sin(b), 0, 0, 0, 6, 4);
+      }
+    }
+    const LP = [], LI = [], LU = [], SEG = 28, RINGS = 9, Y0 = 0.55, Y1 = 3.35;   // the linen: a pleated sleeve
+    for (let j = 0; j <= RINGS; j++) {
+      const f = j / RINGS, y = Y0 + (Y1 - Y0) * f, R = 0.2 - 0.075 * y / HT + 0.075 + 0.05 * (1 - f) * (1 - f);
+      for (let i = 0; i <= SEG; i++) {
+        const th = i / SEG * 2 * Math.PI, pl = 1 + 0.11 * Math.sin(7 * th + 1.4 * f) * (1 - 0.5 * f);
+        LP.push(lean(y) + R * pl * Math.cos(th), y + (j === 0 ? 0.07 * Math.sin(7 * th) : 0), R * pl * Math.sin(th));
+        LU.push(i / SEG * 4, f);
+        if (j < RINGS && i < SEG) { const a = j * (SEG + 1) + i, b2 = a + SEG + 1; LI.push(a, b2, a + 1, a + 1, b2, b2 + 1); }
+      }
+    }
+    const lg = new BufferGeometry();
+    lg.setAttribute("position", new BufferAttribute(new Float32Array(LP), 3));
+    lg.setAttribute("uv", new BufferAttribute(new Float32Array(LU), 2));
+    lg.setIndex(LI);
+    lg.computeVertexNormals();
+    return { trunk: t.geo(), fronds: fg, dates: dt.geo(), linen: lg, top: [lean(HT), HT] };
+  }
+  // the linen's embroidery ("ומרוקמים בבגדי שש" - Beit HaMidrash): white, a faint weave, two embroidered bands and small lozenges, in gold thread
+  function pal_linenTex() {
+    const cv = document.createElement("canvas");
+    cv.width = cv.height = 256;
+    const c = cv.getContext("2d");
+    c.fillStyle = "#f6f1e6";
+    c.fillRect(0, 0, 256, 256);
+    c.globalAlpha = 0.08;
+    c.strokeStyle = "#8a8170";
+    for (let i = 0; i < 256; i += 3) { c.beginPath(); c.moveTo(i, 0); c.lineTo(i, 256); c.stroke(); c.beginPath(); c.moveTo(0, i); c.lineTo(256, i); c.stroke(); }
+    c.globalAlpha = 1;
+    const band = (y, hgt) => {
+      c.strokeStyle = "#b8892a";
+      c.lineWidth = 3;
+      c.beginPath(); c.moveTo(0, y); c.lineTo(256, y); c.moveTo(0, y + hgt); c.lineTo(256, y + hgt); c.stroke();
+      c.lineWidth = 2.5;
+      c.beginPath();
+      for (let x = 0; x <= 256; x += 16) { if (x === 0) c.moveTo(x, y + hgt - 4); else c.lineTo(x, y + ((x / 16) % 2 ? 4 : hgt - 4)); }
+      c.stroke();
+      c.fillStyle = "#8f6a1c";
+      for (let x = 16; x < 256; x += 32) { c.beginPath(); c.arc(x, y + hgt / 2 + 3, 2.4, 0, 7); c.fill(); }
+    };
+    band(14, 26);
+    band(206, 30);
+    c.fillStyle = "#b8892a";
+    for (let r = 0; r < 4; r++) for (let x = 0; x < 256; x += 32) { const px = x + (r % 2 ? 16 : 0), py = 70 + r * 36; c.beginPath(); c.moveTo(px, py - 5); c.lineTo(px + 4, py); c.lineTo(px, py + 5); c.lineTo(px - 4, py); c.closePath(); c.fill(); }
+    const tx = new CanvasTexture(cv);
+    tx.wrapS = tx.wrapT = RepeatWrapping;
+    tx.colorSpace = SRGBColorSpace;
+    tx.anisotropy = 4;
+    return tx;
+  }
   function pal_palmGeos() {
     const t = pal_fig(), l = pal_fig();
     t.rod(0.17, 0.11, 0, 0, 0, 0.08, 3.25, 0, 8);
@@ -1415,12 +1562,15 @@
       const spiceMat = new PointsMaterial({ map: pal_spiceTex(), color: 0xFFE9A8, size: 0.2, transparent: true, opacity: 0.95, depthWrite: false, alphaTest: 0.05 });   // round golden grains (bare points read as white squares)
       const hiMat = new MeshBasicMaterial({ color: 0xFFE27A, transparent: true, opacity: 0.55, depthWrite: false });
       const gemMats = {
-        pearl: new MeshStandardMaterial({ color: 0xF2EEE4, roughness: 0.22, metalness: 0.05 }),
-        emerald: new MeshStandardMaterial({ color: 0x1E8C55, roughness: 0.18, metalness: 0.1, emissive: 0x0B3D24, emissiveIntensity: 0.6 }),
-        carbuncle: new MeshStandardMaterial({ color: 0xB3152E, roughness: 0.18, metalness: 0.1, emissive: 0x420812, emissiveIntensity: 0.6 }),
-        beryl: new MeshStandardMaterial({ color: 0x3FB8AF, roughness: 0.2, metalness: 0.1, emissive: 0x0E3A38, emissiveIntensity: 0.5 }),
-        saffron: new MeshStandardMaterial({ color: 0xE2A72E, roughness: 0.25, metalness: 0.1, emissive: 0x4A3208, emissiveIntensity: 0.5 }),
-        glass: new MeshStandardMaterial({ color: 0xFFFFFF, roughness: 0.05, metalness: 0.0, transparent: true, opacity: 0.8, emissive: 0xCFE2F2, emissiveIntensity: 0.55 })   // 1.0.1-L: clear and pale (plain, over the gold it read as dull grey)
+        // THRONE_GEMS_137 - 1.3.7 (the user, 11.11.2026: of the bright stones "נראים יותר תכשיטים"; 19:03 of setting them flat, small, in a
+        // deep tone: "מצוין"): deep tones, little light of their own
+        pearl: new MeshStandardMaterial({ color: 0xE6E0D0, roughness: 0.3, metalness: 0.05, emissive: 0x4a463c, emissiveIntensity: 0.3 }),
+        emerald: new MeshStandardMaterial({ color: 0x0E6B43, roughness: 0.22, metalness: 0.1, emissive: 0x05301E, emissiveIntensity: 0.45 }),
+        carbuncle: new MeshStandardMaterial({ color: 0x8E1022, roughness: 0.22, metalness: 0.1, emissive: 0x3A0610, emissiveIntensity: 0.45 }),
+        beryl: new MeshStandardMaterial({ color: 0x1E7F86, roughness: 0.24, metalness: 0.1, emissive: 0x0A3336, emissiveIntensity: 0.4 }),
+        saffron: new MeshStandardMaterial({ color: 0xB5791A, roughness: 0.28, metalness: 0.1, emissive: 0x3E2A06, emissiveIntensity: 0.4 }),
+        glass: new MeshStandardMaterial({ color: 0xF4F8FA, roughness: 0.08, metalness: 0.0, transparent: true, opacity: 0.78, emissive: 0xB8CCDA, emissiveIntensity: 0.4 }),   // 1.0.1-L: clear and pale (plain, over the gold it read as dull grey)
+        bezel: new MeshStandardMaterial({ color: 0x9C6B1C, roughness: 0.38, metalness: 0.75, emissive: 0x3a2606, emissiveIntensity: 0.4 })   // the setting: a darker gold rim round every stone
       };
       // ---- the base of every version ----
       H.box(g, BW, top - YT, BD, gold, X, YT, (bZ0 + bZ1) / 2).name = "throneBody";
@@ -1465,7 +1615,9 @@
       // ramp before the first step; Malbim reads the footstool (above), Ralbag the plating that joins the steps to the throne ("נאחזות לכסא
       // בזהב"). Built after Metzudat David: a low golden wedge RW wide and RL long rising from the floor to the first step's top (its size: model
       // choice); the first riser's gems behind it are left out
-      const RW = 6, RL = 3;
+      // THRONE_DEMO_137 - 1.3.7 (the user, 11.11.2026 19:03: "הכבש לא מיושר לכסא"; 19:00: "חיבור מדרגה הוא בכל הקריאות"): the ramp is as
+      // wide as the steps (6 until 1.3.6), its sides in one line with theirs - in the base, so in all four versions
+      const RW = SW, RL = 3;
       const rs = new Shape();
       rs.moveTo(0, 0);
       rs.lineTo(0, SR);
@@ -1479,6 +1631,23 @@
       ramp.name = "throneRamp";
       g.add(ramp);
       lbl("כסא שלמה", X, Y + 9.5, zD, 2.5);
+      // 1.3.7 (the user, 11.11.2026 19:03, of "תאורה חמה על הכיסא, וניצוץ שנע על הזהב": "מעולה"): a warm light before and above the throne,
+      // and a small one that goes slowly to and fro over the steps, so that a glint wanders on the gold (their strength, colour and way:
+      // model choices). Both are in the throne's group: with the palace hidden they do not light.
+      {
+        const warm = new PointLight(0xFFD49A, 9, 34, 1.7);
+        warm.position.set(X, Y + 9.5, zF + 3.5);
+        warm.name = "throneWarmLight";
+        g.add(warm);
+        const glint = new PointLight(0xFFF1CF, 5, 9, 2);
+        glint.position.set(X, top + 2.4, zF - 3 * ST);
+        glint.name = "throneGlintLight";
+        g.add(glint);
+        if (Array.isArray(ctx.animated)) ctx.animated.push((t) => {
+          const u = (typeof t === "number" ? t : performance.now()) * 0.001;
+          glint.position.set(X + 4.2 * Math.sin(u * 0.43), top + 2.2 + 0.5 * Math.sin(u * 0.29), zF - 3 * ST + 3.2 * Math.cos(u * 0.31));
+        });
+      }
 
       // ---- the version groups (ctx.layers.throne<Key>; labels with layers ["palace", "throne<Key>"]) and the shared midrash group ----
       const VKEYS = ["pesukim", "targumSheni", "estherRabbah", "beitHamidrash"];
@@ -1507,7 +1676,7 @@
       const geoCache = {};
       const once = (key, make) => geoCache[key] || (geoCache[key] = make());
       const gLion = (paw) => once("lion" + paw, () => pal_lionStandGeo(0, paw));     // paw +1 / -1: that foreleg left out, a moving limb supplies it
-      const beastGeo = (kind) => once("beast_" + kind, () => pal_beastGeo(kind));
+      const beastGeo = (kind, omit = 0) => once("beast_" + kind + (omit || ""), () => pal_beastGeo(kind, omit));
       const put = (grp, geo, mat, x, y, z, ry, s, name) => {
         const m = new Mesh(geo, mat);
         m.position.set(x, y, z);
@@ -1595,22 +1764,41 @@
         return { body, R: wing(1), L: wing(-1), home: [x, y, z], ry };
       };
       // the lying pairs on the steps: the first named on the right (east), facing west; the second on the left, facing east (model choice)
-      const pairsAt = (grp, PAIRS) => {
+      // 1.3.7 (the user, 11.11.2026 19:00: "תעשה חיה טמאה מול חיה טהורה"): limbs = on that many steps, from the first, each creature of the
+      // pair has a MOVING LIMB on the hall's side - a foreleg, a bird its wing - which stretches to him who goes up between them
+      // (out.limbs[k] = [the east one's, the west one's]; the builders leave that leg / wing out)
+      const BEAST_DIM = { ox: [1.0, 0.5, 0.46], lion: [0.95, 0.42, 0.38], wolf: [0.95, 0.34, 0.3], lamb: [0.72, 0.42, 0.42], leopard: [1.05, 0.3, 0.28], kid: [0.66, 0.34, 0.3], cat: [0.6, 0.28, 0.24], bear: [0.95, 0.5, 0.5], deer: [0.8, 0.34, 0.26] };
+      const BIRD_DIM = { eagle: [0.2, 0.15, 0.14, 0.17], peacock: [0.16, 0.13, 0.12, 0.16], rooster: [0.15, 0.13, 0.11, 0.17], bird: [0.11, 0.085, 0.08, 0.1], dove: [0.14, 0.11, 0.1, 0.12] };
+      const beastLimb = (mesh, kind, side) => {
+        const q = BEAST_DIM[kind];
+        if (q) return mkLimb(mesh, once("bleg_" + kind, () => pal_beastLegGeo(q[0], q[1])), gold, [q[0] * 0.28, 0.06, side * q[2] * 0.3], [1, 0, 0], [1, -0.05, 0], [1, 0, 0], "beastLeg");
+        const b = BIRD_DIM[kind];
+        return mkLimb(mesh, once("bwing_" + kind, () => pal_birdWingGeo(b[0], b[1])), gold, [b[0] * 0.55, b[3] + b[1] * 0.1, side * b[2] * 0.85], [1, 0, 0], [-1, -0.25, 0], [1, 0.2, 0], "beastWing");
+      };
+      const pairsAt = (grp, PAIRS, limbs = 0) => {
         const out = [];
+        out.limbs = [null];
         PAIRS.forEach(([e, w], i) => {
-          const k = i + 1;
-          out.push(put(grp, beastGeo(e), gold, X + 2.05, stepY(k), stepZ(k), Math.PI, 1, "beast_" + e), put(grp, beastGeo(w), gold, X - 2.05, stepY(k), stepZ(k), 0, 1, "beast_" + w));
+          const k = i + 1, mvb = k <= limbs;
+          const mE = put(grp, beastGeo(e, mvb ? -1 : 0), gold, X + 2.05, stepY(k), stepZ(k), Math.PI, 1, "beast_" + e), mW = put(grp, beastGeo(w, mvb ? 1 : 0), gold, X - 2.05, stepY(k), stepZ(k), 0, 1, "beast_" + w);
+          out.push(mE, mW);
+          out.limbs.push(mvb ? [beastLimb(mE, e, -1), beastLimb(mW, w, 1)] : null);
         });
         return out;
       };
       // precious stones on the risers (the first riser's behind the ramp left out): nine a riser, the palette's materials in turn
       const gemsAt = (grp, palette) => {
         const lists = palette.map(() => []);
-        for (let k = 1; k <= 6; k++) for (let i = 0; i < 9; i++) {
-          if (k === 1 && Math.abs(i - 4) < RW / 2 + 0.2) continue;
-          lists[(i + k) % palette.length].push({ x: X - 4 + i, y: YT + (k - 0.5) * SR, z: zF - (k - 1) * ST, sz: 0.45 });
+        // 1.3.7: SET FLAT IN THE GOLD - thirteen small oval stones a riser (nine half balls until 1.3.6), each 0.17 x 0.12 and a hair proud of
+        // the face, in a rim of darker gold; the first riser is behind the ramp (as wide as the steps now), so it has none
+        const rims = [];
+        for (let k = 2; k <= 6; k++) for (let i = 0; i < 13; i++) {
+          const it = { x: X - 4.5 + i * 0.75, y: YT + (k - 0.5) * SR, z: zF - (k - 1) * ST };
+          lists[(i + k) % palette.length].push(Object.assign({ sx: 0.085, sy: 0.06, sz: 0.014 }, it));
+          rims.push(Object.assign({ sx: 0.108, sy: 0.082, sz: 0.006 }, it));
         }
-        const gemGeo = once("gem", () => new SphereGeometry(0.12, 8, 5));
+        const gemGeo = once("gem", () => new SphereGeometry(1, 14, 8));
+        pal_instanced(grp, gemGeo, gemMats.bezel, rims, false).name = "throneGemRims";
         lists.forEach((list, ci) => { if (list.length) pal_instanced(grp, gemGeo, gemMats[palette[ci]], list, false).name = "throneGems"; });
       };
       // two marble pillars on two lions' heads, h high, r 0.2, with a golden capital (model choice); returns the capital's top
@@ -1625,19 +1813,39 @@
         }
         return y0 + h + 0.18;
       };
-      // two palm trees beside the steps, their trunks wrapped in white linen, an ivory peacock on each facing the throne, its eagles' wings
-      // (Panim Acherim "ואילני תמרים היו מקיפין לכסא, מכוסין בבגדי שש לבן, ועל ראשיהם טווסין של שן מכוונים כנגד גפי נשרים"; Beit HaMidrash
-      // "ואילני תמרים מיפות את הכסא ומרוקמים בבגדי שש, והיו טווסין של שן מכוונים כנגד כנפי נשרים"; two of them and their place: model choice)
+      // 1.3.7 (the user, 11.11.2026 19:00, 19:03): THE PALMS SURROUND THE THRONE - "ואילני תמרים מקיפין לכסא מכורכין בבגדי שש וטווסין של שן מוכנין
+      // כנגד כנפי הנשרים" (Abba Gorion, the library's 5844, line 5); "ואילני תמרים היו מקיפין לכסא, מכוסין בבגדי שש לבן, ועל ראשיהם טווסין של שן
+      // מכוונים כנגד גפי נשרים" (Panim Acherim נוסח ב, 274, line 116); "ואילני תמרים מיפות את הכסא ומרוקמים בבגדי שש, והיו טווסין של שן מכוונים
+      // כנגד כנפי נשרים" (Beit HaMidrash, 7924, line 8). EIGHT palms, four a side from the ramp's end to the body's back (two beside the
+      // steps until 1.3.6), each leaning a little toward the throne, an ivory peacock on its head facing the throne; the crowns sway a
+      // little, always (the hook below). Their number, places, height and the swaying: model choices.
+      const palmCrowns = [];
+      if (Array.isArray(ctx.animated)) ctx.animated.push((t) => {
+        if (!palmCrowns.length) return;
+        const u = (typeof t === "number" ? t : performance.now()) * 0.001;
+        for (const c of palmCrowns) { if (!c.parent.visible) continue; const p = c.userData.phase; c.rotation.z = 0.04 * Math.sin(u * 0.8 + p); c.rotation.x = 0.035 * Math.sin(u * 0.61 + p * 1.7); }
+      });
       const palmsAt = (grp, d) => {
-        const pg = once("palm", () => pal_palmGeos());
-        const lin = once("palmLinen", () => { const c = new CylinderGeometry(0.21, 0.25, 2.3, 10); c.translate(0.02, 1.25, 0); return c; });
+        const pp = once("palm2", () => pal_palmParts());
+        const linenMat = once("palmLinenMat", () => new MeshStandardMaterial({ map: pal_linenTex(), roughness: 0.9, side: DoubleSide, emissive: 0x57524a, emissiveIntensity: 0.3 }));
+        const barkMat = once("palmBarkMat", () => new MeshStandardMaterial({ color: 0x8C6A42, roughness: 0.95, emissive: 0x2a1c0c, emissiveIntensity: 0.5 }));
+        const dateMat = once("palmDateMat", () => new MeshStandardMaterial({ color: 0xB8651C, roughness: 0.5, emissive: 0x3c1e06, emissiveIntensity: 0.6 }));
+        frondMat.side = DoubleSide;
         d.peacocks = [];
-        for (const s of [-1, 1]) {
-          const px = X + s * 7.4, pz = 621.5;
-          put(grp, pg.trunk, M.cedar, px, YT, pz, 0, 1, "thronePalm");
-          put(grp, pg.fronds, frondMat, px, YT, pz, 0, 1, "thronePalmFronds");
-          put(grp, lin, linen, px, YT, pz, 0, 1, "thronePalmLinen");
-          d.peacocks.push(put(grp, beastGeo("peacock"), ivory, px + 0.08, YT + 3.3, pz, s > 0 ? Math.PI : 0, 1.1, "thronePeacock"));
+        let n = 0;
+        for (const s of [-1, 1]) for (const [dx, pz] of [[8.6, 626.6], [10.4, 622.3], [10.6, 617.0], [8.4, 612.0]]) {
+          const px = X + s * dx, ry = s > 0 ? Math.PI : 0, lx = s > 0 ? -pp.top[0] : pp.top[0];   // each leans toward the throne
+          put(grp, pp.trunk, barkMat, px, YT, pz, ry, 1, "thronePalm");
+          put(grp, pp.linen, linenMat, px, YT, pz, ry, 1, "thronePalmLinen");
+          const crown = put(grp, pp.fronds, frondMat, px + lx, YT + pp.top[1], pz, n * 0.8, 1, "thronePalmFronds");
+          const dates = new Mesh(pp.dates, dateMat);
+          dates.name = "thronePalmDates";
+          dates.castShadow = true;
+          crown.add(dates);
+          crown.userData.phase = n * 1.37;
+          palmCrowns.push(crown);
+          d.peacocks.push(put(grp, beastGeo("peacock"), ivory, px + lx, YT + pp.top[1] + 0.25, pz, s > 0 ? Math.PI : 0, 1.25, "thronePeacock"));
+          n++;
         }
       };
       const backZ = zD + 0.1 - 0.65 - 0.11;           // the middle of the back's thickness, z 614.04
@@ -1791,7 +1999,12 @@
         silOn(a, b) { return { a, b, f: (u) => { sil.visible = u > 0 && u < 1; } }; },
         // from the front of the seat onto it: f(0) leaves the position to the climb's moves
         sit(a, b) { return { a, b, f: (u) => { silSeat.visible = u > 0; silStand.visible = !(u > 0); if (u > 0) sil.position.set(silFront[0] + (silSeated[0] - silFront[0]) * u, silFront[1] + (silSeated[1] - silFront[1]) * u, silFront[2] + (silSeated[2] - silFront[2]) * u); } }; },
-        spray(sp, a, b) { return { a, b, f: (u, t) => { if (u > 0 && u < 1) { sp.pts.visible = true; sp.tick(t); } else sp.pts.visible = false; } }; }
+        spray(sp, a, b) { return { a, b, f: (u, t) => { if (u > 0 && u < 1) { sp.pts.visible = true; sp.tick(t); } else sp.pts.visible = false; } }; },
+        // THRONE_SEAT2_137 - 1.3.7: he is set down on the seat from p0 (where the one that bore him holds him): the seated figure from the first moment
+        // 1.3.7 (the user, 11.11.2026 19:03: "תנועה במנוחה חייבת להיות מפני אימת המלך"): at rest the figures stand still; a figure of the step
+        // on which the king stands that stretches no limb BOWS a little and trembles while he is there, and stands again (amp: the bow)
+        bow(obj, a, b, amp = 0.13) { return { a, b, f: (u, t) => { const on = u > 0 && u < 1; obj.rotation.z = on ? -amp * Math.sin(Math.PI * u) : 0; obj.rotation.x = on ? 0.012 * Math.sin(t * 37) : 0; } }; },
+        sitFrom(p0, a, b) { return { a, b, f: (u) => { silSeat.visible = u > 0; silStand.visible = !(u > 0); if (u > 0) sil.position.set(p0[0] + (silSeated[0] - p0[0]) * u, p0[1] + (silSeated[1] - p0[1]) * u + 0.6 * u * (1 - u), p0[2] + (silSeated[2] - p0[2]) * u); } }; }
       };
       // the dove brings the scroll: from its place to over the ark, the lid opens, it comes down, carries the scroll to the seat and flies back;
       // at the script's end the scroll returns to the ark and the lid closes (the times: t0 start, the whole about 10 s; tEnd the closing)
@@ -1935,7 +2148,7 @@
           d.eagles.push(eagleAt(grp, X + e * 3.55, stepY(k), stepZ(k), e > 0 ? -TURN : Math.PI + TURN, 0.85));
         }
         d.armLions = [-1, 1].map((e) => lionAt(grp, X + e * 2.75, top, zD + 0.5, -HP, 0.72));
-        d.beasts = pairsAt(grp, [["ox", "lion"], ["wolf", "lamb"], ["leopard", "kid"], ["eagle", "peacock"], ["cat", "rooster"], ["eagle", "bird"]]);   // 1.0.1-L (A25, "נשר"): the sixth pair's "בר נצא" as the Hebrew translation: an eagle
+        d.beasts = pairsAt(grp, [["ox", "lion"], ["wolf", "lamb"], ["leopard", "kid"], ["eagle", "peacock"], ["cat", "rooster"], ["eagle", "bird"]], 5);   // 1.3.7: the pairs of the five lower steps stretch a limb in the ascent; 1.0.1-L (A25, "נשר"): the sixth pair's "בר נצא" as the Hebrew translation: an eagle
         gemsAt(grp, ["pearl", "emerald", "carbuncle", "beryl"]);
         // on the throne's head the menorah (seven branches a side, the bowl, the basin, the two sheaves) and on its base the dove holding the
         // young hawk ("ועל ריש כורסיא קיימא יונה דדהבא אחידא בר נצא בידה"; "ויונא דדהבא הוה נחתא מן עמודא" - the menorah's stem is read as the
@@ -1955,30 +2168,58 @@
         // -- the ascent, 1.0.1-L (Part 7, P2, the user: "עשית שם שטויות"), line by line against the midrash (the library's 3237:15): "ומשים ית ריגלא על דרגא קדמיתא תורא דדהבא. פשיט ידיה על דרגא תיניינא": he stands on the first step and the golden ox, lying
         // there, stretches its foreleg to him, to the very middle, and raises him to the second, staying where it lies; "ומן תיניינא לתליתאה מן תליתאה לרביעיתא ומן רביעיתא לחמישיתא ומן חמישיתא לשתיתאה": the midrash names no other agent, and the leg of one ox across six steps
         // would be absurd, so on each further step (model choice, stated in the report) that step's lion and eagle, each on its own place, stretch paw and wing to the middle and raise him. No animal leaves its step in the climb. No wheels here (this midrash has none in the climb); the spices while he goes up ("במסקיה... למיתב על כורסיה") --
-        const tr = [], SP = 4, tSeize = 6 * SP;
-        const ox = d.beasts[0], oxLeg = mkLimb(ox, once("oxLeg", () => pal_oxLegGeo()), gold, [0.28, 0.06, 0.138], [1, 0, 0], [1, -0.05, 0], [1, 0, 0], "oxLeg");
-        d.oxLeg = oxLeg;
+        // 1.3.7 (the user, 11.11.2026, of his recording: "מי ששולח את היד... זה אחד החיות ולא האריה או המקביל... תעשה השוואה לפי ההמשך";
+        // 19:00: "תעשה חיה טמאה מול חיה טהורה"; "בסוף, שניים שולחים, מאריכים את הידיים שלהם ולא יוצא מזה כלום. כשמושיבים אותו, ההתיישבות
+        // היא לבד, וזה צריך להיות על ידי הנשרים"). The Targum names the ox on the first step and no one on the others; until 1.3.6 the
+        // standing lion and eagle stretched on steps 2-6 (a model choice) and again, for nothing, on the sixth. NOW: on each of the five
+        // lower steps THE LYING PAIR of that step - the pure creature and the impure one facing it (the Targum's pairs: the ox and the lion,
+        // the wolf and the lamb, the leopard and the kid, the eagle and the peacock, the cat and the rooster) - stretch a foreleg / a wing to
+        // the very middle and raise him to the next step; the standing lions and eagles do not stretch in the climb. On the sixth no one
+        // stretches: "ומן שתיתאה נחתין נשרין וחטפין יתיה ומסקין ומותבין יתיה על ריש כורסייה" - the two eagles of the sixth step rise, COME DOWN
+        // on his shoulders, seize him, raise him, bear him over the seat and SET HIM DOWN on it; they stay on his shoulders until he sits.
+        const tr = [], SP = 4, tSeize = 5 * SP + 1.6;
+        const BL = d.beasts.limbs;
+        d.oxLeg = BL[1][0];
         tr.push(T.silOn(0, 1e6), T.move(sil, silStart, silAt(1), 0, 0.9, 0.2));
-        for (let k = 1; k <= 6; k++) tr.push(T.glow(k, (k - 1) * SP, k * SP));
-        for (let k = 1; k <= 6; k++) {
-          const a = (k - 1) * SP, h = handAt(k), next = k < 6 ? handAt(k + 1) : h, li = (k - 1) * 2, oddE = k % 2 === 1;
-          // step k's limbs: step 1 the ox; then the lion on one side and the eagle on the other, by turns; the eagle's wing is the one on the hall's side
-          const parts = k === 1 ? [oxLeg] : [d.lions[li + (oddE ? 1 : 0)].paw, oddE ? d.eagles[li].L : d.eagles[li + 1].R];
-          for (const p of parts) {
-            tr.push(T.reachTo(p, a + 0.9, a + 3, h));
-            if (k < 6) tr.push(T.follow(p, sil, HAND_Y, a + 4, a + 5.2), T.reachBack(p, a + 5.2, a + 6, next));
-            else tr.push(T.reachBack(p, tSeize, tSeize + 1.2, h));
-          }
-          if (k < 6) tr.push(T.move(sil, silAt(k), silAt(k + 1), a + 4, a + 5.2, 0.3));
+        for (let k = 1; k <= 6; k++) tr.push(T.glow(k, (k - 1) * SP, k < 6 ? k * SP : tSeize + 2.1));
+        for (let k = 1; k <= 5; k++) {
+          const a = (k - 1) * SP, h = handAt(k), next = handAt(k + 1);
+          for (const p of BL[k]) tr.push(T.reachTo(p, a + 0.9, a + 3, h), T.follow(p, sil, HAND_Y, a + 4, a + 5.2), T.reachBack(p, a + 5.2, a + 6, next));
+          tr.push(T.move(sil, silAt(k), silAt(k + 1), a + 4, a + 5.2, 0.3));
         }
-        // "ומן שתיתאה נחתין נשרין וחטפין יתיה ומסקין ומותבין יתיה על ריש כורסייה": the midrash's own words: two eagles come to his shoulders on the sixth step, tip to tip, and carry him to the seat; he sits
-        const E6W = d.eagles[10], E6E = d.eagles[11], yGrip = stepY(6) + 2.15, zGrip = stepZ(6) + FOOT_Z;
-        const gripW = [X - EW, yGrip, zGrip], gripE = [X + EW, yGrip, zGrip], seatW = [X - EW, sTop + 1.6, zD + 1.25], seatE = [X + EW, sTop + 1.6, zD + 1.25];
-        flyOut(tr, E6W, E6W.home, gripW, tSeize + 1.2, tSeize + 2.6, 1.0);
-        flyOut(tr, E6E, E6E.home, gripE, tSeize + 1.2, tSeize + 2.6, 1.0);
-        tr.push(T.move(sil, silAt(6), silFront, tSeize + 2.8, tSeize + 4.2, 0.5), T.move(E6W.body, gripW, seatW, tSeize + 2.8, tSeize + 4.2, 0.5), T.move(E6E.body, gripE, seatE, tSeize + 2.8, tSeize + 4.2, 0.5), T.sit(tSeize + 4.2, tSeize + 5.2));
+        const E6W = d.eagles[10], E6E = d.eagles[11];
+        // the awe (T.bow): the standing lions and eagles of the step he stands on (they stretch nothing here) - on the sixth the lions only
+        for (let k = 1; k <= 6; k++) {
+          const a = (k - 1) * SP, li = (k - 1) * 2, e0 = k === 1 ? 0.3 : 0.9, e1 = k < 6 ? a + 3.9 : tSeize + 2;
+          for (const fg of k < 6 ? [d.lions[li], d.lions[li + 1], d.eagles[li], d.eagles[li + 1]] : [d.lions[li], d.lions[li + 1]]) tr.push(T.bow(fg.body, a + e0, e1));
+        }
+        const SH_S = 3.02, SH_H = 1.74, SH_X = 0.5;   // the silhouette's shoulders: their height standing / seated, half their breadth
+        const p6 = silAt(6);
+        const overW = [X - SH_X, p6[1] + SH_S + 1.6, p6[2]], overE = [X + SH_X, p6[1] + SH_S + 1.6, p6[2]];
+        const onW = [X - SH_X, p6[1] + SH_S, p6[2]], onE = [X + SH_X, p6[1] + SH_S, p6[2]];
+        flyOut(tr, E6W, E6W.home, overW, tSeize, tSeize + 1.3, 1.0);
+        flyOut(tr, E6E, E6E.home, overE, tSeize, tSeize + 1.3, 1.0);
+        tr.push(T.move(E6W.body, overW, onW, tSeize + 1.3, tSeize + 1.9), T.move(E6E.body, overE, onE, tSeize + 1.3, tSeize + 1.9));   // "נחתין... וחטפין יתיה"
+        const tC = tSeize + 2.1, tSeat = tC + 3.2;
+        const HOV = [X, top + DH + 1.0, zHead + 0.55];            // standing, held over the front of the seat
+        const HOVS = [X, HOV[1] + SH_S - SH_H, HOV[2]];           // the same moment seated: the shoulders at the same height
+        const seatedW = [X - SH_X, silSeated[1] + SH_H, silSeated[2]], seatedE = [X + SH_X, silSeated[1] + SH_H, silSeated[2]];
+        tr.push({ a: tC, b: tSeat, f: (u) => {                    // "ומסקין ומותבין יתיה על ריש כורסייה": he and the two eagles as one
+          const seated = u > 0.58;
+          silSeat.visible = seated; silStand.visible = !seated;
+          if (!(u > 0)) return;
+          let py, pz, sh;
+          if (!seated) { const v = u / 0.58; py = p6[1] + (HOV[1] - p6[1]) * v + 0.9 * v * (1 - v); pz = p6[2] + (HOV[2] - p6[2]) * v; sh = SH_S; }
+          else { const v = (u - 0.58) / 0.42; py = HOVS[1] + (silSeated[1] - HOVS[1]) * v; pz = HOVS[2] + (silSeated[2] - HOVS[2]) * v; sh = SH_H; }
+          sil.position.set(X, py, pz);
+          E6W.body.position.set(X - SH_X, py + sh, pz); E6E.body.position.set(X + SH_X, py + sh, pz);
+        } });
+        for (const e of [E6W, E6E]) tr.push(T.flap(e.R, tSeize + 0.9, tSeat, 13), T.flap(e.L, tSeize + 0.9, tSeat, 13), T.curve(e.R, tSeat, tSeat + 0.4, 0, 1), T.curve(e.L, tSeat, tSeat + 0.4, 0, 1));
+        // he sits; the two let go and rise to the sides of the seat's head
+        const seatW = [X - 1.7, sTop + 2.75, zHead + 0.25], seatE = [X + 1.7, sTop + 2.75, zHead + 0.25];
+        tr.push(T.move(E6W.body, seatedW, seatW, tSeat + 0.3, tSeat + 1.3, 0.25), T.move(E6E.body, seatedE, seatE, tSeat + 0.3, tSeat + 1.3, 0.25));
         // "הוה הדר גישרא רבא ונטיב כיסרא דמלכותא ויהיב ית כיסרא ברישיה דמלכא שלמה": the great eagle takes the crown and sets it on the place of the head, then returns
-        const GE = d.greatEagle, t0 = tSeize + 6, GEc = [d.crownHome[0], d.crownHome[1] + 0.22, d.crownHome[2]], GEh = [d.crownHead[0], d.crownHead[1] + 0.22, d.crownHead[2] - 0.05];
+        const GE = d.greatEagle, t0 = tSeat + 1.6, GEc = [d.crownHome[0], d.crownHome[1] + 0.22, d.crownHome[2]], GEh = [d.crownHead[0], d.crownHead[1] + 0.22, d.crownHead[2] - 0.05];
         tr.push(T.curve(GE.R, t0, t0 + 0.7, 0, 1), T.curve(GE.L, t0, t0 + 0.7, 0, 1), T.move(GE.body, GE.home, GEc, t0, t0 + 1, 0.5), T.move(GE.body, GEc, GEh, t0 + 1, t0 + 3.5, 1.2), T.move(d.crown, d.crownHome, d.crownHead, t0 + 1, t0 + 3.5, 1.2), T.move(GE.body, GEh, GE.home, t0 + 3.5, t0 + 5.5, 1.0), T.curve(GE.R, t0 + 4.5, t0 + 5.5, 1, 0), T.curve(GE.L, t0 + 4.5, t0 + 5.5, 1, 0));
         // "ומבתר כן הוה תנינא רבא מפקע במנגנון"
         const tD = t0 + 5.5, tR = tD + 2, tDove = tR + 3.5, tBack = tDove + 10.5;
@@ -1988,10 +2229,11 @@
         d.eagles.forEach((e, i) => { if (e === E6W || e === E6E) tr.push(T.move(e.body, e === E6W ? seatW : seatE, eS[i], tR, tDove)); else flyOut(tr, e, e.home, eS[i], tR, tDove); });
         d.lions.forEach((l, i) => flyOut(tr, l, l.home, lS[i], tR, tDove));
         doveScroll(tr, d.dove, d.doveHome, tDove, tBack + 2.1, 0.6, SCR_HANDS);   // "ויהבה ליה בידוי"; "ויונא דדהבא הוה נחתא מן עמודא ופתחא ארונא ונסבא סיפרא דאורייתא ויהבה ליה בידוי דמלכא שלמה"
-        tr.push(T.spray(sprW, 0.5, tSeize + 5.2), T.spray(sprE, 0.5, tSeize + 5.2));   // "והוון אריותא זחלין בוסמנין במסקיה מלכא שלמה למיתב על כורסיה": until he sits, and not after
+        tr.push(T.spray(sprW, 0.5, tSeat), T.spray(sprE, 0.5, tSeat));   // "והוון אריותא זחלין בוסמנין במסקיה מלכא שלמה למיתב על כורסיה": until he sits, and not after
         d.eagles.forEach((e, i) => flyBack(tr, e, eS[i], tBack, tBack + 2));
         d.lions.forEach((l, i) => flyBack(tr, l, lS[i], tBack, tBack + 2));
         tr.push(T.move(d.crown, d.crownHead, d.crownHome, tBack, tBack + 2, 0.8));
+        { const C = CAP.targumSheni; C[6].t = tSeize - 0.3; C[7].t = t0; C[8].t = tD; C[9].t = tR; C[10].t = tDove; C[11].t = tDove + 8; }   // 1.3.7: the captions keep step with the new times
         SCRIPTS.targumSheni = { duration: tBack + 2.5, tracks: tr, states: new Int8Array(tr.length), captions: CAP.targumSheni };
         const w = witnessTracks(d);   // "וכד הוון עלין סהדיא דיסהדון קדם מלכא שלמה הוו מנגניא פקעין גלגילא חזרין תורין געיין אריותא נהמין..."
         SCRIPTS.targumSheni.witnesses = { duration: 7, tracks: w, states: new Int8Array(w.length), captions: WCAP.targumSheni };
@@ -2004,7 +2246,11 @@
         // stretch their right paw / left wing, or right wing / left paw, toward the one who climbs. No lying pairs in these midrashim's text of
         // the throne's description here, so the figures stand nearer the way up (model choice)
         d.lions = []; d.eagles = []; d.stepParts = [null];
-        const IN = 2.6, OUT = 3.6;
+        // 1.3.7: the lying pairs are in Abba Gorion's text after all (the library's 5844, line 5: "ועל כל מעלה ומעלה היו בו חיות טהורות כנגד
+        // טמאות במעלה הראשונה שור וכנגדו ארי שניה טלה [וכנגדו] זאב שלישית גדי [וכנגדו] נמר רביעית צבי [וכנגדו] דוב חמישית נשר [וכנגדו] יונה
+        // ששית נץ [וכנגדו] צפור והוא עולה ונותן שלום ביניהן") - the user, 11.11.2026: "תעשה חיה טמאה מול חיה טהורה". They lie by the way up
+        // (below), so the standing figures move out: 3.5 and 4.5 from the middle (2.6 and 3.6 until 1.3.6), as in the other versions
+        const IN = 3.5, OUT = 4.5;
         for (let k = 1; k <= 6; k++) {
           const odd = k % 2 === 1, sp = {};
           for (const e of [-1, 1]) {
@@ -2023,6 +2269,7 @@
         }
         d.armLions = [-1, 1].map((e) => lionAt(grp, X + e * 2.75, top, zD + 0.5, -HP, 0.72));
         gemsAt(grp, ["pearl", "emerald", "carbuncle", "glass"]);   // "לבנות ירקרקות ואדמדמות, ויש בהם בזכוכית טובה קריסטאלי" (Panim Acherim)
+        d.beasts = pairsAt(grp, [["ox", "lion"], ["lamb", "wolf"], ["kid", "leopard"], ["deer", "bear"], ["eagle", "dove"], ["hawk", "bird"]]);   // 1.3.7: Abba Gorion's pairs, in his order (the first named on the east)
         // the sceptre behind the seat with the dove on its end and the crown hanging from its beak over the place of the head: "ובמקום השבת
         // שרביט הזהב מאחוריו, ויונה נתונה בראשו ועטרה של זהב בפיה, כדי שיהא המלך יושב בשבת ועטרה של זהב נוגע ואינו נוגע" - they stay there
         // 1.0.1-L: the crown stays at the height of the head, on a short link under the beak, and the sceptre's end with the dove stands above it (level with it, the crown hid the dove from the hall)
@@ -2057,6 +2304,11 @@
           // 1.0.1-L (the user: "הידים ... צריכות להיות לפני עליית הצללית ולא לאחריה"): the wheel and the limbs first, then the climb on them
           tr.push(T.gear(k, a, a + 2.1), T.glow(k, a, a + SP), T.move(sil, k === 1 ? silStart : silAt(k - 1), silAt(k), a + 2.8, a + 3.8, 0.3));
           tr.push(T.reachTo(sp.paw, a, a + 2.6, h), T.reachTo(sp.wing, a, a + 2.6, h), T.reachBack(sp.paw, a + 4.8, a + 6, h), T.reachBack(sp.wing, a + 4.8, a + 6, h));
+          // 1.3.7, the awe (T.bow): the step's figures that stretch nothing - the outer lion and eagle and the lying pair - while he stands there
+          const li = (k - 1) * 2;
+          for (const l of [d.lions[li], d.lions[li + 1]]) if (!l.paw) tr.push(T.bow(l.body, a + 2.9, a + 5.7));
+          for (const e of [d.eagles[li], d.eagles[li + 1]]) if (e.R !== sp.wing && e.L !== sp.wing) tr.push(T.bow(e.body, a + 2.9, a + 5.7));
+          if (d.beasts) for (const m of [d.beasts[li], d.beasts[li + 1]]) if (m) tr.push(T.bow(m, a + 2.9, a + 5.7, 0.1));
         }
         // 1.0.1-L (the user: "כל הכרזת האיסורים, מה עם לא ירבה לו נשים"): the herald's words at each step, large, as Esther Rabbah 1:12 "עלה במעלה ראשונה, הכרוז מכריז ואומר לו"
         ["לא ירבה לו נשים", "לא ירבה לו סוסים", "וכסף וזהב לא ירבה לו", "לא תטה משפט", "לא תכיר פנים", "לא תקח שחד"].forEach((txt, i) => {
@@ -2088,14 +2340,27 @@
           grp.add(board);
           tr.push({ a: i * SP, b: (i + 1) * SP - 0.1, f: (u) => { board.visible = u > 0 && u < 1; } });
         });
-        tr.push(T.move(sil, silAt(6), silFront, tTop, tTop + 1.2, 0.5), T.sit(tTop + 1.2, tTop + 2.2));
+        // 1.3.7 (the user: "כשמושיבים אותו, ההתיישבות היא לבד, וזה צריך להיות על ידי הנשרים או הטווסים, מה שזה ממש"): Abba Gorion (the library's
+        // 5844, line 5): "וכן לכל מעלה ומעלה והיה טווס של כסף טען במגנון למלך ומושיבו על הכסא" - A SILVER PEACOCK at the head of the steps comes
+        // under him on the sixth step, bears him on its back to the seat, and he is set down from it; then it goes back. (Until 1.3.6 he went
+        // to the seat and sat by himself.) The peacock's place, size and way: model choices.
+        const PK = 2.1, pkB = 0.34 * PK, p6 = silAt(6);
+        const pkHome = [X + 2.0, top, bZ1 - 0.3], pkAt6 = [X, top, p6[2] - 0.05], pkSeat = [X, top, zD + DR + 0.55];
+        const pk = put(grp, beastGeo("peacock"), silver, pkHome[0], pkHome[1], pkHome[2], -HP, PK, "throneSilverPeacock");
+        d.silverPeacock = pk;
+        const on6 = [X, top + pkB, p6[2]], onSeat = [X, top + pkB, pkSeat[2] + 0.05];
+        const tS = tTop + 4.6;   // he sits
+        tr.push(T.move(pk, pkHome, pkAt6, tTop, tTop + 1.1, 0.15), T.move(sil, p6, on6, tTop + 0.7, tTop + 1.3, 0.25),
+          T.turn(pk, -HP, HP, tTop + 1.1, tTop + 1.6), T.move(pk, pkAt6, pkSeat, tTop + 1.6, tTop + 3.3), T.move(sil, on6, onSeat, tTop + 1.6, tTop + 3.3),
+          T.sitFrom(onSeat, tTop + 3.4, tS), T.turn(pk, HP, -HP, tS + 0.3, tS + 0.9), T.move(pk, pkSeat, pkHome, tS + 0.5, tS + 1.8, 0.15));
         tr.push(T.spray(sprW, 0.5, tTop + 0.5), T.spray(sprE, 0.5, tTop + 0.5));   // "שהיו זולפים בשמים, כשהיה המלך שלמה עולה"
         // "הנשרים פורשים גפיהם, ועולים במנגנין, והיו מכסין למעלה על ראשו של מלך": all the twelve, wing tip to wing tip over the seat (A27)
         const up = d.eagles, slots = canopy([-0.85, 0, 0.85], sTop + 3.15);
-        up.forEach((e, i) => flyOut(tr, e, e.home, slots[i], tTop + 1, tTop + 3.5));
-        doveScroll(tr, d.dove, d.doveHome, tTop + 3.5, tTop + 15.2, 1.2, SCR_HANDS);   // "ויונה של זהב יורדת מן העמוד במנגנין, ופותחת הארון ולוקחת ס"ת, ונותנת לתוך ידו של מלך"
-        up.forEach((e, i) => flyBack(tr, e, slots[i], tTop + 13.5, tTop + 15));
-        SCRIPTS.estherRabbah = { duration: 51.5, tracks: tr, states: new Int8Array(tr.length), captions: CAP.estherRabbah };
+        up.forEach((e, i) => flyOut(tr, e, e.home, slots[i], tS - 0.6, tS + 1.9));
+        doveScroll(tr, d.dove, d.doveHome, tS + 1.9, tS + 13.6, 1.2, SCR_HANDS);   // "ויונה של זהב יורדת מן העמוד במנגנין, ופותחת הארון ולוקחת ס"ת, ונותנת לתוך ידו של מלך"
+        up.forEach((e, i) => flyBack(tr, e, slots[i], tS + 11.9, tS + 13.4));
+        { const C = CAP.estherRabbah; if (C.length === 9) { C.splice(6, 0, { t: tTop, text: "״וכן לכל מעלה ומעלה, והיה טווס של כסף טען במגנון למלך ומושיבו על הכסא״ (מדרש אבא גוריון)" }); C[7].t = tS - 0.6; C[8].t = tS + 1.9; C[9].t = tS + 9.9; } }
+        SCRIPTS.estherRabbah = { duration: tS + 13.9, tracks: tr, states: new Int8Array(tr.length), captions: CAP.estherRabbah };
         const w = witnessTracks(d);   // "היו מנגנות פוקעים, גלגלות חוזרים, אריות נוהמין, נשרים פורחין, טווסין רצין"
         SCRIPTS.estherRabbah.witnesses = { duration: 7, tracks: w, states: new Int8Array(w.length), captions: WCAP.estherRabbah };
       };
@@ -2159,10 +2424,24 @@
           tr.push(T.move(sil, k === 1 ? silStart : silAt(k - 1), silAt(k), a + 5.5, a + 6.4, 0.3), T.glow(k, a, a + SP));   // 1.0.1-L: the climb comes after the tablets and the limbs
           for (const l of [f.lE, f.lW]) tr.push(T.tablet(l, a, a + 1, true), T.reachTo(l.paw, a, a + 1, l.tablet.hand), T.tablet(l, a + 3.2, a + 4, false), T.reachBack(l.paw, a + 3.2, a + 4, l.tablet.hand));
           tr.push(T.gear(k, a + 4, a + 6), T.reachTo(D.paw, a + 4, a + 5.4, h), T.reachTo(f.wing, a + 4, a + 5.4, h), T.reachBack(D.paw, a + 6.4, a + 7, h), T.reachBack(f.wing, a + 6.4, a + 7, h));
+          // 1.3.7, the awe (T.bow): the eagle that stretches no wing and the lying pair of the step, as he comes up to it
+          { const li = (k - 1) * 2, eO = d.eagles[li].L === f.wing || d.eagles[li].R === f.wing ? d.eagles[li + 1] : d.eagles[li];
+            tr.push(T.bow(eO.body, a + 5.2, a + 7));
+            if (d.beasts) for (const m of [d.beasts[li], d.beasts[li + 1]]) if (m) tr.push(T.bow(m, a + 5.2, a + 7, 0.1)); }
         }
-        tr.push(T.move(sil, silAt(6), silFront, tTop, tTop + 2, 0.5), T.sit(tTop + 2, tTop + 3), T.rock(dragon, "z", 0.22, 20, tTop, tTop + 3), T.spin(dragonGear, tTop, tTop + 3, 3));   // "תנין של כסף היה טוען גלגל של כסא וכופין למלך שלמה ומושיבין אותו על הכסא"
+        // 1.3.7 (the user: "כשמושיבים אותו, ההתיישבות היא לבד"): the silver dragon works the mechanism, and A WHEEL OF THE THRONE comes up under
+        // his feet on the sixth step, bears him to the seat, and he is set down from it; then it goes back into the step. (Until 1.3.6 he
+        // went to the seat and sat by himself while the dragon rocked.) The wheel under his feet and its way: model choices.
+        const p6 = silAt(6), whl = put(grp, once("seatWheel", () => pal_gearGeo(0.8, 14, 0.1)), gold, X, top - 0.2, p6[2], 0, 1, "throneSeatWheel");
+        whl.rotation.x = -HP;
+        const wIn = [X, top - 0.2, p6[2]], wUp = [X, top + 0.06, p6[2]], wSeat = [X, top + DH + 0.06, zD + 1.25], kUp = [X, top + 0.12, p6[2]], kSeat = [X, top + DH + 0.12, zD + 1.25];
+        tr.push(T.move(whl, wIn, wUp, tTop, tTop + 0.7), T.move(sil, p6, kUp, tTop + 0.2, tTop + 0.7),
+          T.move(whl, wUp, wSeat, tTop + 0.9, tTop + 2.7, 0.4), T.move(sil, kUp, kSeat, tTop + 0.9, tTop + 2.7, 0.4),
+          { a: tTop + 0.2, b: tTop + 3.6, f: (u) => { whl.rotation.z = u * 3 * 2 * Math.PI; } },
+          T.sitFrom(kSeat, tTop + 2.8, tTop + 3.6), T.move(whl, wSeat, wIn, tTop + 3.8, tTop + 5),
+          T.rock(dragon, "z", 0.22, 20, tTop, tTop + 3.6), T.spin(dragonGear, tTop, tTop + 3.6, 4));   // "תנין של כסף היה טוען גלגל של כסא וכופין למלך שלמה ומושיבין אותו על הכסא"
         // "ומיד פושטין הנשרים את כנפיהם ועולין בגלגל של כסא, והיו מוסבין למעלה מראשו": the twelve eagles, wing tip to wing tip over the seat (A27)
-        const tE = tTop + 3, slots = canopy([-0.85, 0, 0.85], sTop + 3.15);
+        const tE = tTop + 3.8, slots = canopy([-0.85, 0, 0.85], sTop + 3.15);
         d.eagles.forEach((e, i) => flyOut(tr, e, e.home, slots[i], tE, tE + 3));
         doveScroll(tr, d.dove, d.doveHome, tE + 3, tE + 19.7, 0.5, SCR_KNEES);   // "ופותחת לו הארון ונוטלת ספר תורה ונותנה אותו על ברכיו"
         // "והארי של שמאל פושט ידו ונוטל העטרה ונותנה על ראש המלך": his paw goes to the crown and carries it to the very place of the head (A27), then returns
@@ -2170,7 +2449,8 @@
         tr.push(T.reachTo(armL.paw, tC, tC + 1, cH), T.move(d.crown, d.crownHome, d.crownHead, tC + 1, tC + 3.5, 1.2), T.follow(armL.paw, d.crown, 0.05, tC + 1, tC + 3.5), T.reachBack(armL.paw, tC + 3.5, tC + 5, cT));
         d.eagles.forEach((e, i) => flyBack(tr, e, slots[i], tE + 18, tE + 19.5));
         tr.push(T.move(d.crown, d.crownHead, d.crownHome, tE + 18, tE + 19.5, 0.8));
-        SCRIPTS.beitHamidrash = { duration: 65, tracks: tr, states: new Int8Array(tr.length), captions: CAP.beitHamidrash };
+        { const C = CAP.beitHamidrash; if (C.length === 13) { C[9].t = tE; C[10].t = tE + 3; C[11].t = tE + 12; C[12].t = tE + 16; } }   // 1.3.7: the captions keep step
+        SCRIPTS.beitHamidrash = { duration: tE + 21, tracks: tr, states: new Int8Array(tr.length), captions: CAP.beitHamidrash };
         const w = witnessTracks(d);   // "היו הגלגלים של כסא חוזרין, ואריות נוהמין, ונשרים פורחין, וטווסין מצפצפין"
         SCRIPTS.beitHamidrash.witnesses = { duration: 7, tracks: w, states: new Int8Array(w.length), captions: WCAP.beitHamidrash };
       };
@@ -3170,11 +3450,11 @@
       throneVersions: {
         pesukim: "לפי הפסוקים ומפרשיהם בלבד (ברירת המחדל).\nגוף הכסא הרחב ושש המעלות לפניו, המושב הגבוה העגול מאחור (רש״י: ״תקון הכסא היה רחב, והמעלות היו לצד פניו, ולצד רחבה לצד אחריו היה המושב גבוה מן הכסא מקום עגל״), הגב העגול בראשו (מלבי״ם: ״עגול מאחריו כמדת גופו וראשו לסמוך עליו גבו״; רלב״ג: ״והיה ראש עגול בלוח ההוא באמצעו״), הידות — ״כמין מקלות זהב מפאה לפאה, פשוטין לימין ולשמאל״ (רש״י).\nהאריות: שני אריות אצל הידות (רד״ק: ״והיו צורות אריות עומדות אצל הידות״) ושנים עשר אריות על שש המעלות, ״ששה מזה, וששה מזה״ (מצודת דוד), פניהם ״לצד פני הכסא״ (רלב״ג); אברבנאל: ״ועוד היו בכל מעלה משני צדדיה שני אריות, באופן שהיו שני אריות מלמעלה ושנים עשר אריות בכל המעלות״.\nההדום (מלבי״ם על דברי הימים ב ט, יז ״שהיה הדום הרגל ג״כ מזהב״) והכבש — ״קודם שעשו על המעלות היה עשוי כבש מזהב ודרך בו עלה המעלות לשבת על הכסא״ (מצודת דוד שם, יח).\nבמודל: **בלי נשרים, חיות, אבנים, שרביט, כסאות ומנגנון** — אלו מן המדרש, ואינם בגרסה זו; לכן אין בה גם עלייה.",
         targumSheni: "לפי תרגום שני לאסתר א, ב (נוסח הספרייה, בארמית; לצדו תרגום עברי).\nהאריות והנשרים: ״קיימין עלוהי תרין עשר ארייון דדהבא ולקבליהון תרין עשר נשרין דדהבא אריא לקבל נשרא ונשרא לקבל אריא מכוונין אילין לקביל אילין. ידיה דאריא דדהבא דימינא לקביל גפי דנשרא די דהבא דשמאליה״ — **שנים עשר אריות ומולם שנים עשר נשרים, אריה מול נשר**; ״וסכום אריותא שבעין ותרין ודנישרן שבעין ותרין״ — סך הכל שבעים ושניים (בטקסט בלבד).\nעל המעלות זוגות רובצים: ״על דרגא קדמיתא רביע תורא דדהבא ולקבליה אריא די דהבא. ועל דרגא תניינא רביע דיבא דדהבא ולקבליה רביע תלה דדהבא. ועל דרגא תליתאה רביע נמרא די דהבא ולקבליה רביע אינקה דדהבא. ועל דרגא רביעאה רביע נשרא דדהבא ולקבליה טווסא דדהבא. ועל דרגא חמישיתא רביע שונרא דדהבא ולקבליה תרנגולא דדהבא. ועל דרגא שתיתאה רביע בר נצא דדהבא ולקבליה ציפר דדהבא״ (שור ואריה, זאב וטלה, נמר וגדי, נשר וטווס, חתול ותרנגול, נשר וציפור — ״בר נצא״, כתרגום העברי).\nבראש הכסא: ״ועל ריש כורסיא קיימא יונה דדהבא אחידא בר נצא בידה״ — היונה האוחזת נשר (כתרגום העברי). המנורה: ״ועל מרישי כורסיא קיימא מנרתא דדהבא... וקיימין לקביל סטרא דמנרתא שבעין קנין דדהבא דציירין עליהון שבעת אבהת עלמא... ולקבל סיטרא תיניינא דמנרתא קיימין קנין אחרנין דציירין עליהון שבעא חסידי עלמא״ (לכאורה שבעה קנים מכל צד), ״ועל ראשי מנרתא קביעא בזיכא דמליא מישחא דזיתא דכיא... ותחות מיניה קביעא אגנתא רבתא דדהבא... ותרתין שובלין דדהבא נפקן מן אגנתא״.\nהכסאות: ״ותרתין מותבנין דדהבא חד לכהנא רבא וחד לסגן כהניא. ועל מריש כרסייא קביעין שבעין כורסוון דדהבא דעליהון יתבן שבעין סנהדרין״ (במודל שבעים הכסאות עומדים באולם מימין הכסא ומשמאלו — ״וכל סביא הוו יתבין מן ימינא דכרסיא ומן סמאליה״ — ולא על ראש הכסא).\nועוד: ״עשרין וארבע גפנין דדהבא דעבדין טיללא למלכא שלמה״ — סוכת גפנים מעל המושב; ״ותנינא דכספא חד במכונוי״ — התנין של כסף; האבנים: ״מקובע באבני בורלא ומשקע באבני שישא ומקבעין זמרגזין וכודכדנין בירולין ומיגליין״. ״ותרתין בנת ימא יתבן מן תרתין אודנין דמלכא שלמה דלא יתדעזע״, ״וכד בעי מלכא שלמה למיזל לכל אתר דהוא צבי כורסיא במכונוי אזיל תחותוהי״ — בטקסט בלבד.\nבמודל: צורת החיות, המנורה, הגפנים ומקומם — בחירת מודל.",
-        estherRabbah: "לפי אסתר רבה א, יב עם מדרש פנים אחרים (נוסח ב) ומדרש אבא גוריון, המסכימים בעיקר המעשה.\nאסתר רבה: ״וידות מזה ומזה, עלה במעלה הראשונה והארי פושט לו יד, ובשניה נשר פושט לו יד, אל מקום השבת, כך מקבלין אותו, ובמקום השבת שרביט הזהב מאחוריו, ויונה נתונה בראשו ועטרה של זהב בפיה, כדי שיהא המלך יושב בשבת ועטרה של זהב נוגע ואינו נוגע״ (אסתר רבה, כנוסח הספרייה; וכן במדבר רבה יב, יז ופסיקתא דרב כהנא א, ז) — מהרז״ו שם: ״דורש שהידות היו של האריות והנשרים שהיו שם שהם הושיטו לו ידיהם וקבלוהו וזהו אל מקום השבת״; ״וראש עגל לכסה מאחריו, אמר רבי אחא כהדא קדירתא דדרגיש״ (אסתר רבה) — מתנות כהונה: ״ואותן מטות היו להם בראשם עגול כמין קדירה וכן עשה שלמה בכסאו״, והוא ראש הגב העגול שבמודל.\nאבא גוריון: ״ועל כל דרך ודרך שני אריות ושני נשרים עומדים על רגליהם, זה כנגד זה... והארי, פושט את ידו של ימין, והנשר גפו של שמאל... והנשר פושט גפו של ימין, והארי ידו של שמאל״.\nפנים אחרים: ״ושני אריות של זהב היו עומדים על מעלה ראשונה, ושני עמודים של שיש היו עומדים על ראש האריות, ושני גפנים של זהב עומדות משני צדי הכסא, ומצילות על ראשי העמודים, ושני אריות של זהב חלולים היו עומדות כנגד הראשון, והיו מלאים כל מיני בשמים, שהיו זולפים בשמים, כשהיה המלך שלמה עולה, ושני קתדראות של זהב היו משני צדדי הכסא, אחד לכהן גדול ואחד לסגן, (נ״א אחד לגד החוזה ואחד לנתן הנביא), ושבעים קתדראות מקיפין לכסא של שבעים זקנים סנהדרי ישראל״; האבנים: ״וכל מעלה ומעלה... מכובשת באבנים טובות ומרגליות... לבנות ירקרקות ואדמדמות, ויש בהם בזכוכית טובה קריסטאלי״; התנין: ״פקע תנין של כסף, שהיה חוזר בתוך המנגנון״; ועוד: ״ואילני תמרים היו מקיפין לכסא, מכוסין בבגדי שש לבן, ועל ראשיהם טווסין של שן מכוונים כנגד גפי נשרים״.\nבמודל: **בכל מעלה שני אריות ושני נשרים, והפנימיים פושטים יד וכנף לעולה לסירוגין**; השרביט עם היונה והעטרה, והם נשארים במקומם; שני אריות נוספים בקצות המעלה הראשונה ועל ראשיהם עמודי השיש, וגפני הזהב המצלות על ראשי העמודים; על העמוד המערבי היונה היורדת ״מן העמוד״ אל הארון; שני האריות החלולים על הרצפה בצדי המעלה הראשונה, המזלפים בשמים בעלייה (״כנגד הראשון״ — ״מעלה ראשונה״, פירוש שלום ואמת על פנים אחרים); שני אילני תמרים עטופים פשתן לבן וטווסי שן עליהם (״ועל ראשיהם״ — ״על ראשי האילנות״, שם); שני הכסאות ושבעים כסאות הזקנים; אבנים לבנות, ירוקות ואדומות וזכוכית. אין כאן זוגות חיות על המעלות (בפנים אחרים אין, ובאבא גוריון יש רשימה משלו).\nבטקסט בלבד: באבא גוריון — ״והיה טווס של כסף טען במגנון למלך ומושיבו על הכסא״, ״וארי פושט ידו, ונוטל העטרה ונותנה על ראשו״. ובאסתר רבה שם — ״שהיה עשוי כטירכי מרכבתו של מי שאמר והיה העולם״; שש המעלות ״כנגד ששה רקיעים״, ״כנגד שש ארצות״, ״כנגד ששה סדרי משנה״, ״כנגד ששת ימי בראשית״, ״כנגד שש אמהות״, ״כנגד שש מצוות שהמלך הוא מוזהר עליהם״; וסופו של הכסא: ״אמר רבי אלעזר ברבי יוסי אני ראיתי שבריו ברומי״.\nצורת החיות, מספר התמרים ומקומם — בחירת מודל.",
-        beitHamidrash: "לפי בית המדרש ב (ילינק; בספרייה בילקוט מדרשים, בלי מספרי ההערות).\nהאריות ולוחות הכתב: ״ושנים עשר אריות יש בו, על כל מעלה ומעלה יש בו שני אריות. כיצד, כיון שהמלך שלמה דורס לעלות במעלה ראשונה, היו אריות שבו פורשות למעלה ידיהם וכתב מורשם בידיהם, ולא היה עולה במעלה שניה עד שהיה קורא הכתובים שהיו מורשמין. ומה היה בהן, כשהמלך הופך פניו לצד ימינו היה רואה את הכתב שהיה ביד הארי של ימין, ומה כתוב בו, לא תכירו פנים במשפט (דברים א, יז), והופך פניו לצד שמאלו והיה כתוב בו לא תקח שוחד (שם טז, יט). וכן בכל האריות היה כתוב בהן מענינים אלו של משפט, כגון ודל לא תהדר בריבו (שמות כג, ג)״.\nהאבנים, התמרים והכסאות: ״וכל מעלה ומעלה היתה מכובשת מאבנים טובות ומרגליות, ויש בהן אבנים יקרות לבנות מכורכמות, ויש בהן זכוכית לבן וטובה, ואילני תמרים מיפות את הכסא ומרוקמים בבגדי שש, והיו טווסין של שן מכוונים כנגד כנפי נשרים. ושני עמודים של שש על ראשי האריות, ושני אבנים של זהב היו על שני צידי הכסא, והיו מלאים מכל מיני בשמים. ושתי קתדראות של זהב משני צדי הכסא, אחת לגד הנביא ואחת לנתן הנביא. ושבעים קתדראות של זהב לשבעים זקנים ויושבין בהן. ועל כל קתדרא וקתדרא שני אריות ושני נשרים, ומכוונים אחד כנגד אחד, ועומדין על רגליהן״.\nהזוגות: ״במעלה הראשונה השור כנגד הארי, בשניה הזאב כנגד הטלה, בשלישית נמר כנגד גדי, ברביעית דוב כנגד צבי, בחמישית נשר כנגד [יונה, בששית נץ וכנגדו] צפור״ (במודל: חמישה זוגות, בחמישית נשר וציפור). ועוד: ״תנין של כסף היה טוען גלגל של כסא״; ״ויונה של זהב היתה עומדת בין העמודים ופותחת לו הארון״; ״והארי של שמאל פושט ידו ונוטל העטרה״.\nבמודל: **בדיוק שנים עשר אריות, שניים בכל מעלה, ולוחות הכתב בידיהם** (ועליהם שלושת הפסוקים שבמקור), ולפניהם שנים עשר נשרים; שני האריות שאצל הידות ועל ראשיהם עמודי השיש — המקור אינו מפרש על אילו אריות, וכך עומדת היונה שעל ראש גב הכסא ״בין העמודים״; אבנים לבנות, כרכומיות וזכוכית; שני אילני תמרים עטופים פשתן לבן וטווסי שן עליהם; שני כלי בשמים של זהב; כסאות גד הנביא ונתן הנביא; שבעים כסאות ועל כל אחד שני אריות ושני נשרים קטנים; הארון ליד המושב, בין שני העמודים; העטרה ליד הארי של שמאל; והתנין. צורת החיות ומקומן, ואיזה פסוק על איזה לוח מעבר למעלה הראשונה — בחירת מודל.",
+        estherRabbah: "לפי אסתר רבה א, יב עם מדרש פנים אחרים (נוסח ב) ומדרש אבא גוריון, המסכימים בעיקר המעשה.\nבמודל: על המעלות גם החיות הרובצות, כלשון אבא גוריון — ״ועל כל מעלה ומעלה היו בו חיות טהורות כנגד טמאות במעלה הראשונה שור וכנגדו ארי שניה טלה [וכנגדו] זאב שלישית גדי [וכנגדו] נמר רביעית צבי [וכנגדו] דוב חמישית נשר [וכנגדו] יונה ששית נץ [וכנגדו] צפור והוא עולה ונותן שלום ביניהן״; ובראש המעלות טווס של כסף — ״והיה טווס של כסף טען במגנון למלך ומושיבו על הכסא״ (אבא גוריון). מקום הטווס וגודלו — בחירת מודל. אילני התמרים — ״מקיפין לכסא מכורכין בבגדי שש״ — שמונה סביב הכסא, ובראש כל אחד טווס של שן; מספרם, מקומם וגובהם — בחירת מודל.\nאסתר רבה: ״וידות מזה ומזה, עלה במעלה הראשונה והארי פושט לו יד, ובשניה נשר פושט לו יד, אל מקום השבת, כך מקבלין אותו, ובמקום השבת שרביט הזהב מאחוריו, ויונה נתונה בראשו ועטרה של זהב בפיה, כדי שיהא המלך יושב בשבת ועטרה של זהב נוגע ואינו נוגע״ (אסתר רבה, כנוסח הספרייה; וכן במדבר רבה יב, יז ופסיקתא דרב כהנא א, ז) — מהרז״ו שם: ״דורש שהידות היו של האריות והנשרים שהיו שם שהם הושיטו לו ידיהם וקבלוהו וזהו אל מקום השבת״; ״וראש עגל לכסה מאחריו, אמר רבי אחא כהדא קדירתא דדרגיש״ (אסתר רבה) — מתנות כהונה: ״ואותן מטות היו להם בראשם עגול כמין קדירה וכן עשה שלמה בכסאו״, והוא ראש הגב העגול שבמודל.\nאבא גוריון: ״ועל כל דרך ודרך שני אריות ושני נשרים עומדים על רגליהם, זה כנגד זה... והארי, פושט את ידו של ימין, והנשר גפו של שמאל... והנשר פושט גפו של ימין, והארי ידו של שמאל״.\nפנים אחרים: ״ושני אריות של זהב היו עומדים על מעלה ראשונה, ושני עמודים של שיש היו עומדים על ראש האריות, ושני גפנים של זהב עומדות משני צדי הכסא, ומצילות על ראשי העמודים, ושני אריות של זהב חלולים היו עומדות כנגד הראשון, והיו מלאים כל מיני בשמים, שהיו זולפים בשמים, כשהיה המלך שלמה עולה, ושני קתדראות של זהב היו משני צדדי הכסא, אחד לכהן גדול ואחד לסגן, (נ״א אחד לגד החוזה ואחד לנתן הנביא), ושבעים קתדראות מקיפין לכסא של שבעים זקנים סנהדרי ישראל״; האבנים: ״וכל מעלה ומעלה... מכובשת באבנים טובות ומרגליות... לבנות ירקרקות ואדמדמות, ויש בהם בזכוכית טובה קריסטאלי״; התנין: ״פקע תנין של כסף, שהיה חוזר בתוך המנגנון״; ועוד: ״ואילני תמרים היו מקיפין לכסא, מכוסין בבגדי שש לבן, ועל ראשיהם טווסין של שן מכוונים כנגד גפי נשרים״.\nבמודל: **בכל מעלה שני אריות ושני נשרים, והפנימיים פושטים יד וכנף לעולה לסירוגין**; השרביט עם היונה והעטרה, והם נשארים במקומם; שני אריות נוספים בקצות המעלה הראשונה ועל ראשיהם עמודי השיש, וגפני הזהב המצלות על ראשי העמודים; על העמוד המערבי היונה היורדת ״מן העמוד״ אל הארון; שני האריות החלולים על הרצפה בצדי המעלה הראשונה, המזלפים בשמים בעלייה (״כנגד הראשון״ — ״מעלה ראשונה״, פירוש שלום ואמת על פנים אחרים); שני אילני תמרים עטופים פשתן לבן וטווסי שן עליהם (״ועל ראשיהם״ — ״על ראשי האילנות״, שם); שני הכסאות ושבעים כסאות הזקנים; אבנים לבנות, ירוקות ואדומות וזכוכית. אין כאן זוגות חיות על המעלות (בפנים אחרים אין, ובאבא גוריון יש רשימה משלו).\nבטקסט בלבד: באבא גוריון — ״והיה טווס של כסף טען במגנון למלך ומושיבו על הכסא״, ״וארי פושט ידו, ונוטל העטרה ונותנה על ראשו״. ובאסתר רבה שם — ״שהיה עשוי כטירכי מרכבתו של מי שאמר והיה העולם״; שש המעלות ״כנגד ששה רקיעים״, ״כנגד שש ארצות״, ״כנגד ששה סדרי משנה״, ״כנגד ששת ימי בראשית״, ״כנגד שש אמהות״, ״כנגד שש מצוות שהמלך הוא מוזהר עליהם״; וסופו של הכסא: ״אמר רבי אלעזר ברבי יוסי אני ראיתי שבריו ברומי״.\nצורת החיות, מספר התמרים ומקומם — בחירת מודל.",
+        beitHamidrash: "לפי בית המדרש ב (ילינק; בספרייה בילקוט מדרשים, בלי מספרי ההערות).\nבמודל: אילני התמרים ״מיפות את הכסא ומרוקמים בבגדי שש״ — שמונה סביבו, כרוכים בבד שש מרוקם, ובראש כל אחד טווס של שן; מספרם, מקומם וגובהם — בחירת מודל.\nהאריות ולוחות הכתב: ״ושנים עשר אריות יש בו, על כל מעלה ומעלה יש בו שני אריות. כיצד, כיון שהמלך שלמה דורס לעלות במעלה ראשונה, היו אריות שבו פורשות למעלה ידיהם וכתב מורשם בידיהם, ולא היה עולה במעלה שניה עד שהיה קורא הכתובים שהיו מורשמין. ומה היה בהן, כשהמלך הופך פניו לצד ימינו היה רואה את הכתב שהיה ביד הארי של ימין, ומה כתוב בו, לא תכירו פנים במשפט (דברים א, יז), והופך פניו לצד שמאלו והיה כתוב בו לא תקח שוחד (שם טז, יט). וכן בכל האריות היה כתוב בהן מענינים אלו של משפט, כגון ודל לא תהדר בריבו (שמות כג, ג)״.\nהאבנים, התמרים והכסאות: ״וכל מעלה ומעלה היתה מכובשת מאבנים טובות ומרגליות, ויש בהן אבנים יקרות לבנות מכורכמות, ויש בהן זכוכית לבן וטובה, ואילני תמרים מיפות את הכסא ומרוקמים בבגדי שש, והיו טווסין של שן מכוונים כנגד כנפי נשרים. ושני עמודים של שש על ראשי האריות, ושני אבנים של זהב היו על שני צידי הכסא, והיו מלאים מכל מיני בשמים. ושתי קתדראות של זהב משני צדי הכסא, אחת לגד הנביא ואחת לנתן הנביא. ושבעים קתדראות של זהב לשבעים זקנים ויושבין בהן. ועל כל קתדרא וקתדרא שני אריות ושני נשרים, ומכוונים אחד כנגד אחד, ועומדין על רגליהן״.\nהזוגות: ״במעלה הראשונה השור כנגד הארי, בשניה הזאב כנגד הטלה, בשלישית נמר כנגד גדי, ברביעית דוב כנגד צבי, בחמישית נשר כנגד [יונה, בששית נץ וכנגדו] צפור״ (במודל: חמישה זוגות, בחמישית נשר וציפור). ועוד: ״תנין של כסף היה טוען גלגל של כסא״; ״ויונה של זהב היתה עומדת בין העמודים ופותחת לו הארון״; ״והארי של שמאל פושט ידו ונוטל העטרה״.\nבמודל: **בדיוק שנים עשר אריות, שניים בכל מעלה, ולוחות הכתב בידיהם** (ועליהם שלושת הפסוקים שבמקור), ולפניהם שנים עשר נשרים; שני האריות שאצל הידות ועל ראשיהם עמודי השיש — המקור אינו מפרש על אילו אריות, וכך עומדת היונה שעל ראש גב הכסא ״בין העמודים״; אבנים לבנות, כרכומיות וזכוכית; שני אילני תמרים עטופים פשתן לבן וטווסי שן עליהם; שני כלי בשמים של זהב; כסאות גד הנביא ונתן הנביא; שבעים כסאות ועל כל אחד שני אריות ושני נשרים קטנים; הארון ליד המושב, בין שני העמודים; העטרה ליד הארי של שמאל; והתנין. צורת החיות ומקומן, ואיזה פסוק על איזה לוח מעבר למעלה הראשונה — בחירת מודל.",
       },
       // 1.0.1-L (FIXES L.78-L.80): the king's ascent, the witnesses' scene and the Ben Yehoyada for the presentation's bubble
-      throneAscent: "עליית המלך לכסא (כפתור על הכסא; המלך מוצג בצללית בלבד, בלי פנים ובלי תווי דמות).\nבכל מעלה חוזר גלגל המנגנון שבצד המעלה — ״חוזר הגלגל בתוך המגנון״ (מדרש אבא גוריון), ״חוזר גלגל של מנגנון״ (פנים אחרים) — והארי פושט את ידו והנשר את כנפו לקראת העולה, לסירוגין: ״והארי, פושט את ידו של ימין, והנשר גפו של שמאל, והמלך נשען עליהם, ועולה למעלה השנייה, עמד על המעלה, וגלגל חוזר, והנשר פושט גפו של ימין, והארי ידו של שמאל, והמלך נשען עליהם ועולה, וכן לכל מעלה ומעלה״ (אבא גוריון); ״עלה במעלה הראשונה והארי פושט לו יד, ובשניה נשר פושט לו יד״ (אסתר רבה א, יב) — ״כל זה נעשה בחכמת ומלאכת המשקולות״ (יפה ענף שם), ״שהיה עשוי בסיגנון שבעלותו שם על מעלה הראשונה הארי פושט לו יד ובשניה נשר עד ו' המעלות״ (עץ יוסף שם), ״היינו מנגנון שלו תחבולות מלאכתו מנהג של מלאכת האופנים והגלגלים שהיו מתגלגלים ופושטים ידיהם והמלך שלמה היה נשען עליהם כשהיה עולה לכסא״ (פירוש שלום ואמת על פנים אחרים).\nבראש הכסא: ״הנשרים פורשים גפיהם, ועולים במנגנין, והיו מכסין למעלה על ראשו של מלך, ויונה של זהב יורדת מן העמוד במנגנין, ופותחת הארון ולוקחת ס״ת, ונותנת לתוך ידו של מלך, לקיים מה שנאמר והיתה עמו וקרא בו כל ימי חייו״ (פנים אחרים); ״ונותנה אותו על ברכיו״ (בית המדרש ב).\nלתרגום שני: ״ומשים ית ריגלא על דרגא קדמיתא תורא דדהבא. פשיט ידיה על דרגא תיניינא ומן תיניינא לתליתאה... ומן שתיתאה נחתין נשרין וחטפין יתיה ומסקין ומותבין יתיה על ריש כורסייה״, ״הוה הדר גישרא רבא ונטיב כיסרא דמלכותא ויהיב ית כיסרא ברישיה דמלכא שלמה ומבתר כן הוה תנינא רבא מפקע במנגנון. והוון אריוון ונשרין סלקין במנגנון ומטללין על ריש מלכא שלמה. ויונא דדהבא הוה נחתא מן עמודא ופתחא ארונא ונסבא סיפרא דאורייתא ויהבה ליה בידוי דמלכא שלמה״, ״והוון אריותא זחלין בוסמנין במסקיה מלכא שלמה למיתב על כורסיה״ — השור פושט את ידו ממקומו ומרים ממעלה למעלה, הנשרים מושיבים, הנשר הגדול מניח את הכתר, התנין מרעיש, האריות והנשרים מצלים, היונה מביאה את ספר התורה, והאריות מזלפים בשמים.\nלבית המדרש ב: האריות פורשים את לוחות הכתב, המלך קורא בכל מעלה פסוק — ״על מעלה ראשונה אומר, תורת ה' תמימה, בשניה עדות ה' נאמנה, בשלישית פקודי ה' ישרים, ברביעית מצות ה' ברה, בחמישית יראת ה' טהורה, בששית משפטי ה' אמת״ — ״תנין של כסף היה טוען גלגל של כסא וכופין למלך שלמה ומושיבין אותו על הכסא, ומיד פושטין הנשרים את כנפיהם... ויונה של זהב... ונוטלת ספר תורה ונותנה אותו על ברכיו... והארי של שמאל פושט ידו ונוטל העטרה ונותנה על ראש המלך, והעומדים אומרים, תקום מלכות בית דוד לעולם״.\nעדי שקר (כפתור שני): ״וכד הוון עלין סהדיא דיסהדון קדם מלכא שלמה הוו מנגניא פקעין גלגילא חזרין תורין געיין אריותא נהמין דיבין חטפין אימרין פעיין גימרין בעדן יונקין בכיין שונרין טייסן טווסיין מייללין תרנוגלין מקרקרין בני נצין מחטפין ציפרין מייללין למחטף לבהון דסהדיא דלא יסהדון סהדותא דשיקרא. והוון סהדיא אמרין בלבהון נסהד סהדות דקושטא ואי לא בגינן עלמא מתעקר״ (תרגום שני); ״וכשמעלים את העד לפני שלמה, היו מנגנות פוקעים, גלגלות חוזרים, אריות נוהמין, נשרים פורחין, טווסין רצין, ולמה לחטוף לבם של עדים, בשביל שיעידו אמת״ (פנים אחרים); ״היו הגלגלים של כסא חוזרין, ואריות נוהמין, ונשרים פורחין, וטווסין מצפצפין, וכל כך למה, כדי לחטוף את העדים בלבם כדי להעיד אמת״ (בית המדרש ב).\nהמנגנון — בועה למצגת: בניהו בן יהוידע (הבן איש חי) על סנהדרין קו: (נוסח הספרייה): ״ואני אומר אין מדברים בהלכות מרובות בדבר הנעשה על ידי נס או בשם אך נראה כי מה שנמצא בזמן הזה מגדל פורח באויר שקורין (מרכב אל הוו\"א) העשוי ומתוקן על פי חכמה נפלאה אף על פי שזה נתחדש מכמה שנים הנה בודאי היה מצוי ביד הראשונים קודם זמן דואג ואחיתופל וגם אחריהם ואפשר שהיה גם כן בדורות התנאים אלא שאחר כך נשתכחה חכמה של המגדל הזה וחזר ונתחדש על ידי חכמי אירופא״ — ולכאורה מכאן, שגם מנגנון הכסא פעל בכוח נסתר כעין חשמל.\nבמודל: זמני העלייה והרעש, הגלגלים, הזוהר על המעלה, הצללית, אורך היד והכנף, צורת התנועות והבשמים, ומקום הארון ליד המושב — בחירת מודל. העלייה מוצגת בלי דמות המלך: רק רגל מכוסה עולה מעלה מעלה באמצע, וכל חיה נשארת במקומה ורק ידה או כנפה נמשכת עד אמצע המעלה, ששם המלך נשען עליהן. בעדי השקר נשמע רעש, והכפתור ״השתק את הרעש״ משתיק אותו.",
+      throneAscent: "עליית המלך לכסא (כפתור על הכסא; המלך מוצג בצללית בלבד, בלי פנים ובלי תווי דמות).\nבכל מעלה חוזר גלגל המנגנון שבצד המעלה — ״חוזר הגלגל בתוך המגנון״ (מדרש אבא גוריון), ״חוזר גלגל של מנגנון״ (פנים אחרים) — והארי פושט את ידו והנשר את כנפו לקראת העולה, לסירוגין: ״והארי, פושט את ידו של ימין, והנשר גפו של שמאל, והמלך נשען עליהם, ועולה למעלה השנייה, עמד על המעלה, וגלגל חוזר, והנשר פושט גפו של ימין, והארי ידו של שמאל, והמלך נשען עליהם ועולה, וכן לכל מעלה ומעלה״ (אבא גוריון); ״עלה במעלה הראשונה והארי פושט לו יד, ובשניה נשר פושט לו יד״ (אסתר רבה א, יב) — ״כל זה נעשה בחכמת ומלאכת המשקולות״ (יפה ענף שם), ״שהיה עשוי בסיגנון שבעלותו שם על מעלה הראשונה הארי פושט לו יד ובשניה נשר עד ו' המעלות״ (עץ יוסף שם), ״היינו מנגנון שלו תחבולות מלאכתו מנהג של מלאכת האופנים והגלגלים שהיו מתגלגלים ופושטים ידיהם והמלך שלמה היה נשען עליהם כשהיה עולה לכסא״ (פירוש שלום ואמת על פנים אחרים).\nבראש הכסא: ״הנשרים פורשים גפיהם, ועולים במנגנין, והיו מכסין למעלה על ראשו של מלך, ויונה של זהב יורדת מן העמוד במנגנין, ופותחת הארון ולוקחת ס״ת, ונותנת לתוך ידו של מלך, לקיים מה שנאמר והיתה עמו וקרא בו כל ימי חייו״ (פנים אחרים); ״ונותנה אותו על ברכיו״ (בית המדרש ב).\nבמודל: במנוחה הדמויות עומדות דום; כשהמלך עומד במעלה, הדמויות שבה שאינן פושטות יד מרכינות מעט את ראשן ורועדות, מפני אימת המלך, ושבות לעמוד (בחירת מודל).\nההושבה על הכסא — בכל מדרש כלשונו: ״והיה טווס של כסף טען במגנון למלך ומושיבו על הכסא״ (אבא גוריון) — במודל טווס הכסף בא תחתיו במעלה השישית, נושא אותו אל המושב ומושיבו; ״תנין של כסף היה טוען גלגל של כסא וכופין למלך שלמה ומושיבין אותו על הכסא״ (בית המדרש ב) — במודל התנין מניע את המנגנון, וגלגל של הכסא עולה תחת רגליו, נושא אותו אל המושב ומושיבו (הגלגל שתחת רגליו ודרכו — בחירת מודל).\nלתרגום שני: ״ומשים ית ריגלא על דרגא קדמיתא תורא דדהבא. פשיט ידיה על דרגא תיניינא ומן תיניינא לתליתאה... ומן שתיתאה נחתין נשרין וחטפין יתיה ומסקין ומותבין יתיה על ריש כורסייה״, ״הוה הדר גישרא רבא ונטיב כיסרא דמלכותא ויהיב ית כיסרא ברישיה דמלכא שלמה ומבתר כן הוה תנינא רבא מפקע במנגנון. והוון אריוון ונשרין סלקין במנגנון ומטללין על ריש מלכא שלמה. ויונא דדהבא הוה נחתא מן עמודא ופתחא ארונא ונסבא סיפרא דאורייתא ויהבה ליה בידוי דמלכא שלמה״, ״והוון אריותא זחלין בוסמנין במסקיה מלכא שלמה למיתב על כורסיה״ — התרגום מזכיר בפירוש את השור שבמעלה הראשונה; במודל, בכל אחת מחמש המעלות התחתונות פושטות יד שתי החיות הרובצות שבה, הטהורה מכאן והטמאה שכנגדה מכאן (בראשונה השור והארי), והמלך עולה ביניהן — בחירת מודל; מן השישית הנשרים יורדים על כתפיו, אוחזים בו, מעלים ומושיבים אותו; הנשר הגדול מניח את הכתר, התנין מרעיש, האריות והנשרים מצלים, היונה מביאה את ספר התורה, והאריות מזלפים בשמים.\nלבית המדרש ב: האריות פורשים את לוחות הכתב, המלך קורא בכל מעלה פסוק — ״על מעלה ראשונה אומר, תורת ה' תמימה, בשניה עדות ה' נאמנה, בשלישית פקודי ה' ישרים, ברביעית מצות ה' ברה, בחמישית יראת ה' טהורה, בששית משפטי ה' אמת״ — ״תנין של כסף היה טוען גלגל של כסא וכופין למלך שלמה ומושיבין אותו על הכסא, ומיד פושטין הנשרים את כנפיהם... ויונה של זהב... ונוטלת ספר תורה ונותנה אותו על ברכיו... והארי של שמאל פושט ידו ונוטל העטרה ונותנה על ראש המלך, והעומדים אומרים, תקום מלכות בית דוד לעולם״.\nעדי שקר (כפתור שני): ״וכד הוון עלין סהדיא דיסהדון קדם מלכא שלמה הוו מנגניא פקעין גלגילא חזרין תורין געיין אריותא נהמין דיבין חטפין אימרין פעיין גימרין בעדן יונקין בכיין שונרין טייסן טווסיין מייללין תרנוגלין מקרקרין בני נצין מחטפין ציפרין מייללין למחטף לבהון דסהדיא דלא יסהדון סהדותא דשיקרא. והוון סהדיא אמרין בלבהון נסהד סהדות דקושטא ואי לא בגינן עלמא מתעקר״ (תרגום שני); ״וכשמעלים את העד לפני שלמה, היו מנגנות פוקעים, גלגלות חוזרים, אריות נוהמין, נשרים פורחין, טווסין רצין, ולמה לחטוף לבם של עדים, בשביל שיעידו אמת״ (פנים אחרים); ״היו הגלגלים של כסא חוזרין, ואריות נוהמין, ונשרים פורחין, וטווסין מצפצפין, וכל כך למה, כדי לחטוף את העדים בלבם כדי להעיד אמת״ (בית המדרש ב).\nהמנגנון — בועה למצגת: בניהו בן יהוידע (הבן איש חי) על סנהדרין קו: (נוסח הספרייה): ״ואני אומר אין מדברים בהלכות מרובות בדבר הנעשה על ידי נס או בשם אך נראה כי מה שנמצא בזמן הזה מגדל פורח באויר שקורין (מרכב אל הוו\"א) העשוי ומתוקן על פי חכמה נפלאה אף על פי שזה נתחדש מכמה שנים הנה בודאי היה מצוי ביד הראשונים קודם זמן דואג ואחיתופל וגם אחריהם ואפשר שהיה גם כן בדורות התנאים אלא שאחר כך נשתכחה חכמה של המגדל הזה וחזר ונתחדש על ידי חכמי אירופא״ — ולכאורה מכאן, שגם מנגנון הכסא פעל בכוח נסתר כעין חשמל.\nבמודל: זמני העלייה והרעש, הגלגלים, הזוהר על המעלה, הצללית, אורך היד והכנף, צורת התנועות והבשמים, ומקום הארון ליד המושב — בחירת מודל. העלייה מוצגת בלי דמות המלך: רק רגל מכוסה עולה מעלה מעלה באמצע, וכל חיה נשארת במקומה ורק ידה או כנפה נמשכת עד אמצע המעלה, ששם המלך נשען עליהן. בעדי השקר נשמע רעש, והכפתור ״השתק את הרעש״ משתיק אותו.",
       shields: "הפסוק: מאתיים צינה (״מקפת את האדם משלשה רוחותיו״ — רש״י י, טז) ושלוש מאות מגן (״המגן מרוח א׳״ — מלבי״ם) של זהב שחוט, ״ויתנם המלך בית יער הלבנון״ (י, טז–יז), וכלי זהב סגור (י, כא).\nבמודל: **המספרים — מן הפסוק**; צורתם, מידותיהם ומקומם על הקירות — בחירת מודל לפי ציור ׳מקרא מפורש׳ (שם: ״צורת הכלים והמגינים להמחשה בלבד״).",
       alamAlPeneihem: "הפסוק: ״ואולם על פניהם ועמדים ועב על פניהם״ (מלכים א ז, ו).\nרש״י: ״אולם גבוה עשה על כל הבית״; ועל ״ועמדים ועב על פניהם״: ״ועל כרותות ארזים שעל העמודים התחתונים, הציב על (צריך לומר: עוד) עמודים אחרים, ומרישין מעמוד לעמוד... עב היא מריש״.\nרד״ק: אולם העמודים הוא בית שער שקירויו כמין כיפה, ולפניו עוד עמודים ועב (״עץ עב וגדול הוא הנקרא מריש״).\nרלב״ג: ״ואולם על פניהם״ הוא אולם העמודים עצמו, ״והיו בו עמודים וכרותות ארז עבה היתה על פניהם״.\nמלבי״ם: ״לפני הבית והאולם היה עוד אולם ולפני האולם השני היו עמודים ועב על פניהם היינו מריש שהוא עץ עב״ — כך נבנתה קריאת מלבי״ם ורלב״ג במודל.\nמצודת דוד: אולם העמודים ״נסמך לבית היער לפני פתחים, וכדרך בית שער, ועמד ארכו לאורך הבית, להיות מול כל שלשת הפתחים שבשלשת חלקי הבית״, ו״לפני פתחי האולם הזה, עמדו עמודים תקועים בארץ, וממעל להם עץ עב לחברם יחד... לנוי ולפאר, או להיות כעין מחיצה ולשמירה״ — כך נבנתה קריאתו במודל (הקריאה השלישית).\nבמודל, כציור ׳מקרא מפורש׳ (קריאת רש״י): ״ואולם על פניהם״ — בניין גבוה לפני אולם העמודים; ״ועמדים״ — עמודי קירות הקומה העליונה; ״ועב״ — באולם העמודים בלבד, ואינו נראה במודל; בסוף הגג אין עבים, אלא ״נסרים קטנים, נתונים על מרישין קטנים״ (רש״י ז, ד)."
     };

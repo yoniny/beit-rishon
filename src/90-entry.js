@@ -1004,7 +1004,8 @@
   };
   document.addEventListener("click", (ev) => {
     const t = ev.target && ev.target.closest ? ev.target.closest("button, input, select, [role='button'], .tm-op a") : null;
-    if (!t || t.closest(".tm-pill, #tm-news, #tm-help, .tm-src, .tm-srcl")) return;
+    // TOUR_SOFT_204 (the user, 12.11.2026 02:14): closing a floating card, folding it, folding the panel - no command, the demonstration goes on
+    if (!t || t.closest(".tm-pill, #tm-news, #tm-help, .tm-src, .tm-srcl, #tm-xcard .x, #tm-card .x, #tm-burger")) return;
     ctx.shared.stopDemos();
   }, true);
   // 1.0.1-K: the shadow pass's depth programs. renderer.compile() prepares the materials of the scene only; WebGLShadowMap draws every

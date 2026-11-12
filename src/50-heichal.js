@@ -1919,6 +1919,123 @@
       };
       return goldStd(worldTex(makeTex(512, draw, { bump, bumpSize: 512 }), 4), { roughness: 0.34, bumpScale: 3.6 });
     })();
+    // 1.3.7 (the user, 11.11.2026 18:09: "תוסיף רד"ק. חשוב מאוד, את האבן יקרה תעשה נורמלי, לא כמו האבנים בכיסא שלמה"): THE FACING OF
+    // PRECIOUS STONE of the Radak's reading of the devir's height (I Kings 6:20; book 3540, line 369): "כי עשרים אמה בגובה צפה
+    // הקירות זהב והעשר אמות העליונות צפה באבן יקרה בלשם שבו ושוהם וספיר ודומיהם מן האבנים הטובות". A wall facing of polished
+    // natural slabs laid in courses, five amot long and two and a half high: one light stone with fine veins - no cut gems, no
+    // colours, no shine of jewels. One drawing of a fixed seed (the same wall at every load). The slabs' size and the stone's
+    // hue - model choices.
+    const hei_gemStone = (() => {
+      // 1.3.7, third drawing (the user: first "זה צבעוני, אמרתי לך לא לעשות תכשיטים", then of one pale stone "זה לא נקרא אבן יקרה, זה
+      // נראה אבן פשוטה"): the good stones the Radak names, as A WALL FACING - slabs five amot by five, polished, each with its own
+      // layers and veins; no cut gems and no settings. GEM_VARIANT chooses the family of the stones' tones (a model choice).
+      const GEM_VARIANT = "warm";
+      // the facing of precious stone (the Radak, I Kings 6:20): the colour map. gemDraw(c, sz, variant); gemBump(c, sz)
+      const GEM_KINDS = {
+        honey: { base: "#c9a05c", clouds: ["#e8d09a", "#a87a34"], bands: { cols: ["#f3e3ba", "#986a26", "#ead29a", "#80561e", "#fbf1d6"], n: 46, w: 7, a: 0.5 }, veins: { cols: ["#fff6dc"], n: 2, a: 0.3 } },
+        amber: { base: "#b27a3a", clouds: ["#d3a05a", "#8a5720"], bands: { cols: ["#e2b877", "#74471a", "#c58f48", "#f1d7a2"], n: 40, w: 8, a: 0.45 }, veins: { cols: ["#f5dca6"], n: 2, a: 0.28 } },
+        cream: { base: "#eadcc0", clouds: ["#f8f0de", "#cdb98f"], bands: { cols: ["#d9c398", "#faf4e4", "#c4aa78", "#efe2c4"], n: 30, w: 6, a: 0.32 }, veins: { cols: ["#aa8444", "#96743f"], n: 4, a: 0.38 } },
+        tawny: { base: "#bd9163", clouds: ["#dcbc94", "#93683f"], bands: { cols: ["#eed9b8", "#7d5330", "#cda274", "#f6e8cf"], n: 52, w: 5, a: 0.5 }, veins: { cols: ["#f8edd6"], n: 2, a: 0.28 } },
+        sapir: { base: "#1d3c8a", clouds: ["#3a66be", "#102256"], cloudN: 34, bands: null, veins: { cols: ["#e2eaff", "#d9dff0"], n: 3, a: 0.34 }, flecks: { col: "#e3c068", n: 90, a: 0.7 } },
+        shoham: { base: "#17191d", clouds: ["#30343c", "#0a0b0e"], cloudN: 26, bands: null, veins: { cols: ["#f4f4f4", "#b7bac2", "#8d9099"], n: 7, a: 0.5 } },
+        shevo: { base: "#8f929b", clouds: ["#bdc0c8", "#5c5f68"], bands: { cols: ["#f3f3f3", "#2b2d32", "#cdd0d7", "#4a4d55", "#e2e4e9"], n: 50, w: 6, a: 0.52 }, veins: { cols: ["#ffffff"], n: 2, a: 0.26 } },
+        leshem: { base: "#3a6694", clouds: ["#6596c6", "#213f66"], bands: { cols: ["#97bce0", "#1d3856", "#7aa6d0", "#c9dff2"], n: 36, w: 6, a: 0.4 }, veins: { cols: ["#e8f1fb"], n: 3, a: 0.32 } }
+      };
+      const GEM_SETS = { warm: ["honey", "cream", "tawny", "amber"], cool: ["sapir", "shevo", "shoham", "leshem"], four: ["sapir", "honey", "shevo", "shoham"] };
+      const GEM_COLS = 2, GEM_ROWS = 2;   // a slab: five amot by five (the tile is ten amot)
+      function gemCells(sz, fn) {
+        const cw = sz / GEM_COLS, rh = sz / GEM_ROWS;
+        for (let r = 0; r < GEM_ROWS; r++) for (let k = -1; k < GEM_COLS; k++) fn(k * cw + (r % 2 ? cw / 2 : 0), r * rh, cw, rh, r * GEM_COLS + ((k + GEM_COLS) % GEM_COLS));
+      }
+      function gemDraw(c, sz, variant) {
+        let seed = 20261111;
+        const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+        const set = GEM_SETS[variant] || GEM_SETS.warm;
+        c.fillStyle = "#2a2419";
+        c.fillRect(0, 0, sz, sz);
+        const done = {};
+        gemCells(sz, (x, y, w, h, idx) => {
+          const K = GEM_KINDS[set[idx % set.length]];
+          const s0 = done[idx] || (done[idx] = 1 + Math.floor(rnd() * 1e9));   // the slab cut by the tile's edge is drawn twice - the same drawing
+          seed = s0;
+          c.save();
+          c.beginPath();
+          c.rect(x + 1, y + 1, w - 2, h - 2);
+          c.clip();
+          c.fillStyle = K.base;
+          c.fillRect(x, y, w, h);
+          for (let i = 0; i < (K.cloudN || 16); i++) {   // clouds of the stone's lighter and darker tone
+            const px = x + rnd() * w, py = y + rnd() * h, pr = (0.12 + rnd() * 0.35) * w;
+            const g2 = c.createRadialGradient(px, py, 0, px, py, pr);
+            g2.addColorStop(0, K.clouds[i % 2]);
+            g2.addColorStop(1, "rgba(0,0,0,0)");
+            c.globalAlpha = 0.14 + rnd() * 0.2;
+            c.fillStyle = g2;
+            c.fillRect(px - pr, py - pr, 2 * pr, 2 * pr);
+          }
+          if (K.bands) {   // the stone's layers: many fine lines running together aslant, each slab its own slant and wave
+            c.save();
+            c.translate(x + w / 2, y + h / 2);
+            c.rotate((rnd() - 0.5) * 1.3);
+            const L = Math.hypot(w, h) + 20;
+            const k1 = (0.7 + rnd() * 1.1) * 6.283 / L, k2 = (2.1 + rnd() * 2.2) * 6.283 / L, k3 = (5 + rnd() * 5) * 6.283 / L;
+            const p1 = rnd() * 7, p2 = rnd() * 7, p3 = rnd() * 7, amp = L * (0.035 + rnd() * 0.05);
+            let t = -0.04;
+            for (let i = 0; i < K.bands.n && t < 1.04; i++) {
+              t += (0.25 + rnd() * rnd() * 3.2) / K.bands.n;
+              const y0 = -L / 2 + t * L, a1 = 0.85 + rnd() * 0.3;
+              c.beginPath();
+              for (let px = -L / 2; px <= L / 2; px += 4) {
+                const py = y0 + a1 * amp * (Math.sin(k1 * px + p1) + 0.45 * Math.sin(k2 * px + p2) + 0.16 * Math.sin(k3 * px + p3 + i * 0.2));
+                if (px === -L / 2) c.moveTo(px, py); else c.lineTo(px, py);
+              }
+              c.strokeStyle = K.bands.cols[Math.floor(rnd() * K.bands.cols.length)];
+              c.globalAlpha = K.bands.a * (0.3 + rnd() * 0.7);
+              c.lineWidth = 0.7 + rnd() * rnd() * K.bands.w * 2.2;
+              c.stroke();
+            }
+            c.restore();
+          }
+          for (let i = 0; i < K.veins.n; i++) {   // fine veins, some of them forked
+            c.globalAlpha = K.veins.a * (0.5 + rnd() * 0.6);
+            c.strokeStyle = K.veins.cols[i % K.veins.cols.length];
+            c.lineWidth = 0.8 + rnd() * 1.8;
+            c.beginPath();
+            let px = x - 6, py = y + rnd() * h;
+            const drift = (rnd() - 0.5) * 1.4;
+            c.moveTo(px, py);
+            while (px < x + w + 6) {
+              const nx = px + 18 + rnd() * 36, ny = py + drift * 24 + (rnd() - 0.5) * 30;
+              c.quadraticCurveTo((px + nx) / 2 + (rnd() - 0.5) * 14, (py + ny) / 2 + (rnd() - 0.5) * 20, nx, ny);
+              if (rnd() < 0.2) { c.lineTo(nx + 10 + rnd() * 26, ny - 16 - rnd() * 34); c.moveTo(nx, ny); }
+              px = nx; py = ny;
+            }
+            c.stroke();
+          }
+          if (K.flecks) {   // the gold dust of the sapphire stone
+            c.fillStyle = K.flecks.col;
+            for (let i = 0; i < K.flecks.n; i++) {
+              const cx0 = x + rnd() * w, cy0 = y + rnd() * h, n = 1 + Math.floor(rnd() * 4);
+              for (let j = 0; j < n; j++) {
+                c.globalAlpha = K.flecks.a * (0.4 + rnd() * 0.6);
+                c.fillRect(cx0 + (rnd() - 0.5) * 14, cy0 + (rnd() - 0.5) * 14, 1 + rnd() * 1.8, 1 + rnd() * 1.8);
+              }
+            }
+          }
+          c.globalAlpha = 1;
+          c.restore();
+        });
+      }
+      function gemBump(c, sz) {
+        c.fillStyle = "#707070";
+        c.fillRect(0, 0, sz, sz);
+        gemCells(sz, (x, y, w, h) => { c.fillStyle = "#ffffff"; c.fillRect(x + 1, y + 1, w - 2, h - 2); });
+      }
+      const gm = std(worldTex(makeTex(1024, (c, sz) => gemDraw(c, sz, GEM_VARIANT), { bump: gemBump, bumpSize: 512 }), 10),
+        { roughness: 0.3, metalness: 0, envMapIntensity: 0.4, bumpScale: 0.2, emissive: 0xffffff, emissiveIntensity: 0.36 });
+      gm.emissiveMap = gm.map;   // the devir has little light of its own: the stone carries its own tone (as the house's other inside materials do)
+      return gm;
+    })();
     let houseRoofProxy = null;   // the cutaway toggles this stand-in; the real roof follows it AND the aliyot layer (hidden while the aliyot stand on the cedars)
     {
       // 1.2.4 (the user: "העליה עצמה אמורה להיות יותר נמוכה בי' אמות"): the ceilings in two pieces, over the devir (DW..DE) and over the kodesh
@@ -2025,12 +2142,57 @@
       const dt = H.box(g, DE - DW, 0.05, 20, M.gold, (DE + DW) / 2, F + CO.DEVIR_H + 1, 0);
       cut.push(dc, dg, dt);
       const aY = F + CO.DEVIR_H + 1.05, aH = CEIL - 0.05 - aY;               // the aliyah's gold lining: on its floor (dt), under the gold ceiling
+      const lowList = (ctx.devirLowCut = ctx.devirLowCut || []);             // 1.3.7: what belongs to the ceiling at 20 only (Rashi's reading)
+      lowList.push(dc, dg, dt);
       for (const s of [-1, 1]) {
         const sk = H.box(g, DE - DW, aH, 0.1, M.gold, (DE + DW) / 2, aY, s * 9.95);
         if (s > 0) cut.push(sk);
         aliyotHide.push(sk);   // 1.2.4: in the aliyot reading the room over the devir is the first aliyah's west part, lined by the layer itself
+        lowList.push(sk);
       }
-      aliyotHide.push(H.box(g, 0.1, aH, 19.8, M.gold, DW + 0.05, aY, 0));
+      { const skW = H.box(g, 0.1, aH, 19.8, M.gold, DW + 0.05, aY, 0); aliyotHide.push(skW); lowList.push(skW); }
+      // 1.3.7 (the user, 11.11.2026 17:52 "להוסיף שיטה"; 18:09 "תוסיף רד"ק"): THE HEIGHT OF THE HOLY OF HOLIES - three readings,
+      // ctx.shared.devirHeight.set("rashi" | "tosafot" | "radak") (the row "גובה קודש הקדשים", 70-ui.js):
+      //   "rashi" (the default; all the above): I Kings 6:20, Rashi (book 3673, line 262) "ועשרים אמה קומתו. כלומר, עלית של בית
+      //     קדשי הקדשים, נמוכה משל היכל"; Metzudat David (3345, line 458) "עליית בית קודש הקדשים היתה נמוכה משל היכל י׳ אמות".
+      //   "tosafot": Bava Batra 98b (124, line 2324) "אמר להו: כי קא חשיב - משפת כרובים ולמעלה" - the devir thirty high as the
+      //     house, the twenty counted from the cherubim's top; the Tosafot there (1923, line 1051): "בפירוש מקרא פרש"י דתקרה דעליית
+      //     היכל היתה גבוהה משל קדשי הקדשים עשר אמות ולא עיין כאן". The ceiling at 20 and its room go (ctx.devirLowCut, hidden by
+      //     70-ui.js's applyHidden); the house's own ceiling over the devir (c1w, goldW) is the devir's; the walls' upper ten amot gold.
+      //   "radak" (3540, line 369): thirty high, "עשרים אמה בגובה צפה הקירות זהב והעשר אמות העליונות צפה באבן יקרה" - the same,
+      //     the upper ten amot of the four walls faced with stone (hei_gemStone, above).
+      // The upper walls stand flush with the devir's own skins (55-interior.js: 0.2 thick). In the 120 reading the aliyot over the
+      // devir are ten lower in "rashi" only (sec. 9).
+      const hiGold = new Group(), hiStone = new Group();
+      hiGold.name = "devirHighGold"; hiStone.name = "devirHighStone";
+      hiGold.visible = hiStone.visible = false;
+      g.add(hiGold); g.add(hiStone);
+      ctx.layers.devirHighGold = hiGold; ctx.layers.devirHighStone = hiStone;
+      {
+        const y0 = F + CO.DEVIR_H, hh = CEIL - 0.05 - y0;
+        // 1.3.7, later (the user, 18:31: "לתוספות צריך להיות את אותם ציורים של למטה, אין הבדל. זה הכוונה כולו זהב"): the gold of the
+        // "tosafot" reading is CARVED as the twenty amot below it - built in 55-interior.js with the devir's own skins (DEVIR_CARVED_UP),
+        // into this group; here only the stone of the Radak's reading
+        for (const [grp, mat] of [[hiStone, hei_gemStone]]) {
+          for (const s of [-1, 1]) { const w = H.box(grp, DE - DW, hh, 0.2, mat, (DE + DW) / 2, y0, s * 9.9); if (s > 0) cut.push(w); }
+          H.box(grp, 0.2, hh, 19.6, mat, DW + 0.1, y0, 0);
+        }
+        H.box(hiStone, 0.06, hh, 19.6, hei_gemStone, DE - 0.03, y0, 0);   // the east wall: on the amah traksin's devir face
+        ctx.labels.push(
+          { text: "קודש הקדשים — שלושים אמה, כהיכל (בבא בתרא צח:)", x: (DE + DW) / 2, y: CEIL - 2.2, z: 0, size: 1.6, layer: "devirHighGold" },
+          { text: "עשר האמות העליונות — אבן יקרה (רד״ק ו, כ)", x: (DE + DW) / 2, y: CEIL - 2.2, z: 0, size: 1.6, layer: "devirHighStone" });
+      }
+      ctx.shared.devirHeight = {
+        mode: "rashi", keys: ["rashi", "tosafot", "radak"], apply: null, aliyot: null,
+        set(m) {
+          this.mode = this.keys.indexOf(m) >= 0 ? m : "rashi";
+          hiGold.visible = this.mode === "tosafot";
+          hiStone.visible = this.mode === "radak";
+          if (typeof this.aliyot === "function") this.aliyot();   // the aliyot over the devir: ten lower / level (sec. 9)
+          if (typeof this.apply === "function") this.apply();     // 70-ui.js: the ceiling at 20 hidden or shown
+          return this.mode;
+        }
+      };
     }
 
     // ============================================================ 9. layer "עליות" (ctx.layers.aliyot) ============================================================
@@ -2068,55 +2230,67 @@
         // devir's own ceiling set (the גבים 32..33, בית דילפא 33..35, the שדרות 35..36, built here), 36..75, the second 79..118, the roof 122; the
         // house's ceiling pieces over the devir and the gold room of the 30-amah reading are hidden while the layer shows (ctx.aliyotHide)
         const DEV_TOP = F + CO.DEVIR_H + 4;                    // 36
+        // 1.3.7 (ctx.shared.devirHeight): the block over the devir is built TWICE - gWL, ten amot lower (Rashi; as until now), and
+        // gWH, level with the heichal's (the Gemara as the Tosafot bring it, and the Radak: the devir thirty high) - and shown by
+        // the reading. The labels of the low build carry both layers.
+        const gWL = new Group(), gWH = new Group();
+        gWL.name = "aliyotDevirLow"; gWH.name = "aliyotDevirLevel";
+        gA.add(gWL); gA.add(gWH);
+        ctx.layers.aliyotDevirLow = gWL; ctx.layers.aliyotDevirLevel = gWH;
         const PARTS = [
-          { x0: ax0, x1: xS, SB: [DEV_TOP, 79], SC: [75, 118], AT: AT - 10, west: true },
+          { x0: ax0, x1: xS, SB: [DEV_TOP, 79], SC: [75, 118], AT: AT - 10, west: true, grp: gWL },
+          { x0: ax0, x1: xS, SB: [A0, 89], SC: [85, 128], AT, west: true, grp: gWH },
           { x0: xS, x1: ax1, SB: [A0, 89], SC: [85, 128], AT, east: true }
         ];
-        H.box(gA, DE - DW, 1, 20, M.cedar, (DE + DW) / 2, DEV_TOP - 1, 0).name = "devir-sdeirot";   // the devir's שדרות: the first aliyah's floor over it
-        layerLabel(gA, "תקרת הדביר — גבים, בית דילפא ושדרות; רצפת העלייה שמעליו (מצודת דוד ו, כ)", DE + 0.8, DEV_TOP - 2, 0, 1.2);
+        H.box(gWL, DE - DW, 1, 20, M.cedar, (DE + DW) / 2, DEV_TOP - 1, 0).name = "devir-sdeirot";   // the devir's שדרות: the first aliyah's floor over it
+        ctx.labels.push({ text: "תקרת הדביר — גבים, בית דילפא ושדרות; רצפת העלייה שמעליו (מצודת דוד ו, כ)", x: DE + 0.8, y: DEV_TOP - 2, z: 0, size: 1.2, layers: ["aliyot", "aliyotDevirLow"] });
         const inW = 2 * 10;                                    // interior z +-10
         const WT4 = WT[3];                                     // 4
         const HOLE_X = [acx - 30, acx, acx + 30];              // the small windows' x (-54.5, -24.5, 5.5), 2 x 2, per side per story
         for (const P of PARTS) {
-          const cx = (P.x0 + P.x1) / 2, len = P.x1 - P.x0;
+          const cx = (P.x0 + P.x1) / 2, len = P.x1 - P.x0, G = P.grp || gA;   // 1.3.7: the part's own group
           for (const s of [-1, 1]) {
             const holes = [];
             for (const sb of P.SB) for (const hx of HOLE_X) if (hx > P.x0 + 2 && hx < P.x1 - 2) holes.push({ c: hx - cx, b: sb + 10 - A0, w: 2, h: 2 });
-            hei_holeWall(H, gA, { axis: "x", length: len, height: P.AT - A0, thickness: WT4, mat: M.stone, cx, cz: s * (10 + WT4 / 2), y: A0, holes, v0: 2 });
+            hei_holeWall(H, G, { axis: "x", length: len, height: P.AT - A0, thickness: WT4, mat: M.stone, cx, cz: s * (10 + WT4 / 2), y: A0, holes, v0: 2 });
           }
           // 1.2.3 (the user: "המבט של העליות יהיה ממזרח"): "פתח את העליות" takes the EAST wall off - the two storeys seen along the house's length
           if (P.east || P.west) {
             const wx0 = P.east ? P.x1 - WT4 / 2 : P.x0 + WT4 / 2;
             const holes = P.SB.map((sb) => ({ c: 0, b: sb + 10 - A0, w: 2, h: 2 }));
-            const wall = hei_holeWall(H, gA, { axis: "z", length: inW, height: P.AT - A0, thickness: WT4, mat: M.stone, cx: wx0, cz: 0, y: A0, holes, v0: 2 });
+            const wall = hei_holeWall(H, G, { axis: "z", length: inW, height: P.AT - A0, thickness: WT4, mat: M.stone, cx: wx0, cz: 0, y: A0, holes, v0: 2 });
             if (P.east && wall) open.walls.push(wall);
           }
           const ix0 = P.west ? P.x0 + WT4 : P.x0, ix1 = P.east ? P.x1 - WT4 : P.x1, iL = ix1 - ix0, icx = (ix0 + ix1) / 2;   // the part's interior in x
           for (let i = 0; i < 2; i++) {
             const y0 = P.SB[i], y1 = P.SC[i];
-            H.box(gA, iL, 1, inW, M.gold, icx, y1, 0).name = "aliyah-gavim";              // the גבים: a gold slab (1.2.3; was cedar), its underside the coffered gold
-            H.box(gA, iL - 0.2, 0.05, inW - 0.2, hei_cofferGold, icx, y1 - 0.05, 0).name = "aliyah-gavim-gold";
-            H.box(gA, iL, 1, inW, M.cedar, icx, y1 + 3, 0).name = "aliyah-sdeirot";       // the שדרות: the cedars - the floor of the next story / the roof; between them the two amot of בית דילפא, open
-            for (const s of [-1, 1]) H.box(gA, iL, y1 - y0, 0.1, M.gold, icx, y0, s * 9.95);   // the gold on the walls (II Chr 3:9)
+            H.box(G, iL, 1, inW, M.gold, icx, y1, 0).name = "aliyah-gavim";              // the גבים: a gold slab (1.2.3; was cedar), its underside the coffered gold
+            H.box(G, iL - 0.2, 0.05, inW - 0.2, hei_cofferGold, icx, y1 - 0.05, 0).name = "aliyah-gavim-gold";
+            H.box(G, iL, 1, inW, M.cedar, icx, y1 + 3, 0).name = "aliyah-sdeirot";       // the שדרות: the cedars - the floor of the next story / the roof; between them the two amot of בית דילפא, open
+            for (const s of [-1, 1]) H.box(G, iL, y1 - y0, 0.1, M.gold, icx, y0, s * 9.95);   // the gold on the walls (II Chr 3:9)
             if (P.east) {
-              const skE = H.box(gA, 0.1, y1 - y0, inW, M.gold, P.x1 - WT4 - 0.05, y0, 0);   // the east lining goes with the east wall (1.2.3)
+              const skE = H.box(G, 0.1, y1 - y0, inW, M.gold, P.x1 - WT4 - 0.05, y0, 0);   // the east lining goes with the east wall (1.2.3)
               open.walls.push(skE);
               layerLabel(gA, (i === 0 ? "עלייה א׳" : "עלייה ב׳") + " — אוצר בית האלקים (אברבנאל מלכים א ח)", acx, y0 + 20, 0, 3.2);
               layerLabel(gA, "גבים · בית דילפא · שדרות בארזים", P.x1 - WT4 + 0.8, y1 + 2, 0, 1.2);   // at the east end (1.2.3)
             }
-            if (P.west) H.box(gA, 0.1, y1 - y0, inW, M.gold, P.x0 + WT4 + 0.05, y0, 0);
+            if (P.west) H.box(G, 0.1, y1 - y0, inW, M.gold, P.x0 + WT4 + 0.05, y0, 0);
           }
-          for (const s of [-1, 1]) H.box(gA, len, 1.5, 1, M.stoneLight, cx, P.AT, s * (10 + WT4 - 0.5)); // a parapet on the roof
-          if (P.east) H.box(gA, 1, 1.5, 2 * (10 + WT4) - 2, M.stoneLight, P.x1 - 0.5, P.AT, 0);
-          if (P.west) H.box(gA, 1, 1.5, 2 * (10 + WT4) - 2, M.stoneLight, P.x0 + 0.5, P.AT, 0);
+          for (const s of [-1, 1]) H.box(G, len, 1.5, 1, M.stoneLight, cx, P.AT, s * (10 + WT4 - 0.5)); // a parapet on the roof
+          if (P.east) H.box(G, 1, 1.5, 2 * (10 + WT4) - 2, M.stoneLight, P.x1 - 0.5, P.AT, 0);
+          if (P.west) H.box(G, 1, 1.5, 2 * (10 + WT4) - 2, M.stoneLight, P.x0 + 0.5, P.AT, 0);
         }
         // the step itself (1.2.4): the east part's end wall above the lower roof (x xS..xS+4, y 122..132), its parapet, and inside the two
         // gold slabs that close the ceiling drops at x = xS - the first storey's (75..89) and the second's (118..128)
-        H.box(gA, WT4, AT - (AT - 10), 2 * (10 + WT4), M.stone, xS + WT4 / 2, AT - 10, 0).name = "aliyot-step-wall";
-        H.box(gA, 1, 1.5, 2 * (10 + WT4) - 2, M.stoneLight, xS + 0.5, AT, 0);
-        H.box(gA, 1, 89 - 75, inW, M.gold, xS, 75, 0).name = "aliyot-step-1";
-        H.box(gA, 1, 128 - 118, inW, M.gold, xS, 118, 0).name = "aliyot-step-2";
-        layerLabel(gA, "עליית קודש הקדשים נמוכה בעשר אמות (מצודת דוד ו, כ ע״פ רש״י)", xS - 12, AT - 10 + 4, -16, 2.2);
+        H.box(gWL, WT4, AT - (AT - 10), 2 * (10 + WT4), M.stone, xS + WT4 / 2, AT - 10, 0).name = "aliyot-step-wall";
+        H.box(gWL, 1, 1.5, 2 * (10 + WT4) - 2, M.stoneLight, xS + 0.5, AT, 0);
+        H.box(gWL, 1, 89 - 75, inW, M.gold, xS, 75, 0).name = "aliyot-step-1";
+        H.box(gWL, 1, 128 - 118, inW, M.gold, xS, 118, 0).name = "aliyot-step-2";
+        ctx.labels.push({ text: "עליית קודש הקדשים נמוכה בעשר אמות (מצודת דוד ו, כ ע״פ רש״י)", x: xS - 12, y: AT - 10 + 4, z: -16, size: 2.2, layers: ["aliyot", "aliyotDevirLow"] },
+          { text: "עליות קודש הקדשים בגובה עליות ההיכל (בבא בתרא צח:, תוספות)", x: xS - 12, y: AT + 4, z: -16, size: 2.2, layers: ["aliyot", "aliyotDevirLevel"] });
+        const syncW = () => { const lowOn = !ctx.shared.devirHeight || ctx.shared.devirHeight.mode === "rashi"; gWL.visible = lowOn; gWH.visible = !lowOn; };
+        syncW();
+        if (ctx.shared.devirHeight) ctx.shared.devirHeight.aliyot = syncW;
         gA.updateMatrixWorld(true);
         if (open.on) for (const w of open.walls) w.visible = false;
        } catch (e) {

@@ -283,8 +283,21 @@
       return B.n + " " + heNum(cv.ch) + (cv.v ? ", " + heNum(cv.v) : "");
     };
     // ----- the places of a line -----
-    const btnOf = (t) => (t && t.p ? UI.placeButton(t.p) : t && t.v ? UI.viewButton(t.v) : null) || null;
+    // 2.0.4 (the user: "בודאי"): a row of the opinions table is a target too - { o: row }. Its button is the one of the reading that is
+    // chosen now, so going there opens the row's card and its view and changes nothing in the model.
+    const rowBox = (r) => {   // the row's box in the panel: kept on the row where the engine keeps it, else found by its caption
+      if (!r) return null;
+      if (r.box) return r.box;
+      if (r.__wbox === undefined) {
+        const cap = ui_stripSrc(r.cap || "");
+        r.__wbox = Array.from(panel.querySelectorAll(".tm-op")).find((b) => { const c = b.querySelector(".cap"); return !!c && c.textContent === cap; }) || null;
+      }
+      return r.__wbox;
+    };
+    const rowBtn = (r) => { const bx = rowBox(r); return bx ? bx.querySelector("button.on") || bx.querySelector("button") : null; };
+    const btnOf = (t) => (t && t.o ? rowBtn(t.o) : t && t.p ? UI.placeButton(t.p) : t && t.v ? UI.viewButton(t.v) : null) || null;
     const nameOf = (t) => {
+      if (t && t.o) return "שיטות: " + ui_stripSrc(t.o.cap || "");
       if (t && t.p) return ui_stripSrc(t.p);
       const b = btnOf(t);
       return b ? String(b.title || b.textContent || "").replace(/\s+/g, " ").trim() : "";
@@ -312,6 +325,15 @@
       };
       try { for (const p of UI.places()) add(p.refs, { p: p.title }); } catch (_) {}
       try { for (const v of UI.views || []) if (v && v.key) add((UI.refs || {})[v.key], { v: v.key }); } catch (_) {}
+      // 2.0.4: the rows of the opinions table, by their own sources and by those of each of their readings (after the places)
+      try {
+        for (const r of UI.opinions || []) {
+          if (!r || r.disabled || !rowBox(r)) continue;
+          const t = { o: r };
+          add(r.refs, t);
+          for (const op of r.options || []) add(op && op[3], t);
+        }
+      } catch (_) {}
       return CITE;
     };
     // the targets of a line: those named by a searched word, then the reading table's, then the other places that bring the line
@@ -339,6 +361,14 @@
       return out;
     };
     const go = (t, label) => {
+      if (t && t.o) {   // 2.0.4: a row of the opinions table - its chosen reading's own button (RD.press(null) stops a running presentation first)
+        const b = btnOf(t);
+        if (!b) return false;
+        try { RD.press(null); } catch (_) {}
+        b.click();
+        if (label) RD.toast(label + " — " + nameOf(t));
+        return true;
+      }
       if (!RD.press(t)) return false;
       if (label) RD.toast(label + " — " + nameOf(t));
       return true;
@@ -365,6 +395,8 @@
       "#tm-words .ch button{padding:2px 8px;border-radius:999px;border:1px solid rgba(201,168,76,.5);background:rgba(201,168,76,.16);color:#f3dc9a;cursor:pointer;font:12px 'Segoe UI',Arial,sans-serif;max-width:100%;text-align:right}" +
       "#tm-words .ch button:hover,#tm-words .otz:hover:not(:disabled){background:rgba(201,168,76,.32)}" +
       "#tm-words .ch button.more{border-style:dashed;color:#cdbf8e}" +
+      "#tm-words .ch button.op{border-color:rgba(150,178,226,.6);background:rgba(120,150,210,.16);color:#d5e3ff}" +   // 2.0.4: a row of the opinions table
+      "#tm-words .ch button.op:hover{background:rgba(120,150,210,.32)}" +
       "#tm-search-none a{color:#f3dc9a;cursor:pointer;text-decoration:underline}";
     document.head.appendChild(st);
     const sec = document.createElement("div");
@@ -505,7 +537,8 @@
           const b = document.createElement("button");
           b.type = "button";
           b.textContent = nameOf(t);
-          b.title = "מעבר אל המקום במודל";
+          b.title = t && t.o ? "פתיחת השורה שבטבלת השיטות — הכרטיס והמבט; המודל אינו משתנה" : "מעבר אל המקום במודל";
+          if (t && t.o) b.className = "op";
           b.addEventListener("click", (ev) => { ev.stopPropagation(); go(t, label); });
           return b;
         };

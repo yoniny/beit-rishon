@@ -1,0 +1,19 @@
+# -*- coding: utf-8 -*-
+# 2.0.4 / B1 1.3.7 - the user, 11.11.2026 17:07: "א. תגביה" (of my question: the bar shura in the First Temple model is level with the
+# floor and is hardly seen - leave, or raise it half an amah?). Half an amah now; the card says that Rashi's wall is level with the
+# floor and that the half amah is the model's, to let it be seen. Idempotent by the marker "1.3.7 (the user: \"תגביה\")".
+import io
+B1 = '/home/claude/beit-rishon/src/'
+def rep(path, old, new):
+    s = io.open(B1 + path, encoding='utf-8').read()
+    if new in s:
+        print(path, ': already'); return
+    assert s.count(old) == 1, (path, s.count(old), old[:50])
+    io.open(B1 + path, 'w', encoding='utf-8', newline='\n').write(s.replace(old, new))
+    print(path, ': patched')
+rep('30-courts.js',
+    '''const m = H2.box(g, x1 - x0, 0.06, z1 - z0, bm, (x0 + x1) / 2, AZ, (z0 + z1) / 2); m.name = "barShura"; m.castShadow = false; };''',
+    '''const m = H2.box(g, x1 - x0, 0.5, z1 - z0, bm, (x0 + x1) / 2, AZ, (z0 + z1) / 2); m.name = "barShura"; m.castShadow = false; };   // 1.3.7 (the user: "תגביה"): half an amah over the floor, to be seen (it was 0.06) - a model choice''')
+rep('70-ui.js',
+    '''כאן רצפת החצר במפלס אחד, ולכן **ראשה שווה לרצפה**, והיא נראית כפס אבן כהה, ברוחב אמה, לרגלי החומה — חוץ מן השערים ומלשכת הגזית.''',
+    '''כאן רצפת החצר במפלס אחד, ולדברי רש״י ראשה שווה לרצפה; כדי שתיראה היא מצוירת **חצי אמה מעל הרצפה** — אבן כהה, ברוחב אמה, לרגלי החומה, חוץ מן השערים ומלשכת הגזית. הגבהתה בחצי אמה — בחירת מודל.''')

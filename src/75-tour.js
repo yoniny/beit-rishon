@@ -325,10 +325,10 @@ body.tm-measuring #tm-tour-box{bottom:96px}
     // 1.0.1-L (A32, "לקצר"): short enough to be read in the slide's time; every commentator's words stay in the card of the place "כסא שלמה"
     pesukim: "רש״י: 'שש מעלות. מדרגות לעלות בו, וראש הכסא היה עגל, מקום מושב המלך'; 'ושנים אריות. של זהב, וכל צורת הכסא מפרשת באגדת מגלת אסתר'. רד״ק: 'במקום ישיבתו היו ידות מזה ומזה לסמיכות זרועותיו והיו צורות אריות עומדות אצל הידות'. רלב״ג: 'ולזה היו שם ארבעה עשר אריות'. במודל, בגרסה זו: הגוף הרחב ושש המעלות לפניו, הכבש, המושב העגול, הגב והידות, ההדום, שנים עשר אריות על המעלות ושניים אצל הידות — בלי נשרים, חיות, כסאות ומנגנון, שהם מן המדרש, ולכן אין כאן עלייה. הראש העגול כרש״י, מלבי״ם ורלב״ג; כיפת הכובע של מצודת דוד ואברבנאל לא נבנתה. המידות — בחירת מודל.",
     lead: {
-      targumSheni: "עליית המלך לכסא לפי תרגום שני (אסתר א, ב), בלשון התרגום ובתרגום עברי, ואחריה עדי השקר. השור מרים את המלך ממעלה למעלה, הנשרים מושיבים אותו, הנשר הגדול מניח את הכתר, והאריות מזלפים בשמים. במודל עולה צללית בלבד, בלי דמות המלך. על פי המדרש; זמני התנועות וצורתן — בחירת מודל.",
-      estherRabbah: "עליית המלך לכסא לפי אסתר רבה (א, יב) עם מדרש פנים אחרים (נוסח ב) ומדרש אבא גוריון, המסכימים בעיקר המעשה, ואחריה עדי השקר. בכל מעלה חוזר גלגל המנגנון, והארי פושט יד והנשר כנף לסירוגין; מאחורי המושב השרביט והיונה ובפיה העטרה. במודל עולה צללית בלבד, בלי דמות המלך. על פי המדרש; זמני התנועות וצורתן — בחירת מודל.",
+      targumSheni: "עליית המלך לכסא לפי תרגום שני (אסתר א, ב), בלשון התרגום ובתרגום עברי, ואחריה עדי השקר. בכל מעלה פושטות יד שתי החיות הרובצות שבה, טהורה מול טמאה (התרגום מזכיר בפירוש את השור שבראשונה), והמלך עולה ביניהן; מן השישית הנשרים יורדים על כתפיו, מעלים ומושיבים אותו; הנשר הגדול מניח את הכתר, והאריות מזלפים בשמים. במודל עולה צללית בלבד, בלי דמות המלך. על פי המדרש; זמני התנועות וצורתן — בחירת מודל.",
+      estherRabbah: "עליית המלך לכסא לפי אסתר רבה (א, יב) עם מדרש פנים אחרים (נוסח ב) ומדרש אבא גוריון, המסכימים בעיקר המעשה, ואחריה עדי השקר. בכל מעלה חוזר גלגל המנגנון, והארי פושט יד והנשר כנף לסירוגין; על המעלות חיות טהורות כנגד טמאות, וטווס של כסף נושא את המלך אל המושב ומושיבו (אבא גוריון); מאחורי המושב השרביט והיונה ובפיה העטרה. במודל עולה צללית בלבד, בלי דמות המלך. על פי המדרש; זמני התנועות וצורתן — בחירת מודל.",
       // 1.0.1-L: the user: the midrash's name on screen is "בית המדרש ב"; the ascent shows a covered foot climbing (60-palace.js)
-      beitHamidrash: "עליית המלך לכסא לפי בית המדרש ב (ילינק; בספרייה בילקוט מדרשים), ואחריה עדי השקר. בידי האריות לוחות כתב, ובכל מעלה המלך אומר פסוק מתהלים יט; תנין של כסף מושיב אותו, והארי של שמאל מניח את העטרה על ראשו. במודל עולה צללית בלבד, בלי דמות המלך. על פי המדרש; זמני התנועות וצורתן — בחירת מודל."
+      beitHamidrash: "עליית המלך לכסא לפי בית המדרש ב (ילינק; בספרייה בילקוט מדרשים), ואחריה עדי השקר. בידי האריות לוחות כתב, ובכל מעלה המלך אומר פסוק מתהלים יט; תנין של כסף מניע את גלגל הכסא, והגלגל נושא את המלך אל המושב ומושיבו; והארי של שמאל מניח את העטרה על ראשו. במודל עולה צללית בלבד, בלי דמות המלך. על פי המדרש; זמני התנועות וצורתן — בחירת מודל."
     },
     leadW: "עדי השקר: כשעולים עדים להעיד לפני המלך, גלגלי המנגנון סובבים וכל החיות שבכסא נעות ומרעישות, להפחיד את העדים שיעידו אמת. הדברים בלשון המדרש:",
     refs: {
@@ -740,6 +740,9 @@ body.tm-measuring #tm-tour-box{bottom:96px}
       // cloud (the devir's slides ask about it themselves) and a button that only mutes (keepDemos).
       const toolsOff = () => {
         const back = [];
+        // TOUR_STOPDEMOS_204: a running demonstration ends first and gives back what IT opened (the lotteries' night opens the
+        // chambers' roofs), so that what it opened is not taken for the viewer's own and opened again when the presentation ends
+        try { call(ctx.shared.stopDemos); } catch (_) {}
         for (const b of mbList().slice()) {
           try {
             if (!b || !fnc(b.get) || !fnc(b.set) || b.keepDemos || b.id === "ui-cloud" || !b.get()) continue;
@@ -860,7 +863,8 @@ body.tm-measuring #tm-tour-box{bottom:96px}
       const placesOf = () => {
         let list = null;
         if (fnc(U.places)) list = call(U.places);
-        if (Array.isArray(list) && list.length) return list.filter((p) => p && p.title);
+        // 1.3.7 / 1.9.5 (TOUR_ENGINE_204): a place whose matter is shown by another place's slide (item.noTour) has no slide of its own
+        if (Array.isArray(list) && list.length) return list.filter((p) => p && p.title && !(p.item && p.item.noTour));
         const titles = call(U.placeTitles);
         if (!Array.isArray(titles)) return [];
         const out = [];
@@ -947,6 +951,21 @@ body.tm-measuring #tm-tour-box{bottom:96px}
           rt.act = true;
         }
       };
+      // 1.3.7 / 1.9.5 (TOUR_ENGINE_204; the user, 11.11.2026: "אם כרטיס אחד... מציג כמה דברים המצגת צריכה להציג את כולם באותו הכרטיס
+      // (דהיינו באותם ה7 שניות להסתובב ולהציג הכל"): a place that speaks of several things names their further cameras - item.tourThen,
+      // a list of { cam, tg } | { fp } | { place } - and its slide flies to each in its turn, the slide's time shared between them
+      // TOUR_ENGINE_204C (the helper's scan, 11.11.2026): the list may be a function; an entry may be { pos, target } (the
+      // gatekeepers' place wrote it so and its cameras never ran); `extra`: further entries the engine adds (mergedCams)
+      const placeThen = (p, extra) => {
+        let own = p && p.item ? p.item.tourThen : null;
+        if (fnc(own)) own = call(own);
+        const L = (Array.isArray(own) ? own : []).concat(extra || [])
+          .map((t) => (t && !t.fp && !t.place && !(t.cam && t.tg) && t.pos && t.target ? Object.assign({}, t, { cam: t.pos, tg: t.target }) : t))
+          .filter((t) => t && (t.fp || t.place || (t.cam && t.tg)));
+        if (!L.length) return null;
+        const share = 1 / (L.length + 1);
+        return L.map((t, i) => ({ go: [t.fp ? { fp: t.fp } : t.place ? { place: t.place } : { pos: t.cam, target: t.tg }], at: (i + 1) * share, dur: t.dur || 1900 }));
+      };
       const placeSlide = (p, groupCam) => {
         const f = placeFeat(p), k = camKey(p), go = f === "kelim" ? tour_KELIM_GO.slice() : [];   // 1.0.1-L (L.88): the panel's own camera there is for the card beside its panel
         if (k) go.push(f ? { fp: k, f } : { fp: k });
@@ -954,6 +973,7 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         if (groupCam) go.push({ fp: groupCam });
         return { kind: "place", part: 0, group: p.group || "", title: p.title, text: tour_SHORT[p.title] || p.info || "", refs: linkRefs(p.refs), go, lay: p.layer || null, out: tour_OUT,
           pf: placeOwnFeat(p), act: placeAct(p), actOnly: !!(placeAct(p) && !placeOwnCam(p)),   // 1.3.5 / 1.9.3
+          then: placeThen(p),   // 1.3.7 / 1.9.5
           bubble: p.title === "כסא שלמה" || p.title === "עליית המלך לכסא" || k === "throneSteps" };
       };
       const viewSlide = (v, group) => ({ kind: "view", part: 0, group: group || "", key: v.key, title: v.label, text: (U.info && U.info[v.key]) || "", refs: (U.refs && U.refs[v.key]) || [],
@@ -1004,10 +1024,80 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         const views = (Array.isArray(U.views) ? U.views : []).filter((v) => v && v.key && v.key !== "aliyot" && resolveFp(v.key));   // "העליות" is the row "גובה הבית" of the opinions table: shown with the readings
         const byKey = {};
         for (const v of views) byKey[v.key] = v;
-        const places = placesOf();
+        // 1.3.7 / 1.9.5 (TOUR_ENGINE_204B; the user, 11.11.2026: "יש כרטיסים שלא מראים כלום - להסיר אותם או לאחד", "אם כרטיס אחד...
+        // מציג כמה דברים המצגת צריכה להציג את כולם באותו הכרטיס"): ONE SLIDE PER BUTTON OF THE PANEL. Until now a place that the
+        // panel had merged into another button (70-ui.js UI_MERGE: noButton, mergeInto - the whole group "השלמות") still had a slide
+        // of its own, before the kept button's own camera, and a view of the grid whose button a place had taken (UI_VIEW_HOME) had
+        // its slide right before that place's - the same picture two and three times. Now the kept button's slide stands for them,
+        // with the card the button shows (its text, then each merged one's under its title: mergedCard), and a merged matter that
+        // has a camera of its own is one of the slide's further cameras (item.tourThen on the kept place, 70-ui.js)
+        const allPlaces = placesOf();
+        const keptOf = (p) => {
+          const k = p && p.item && p.item.noButton ? p.item.mergeInto : null;
+          return k ? allPlaces.find((x) => x.item === k) || null : null;
+        };
+        const places = allPlaces.filter((p) => !keptOf(p));
         const groups = [];
         for (const p of places) if (groups.indexOf(p.group || "") < 0) groups.push(p.group || "");
         const viewKeyOf = (k) => (k && !byKey[k] && tour_VIEW_ALIAS[k] ? tour_VIEW_ALIAS[k] : k);
+        // a view whose button left the grid (a place repeats it): the place's slide is the view's slide
+        const gridless = (key) => {
+          const b = fnc(U.viewButton) ? call(U.viewButton, key) : null;
+          return !!b && !b.parentNode;
+        };
+        const coverOf = {};
+        for (const p of places) {
+          if (isExtras(p.group)) continue;
+          const k = camKey(p);
+          if (k && byKey[k] && k !== "__general" && gridless(k) && !(k in coverOf)) coverOf[k] = p;
+          for (const d of p.item && Array.isArray(p.item.more) ? p.item.more : []) {
+            if (d && !d.t && d.key && byKey[d.key] && gridless(d.key) && !(d.key in coverOf)) coverOf[d.key] = p;
+          }
+        }
+        const mergedCard = (p) => {
+          const own = tour_SHORT[p.title] || p.info || "";
+          const parts = [own], refs = linkRefs(p.refs).slice(), seen = new Set(refs.map((r) => r[0]));
+          for (const d of p.item && Array.isArray(p.item.more) ? p.item.more : []) {
+            if (!d) continue;
+            const tx = (d.t && tour_SHORT[d.t]) || (d.key ? (U.info && U.info[d.key]) || "" : d.info || "");
+            // TOUR_ENGINE_204C: only the lines the card already has are left out (a merged card that opened with the kept card's
+            // own verse was dropped whole - its first 40 letters were the same)
+            if (tx) {
+              const have = parts.join("\n") + "\n" + String(p.info || ""), fresh = String(tx).split("\n").filter((ln) => ln.trim() && have.indexOf(ln.trim()) < 0);
+              if (fresh.length) parts.push((d.t ? d.t + ": " : "") + fresh.join("\n"));
+            }
+            for (const r of linkRefs(d.key ? (U.refs && U.refs[d.key]) || [] : d.refs || [])) {
+              if (!seen.has(r[0])) {
+                seen.add(r[0]);
+                refs.push(r);
+              }
+            }
+          }
+          return { text: parts.filter(Boolean).join("\n\n"), refs };
+        };
+        // TOUR_ENGINE_204C: a merged matter that has a camera of its own is one of the slide's further cameras - up to four -
+        // when the kept place names none itself (item.tourThen)
+        const mergedCams = (p) => {
+          const out = [], own = camKey(p);
+          for (const d of p.item && Array.isArray(p.item.more) ? p.item.more : []) {
+            if (!d || out.length >= 4) continue;
+            if (d.t) {
+              const q = allPlaces.find((x) => x.item === d || x.title === d.t);
+              if (q && placeOwnCam(q) && camKey(q) !== own) out.push({ place: q.title });
+            } else if (d.key && d.key !== own && resolveFp(d.key)) out.push({ fp: d.key });
+          }
+          return out;
+        };
+        const buttonSlide = (p, groupCam) => {
+          const s = placeSlide(p, groupCam);
+          if (p.item && Array.isArray(p.item.more) && p.item.more.length) {
+            const mc = mergedCard(p);
+            s.text = mc.text;
+            s.refs = mc.refs;
+            if (!s.then) s.then = placeThen(p, mergedCams(p));
+          }
+          return s;
+        };
         const home = {};
         for (const p of places) {
           const k = viewKeyOf(camKey(p));
@@ -1026,6 +1116,7 @@ body.tm-measuring #tm-tour-box{bottom:96px}
           prev = home[v.key];
         }
         const done = {};
+        for (const k of Object.keys(coverOf)) done[k] = true;   // TOUR_ENGINE_204B: the covering place's slide stands for the view
         const viewSlideOf = {};   // 1.3.5 / 1.9.3: a place folded into its view's slide gives it its feature and its action
         const emitView = (v, g) => {
           if (done[v.key]) return;
@@ -1051,9 +1142,13 @@ body.tm-measuring #tm-tour-box{bottom:96px}
                 emitView(w, g);
                 if (w === v) break;
               }
-              fold = vk === k && ((p.item && p.item.key === k) || !p.info || p.info === (U.info && U.info[k]));
+              fold = vk === k && coverOf[vk] !== p && !!viewSlideOf[vk] && ((p.item && p.item.key === k) || !p.info || p.info === (U.info && U.info[k]));
             }
-            if (!fold) out.push(placeSlide(p, groupCam));
+            if (!fold) {
+              const bs = buttonSlide(p, groupCam);
+              out.push(bs);
+              for (const ck of Object.keys(coverOf)) if (coverOf[ck] === p && !viewSlideOf[ck]) viewSlideOf[ck] = bs;
+            }
             else if (v && viewSlideOf[v.key]) {
               const vs = viewSlideOf[v.key];
               if (!vs.act) vs.act = placeAct(p);
@@ -1207,7 +1302,9 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         // 1.0.1-L: a slide with a timeline dwells for it, in every mode (the speed scales the timeline too: animStep)
         const a = cur && cur.s === s ? cur.anim : null;
         if (a) return (tour_ANIM_LEAD + a.whole + tour_ANIM_TAIL) * 1000 * speed;
-        if (mode.key === "continuous") return tour_DWELL * speed;
+        // 1.3.7 / 1.9.5 (TOUR_ENGINE_204B): a slide of three cameras and more gets 2.5 s for each camera after the second - in seven
+        // seconds three flights leave nothing to look at
+        if (mode.key === "continuous") return (tour_DWELL + Math.max(0, (Array.isArray(s.then) ? s.then.length : 0) - 1) * 2500) * speed;
         // (1.0.1-L: with the sentence the slide adds while its feature is on: 7:30-33 then lasts for most of the demonstration's round)
         const n = (s.text || "").length + (cur && cur.s === s && cur.feat && s.xf ? s.xf.length + 1 : 0);
         if (s.kind === "verse" || s.letters) return Math.max(10000, Math.min(60000, 3000 + 55 * n + 70 * (s.letters || 0))) * speed;
@@ -1505,6 +1602,10 @@ body.tm-measuring #tm-tour-box{bottom:96px}
           });
           // 1.3.5 / 1.9.3: a reading may move another row with it (the names of the north gates show the thirteen gates) - the other rows
           // go back after this row's own way back (pushed first, so it runs after it)
+          // 1.3.7 / 1.9.5 (TOUR_ENGINE_204; the scan of 11.11.2026): a row whose onPick runs a demonstration (the way from the wicket to
+          // the great gate) started the DEFAULT reading's demonstration when the slide was left and the row went back - over the next
+          // slide. The demonstrations are stopped after the rows went back (pushed before their undos: the stack runs backwards)
+          rt.undo.push(() => call(ctx.shared.stopDemos));
           const rows0 = rowsOf().filter((r) => r !== s.row).map((r) => [r, r.cur]);
           rt.undo.push(() => {
             for (const [r, k] of rows0) if (r.cur !== k) setRow(r, k);
@@ -1566,7 +1667,7 @@ body.tm-measuring #tm-tour-box{bottom:96px}
           if (res && !rt.actOnly) flyRes(res);
         }
         if (s.anim) beginAnim(rt);
-        if (mode.key === "continuous" && !rt.devirNav && !s.nofly && !rt.actOnly) {
+        if (mode.key === "continuous" && !rt.devirNav && !s.nofly && !rt.actOnly && !(Array.isArray(s.then) && s.then.length)) {   // TOUR_ENGINE_204B: its own cameras turn it
           rt.orbit = { start: 1800, amp: tour_ORBIT * orbitSide, applied: 0, begun: false, dead: false };
           orbitSide = -orbitSide;
         }
@@ -1900,6 +2001,9 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         if (menuOpen && !inside(t, menu) && !inside(t, btn)) openMenu(false);
         if (!running || e.__tmSynthetic) return;
         if (inside(t, box) || inside(t, btn) || inside(t, menu) || inside(t, cfEl())) return;
+        // TOUR_SOFT_204 (the user, 12.11.2026 02:14: "סגירת כרטיס צף או קיפול במצגת או בכל הדגמה אינה נחשבת פקודה"): closing a floating
+        // card, folding it, folding a group of the panel or the panel itself - not the user taking over
+        if (t && t.closest && t.closest("#tm-xcard .x, #tm-card .x, #tm-burger, summary")) return;
         downPtrs.add(e.pointerId);   // tour-6: held while it is down
         userInteract();
       }, true);
@@ -1938,6 +2042,7 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         if (!running) return;
         const t = e.target;
         if (inside(t, box) || inside(t, menu) || (U.panel && inside(t, U.panel))) return;
+        if (t && t.closest && t.closest("#tm-xcard, #tm-card")) return;   // TOUR_SOFT_204: reading a floating card
         userInteract();
       }, { capture: true, passive: true });
       // keys: Esc closes the menu / answers the cloud dialog ("ביטול") / ends the tour; the arrows and the zoom keys turn the view -> the user

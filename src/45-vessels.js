@@ -1196,7 +1196,7 @@
     // 1.2.2: the ramp moves with the altar (40-altar.js altarPlace: dz = +10 south, -10 north, 0 middle: the ramp z 20..52, 0..32, 10..42), and
     // the wash stop at z 22 stands beside it in all three (with the altar in the south, 2 south of the body; a stop that moved with the ramp
     // stood 1 amah from home). The route and the timeline are built by a function and rebuilt (demo.rebuild) when the altar's place changes.
-    const altarDz = () => { const ap = ctx.shared.altarPlace; return ap && ap.dz && ap.current in ap.dz ? ap.dz[ap.current] : 0; };
+    const altarDz = () => { const ap = ctx.shared.altarPlace; return ap && ap.dz && ap.current in ap.dz ? ap.dz[ap.current] + (ap.extra || 0) : 0; };   // 1.3.7: + R. Tam's four amot
     const washZ = () => HZ - 11;
     let WASH = [HX, washZ()];                      // (34.5, 22): beside the ramp, 5 west of it, between the ulam and the altar
     let ROUTE = [[HX, HZ], WASH, "wash", [HX, STOP[1]], STOP, "pour", [HX, STOP[1]], [HX, HZ]];   // home, the ramp, the corner, the tables and back

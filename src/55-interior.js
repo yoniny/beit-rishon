@@ -57,6 +57,7 @@
   var INT_DEVIR_CLEAR = 6;                                            // clear width between the post vertices (model choice: no measure in the sources)
   var INT_DEVIR_HOLE = INT_DEVIR_CLEAR + 2 * INT_PENT_DEPTH;          // the hole cut in the traksin: 9.08 (the posts stand in it)
   var INT_DEVIR_DOOR_H = 12;                                          // devir doorway height (model choice)
+  var INT_FLOOR_RISE = 4;                                             // 1.3.5: the house floor's rise from the heichal's door to the devir's west wall (model choice; see "houseSlope" below)
   var INT_HEI_DOOR_W = 10, INT_HEI_DOOR_H = 20;                       // heichal doorway (model choice: the ratio of the Second Temple's heichal door, Middot 4:1, applied by the user)
 
   function int_m4(x, y, z, rx = 0, ry = 0, rz = 0, sx = 1, sy = 1, sz = 1) {
@@ -1063,6 +1064,12 @@
     const F = LV.HEI;                       // house floor, y 12
     const FL = F + 0.07;                    // top of the gold floor skin (0.06) + epsilon: the vessels stand here
     const XE = CO.xKodeshE, XW = CO.xKodeshW, XDE = CO.xDevirE, XDW = CO.xDevirW;   // -3.5, -43.5, -44.5, -63.5
+    // 1.3.7 (the user, 11.11.2026 17:10, of the devir's doorway that the sloping floor had buried 2.67 deep: "להגביה"): THE DEVIR'S
+    // DOORWAY STANDS ON THE SLOPING FLOOR. DOOR_UP = the floor's rise at the traksin's east face (4 * 40 / 60 = 2.667): the hole in the
+    // wall, the posts and the lintel of both readings, the doors with their pivots and the key, the parochet with its bent head, and
+    // the four bars of the gold chains (their heights are counted from the floor) all stand that much higher. The doorway's clear
+    // height is again the whole 12. (At the wall's west face the floor is 0.07 higher still - it covers the posts' feet there.)
+    const DOOR_UP = INT_FLOOR_RISE * (XE - XW) / (XE - XDW);
     const HW = CO.HOUSE_W / 2;              // 10: half the inner width (I Kings 6:2 "ועשרים רחבו")
     const KH = CO.HOUSE_H;                  // 30: the kodesh height (I Kings 6:2 "ושלשים אמה קומתו")
     const DH = CO.DEVIR_H;                  // 20: the devir height (I Kings 6:20 "ועשרים אמה קומתו"; Rashi: its ceiling lower than the heichal's)
@@ -2260,8 +2267,8 @@
           links.push(k % 2 ? int_m4(bx, y, z, Math.PI / 2, 0, 0) : int_m4(bx, y, z, 0, Math.PI / 2, 0));
       };
       const hz = INT_DEVIR_HOLE / 2 + 0.2;
-      for (const y of [F + 2, F + 8]) { bar(y, -HW, -hz); bar(y, hz, HW); }
-      for (const y of [F + 14, F + 20]) bar(y, -HW, HW);
+      for (const y of [F + DOOR_UP + 2, F + DOOR_UP + 8]) { bar(y, -HW, -hz); bar(y, hz, HW); }   // 1.3.7: counted from the floor at the wall
+      for (const y of [F + DOOR_UP + 14, F + DOOR_UP + 20]) bar(y, -HW, HW);
       int_inst(g, linkG, M.gold, links, false);
     } catch (e) { console.warn("[interior] chains", e); }
 
@@ -2280,15 +2287,16 @@
     const TRK_BAND = INT_PENT_DEPTH;                                // 1.5388: the lintel's height (its pentagon, as the posts')
     {
       const tg = [];                                                // from the band's top (y 25.54) to the kodesh ceiling (y 42)
-      int_uvBox(tg, XDE, XW, F + INT_DEVIR_DOOR_H + TRK_BAND, F + KH, -HW, HW, trkUV);
+      int_uvBox(tg, XDE, XW, F + DOOR_UP + INT_DEVIR_DOOR_H + TRK_BAND, F + KH, -HW, HW, trkUV);
       mergedMesh(tg, goldCarvedEnd, g);
     }
     // the two piers of the traksin beside the doorway, for a hole `holeW` wide, and the band above the doorway with a hole `bandHoleW` wide
     // (0: solid) - one merged mesh per reading of the doorway
     const trkPiers = (parent, holeW, bandHoleW) => {
-      const pg = [], y1 = F + INT_DEVIR_DOOR_H, y2 = y1 + TRK_BAND;
+      const pg = [], y1 = F + DOOR_UP + INT_DEVIR_DOOR_H, y2 = y1 + TRK_BAND;
       int_uvBox(pg, XDE, XW, F, y1, -HW, -holeW / 2, trkUV);
       int_uvBox(pg, XDE, XW, F, y1, holeW / 2, HW, trkUV);
+      int_uvBox(pg, XDE, XW, F, F + DOOR_UP - 0.02, -holeW / 2, holeW / 2, trkUV);   // 1.3.7: the wall under the doorway's foot (the sloping floor covers it)
       if (bandHoleW > 0) {
         int_uvBox(pg, XDE, XW, y1, y2, -HW, -bandHoleW / 2, trkUV);
         int_uvBox(pg, XDE, XW, y1, y2, bandHoleW / 2, HW, trkUV);
@@ -2316,6 +2324,7 @@
       const pent = key === "pent";
       const holeW = pent ? INT_DEVIR_HOLE : INT_DEVIR_CLEAR + 2;      // 9.08 (the pentagons stand in the hole) / 8 (square posts 1 thick)
       trkPiers(vg, holeW, pent ? INT_DEVIR_HOLE : 0);                // 1.0.1-L (L.32): Rashi's reading - the lintel fills the band's hole
+      const fixed = vg.children.slice();                             // 1.3.7: the wall's own pieces - all that is added after them goes up DOOR_UP (below)
       if (pent) {
         const pentShape = (zJamb, s) => {
           // s = -1: north post (jamb at z < 0, vertex toward +z); s = +1: south post. Shape coords (x, -z), see the rotation below.
@@ -2372,6 +2381,7 @@
           for (const o of vg.children) {
             if (!o.isMesh || !o.geometry) continue;
             const ln = new LineSegments(new EdgesGeometry(o.geometry, 20), edgeMat);
+            ln.userData.src = o;
             ln.position.copy(o.position);
             ln.rotation.copy(o.rotation);
             ln.renderOrder = 5;
@@ -2456,6 +2466,12 @@
       // 1.0.1-K (K.5): its weave from world positions (the heichal face u = -z, the devir face u = z, v = y - 12): the same for both readings,
       // symmetric about the doorway's middle, and continued by the swellings of the staffs (below)
       int_boxUV(par.geometry, 0, parH / 2, 0, (nx, ny, nz, x, y, z) => [nx > 0.5 ? -z : z, y]);
+      // 1.3.7: the doorway's own parts stand DOOR_UP higher (the wall's pieces were built so already)
+      for (const o of vg.children) {
+        if (fixed.indexOf(o) >= 0) continue;
+        o.position.y += DOOR_UP;
+        if (o.name === "devir-pent-edges") for (const ln of o.children) if (fixed.indexOf(ln.userData.src) >= 0) ln.position.y -= DOOR_UP;   // the edges of the wall's pieces stay with them
+      }
       devVar[key] = vg;
       return vg;
     };
@@ -2548,6 +2564,14 @@
       const df = [];
       int_uvBox(df, XDW, XDE, F, F + 0.06, -HW, HW, floorUV);
       mergedMesh(df, goldFloor, g);
+      // 1.3.7: the floor of the doorway itself, between the two rooms' floors - gold as they are (6:30 "לפנימה ולחיצון"); the cypress
+      // wedge of the slope showed there. It rises with the floor (the slope's group finds it by its bounds).
+      {
+        const dd = [];
+        int_uvBox(dd, XDE, XW, F, F + 0.06, -INT_DEVIR_HOLE / 2, INT_DEVIR_HOLE / 2, floorUV);
+        const dm = mergedMesh(dd, goldFloor, g);
+        if (dm) dm.name = "devir-door-floor";
+      }
       // the skins carved like the heichal's: 6:29 "מלפנים ולחיצון" - Rashi: "לבית הכפרת הפנימי ולהיכל החיצון" (1.0.1-K: world uvs, two
       // registers of 10 from the floor to the ceiling at 20)
       const dn = [], ds = [], dw = [];
@@ -2557,6 +2581,23 @@
       cut.push(mergedMesh(ds, goldCarvedSouth, g));                     // 1.0.1-L (L.47): the mirrored environment
       int_uvBox(dw, XDW, XDW + SKIN, F, F + DH, -HW, HW, faceUV(0, HW));     // west skin (u = 10 - z)
       mergedMesh(dw, goldCarved, g);
+      // DEVIR_CARVED_UP - 1.3.7 (the user, 11.11.2026 18:31, of the reading that the devir is thirty high - Bava Batra 98b and the
+      // Tosafot there: "לתוספות צריך להיות את אותם ציורים של למטה, אין הבדל. זה הכוונה כולו זהב"): the upper ten amot of the three
+      // walls carry the same carved gold - a third register of the same cell (as the kodesh's three), the same uvs, so the pattern runs
+      // on from below. Into the group of that reading (ctx.layers.devirHighGold, 50-heichal.js sec. 8), which shows them.
+      {
+        const hg = ctx.layers && ctx.layers.devirHighGold;
+        if (hg) {
+          const yA = F + DH, yB = F + KH - 0.05;
+          const un = [], us = [], uw = [];
+          int_uvBox(un, XDW, XDE, yA, yB, -HW, -HW + SKIN, faceUV(XDW, 0));
+          mergedMesh(un, goldCarved, hg);
+          int_uvBox(us, XDW, XDE, yA, yB, HW - SKIN, HW, faceUV(XDE, 0));
+          cut.push(mergedMesh(us, goldCarvedSouth, hg));
+          int_uvBox(uw, XDW, XDW + SKIN, yA, yB, -HW, HW, faceUV(0, HW));
+          mergedMesh(uw, goldCarved, hg);
+        }
+      }
       // even shetiya - Mishnah Yoma 5:2 (53b): "משנטל הארון, אבן היתה שם מימות נביאים ראשונים, ושתיה היתה נקראת, גבוהה מן הארץ שלש אצבעות,
       // ועליה היה נותן" - in the west of the devir (Rambam Beit HaBechira 4:1 "אבן היתה בקדש הקדשים במערבו שעליה היה הארון מנח"): a flat rock
       // ~2 (x, east-west) x 3 (z, north-south) (research: "3 על 2"; the irregular outline: model choice), so that the whole footprint of the
@@ -3050,10 +3091,10 @@
       { text: "ההיכל", x: (XE + XW) / 2, y: F + KH - 1.5, z: 0, size: 3.5 },   // 1.0.1: "ההיכל" = the kodesh itself (the user); the whole house is "בית ה׳" (50-heichal.js)
       { text: "קודש הקדשים", x: DEVIR_CX, y: F + DH - 1.5, z: 0, size: 3.5 },
       { text: "פתח ההיכל (מזוזות רבועות)", x: CO.xHouseE + 1.5, y: F + INT_HEI_DOOR_H + 2.5, z: 0, size: 2.2 },
-      { text: "רתוקות הזהב", x: XW + 1.2, y: F + 17, z: -6, size: 1.8 },
-      { text: "אמה טרקסין", x: XW + 0.8, y: F + INT_DEVIR_DOOR_H + 4.5, z: 0, size: 2.4 },   // 1.0.1-H: on the wall right above the doorway (y 28.5)
+      { text: "רתוקות הזהב", x: XW + 1.2, y: F + DOOR_UP + 17, z: -6, size: 1.8 },
+      { text: "אמה טרקסין", x: XW + 0.8, y: F + DOOR_UP + INT_DEVIR_DOOR_H + 4.5, z: 0, size: 2.4 },   // 1.0.1-H: on the wall right above the doorway (y 28.5)
       { text: "פתוחי מקלעות כרובים ותמרות ופטורי ציצים (ו, כט)", x: (XE + XW) / 2, y: F + 22, z: -HW + 1.2, size: 1.6 },   // 1.0.1-H: the carved north wall
-      { text: "פתח הדביר (מזוזות חמישית)", x: XW + 1.5, y: F + INT_DEVIR_DOOR_H + 3.2, z: 0, size: 2 },   // 1.0.1-L (verifier of L.32): over the lintel and off the chain bar at y 26, which ran through its letters
+      { text: "פתח הדביר (מזוזות חמישית)", x: XW + 1.5, y: F + DOOR_UP + INT_DEVIR_DOOR_H + 3.2, z: 0, size: 2 },   // 1.0.1-L (verifier of L.32): over the lintel and off the chain bar at y 26, which ran through its letters
       { text: "הפרוכת", x: XW + 1.2, y: F + 9, z: 0, size: 1.8 },
       { text: "הכרובים", x: ARK_X, y: F + 12, z: 0, size: 2.4 },
       { text: "הארון ובדיו", x: ARK_X + 4, y: F + 4, z: 0, size: 1.8, layer: "arkLid" },
@@ -3118,7 +3159,7 @@
     // the house's inner footprint, the bottom within 1.3 of the floor, no higher than 11.5 (the cherubim are 10). A wedge of the cypress
     // boards fills the room under the gold skin (I Kings 6:15 "ויצף את קרקע הבית בצלעות ברושים").
     {
-      const SL = { x0: XE, x1: XDW, rise: 4 };
+      const SL = { x0: XE, x1: XDW, rise: INT_FLOOR_RISE };
       const k = SL.rise / (SL.x0 - SL.x1);
       const hr = (x) => SL.rise * Math.max(0, Math.min(1, (SL.x0 - x) / (SL.x0 - SL.x1)));
       const slopeG = new Group();
@@ -3160,6 +3201,7 @@
         const wp = new Vector3();
         g.traverse((o) => {
           if (o.name !== "goldKey" || o.userData.slopeUp) return;
+          for (let p = o.parent; p; p = p.parent) if (/^devir-door-/.test(p.name || "")) return;   // 1.3.7: the devir's doors went up themselves (DOOR_UP), their key with them
           o.getWorldPosition(wp);
           if (wp.x <= SL.x0 && wp.x >= SL.x1 && Math.abs(wp.z) <= HW) { o.position.y += hr(wp.x); o.userData.slopeUp = true; }
         });
