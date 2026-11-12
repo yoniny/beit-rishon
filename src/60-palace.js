@@ -2470,6 +2470,7 @@
         pal_witSound.stop();
         if (anim.tracks) resetTracks(anim.tracks, anim.states);
         anim.running = false; anim.tracks = null; anim.mode = null; anim.lastT = 0;
+        anim.paused = null;   // DEMO_PAUSE_207
       };
       const throneVersion = {
         current: "pesukim", keys: VKEYS.slice(), names: VNAMES,
@@ -2511,13 +2512,24 @@
       };
       const elapsedOf = (mode) => (anim.mode !== mode ? 0 : anim.running ? (performance.now() - anim.t0) / 1000 / THR_SLOW() : anim.frozenAt);
       const freeze = (mode) => { if (anim.mode === mode && anim.running) { pal_witSound.stop(); anim.frozenAt = (performance.now() - anim.t0) / 1000 / THR_SLOW(); anim.running = false; } };
+      // DEMO_PAUSE_207 (the user, 12.11.2026 20:34: "זה אותו דבר בכיסא שלמה שזה ארוך"): a pause holds the moment (freeze), resume goes on from it
+      anim.paused = null;
+      const pauseThr = (mode) => { if (anim.mode === mode && anim.running) { freeze(mode); anim.paused = mode; } };
+      const resumeThr = (mode) => {
+        if (anim.paused !== mode || anim.mode !== mode) return;
+        anim.paused = null;
+        anim.t0 = performance.now() - anim.frozenAt * 1000 * THR_SLOW();
+        anim.running = true;
+        if (mode === "witnesses") pal_witSound.start();
+      };
       const ascent = {
         get running() { return anim.running && anim.mode === "ascent"; },
         get version() { return throneVersion.current; },
         get duration() { return SCRIPTS[throneVersion.current].duration; },
         start: (version) => { if (version && version !== throneVersion.current) throneVersion.set(version); return play("ascent"); },
         stop: () => freeze("ascent"),                                  // holds the moment (seek or start goes on)
-        reset: () => { if (anim.mode === "ascent") stopAll(); },
+        reset: () => { anim.paused = null; if (anim.mode === "ascent") stopAll(); },
+        pause: () => pauseThr("ascent"), resume: () => resumeThr("ascent"), get paused() { return anim.paused === "ascent"; },   // DEMO_PAUSE_207
         seek: (sec) => seekTo("ascent", sec),
         elapsed: () => elapsedOf("ascent")
       };
@@ -2526,7 +2538,8 @@
         get duration() { return SCRIPTS[throneVersion.current].witnesses.duration; },
         start: () => play("witnesses"),
         stop: () => freeze("witnesses"),
-        reset: () => { if (anim.mode === "witnesses") stopAll(); },
+        reset: () => { anim.paused = null; if (anim.mode === "witnesses") stopAll(); },
+        pause: () => pauseThr("witnesses"), resume: () => resumeThr("witnesses"), get paused() { return anim.paused === "witnesses"; },   // DEMO_PAUSE_207
         seek: (sec) => seekTo("witnesses", sec),
         elapsed: () => elapsedOf("witnesses")
       };
@@ -3412,8 +3425,11 @@
       };
       const A1 = thrAPI.anchors.ascent, A2 = thrAPI.anchors.witnesses;
       (ctx.shared.demoStops || (ctx.shared.demoStops = [])).push(   // 1.3.4: any switch stops the scene
-        { id: "palaceThroneAscent", running: () => thrAPI.ascent.running, stop: () => thrAPI.ascent.reset() },
-        { id: "palaceThroneWitnesses", running: () => thrAPI.witnesses.running, stop: () => thrAPI.witnesses.reset() });
+        // DEMO_PAUSE_207: a paused scene still counts as running (a switch ends it); the bar resumes it or starts it again
+        { id: "palaceThroneAscent", running: () => thrAPI.ascent.running || thrAPI.ascent.paused, stop: () => thrAPI.ascent.reset(),
+          pause: () => thrAPI.ascent.pause(), resume: () => thrAPI.ascent.resume(), paused: () => thrAPI.ascent.paused, restart: () => thrAPI.ascent.start() },
+        { id: "palaceThroneWitnesses", running: () => thrAPI.witnesses.running || thrAPI.witnesses.paused, stop: () => thrAPI.witnesses.reset(),
+          pause: () => thrAPI.witnesses.pause(), resume: () => thrAPI.witnesses.resume(), paused: () => thrAPI.witnesses.paused, restart: () => thrAPI.witnesses.start() });
       ctx.shared.modelButtons.push({
         id: "palaceThroneAscent", label: "הצג את עליית המלך לכסא", labelOn: "עצור את העלייה", maxDist: 150, layer: "palace",
         title: "מציג את עליית המלך לכסא (בצללית בלבד) לפי המדרש שנבחר בטבלת השיטות: בכל מעלה חוזר גלגל המנגנון — ״חוזר הגלגל בתוך המגנון״ (מדרש אבא גוריון) — והארי פושט את ידו והנשר את כנפו לקראת העולה, ״והארי, פושט את ידו של ימין, והנשר גפו של שמאל... והנשר פושט גפו של ימין, והארי ידו של שמאל״ (אבא גוריון; אסתר רבה א, יב ״עלה במעלה הראשונה והארי פושט לו יד, ובשניה נשר פושט לו יד״); ובסוף יונת הזהב פותחת את הארון ומביאה את ספר התורה אל חיקו של המלך — ״ויונה של זהב יורדת מן העמוד במנגנין, ופותחת הארון ולוקחת ס״ת, ונותנת לתוך ידו של מלך״ (פנים אחרים). לתרגום שני: השור מרים אותו ממעלה למעלה, הנשרים מושיבים אותו, הנשר הגדול מניח את הכתר, והאריות מזלפים בשמים. בסוף הכל חוזר למנוחה.",

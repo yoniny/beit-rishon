@@ -1865,7 +1865,9 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         saved = snapshot();
         saved.tools = tools;
         cloudDenied = false;
-        for (const [r] of saved.rows) setRow(r, r.options[0][0]);   // the model in its default readings (Rashi first)
+        // TOUR_DEFAULT_207: the row's own default (row.current) - a row may begin with another reading than its first (2.0.7: the first lottery,
+        // "אביי"); until 2.0.7 every row was set to its first reading here
+        for (const [r] of saved.rows) setRow(r, r.current || r.options[0][0]);   // the model in its default readings (Rashi first)
         {
           const tvs = ctx.shared.throneVersion;   // (L.81: the throne too, also when the panel has no row for it)
           if (tvs && Array.isArray(tvs.keys) && tvs.keys.length && tvs.current !== tvs.keys[0] && fnc(tvs.set)) call(tvs.set, tvs.keys[0]);

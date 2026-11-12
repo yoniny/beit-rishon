@@ -677,10 +677,16 @@
       };
       ctx.animated.push(() => {
         if (!S) return;
+        if (S.pausedAt != null) return;   // DEMO_PAUSE_207: paused - the clock stands, the eye is the viewer's
         const cam = ctx.camera, c = ctx.controls;
         if (!cam) return;
         const t = (performance.now() - S.t0) / 1000 / SLOW;
         const e = at(S.keys, t, 1), l = at(S.keys, t, 2);
+        if (S.blend) {   // DEMO_PAUSE_207: after a pause, from where the viewer left the eye back to the walk's, in 0.9 s
+          const w0 = Math.min(1, (performance.now() - S.blend.at) / 900), w = w0 * w0 * (3 - 2 * w0), P0 = S.blend.pos, T0 = S.blend.tg;
+          for (let q = 0; q < 3; q++) { e[q] = P0[q] + (e[q] - P0[q]) * w; l[q] = T0[q] + (l[q] - T0[q]) * w; }
+          if (w0 >= 1) S.blend = null;
+        }
         cam.position.set(e[0], e[1], e[2]);
         if (c && c.target) c.target.set(l[0], l[1], l[2]);
         cam.lookAt(l[0], l[1], l[2]);
@@ -690,7 +696,15 @@
         while (S.events.length && t >= S.events[0][0]) { const ev = S.events.shift(); try { ev[1](); } catch (_) {} if (!S) return; }
         if (t >= S.keys[S.keys.length - 1][0] + 0.4) stop();
       });
-      try { ctx.renderer.domElement.addEventListener("pointerdown", () => { if (S) stop(); }, true); } catch (_) {}
+      // DEMO_PAUSE_207: a press on the model pauses the walk (90-entry.js) - until 1.4.0 it ended it
+      const pauseW = () => { if (S && S.pausedAt == null) S.pausedAt = performance.now(); };
+      const resumeW = () => {
+        if (!S || S.pausedAt == null) return;
+        S.t0 += performance.now() - S.pausedAt;
+        S.pausedAt = null;
+        const cam = ctx.camera, c = ctx.controls;
+        if (cam && c && c.target) S.blend = { pos: cam.position.toArray(), tg: c.target.toArray(), at: performance.now() };
+      };
       ctx.shared.walk = {
         LEAD,
         run(keys, caps, onEnd, events) {
@@ -704,9 +718,10 @@
             events: (events || []).map(([t, fn]) => [t + LEAD, fn]).sort((a, b) => a[0] - b[0]) };
         },
         stop,
-        get on() { return !!S; }
+        get on() { return !!S; },
+        now() { if (!S) return -1; return ((S.pausedAt != null ? S.pausedAt : performance.now()) - S.t0) / 1000 / SLOW - LEAD; }   // DEMO_PAUSE_207: stands while paused
       };
-      DEMO_STOPS.push({ id: "walk", running: () => !!S, stop });
+      DEMO_STOPS.push({ id: "walk", running: () => !!S, stop, pause: pauseW, resume: resumeW, paused: () => !!(S && S.pausedAt != null) });
     }
     // The lulim (I Kings 6:8, checked in the library: "פתח הצלע התיכנה אל כתף הבית הימנית ובלולים יעלו על התיכנה ומן התיכנה אל השלשים";
     // Rashi, book 3673, lines 226-229: "שאחד מן התחתונים שבכותל דרומי, היה לו פתח אל החוץ, ודרך אותו פתח נכנסים לכולם"; "והוא בנין עמוד אבנים
@@ -785,7 +800,7 @@
       ctx.shared.lulimStop = () => { if (lOn && W) W.stop(); finish(); };
       ctx.animated.push(() => {
         if (!lOn) return;
-        const t = (performance.now() - tStart) / 1000 / SLOW, s2 = sAt(t);
+        const t = W.now ? W.now() : (performance.now() - tStart) / 1000 / SLOW, s2 = sAt(t);   // DEMO_PAUSE_207: on the walk's clock (it stands in a pause)
         mk.visible = s2 >= 0;
         if (s2 < 0) return;
         if (s2 <= 23) { const p = onRing(s2, 1.45, 0); mk.position.set(p[0], p[1], p[2]); }

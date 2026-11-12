@@ -1,0 +1,83 @@
+--- a/src/45-vessels.js
++++ b/src/45-vessels.js
+@@ -711,7 +711,7 @@
+     int_inst(g, tableGeo.incense, incenseMat, tM, false);
+     // the menorah, its stone and its flames
+     const menBody = int_inst(g, menorahGeo.body, METALS.gold.men, [int_part(MEN.x, FL, MEN.z, MEN.rot, 0, 0, 0)]);
+-    int_inst(g, menorahGeo.steps, MM.marble, [int_part(MEN.x, FL, MEN.z, MEN.rot, 0, 0, 0)]);
++    const menSteps = int_inst(g, menorahGeo.steps, MM.marble, [int_part(MEN.x, FL, MEN.z, MEN.rot, 0, 0, 0)]);   // 2.0: kept (the menorah's turning, below)
+     const flameG = new ConeGeometry(0.08, 0.3, 8);
+     flameG.translate(0, 0.15, 0);
+     const lampX = [-3, -2, -1, 0, 1, 2, 3].map((i) => i * LAMP_R);
+@@ -721,14 +721,44 @@
+     const menorahLight = new PointLight(0xFFC06A, 16, 25, 2);
+     menorahLight.position.set(MEN.x, FL + 4.6, MEN.z);
+     g.add(menorahLight);
++    // 2.0 (55-tamid.js, the morning's service: "מדשן את השאר ומניח את אלו דולקין במקומן"): every lamp's flame has its own size, 0 = out
++    // (lampK), and the light goes with the lamps that burn; the menorah may turn east-west (the second reading of the lamps: Rashi, the
++    // Ra'avad and the Bartenura on Tamid 3:9 - "האי תנא סבר מנורה מזרח ומערב היא מנחת"), its lamps' row then 2.5 from the south wall
++    const lampK = [1, 1, 1, 1, 1, 1, 1];
+     ctx2.animated.push((t) => {
++      let lit = 0;
+       for (let i = 0; i < 7; i++) {
+-        const s = 1 + 0.28 * Math.sin(t * 0.012 + i * 1.9) * Math.sin(t * 43e-4 + i);
+-        flames.setMatrixAt(i, int_m4(flamePos[i][0], flamePos[i][1], flamePos[i][2], Math.sin(t * 9e-3 + i) * 0.1, MEN.rot, Math.cos(t * 0.011 + i * 2) * 0.1, 1, s, 1));
++        const k = lampK[i];
++        lit += k;
++        const s = (1 + 0.28 * Math.sin(t * 0.012 + i * 1.9) * Math.sin(t * 43e-4 + i)) * k;
++        flames.setMatrixAt(i, int_m4(flamePos[i][0], flamePos[i][1], flamePos[i][2], Math.sin(t * 9e-3 + i) * 0.1, MEN.rot, Math.cos(t * 0.011 + i * 2) * 0.1, k, s, k));
+       }
+       flames.instanceMatrix.needsUpdate = true;
+-      menorahLight.intensity = 15.5 + 2.2 * Math.sin(t * 0.011) + 1.3 * Math.sin(t * 0.029 + 1);
++      menorahLight.intensity = (15.5 + 2.2 * Math.sin(t * 0.011) + 1.3 * Math.sin(t * 0.029 + 1)) * (0.12 + 0.88 * lit / 7);
+     });
++    const MEN0 = { z: MEN.z, rot: MEN.rot };
++    ctx2.shared.menorah = {
++      MEN, FL, LAMP_R, lampX, flamePos, lampK, flameY: FL + 3.14,
++      // the lamps' places now (index 0..6 along the row: north-south - 0 the southern; east-west - 0 the western)
++      lampPos(i) { return flamePos[i].slice(); },
++      setRot(ew) {
++        MEN.rot = ew ? 0 : MEN0.rot;
++        MEN.z = ew ? 7.5 : MEN0.z;
++        const c = Math.cos(MEN.rot), s = Math.sin(MEN.rot);
++        lampX.forEach((dx, i) => { flamePos[i][0] = MEN.x + dx * c; flamePos[i][2] = MEN.z - dx * s; });
++        menBody.setMatrixAt(0, int_part(MEN.x, FL, MEN.z, MEN.rot, 0, 0, 0));
++        menSteps.setMatrixAt(0, int_part(MEN.x, FL, MEN.z, MEN.rot, 0, 0, 0));
++        for (const im of [menBody, menSteps, flames]) { im.instanceMatrix.needsUpdate = true; if (im.computeBoundingSphere) im.computeBoundingSphere(); }
++        menorahLight.position.set(MEN.x, FL + 4.6, MEN.z);
++        this.ew = !!ew;
++      },
++      ew: false,
++      // the stone before the menorah (A19: three steps, 8.5 tefachim in all) on the side of its local -z: a point (lx, lz) in the menorah's
++      // own frame -> [x, z]; stoneTop / stoneStep its heights over the floor (55-tamid.js: where the priest stands and puts the kuz)
++      stoneTop: 8.5 * INT_TEF, stoneStep: 8.5 * INT_TEF / 3,
++      at(lx, lz) { const c = Math.cos(MEN.rot), s = Math.sin(MEN.rot); return [MEN.x + lx * c + lz * s, MEN.z - lx * s + lz * c]; },
++      reset() { for (let i = 0; i < 7; i++) lampK[i] = 1; }
++    };
+     // the golden altar: a gold cube of 1 x 1 x 2 with its four horns (Ex 30:2 "ממנו קרנתיו") and the crown rail (Ex 30:3 "זר זהב סביב")
+     {
+       const ALT_W = 1, ALT_TOP = 2, ALT_HORN_H = INT_TEF, ALT_H = ALT_TOP - ALT_HORN_H, ALT_HORN = 0.18;
+@@ -749,6 +779,7 @@
+       // לשמי קורה"), the First Temple's display (int_smokeParts): a core and a halo plane, turned toward the camera, the wisps flow upward
+       const smokeParts = int_smokeParts();
+       const ax = ALT.x, az = ALT.z;
++      let coalsMesh = null;   // 2.0 (55-tamid.js)
+       {
+         const cm = [];
+         for (let i = 0; i < 7; i++) {
+@@ -756,6 +787,7 @@
+           cm.push(int_m4(ax + Math.cos(a) * r, FLA + ALT_TOP + 0.035 * sc, az - 0.13 + Math.sin(a) * r * 0.8, hash(i) * 3, hash(i * 2) * 3, 0, sc, sc * 0.8, sc));
+         }
+         const coals = int_inst(g, smokeParts.coalGeo, smokeParts.coalMat, cm, false);
++        coalsMesh = coals;
+         const COAL = [0xff8a2a, 0xe8481a, 0x8a1e08, 0xffa040, 0x3a140a, 0xd0401a, 0x5a1a0a], col = new Color();
+         for (let i = 0; i < 7; i++) coals.setColorAt(i, col.setHex(COAL[i]));
+       }
+@@ -776,6 +808,7 @@
+           smoke.push(m);
+         }
+       }
++      ctx2.shared.goldenAltar = { x: ax, z: az, top: FLA + ALT_TOP, smoke, coals: coalsMesh };   // 2.0 (55-tamid.js)
+       ctx2.animated.push((t) => {
+         if (ctx2.camera) {
+           const ang = Math.atan2(ctx2.camera.position.x - ax, ctx2.camera.position.z - az);

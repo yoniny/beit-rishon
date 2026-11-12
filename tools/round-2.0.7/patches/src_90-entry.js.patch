@@ -1,0 +1,39 @@
+--- a/src/90-entry.js
++++ b/src/90-entry.js
+@@ -144,7 +144,8 @@
+   sun.shadow.bias = -35e-5;
+   sun.shadow.normalBias = 0.35;
+   scene.add(sun);
+-  scene.add(new HemisphereLight(12572400, 9074e3, 0.75));
++  var hemi = new HemisphereLight(12572400, 9074e3, 0.75);   // 2.0 (55-tamid.js): kept, the night and the dawn of the morning's service dim it
++  scene.add(hemi);
+   var camera = new PerspectiveCamera(48, viewWH[0] / viewWH[1], 0.5, 6e3);
+   camera.position.set(430, 190, 240);
+   // 1.0.1-H: the controls are built by a function so that they can be rebuilt (OrbitControls keeps its drag deltas in a closure: once a
+@@ -910,6 +911,10 @@
+     controls,
+     renderer
+   };
++  // 2.0 (55-tamid.js, the morning's service): the sky, the sun and the light of the hemisphere, as made above (the demonstration turns them to the
++  // night and the dawn, and gives them back), and the floor under a point (the solids' downward ray of the walking mode: a figure's feet)
++  ctx.shared.sky = { sky, sun, hemi, sunDir: sunDir.clone(), sunInt: sun.intensity, hemiInt: hemi.intensity, exposure: renderer.toneMappingExposure, fogColor: scene.fog.color.getHex(), env: scene.environment };
++  ctx.shared.floorY = (x, y, z) => cam_floorY({ x, y, z });
+   // 1.9.2 / 1.3.4 (the user's recording: a chamber's roof came back while the eye was inside it, and all one saw was the stone):
+   // ctx.shared.camUnder(list) - is the eye under one of these pieces (inside its plan, below its top)? Their boxes are taken once.
+   // ctx.shared.openFor(id, ms) - a place or a row opens a pill for a while (another call within it starts the count again; a pill the user
+@@ -1074,6 +1079,7 @@
+       { name: "altar.js", build: build3 },
+       { name: "vessels.js", build: typeof buildVessels === "function" ? buildVessels : async () => {} },   // 1.3.0: the menorah, the table, the golden altar
+       { name: "heichal.js", build: build4 },
++      { name: "tamid.js", build: typeof buildTamid === "function" ? buildTamid : async () => {} },   // 2.0: the morning's service (55-tamid.js; built on its first use)
+       { name: "ui.js", build: buildUI },
+       { name: "tour.js", build: typeof buildTour === "function" ? buildTour : async () => {} }   // 1.2.0: the presentation (75-tour.js); after ui.js, it uses ctx.ui
+     ];
+@@ -1085,6 +1091,7 @@
+       "טוען את המזבח והכבש",
+       "טוען את כלי הקודש",
+       "טוען את האולם וההיכל",
++      "מכין את סדר העבודה",
+       "טוען את הקישורים והצבעים",
+       "מכין את המצגת"
+     ];

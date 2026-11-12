@@ -1,0 +1,10 @@
+--- a/src/40-altar.js
++++ b/src/40-altar.js
+@@ -719,6 +719,7 @@
+       ctx2.layers.tapuachRaavad = table;
+       ctx2.labels.push({ text: "התפוח לראב״ד — טבלה כ״ב על כ״ב, גבוהה אמה", x: ACX, y: TOP + 3.2, z: ACZ + 9, size: 1.2, layer: "tapuachRaavad" });
+       ctx2.shared.tapuach = { mode: "kri", set(k) { this.mode = k === "raavad" ? "raavad" : "kri"; const on = this.mode === "raavad"; table.visible = on; m.visible = !on; topG.position.y = on ? 1 : 0; topG.updateMatrixWorld(true); } };
++      ctx2.shared.tapuach.heap = m;   // 2.0 (55-tamid.js): the round heap, raised by the morning's ash
+     }
+     // 1.5.0 (the user: the laver was buried inside the ulam's steps, which run the whole width of the ulam since 1.4.0): the laver south of the
+     // steps' edge (z 50) - still "בין האולם ולמזבח ומשוך כלפי הדרום" (Middot 3:6) in the 22-amah strip; the exact spot is a model choice
