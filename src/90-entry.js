@@ -789,9 +789,20 @@
       let k;
       if (e.ctrlKey) k = small ? dy / 100 : Math.sign(dy) * 0.0513;   // pinch: follow the fingers; Ctrl + notch: 5% (= ln(1 / 0.95))
       else if (small) k = dy * 0.001;                                   // two-finger slide on a touchpad
-      else return;                                                      // a mouse-wheel notch: OrbitControls, unchanged
+      else if (cam.roofed) k = Math.sign(dy) * 0.0513 * Math.max(0.3, Math.min(3, Math.abs(dy) / 100));   // WHEEL_ROOFED_205: under a roof a notch goes by this handler too (see below)
+      else return;                                                      // a mouse-wheel notch in the open: OrbitControls, unchanged
+      // WHEEL_ROOFED_205 (the user's recording, 12.11.2026: "ריצה בגלילה" - under a roof, with the target far, a notch was 5% of a long way:
+      // ten amot and more, through walls and floors): under a roof no single wheel event moves the eye more than two amot
+      if (cam.roofed) {
+        const L0 = camera.position.distanceTo(controls.target);
+        if (L0 > 0 && isFinite(L0)) k = k < 0 ? Math.max(k, Math.log(1 - Math.min(0.9, 2 / L0))) : Math.min(k, Math.log(1 + 2 / L0));
+      }
       e.preventDefault();
       ent_zoom.pending = Math.max(-4, Math.min(4, ent_zoom.pending + k));
+      if (cam.roofed) {   // WHEEL_ROOFED_205 b: what is still to travel under a roof is never more than 8 amot
+        const L1 = camera.position.distanceTo(controls.target);
+        if (L1 > 0 && isFinite(L1)) ent_zoom.pending = Math.max(Math.log(1 - Math.min(0.9, 8 / L1)), Math.min(Math.log(1 + 8 / L1), ent_zoom.pending));
+      }
       if (!ent_zoom.held) {
         ent_zoom.held = true;
         controls.enableZoom = false;
@@ -823,12 +834,16 @@
       return;
     }
     // 1.0.1-L (L.87): eased in time, not per frame (at a low frame rate 35% a frame ran on for a second after the fingers stopped)
-    const step = Math.abs(p) < 2e-3 ? p : p * Math.max(0.35, 1 - Math.exp(-ent_view.dt / 40));
+    let step = Math.abs(p) < 2e-3 ? p : p * Math.max(0.35, 1 - Math.exp(-ent_view.dt / 40));
     const off = ent_zoom.off.copy(camera.position).sub(controls.target);
     const L = off.length();
     if (!(L > 0) || !isFinite(L)) {
       ent_zoom.pending = 0;
       return;
+    }
+    if (cam.roofed) {   // WHEEL_ROOFED_205 b: under a roof the eye goes 20 amot a second at most
+      const lim = 20 * Math.min(100, Math.max(1, ent_view.dt || 16)) / 1000, d = L * (Math.exp(step) - 1);
+      if (Math.abs(d) > lim) step = Math.log(Math.max(0.05, 1 + Math.sign(d) * lim / L));
     }
     const L2 = Math.min(controls.maxDistance || 2200, Math.max(controls.minDistance || 2, L * Math.exp(step)));
     camera.position.copy(controls.target).add(off.setLength(L2));
@@ -957,7 +972,9 @@
     S.v = ent_sec.v;
     if (ctx.shared.sectionPaint) try { ctx.shared.sectionPaint(); } catch (_) {}
     const close = () => {
-      if (ctx.shared.__autoHold) { S.t = setTimeout(close, 2000); return; }
+      // SECTION_HOLD_205: while the eye stands in the half that the section cut away, the section stays (the wall would come back over the eye)
+      const inCut = ent_sec.on && ent_sec.axis === S.axis && ent_sec.v === S.v && camera && camera.position[S.axis] > S.v;
+      if (ctx.shared.__autoHold || inCut) { S.t = setTimeout(close, 2000); return; }
       S.t = 0;
       if (ent_sec.on && ent_sec.axis === S.axis && ent_sec.v === S.v) {
         ent_sectionSet(false, S.axis, S.v);

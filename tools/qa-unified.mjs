@@ -157,7 +157,9 @@ try {
     const err2 = [];
     p2.on('pageerror', (e) => err2.push(String(e.message || e).slice(0, 200)));
     await p2.setViewport({ width: 1280, height: 800 });
-    await p2.evaluateOnNewDocument(() => { try { localStorage.setItem('tm1.news.seen', '9.9.9'); localStorage.setItem('tm2.news.seen', '9.9.9'); } catch (_) {} });
+    // 12.11.2026: the houses show "מה חדש" unless the seen version IS this version ('9.9.9' never was) - the window opened a second or two
+    // after the house was ready, and the click on the bar below sometimes fell on its veil ("rishon not ready ... no frame")
+    await p2.evaluateOnNewDocument((v) => { try { localStorage.setItem('tm1.news.seen', v.rishon); localStorage.setItem('tm2.news.seen', v.sheni); } catch (_) {} }, { rishon: CFG.houses.rishon.version, sheni: CFG.houses.sheni.version });
     await p2.goto(pathToFileURL(path.resolve(standalone)).href, { waitUntil: 'load' });
     await sleep(500);
     await p2.click('#pick-sheni');

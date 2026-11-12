@@ -212,6 +212,10 @@
   // "scribe", tone (i) => 0 white | 1 grey | 2 black-brown, big (the index of the one a little larger), fwd (amot forward, to the
   // bench's front edge), name, shadow }.
   // MODEL CHOICES: the figures' size, their faces, the robe, the scribes' tablets, the beards' colours and lengths.
+  // PEOPLE_KIT_205 (12.11.2026 12:11, the user: "הכל נהיה איטי בטירוף"): measured against 2.0.3 - the 700 full figures were drawn
+  // (and cast shadows) from 150 amot, under closed roofs too: +160,000 to +350,000 triangles in every view inside the courts.
+  // Now THREE levels by the eye's distance from the crowd: full (within ~22 amot), plain (~300 triangles: the same robe, head, face,
+  // beard and kippah - to ~120 amot), a peg beyond; no figure casts a shadow; the full figure itself has fewer faces.
   function tm_people(ctx) {
     if (ctx.__tmPeople) return ctx.__tmPeople;
     const TAU = Math.PI * 2;
@@ -346,7 +350,7 @@
     };
     const skinPart = (q) => shade(flatUV(q, 0.75, 0.3), 1);
     const headParts = () => {
-      const WS = 18, HG = 12, k = new SphereGeometry(1, WS, HG), p = k.attributes.position;
+      const WS = 14, HG = 10, k = new SphereGeometry(1, WS, HG), p = k.attributes.position;
       for (let i = 0; i < p.count; i++) {
         const x = p.getX(i), y = p.getY(i), z = p.getZ(i), j = y < 0 ? y * y : 0;
         p.setXYZ(i, x * HR[0] * (1 - 0.2 * j), y * HR[1], z * HR[2] * (1 - 0.1 * j));
@@ -359,14 +363,14 @@
         nr.setXYZ(b, x / l, y / l, z / l);
       }
       const parts = [shade(k, 1)];
-      parts.push(skinPart(at(sph(0.013, 0.034, 0.02, 6, 4), 0, -0.012, 0.133)));
-      parts.push(skinPart(at(sph(0.019, 0.017, 0.022, 7, 5), 0, -0.041, 0.146)));
-      for (const sd of [-1, 1]) parts.push(skinPart(at(sph(0.012, 0.03, 0.02, 5, 4), sd * 0.126, 0, -0.004)));
+      parts.push(skinPart(at(sph(0.013, 0.034, 0.02, 5, 3), 0, -0.012, 0.133)));
+      parts.push(skinPart(at(sph(0.019, 0.017, 0.022, 6, 4), 0, -0.041, 0.146)));
+      for (const sd of [-1, 1]) parts.push(skinPart(at(sph(0.012, 0.03, 0.02, 4, 3), sd * 0.126, 0, -0.004)));
       return parts;
     };
     // ---------- the hair. The beard is one body: from the cheeks before the ears and from the jaw, lying on the face, and under
     // the chin it hangs and comes forward to the chest, narrowing; its lower edge uneven
-    const beard = (len, w2) => surf(18, 8, (u, v, o) => {
+    const beard = (len, w2, nu, nv) => surf(nu || 14, nv || 6, (u, v, o) => {
       const PM = 1.4, a = u * 2 - 1, ph = a * PM, ya = Math.abs(a), sd = 1 - v;
       const yTop = -0.094 + 0.124 * Math.pow(ya, 1.3), yBot = -0.07 - len * (1 - Math.pow(ya, 5)) + 0.008 * Math.sin(6 * ph + w2) * (1 - ya);
       const y = yTop + sd * (yBot - yTop);
@@ -384,15 +388,15 @@
       o.c = 0.86 + 0.14 * (0.5 + 0.5 * strand) - 0.06 * sd;
     }, true);
     const brows = () => [-1, 1].map((sd) => shade(at(rot(sph(0.027, 0.0058, 0.009, 6, 3), 0, 0, -sd * 0.05), sd * EYE[0], 0.051, 0.1262), 0.72));
-    const stache = () => [-1, 1].map((sd) => shade(at(rot(sph(0.037, 0.0125, 0.016, 6, 4), 0, 0, -sd * 0.4), sd * 0.027, -0.066, 0.127), 1));
-    const hairCap = (young) => [shade(sph(HR[0] * HS, HR[1] * HS, HR[2] * HS, 12, 3, 0, TAU, 0, young ? 1.08 : 0.8), 0.92), shade(sph(HR[0] * HS, HR[1] * HS, HR[2] * HS, 9, 4, Math.PI + 0.3, Math.PI - 0.6, 1.08, 1.4), 0.9)];
-    const peyot = () => [-1, 1].flatMap((sd) => [shade(at(sph(0.013, 0.062, 0.016, 6, 5), sd * 0.122, -0.04, 0.05), 0.95), shade(at(sph(0.016, 0.016, 0.016, 6, 4), sd * 0.124, -0.102, 0.054), 1)]);
-    const kippah = () => shade(at(rot(sph(HR[0] * 1.09, HR[1] * 1.09, HR[2] * 1.09, 12, 4, 0, TAU, 0, 0.99), -0.14), 0, 0.002, -0.004), 0.45);
+    const stache = () => [-1, 1].map((sd) => shade(at(rot(sph(0.037, 0.0125, 0.016, 5, 3), 0, 0, -sd * 0.4), sd * 0.027, -0.066, 0.127), 1));
+    const hairCap = (young) => [shade(sph(HR[0] * HS, HR[1] * HS, HR[2] * HS, 10, 2, 0, TAU, 0, young ? 1.08 : 0.8), 0.92), shade(sph(HR[0] * HS, HR[1] * HS, HR[2] * HS, 8, 3, Math.PI + 0.3, Math.PI - 0.6, 1.08, 1.4), 0.9)];
+    const peyot = () => [-1, 1].flatMap((sd) => [shade(at(sph(0.013, 0.062, 0.016, 5, 4), sd * 0.122, -0.04, 0.05), 0.95), shade(at(sph(0.016, 0.016, 0.016, 5, 3), sd * 0.124, -0.102, 0.054), 1)]);
+    const kippah = (ws, hs) => shade(at(rot(sph(HR[0] * 1.09, HR[1] * 1.09, HR[2] * 1.09, ws || 10, hs || 3, 0, TAU, 0, 0.99), -0.14), 0, 0.002, -0.004), 0.45);
     // ---------- the body: the robe's breadth and depth at each height of a standing man (the priest's table); a sitting man is
     // the table from OFF up, with the lap before it
     const BODY = [[0.1, 0.207, 0.166], [0.5, 0.205, 0.164], [1.0, 0.201, 0.16], [1.2, 0.199, 0.158], [1.33, 0.193, 0.15], [1.45, 0.197, 0.152], [1.58, 0.216, 0.158], [1.68, 0.244, 0.156], [1.745, 0.264, 0.146], [1.79, 0.242, 0.128], [1.83, 0.186, 0.11], [1.87, 0.116, 0.09], [1.9, 0.076, 0.076]];
     const bX = BODY.map((r) => [r[0], r[1]]), bZ = BODY.map((r) => [r[0], r[2]]);
-    const robe = (ys, yo, folds) => surf(16, ys.length - 1, (u, v, o) => {
+    const robe = (ys, yo, folds, nu) => surf(nu || 12, ys.length - 1, (u, v, o) => {
       const y = ys[Math.round(v * (ys.length - 1))], a = u * TAU + Math.PI, k = folds ? Math.max(0, (1.3 - y) / 1.2) : 0;
       const fold = Math.sin(3 * a + 0.8) * 0.6 + Math.sin(5 * a + 2.1) * 0.4, m = 1 + 0.03 * k * fold;
       o.x = spl(bX, y) * m * Math.sin(a);
@@ -404,7 +408,7 @@
     const lapBench = (L) => {
       const yT = 0.1, zK = 0.3, RK = 0.085, l1 = zK, l2 = RK * Math.PI / 2, l3 = (yT - RK) - (-L + 0.05), tot = l1 + l2 + l3;
       const D = [0, l1 * 0.5, l1, l1 + l2 / 3, l1 + 2 * l2 / 3, l1 + l2, l1 + l2 + l3 * 0.4, l1 + l2 + l3 * 0.75, tot];
-      return surf(14, D.length - 1, (u, v, o) => {
+      return surf(12, D.length - 1, (u, v, o) => {
         const d = D[Math.round(v * (D.length - 1))], ph = -u * TAU;
         let pz, py, nz, ny;
         if (d <= l1) { pz = d; py = yT; nz = 0; ny = 1; }
@@ -420,10 +424,10 @@
         o.c = (cx > 0 ? 1 - 0.3 * g : 0.8) - 0.1 * Math.max(0, fold);
       });
     };
-    const arm = (S, E, W) => [shade(at(sph(0.074, 0.074, 0.074, 8, 5), S[0], S[1], S[2]), 1), shade(limb(S, E, 0.072, 0.06, 8), 0.95), shade(at(sph(0.06, 0.06, 0.06, 7, 4), E[0], E[1], E[2]), 0.95), shade(limb(E, W, 0.058, 0.048, 8), 0.9)];
+    const arm = (S, E, W) => [shade(at(sph(0.074, 0.074, 0.074, 6, 4), S[0], S[1], S[2]), 1), shade(limb(S, E, 0.072, 0.06, 6), 0.95), shade(at(sph(0.06, 0.06, 0.06, 6, 3), E[0], E[1], E[2]), 0.95), shade(limb(E, W, 0.058, 0.048, 6), 0.9)];
     // a hand lying flat: the palm, the fingers a little bent, the thumb at the inner side (sd: the arm's side; dir: its way, from +z)
     const hand = (sd, H, dir) => {
-      const q = mergeGeometries([at(sph(0.03, 0.0135, 0.042, 6, 4), 0, 0, 0.04), at(sph(0.027, 0.011, 0.03, 6, 4), 0, -0.006, 0.085), at(sph(0.01, 0.01, 0.024, 5, 3), -sd * 0.03, 0, 0.04)]);
+      const q = mergeGeometries([at(sph(0.03, 0.0135, 0.042, 5, 3), 0, 0, 0.04), at(sph(0.027, 0.011, 0.03, 5, 3), 0, -0.006, 0.085), at(sph(0.01, 0.01, 0.024, 4, 2), -sd * 0.03, 0, 0.04)]);
       q.rotateY(dir);
       q.translate(H[0], H[1], H[2]);
       return skinPart(q);
@@ -440,21 +444,21 @@
         if (pose === "bench") {
           for (const q of arm([sd * 0.245, SY - 0.01, 0], [sd * 0.27, 0.43, 0.03], [sd * 0.15, 0.225, 0.26])) cloth.push(q);
           skin.push(hand(sd, [sd * 0.13, 0.2, 0.27], -sd * 0.25));
-          cloth.push(shade(at(sph(0.05, 0.032, 0.1, 6, 4), sd * 0.1, -L + 0.032, 0.42), 0.4));                       // the shoes
+          cloth.push(shade(at(sph(0.05, 0.032, 0.1, 5, 3), sd * 0.1, -L + 0.032, 0.42), 0.4));                       // the shoes
         } else if (pose === "ground") {
           for (const q of arm([sd * 0.245, SY - 0.01, 0], [sd * 0.285, 0.44, -0.02], [sd * 0.262, 0.225, 0.15])) cloth.push(q);
           skin.push(hand(sd, [sd * 0.25, 0.195, 0.17], sd * 0.1));
-          cloth.push(shade(at(sph(0.115, 0.095, 0.14, 8, 5), sd * 0.255, 0.085, 0.2), 1));                           // the knees under the robe
+          cloth.push(shade(at(sph(0.115, 0.095, 0.14, 6, 4), sd * 0.255, 0.085, 0.2), 1));                           // the knees under the robe
         } else {
           // (a man facing +z: his left is at +x) the left hand under the tablet, the right hand on it with the pen
           const W = sd > 0 ? [0.11, 1.4, 0.25] : [-0.1, 1.46, 0.27];
           for (const q of arm([sd * 0.25, SY - 0.01, 0], [sd * 0.275, 1.4, 0.02], W)) cloth.push(q);
           skin.push(hand(sd, sd > 0 ? [0.1, 1.395, 0.26] : [-0.09, 1.475, 0.27], -sd * 0.3));
-          cloth.push(shade(at(sph(0.05, 0.03, 0.1, 6, 4), sd * 0.1, 0.03, 0.07), 0.4));
+          cloth.push(shade(at(sph(0.05, 0.03, 0.1, 5, 3), sd * 0.1, 0.03, 0.07), 0.4));
         }
       }
       if (pose === "bench") cloth.push(lapBench(L));
-      else if (pose === "ground") cloth.push(shade(at(sph(0.3, 0.115, 0.24, 12, 6), 0, 0.075, 0.17), 0.8));         // the robe over the crossed legs
+      else if (pose === "ground") cloth.push(shade(at(sph(0.3, 0.115, 0.24, 10, 4), 0, 0.075, 0.17), 0.8));         // the robe over the crossed legs
       else {
         skin.push(shade(flatUV(at(rot(new BoxGeometry(0.21, 0.016, 0.27), -0.5), 0.01, 1.455, 0.37), 0.92, 0.86), 1));   // the scribe's tablet ("וכותבין", Sanhedrin 4:3)
         cloth.push(shade(limb([-0.07, 1.5, 0.36], [-0.11, 1.6, 0.33], 0.006, 0.004, 5), 0.5));                          // and his pen
@@ -466,6 +470,34 @@
       const hair = kind === "student"
         ? [mergeGeometries(base().concat(peyot().map(headT)))]
         : [[0.25, 1.1], [0.19, 3.3], [0.14, 5.2]].map(([len, w2]) => mergeGeometries(base().concat(stache().map(headT), [headT(beard(len, w2))])));
+      // PEOPLE_KIT_205 - the plain figure (from ~22 amot): the same body in a few faces - the robe, the lap, the arms, the kippah; the
+      // head with its painted face; the beard (or a young man's hair and peyot) in its own colour
+      const mc = [], ms = [], mh = [];
+      mc.push(robe(seated ? [0.98, 1.3, 1.58, 1.745, 1.9] : [0.1, 0.7, 1.3, 1.58, 1.745, 1.9], seated ? -OFF : 0, false, 8));
+      if (pose === "bench") {
+        mc.push(shade(at(new BoxGeometry(0.4, 0.19, 0.46), 0, 0.105, 0.2), 0.95));
+        mc.push(shade(at(new BoxGeometry(0.38, L, 0.17), 0, -L / 2 + 0.06, 0.385), 0.88));
+      } else if (pose === "ground") mc.push(shade(at(sph(0.36, 0.115, 0.26, 8, 3), 0, 0.075, 0.17), 0.85));
+      for (const sd of [-1, 1]) {
+        const E = pose === "bench" ? [sd * 0.27, 0.43, 0.03] : pose === "ground" ? [sd * 0.285, 0.44, -0.02] : [sd * 0.275, 1.4, 0.02];
+        const W = pose === "bench" ? [sd * 0.15, 0.225, 0.26] : pose === "ground" ? [sd * 0.262, 0.225, 0.15] : (sd > 0 ? [0.11, 1.4, 0.25] : [-0.1, 1.46, 0.27]);
+        mc.push(shade(limb([sd * 0.245, SY - 0.01, 0], E, 0.074, 0.06, 5), 0.95));
+        mc.push(shade(limb(E, W, 0.058, 0.048, 5), 0.9));
+        ms.push(skinPart(at(sph(0.032, 0.016, 0.05, 4, 3), W[0] - sd * 0.02, W[1] - 0.02, W[2] + 0.05)));
+      }
+      if (pose === "stand") ms.push(shade(flatUV(at(rot(new BoxGeometry(0.21, 0.016, 0.27), -0.5), 0.01, 1.455, 0.37), 0.92, 0.86), 1));
+      mc.push(headT(kippah(8, 2)));
+      {
+        const k = new SphereGeometry(1, 10, 6), p = k.attributes.position;
+        for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i), z = p.getZ(i), j = y < 0 ? y * y : 0; p.setXYZ(i, x * HR[0] * (1 - 0.2 * j), y * HR[1], z * HR[2] * (1 - 0.1 * j)); }
+        k.computeVertexNormals();
+        ms.push(headT(shade(k, 1)));
+      }
+      if (kind === "student") {
+        mh.push(headT(shade(sph(HR[0] * HS, HR[1] * HS, HR[2] * HS, 8, 2, 0, TAU, 0, 1.08), 0.92)));
+        for (const sd of [-1, 1]) mh.push(headT(shade(at(sph(0.015, 0.07, 0.018, 4, 3), sd * 0.123, -0.05, 0.05), 0.95)));
+      } else mh.push(headT(beard(0.2, 2.2, 8, 3)));
+      const mid = { cloth: mergeGeometries(mc), skin: mergeGeometries(ms), hair: mergeGeometries(mh) };
       // from afar: the robe, the head and the kippah, plain
       const cR = new Color(0x26262c), cS = new Color(0xcfa07a), cK = new Color(0x121215), far = [];
       if (!seated) far.push(tint(at(new CylinderGeometry(0.17, 0.21, 1.8, 6), 0, 1.0, 0), cR));
@@ -478,55 +510,61 @@
       }
       far.push(tint(at(sph(HR[0], HR[1], HR[2], 6, 4), 0, HY, 0), cS));
       far.push(tint(at(sph(HR[0] * 1.09, HR[1] * 1.09, HR[2] * 1.09, 6, 2, 0, TAU, 0, 0.92), 0, HY, -0.004), cK));
-      return (cache[key] = { cloth: mergeGeometries(cloth), skin: mergeGeometries(skin), hair, far: mergeGeometries(far) });
+      return (cache[key] = { cloth: mergeGeometries(cloth), skin: mergeGeometries(skin), hair, mid, far: mergeGeometries(far) });
     };
     const LOD = [], m4 = new Matrix4(), qt = new Quaternion(), sc = new Vector3(), ps = new Vector3(), up = new Vector3(0, 1, 0), c3 = new Color(), wp = new Vector3();
     const crowd = (parent, pts, o) => {
       const n = pts.length, L = o.pose === "bench" ? o.seat / o.s : 0, G = build(o.pose, L, o.kind);
-      const near = new Group(), far = new Group(), anchor = new Group();
-      const mk = (g, m) => { const im = new InstancedMesh(g, m, n); im.castShadow = false; im.receiveShadow = true; if (o.name) im.name = o.name; return im; };
+      const near = new Group(), mid = new Group(), far = new Group(), anchor = new Group();
+      const mk = (g, m) => { const im = new InstancedMesh(g, m, n); im.castShadow = false; im.receiveShadow = true; im.userData.noPick = true; if (o.name) im.name = o.name; return im; };   // (PEOPLE_KIT_205: no figure casts a shadow)
       const cloth = mk(G.cloth, mCloth), skin = mk(G.skin, mSkin), hairs = G.hair.map((g) => mk(g, mHair)), cnt = hairs.map(() => 0), fm = mk(G.far, mFar);
-      cloth.castShadow = !!o.shadow;
+      const mCl = mk(G.mid.cloth, mCloth), mSk = mk(G.mid.skin, mSkin), mHr = mk(G.mid.hair, mHair);
       let ax = 0, az = 0;
+      for (const p of pts) { ax += p[0] / n; az += p[1] / n; }
+      let R = 0;
       pts.forEach(([x, z, yaw], i) => {
-        const big = o.big === i, s = o.s * (big ? 1.08 : 0.97 + rnd() * 0.06);
+        const big = o.big === i, s = o.s * (big ? 1.08 : 0.97 + rnd() * 0.06), fw = o.fwd || 0;
         qt.setFromAxisAngle(up, yaw + (rnd() - 0.5) * (o.pose === "bench" ? 0.16 : 0.3));
-        const fw = o.fwd || 0;
         m4.compose(ps.set(x + Math.sin(yaw) * fw, o.y, z + Math.cos(yaw) * fw), qt, sc.set(s, s, s));
-        cloth.setMatrixAt(i, m4);
-        skin.setMatrixAt(i, m4);
-        fm.setMatrixAt(i, m4);
-        skin.setColorAt(i, c3.setHex(SKINS[(i * 5 + 1) % SKINS.length]));
+        for (const im of [cloth, skin, fm, mCl, mSk, mHr]) im.setMatrixAt(i, m4);
+        c3.setHex(SKINS[(i * 5 + 1) % SKINS.length]);
+        skin.setColorAt(i, c3);
+        mSk.setColorAt(i, c3);
         const pal = TONES[o.kind === "student" ? 3 : (o.tone ? o.tone(i) : 1)], k = big ? 0 : (i * 7 + 3) % hairs.length;
+        c3.setHex(big ? TONES[0][2] : pal[Math.floor(rnd() * pal.length)]);
         hairs[k].setMatrixAt(cnt[k], m4);
-        hairs[k].setColorAt(cnt[k], c3.setHex(big ? TONES[0][2] : pal[Math.floor(rnd() * pal.length)]));
+        hairs[k].setColorAt(cnt[k], c3);
+        mHr.setColorAt(i, c3);
         cnt[k]++;
-        ax += x / n;
-        az += z / n;
+        R = Math.max(R, Math.hypot(x - ax, z - az));
       });
       hairs.forEach((h, k) => { h.count = cnt[k]; });
-      for (const im of [cloth, skin, fm].concat(hairs)) {
+      for (const im of [cloth, skin, fm, mCl, mSk, mHr].concat(hairs)) {
         im.instanceMatrix.needsUpdate = true;
         if (im.instanceColor) im.instanceColor.needsUpdate = true;
-        if (im.count > 0) (im === fm ? far : near).add(im);
+        if (im.count > 0) (im === fm ? far : im === mCl || im === mSk || im === mHr ? mid : near).add(im);
       }
+      near.visible = false;
       far.visible = false;
       anchor.position.set(ax, o.y, az);
-      parent.add(near);
-      parent.add(far);
-      parent.add(anchor);
-      LOD.push({ near, far, anchor });
+      for (const q of [near, mid, far, anchor]) parent.add(q);
+      LOD.push({ near, mid, far, anchor, R: R * 1.0, lv: 1 });
       return near;
     };
-    // from afar the plain figures stand in (the many small faces are not drawn where they cannot be seen)
+    // PEOPLE_KIT_205: the level by the eye's distance from the crowd's edge (as it would be at a 45-degree lens); a tenth of slack
+    // both ways, so that a level does not flicker at its border
     if (Array.isArray(ctx.animated)) ctx.animated.push(() => {
       const cam = ctx.camera;
       if (!cam) return;
       const f = cam.isPerspectiveCamera ? Math.tan(cam.fov * Math.PI / 360) / 0.4142 / (cam.zoom || 1) : 1;
       for (const e of LOD) {
         e.anchor.getWorldPosition(wp);
-        const d = wp.distanceTo(cam.position) * f, nr = e.near.visible ? d < 170 : d < 150;
-        if (nr !== e.near.visible) { e.near.visible = nr; e.far.visible = !nr; }
+        const d = Math.max(0, wp.distanceTo(cam.position) - e.R) * f;
+        let lv = e.lv;
+        if (lv === 0) lv = d > 24 ? (d > 132 ? 2 : 1) : 0;
+        else if (lv === 1) lv = d < 20 ? 0 : d > 132 ? 2 : 1;
+        else lv = d < 20 ? 0 : d < 110 ? 1 : 2;
+        if (lv !== e.lv || e.near.visible !== (lv === 0) || e.mid.visible !== (lv === 1)) { e.lv = lv; e.near.visible = lv === 0; e.mid.visible = lv === 1; e.far.visible = lv === 2; }
       }
     });
     // pts [[x, z] ...] along a row round the centre c: every one's face to the row's inner side (`away`: to its outer side)

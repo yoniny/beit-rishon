@@ -184,9 +184,23 @@ body.tm-measuring #tm-tour-box{bottom:96px}
   #tm-tour-box .caps .cap{font-size:13.5px}
 }
 `;
+  // TOUR_VIEWS_205 BEGIN (tools204/tour_views_205.py writes this table: a place's further views, [eye, look point] each, tried and looked at in pictures)
+  var tour_VIEWS = {
+    "לשכת הגזית": [[[52.96, 21.46, -63.42], [51.5, 9.5, -68.3]], [[57.63, 17.5, -62.75], [56.5, 8.3, -66.5]]],
+    "בית המטבחים": [[[67.47, 24.06, -41.64], [65.5, 13, -50]]],
+    "שערי חצר הכהנים": [[[0, 62, -200], [0, 12, -64]]],
+    "פשפשי בית החליפות": [[[-19, 25, -57], [-3.5, 16.5, -42]]],
+    "מנורת משה ועשר המנורות": [[[-38.63, 17.49, 1.76], [-42, 15.9, 3.7]], [[-29.09, 21.63, 3.3], [-35.5, 18.6, 7]]],
+    "שולחן משה ועשרה השולחנות": [[[-28.47, 22.22, -3.18], [-34.5, 18.6, -7]]],
+    "שולחנות האולם — ר׳ יוסי בר׳ יהודה": [[[8.6, 15.6, -1.2], [4.7, 13.4, -3.8]], [[8.6, 15.6, 1.2], [4.7, 13.4, 3.8]]],
+    "הארון ובדיו": [[[-53, 19.5, 6.5], [-56.5, 17.3, 0]]],
+    "החצר האחרת — חצר בית המלך": [[[123.91, 13.52, 434.99], [103, -5, 433]]],
+    "הכרובים": [[[-46.5, 17.4, 0.01], [-58.8, 21, 0]], [[-51, 23, 8.6], [-58.8, 22.5, -4]]]
+  };
+  // TOUR_VIEWS_205 END
   var tour_MODES = [
     { key: "topics", label: "לפי הנושאים", desc: "כל המבטים וכל המקומות לפי סדר הלוח, כסא שלמה לפי כל מדרש, ובסוף ממש הקריאות הנוספות של טבלת 'שיטות ומחלוקות'." },
-    { key: "continuous", label: "רציפה", desc: "אותן שקופיות ברצף, כשבע שניות לכל אחת (עליית המלך לכסא — כאורכה), בתנועה איטית ובלולאה עד לעצירה." },
+    { key: "continuous", label: "רציפה", desc: "אותן שקופיות ברצף, בתנועה איטית ובלולאה עד לעצירה." },
     { key: "verses", label: "לפי סדר הפסוקים במלכים", desc: "מלכים א ו–ז; ח, א–יא; ח, סב–סו; י, יח–כ — הפסוקים המנוקדים, כל אחד במקומו במודל, עם רש״י והמפרשים." }
   ];
   var tour_DWELL = 7000;        // the continuous mode: ms per slide (the brief: ~7 s; model choice)
@@ -959,12 +973,22 @@ body.tm-measuring #tm-tour-box{bottom:96px}
       const placeThen = (p, extra) => {
         let own = p && p.item ? p.item.tourThen : null;
         if (fnc(own)) own = call(own);
-        const L = (Array.isArray(own) ? own : []).concat(extra || [])
+        // TOUR_VIEWS_205: the table's further views of this place - the things its card speaks of, each looked at in a picture before it was written
+        const tv = p && tour_VIEWS[p.title];   // (the table's views come after the place's own and the merged ones)
+        const L = (Array.isArray(own) ? own : []).concat(extra || [], Array.isArray(tv) ? tv.map((v) => ({ cam: v[0], tg: v[1] })) : [])
           .map((t) => (t && !t.fp && !t.place && !(t.cam && t.tg) && t.pos && t.target ? Object.assign({}, t, { cam: t.pos, tg: t.target }) : t))
           .filter((t) => t && (t.fp || t.place || (t.cam && t.tg)));
         if (!L.length) return null;
         const share = 1 / (L.length + 1);
-        return L.map((t, i) => ({ go: [t.fp ? { fp: t.fp } : t.place ? { place: t.place } : { pos: t.cam, target: t.tg }], at: (i + 1) * share, dur: t.dur || 1900 }));
+        return L.map((t, i) => ({ go: [t.fp ? { fp: t.fp } : t.place ? { place: t.place } : { pos: t.cam, target: t.tg }], at: (i + 1) * share, dur: t.dur || 1500 }));
+      };
+      // TOUR_VIEWS_205: a reading's own further views (row.tourThen[key], a list of { cam, tg }): the slide of a dispute moves among
+      // the places it speaks of, as a place's slide does
+      const optThen = (row, key) => {
+        const L = ((row && row.tourThen && row.tourThen[key]) || []).filter((t) => t && t.cam && t.tg);
+        if (!L.length) return null;
+        const share = 1 / (L.length + 1);
+        return L.map((t, i) => ({ go: [{ pos: t.cam, target: t.tg }], at: (i + 1) * share, dur: t.dur || 1500 }));
       };
       const placeSlide = (p, groupCam) => {
         const f = placeFeat(p), k = camKey(p), go = f === "kelim" ? tour_KELIM_GO.slice() : [];   // 1.0.1-L (L.88): the panel's own camera there is for the card beside its panel
@@ -1177,7 +1201,7 @@ body.tm-measuring #tm-tour-box{bottom:96px}
           const def = row.cur != null && row.options.some((o) => o[0] === row.cur) ? row.cur : row.options[0][0];
           for (const [key, label, info, infoRefs] of row.options.filter((o) => o[0] !== def)) {
             out.push({ kind: "opinion", part: 1, row, key, def, title: label, sub: row.cap, text: info || "", refs: infoRefs || row.refs || [],
-              out: tour_OUT });
+              then: optThen(row, key), out: tour_OUT });
           }
         }
         return out;
@@ -1275,7 +1299,7 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         const o = mk("option", null, lab, spd);
         o.value = String(k);
       }
-      tip(spdLab, "קצב המצגת: זמן ההצגה של כל שקופית");
+      tip(spdLab, "קצב המצגת: מהיר — 7 שניות לשקופית, רגיל — 10, איטי — 12");
       mk("span", "esc", "Esc — סיום", ctl2);
       // a mouse click does not leave the focus on the tour's buttons (Enter / Space then cannot act on them behind the cloud dialog)
       for (const b of [btn, bPrev, bPause, bNext, bStop]) b.addEventListener("mousedown", (e) => e.preventDefault());
@@ -1302,13 +1326,11 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         // 1.0.1-L: a slide with a timeline dwells for it, in every mode (the speed scales the timeline too: animStep)
         const a = cur && cur.s === s ? cur.anim : null;
         if (a) return (tour_ANIM_LEAD + a.whole + tour_ANIM_TAIL) * 1000 * speed;
-        // 1.3.7 / 1.9.5 (TOUR_ENGINE_204B): a slide of three cameras and more gets 2.5 s for each camera after the second - in seven
-        // seconds three flights leave nothing to look at
-        if (mode.key === "continuous") return (tour_DWELL + Math.max(0, (Array.isArray(s.then) ? s.then.length : 0) - 1) * 2500) * speed;
-        // (1.0.1-L: with the sentence the slide adds while its feature is on: 7:30-33 then lasts for most of the demonstration's round)
-        const n = (s.text || "").length + (cur && cur.s === s && cur.feat && s.xf ? s.xf.length + 1 : 0);
-        if (s.kind === "verse" || s.letters) return Math.max(10000, Math.min(60000, 3000 + 55 * n + 70 * (s.letters || 0))) * speed;
-        return Math.max(9000, Math.min(45000, 2500 + 55 * n)) * speed;
+        // TOUR_TIMES_205 (the user, 12.11.2026 12:14: "זה ארוך מדי. צריך להיות 7 שניות לכרטיס במצב מהיר ... במצב רגיל 10, במצב איטי 12"):
+        // a slide's time goes by the chosen pace alone, in every mode - no longer by the length of its text (9 to 45 seconds until
+        // 2.0.4); a slide of several views gets no less than three seconds a view (told to the user 12:20)
+        const base = speed >= 1.3 ? 12000 : speed <= 0.75 ? 7000 : 10000;
+        return Math.max(base, (1 + (Array.isArray(s.then) ? s.then.length : 0)) * 3000);
       };
       const setBtn = () => {
         if (fnc(U.setTopBtn)) call(U.setTopBtn, btn, running ? "stop" : "play", running ? "עצור" : "מצגת");

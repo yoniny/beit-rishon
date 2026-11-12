@@ -1299,6 +1299,7 @@
           const noise = (a, sec) => { const b = a.createBuffer(1, Math.max(1, Math.floor(a.sampleRate * sec)), a.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; return b; };
           const env = (a, t, peak, att, dec) => { const g2 = a.createGain(); g2.gain.setValueAtTime(0.0001, t); g2.gain.exponentialRampToValueAtTime(peak, t + att); g2.gain.exponentialRampToValueAtTime(0.0001, t + att + dec); g2.connect(a.destination); return g2; };
           return {
+            stop() { try { if (ac) ac.close(); } catch (_) {} ac = null; },   // SFX_STOP_205 (1.3.8): a stop silences the sounds timed ahead too (as in the Second House)
             click(at) { const a = A(); if (!a) return; const t = a.currentTime + (at || 0);
               for (const [dt, f] of [[0, 3400], [0.08, 2300], [0.2, 1800]]) { const s2 = a.createBufferSource(); s2.buffer = noise(a, 0.06); const bp = a.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = f; bp.Q.value = 9; s2.connect(bp); bp.connect(env(a, t + dt, 0.7, 0.003, 0.05)); s2.start(t + dt); } },
             door(at, dur) { const a = A(); if (!a) return; const t = a.currentTime + (at || 0);
@@ -1368,7 +1369,9 @@
             }
           },
           at(e) { this.t0 = -1; apply(e); },   // a still frame (checks, the presentation)
-          stop() { clearTimeout(this.__wide); this.t0 = -1; pose(1); if (heiKey && heiKey.userData.turn) heiKey.userData.turn.rotation.z = 0; handG.visible = false; capG.forEach((c) => (c.visible = false)); }
+          stop() {
+            SFX.stop();   // SFX_STOP_205
+            clearTimeout(this.__wide); this.t0 = -1; pose(1); if (heiKey && heiKey.userData.turn) heiKey.userData.turn.rotation.z = 0; handG.visible = false; capG.forEach((c) => (c.visible = false)); }
         };
         (ctx.shared.demoStops || (ctx.shared.demoStops = [])).push({ id: "int-doors-demo", running: () => D.t0 >= 0, stop: () => D.stop() });   // 1.3.4: any switch stops it
         ctx.animated.push(() => {
