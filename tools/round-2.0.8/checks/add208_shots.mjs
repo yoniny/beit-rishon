@@ -1,0 +1,20 @@
+// the new pieces of 2.0.8 in pictures: node shots.mjs <plugin> <outdir>
+import { open } from '../fs/h.mjs';
+import fs from 'node:fs';
+const [,, dir, out] = process.argv; fs.mkdirSync(out, { recursive: true });
+const P = await open(dir); const pg = P.page;
+await P.settle(30000, 3);
+const info = await pg.evaluate(() => { const S = window.__ctx.shared; return { helene: !!S.helene, beitEven: !!S.beitEven, layers: ['heleneLamp','heleneShamshit','heleneTablet','shofarot','beitEvenIn','beitEvenOut','ulamCoursesRambam','lepersDoorIn','lepersDoorRosh'].map((k) => k + ':' + !!(window.__ctx.layers && window.__ctx.layers[k])) }; });
+console.log(JSON.stringify(info));
+const cam = async (name, e, t, pre) => { await pg.evaluate(([e, t, pre]) => { const c = window.__ctx; if (pre) (new Function('ctx', pre))(c); c.camera.position.set(...e); c.controls.target.set(...t); c.camera.lookAt(...t); }, [e, t, pre || null]); await pg.waitForTimeout(1200); await P.settle(20000, 6); await P.rshot(out + '/' + name + '.png'); };
+await cam('1-lamp', [11.5, 47, 6], [4.6, 48.6, 0], 'ctx.shared.openFor && ctx.shared.openFor("hei-ulam", 20000)');
+await cam('2-shamshit', [11.5, 46, 4], [1.8, 46.6, 0], 'ctx.shared.helene.set("rambam")');
+await cam('3-tablet', [8, 27, -10.5], [1.8, 26.2, -12.5], 'ctx.shared.helene.set("rashi")');
+await cam('4-shofarot', [76, 22, -6], [84, 14, -22]);
+await cam('5-beitEven-in', [66, 60, -20], [86, 40, -58]);
+await cam('6-beitEven-out', [62, 40, -70], [86, 4, -96], 'ctx.shared.beitEven.set("tosafot")');
+await cam('7-courses', [70, 70, 30], [17.5, 66, 0], 'ctx.shared.beitEven.set("rashi"); ctx.shared.ulamSteps.set("rambam")');
+await cam('8-door-in', [150, 22, -40], [133.5, 10, -47.5], 'ctx.shared.ulamSteps.set("bartenura")');
+await cam('9-door-rosh', [112, 30, -30], [112, 10, -67.5], 'ctx.shared.eznChambers.set("outside")');
+console.log('errors:', JSON.stringify(P.errs.slice(0, 6)), 'warns:', JSON.stringify((P.warns || []).filter((w) => /labels without/.test(w)).slice(0, 3)));
+await P.close(); process.exit(0);

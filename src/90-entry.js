@@ -815,7 +815,9 @@
       }
       const pixel = e.deltaMode === 0, small = pixel && Math.abs(dy) < 50;
       let k;
-      if (e.ctrlKey) k = small ? dy / 100 : Math.sign(dy) * 0.0513;   // pinch: follow the fingers; Ctrl + notch: 5% (= ln(1 / 0.95))
+      // PINCH_FLIP_208 (the user, 12.11.2026 22:56: "בעכבר של מחשב נייד, הצביטה... הפוכה, כשפותחים את האצבעות התצוגה רחוקה יותר"): on his
+      // laptop's touchpad the pinch came the other way round - so every Ctrl + wheel (his touchpad sends the pinch so) now zooms the other way
+      if (e.ctrlKey) k = small ? -dy / 100 : -Math.sign(dy) * 0.0513;   // pinch: follow the fingers; Ctrl + notch: 5% (= ln(1 / 0.95))
       else if (small) k = dy * 0.001;                                   // two-finger slide on a touchpad
       else k = Math.sign(dy) * 0.0513 * Math.max(0.3, Math.min(3, Math.abs(dy) / 100));   // a mouse notch: 5% as OrbitControls' (ZOOM_CURSOR_207: by this handler everywhere - to the cursor)
       // ZOOM_CURSOR_207: the point under the cursor, once a burst (a new one after a quarter second, or when the cursor moved)
@@ -1213,6 +1215,7 @@
       { name: "heichal.js", build: buildHeichal },
       { name: "interior.js", build: buildInterior },
       { name: "kelim.js", build: buildKelim },   // 1.0.1-L (L.88): the vessels of I Kings 7 (57-kelim.js); before ui.js, it reads the labels
+      { name: "ark.js", build: buildArk },   // ARK_GATES_208 (58-ark.js): "דבקו שערים" - the ark brought into the devir
       { name: "palace.js", build: buildPalace },
       { name: "ui.js", build: buildUI },
       { name: "tour.js", build: buildTour }   // 1.0.1-H: the presentation (75-tour.js); after ui.js, it uses ctx.ui
@@ -1227,6 +1230,7 @@
       "טוען את האולם, ההיכל והיציע",
       "טוען את הקודש וקודש הקדשים",
       "טוען את כלי הבית",
+      "מכין את הכנסת הארון",
       "טוען את בית שלמה",
       "טוען את הקישורים והצבעים",
       "מכין את המצגת"

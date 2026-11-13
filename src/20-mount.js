@@ -45,7 +45,8 @@
                                 // x 133 / 193 (symmetric about the court's middle x 163, 28.5 from each end of the court's inside x 98.5..227.5)
   var MNT_AMUD = { x: 106, z: 8, r: 2, h: 1, pr: 0.6, ph: 3 }; // "העמוד" (II Kings 11:14; 23:3): a round stone platform 4 across (r 2) x 1 high with a short pillar
                                 // (r 0.6, 3 high), just east of the inner court's east gate steps (30-courts.js: x 98.5..101.5, z +-6) - at x 106, z 8 the steps stay clear
-  var MNT_ARON = { x: 224, z: 7, l: 2, w: 1.2, h: 1.2 }; // the donation chest (II Chr 24:8; II Kings 12:10): cedar, 2 long (along z) x 1.2 x 1.2, inside the outer
+  var MNT_ARON = { x: 224, z: 7, l: 2, w: 1.2, h: 1.2 };
+  var MNT_ARON_IN = { x: 70, z: -8 };   // YEHOYADA_208: the inner chest - in the inner court, 5 east of the altar's east face (x 65), 8 north of the axis (model choice) // the donation chest (II Chr 24:8; II Kings 12:10): cedar, 2 long (along z) x 1.2 x 1.2, inside the outer
                                 // court beside its east gate (the gate piers stand at z +-5..+-6.5, x 227.2..229.8; the low wall's inner face is x 227.5)
 
   function mnt_hash(n) { // the same value noise as 10-core's hash(), kept private so the terrain does not depend on it
@@ -411,20 +412,54 @@
     //    ארון אחד ויקב חר בדלתו ויתן אתו אצל המזבח מימין בבוא איש בית ה'" (the hole bored in its lid = the slot). Modeled (MNT_ARON, model
     //    choice) as a cedar chest 2 x 1.2 x 1.2 (long side along z) with two bronze bands and a lid with a slot, inside the outer court
     //    beside its east gate at x 224, z 7 (clear of the gate piers z +-5..+-6.5 and of the 10-wide gateway).
+    // YEHOYADA_208 (the user, 12.11.2026 21:41: "אתה צריך להוסיף את ארון יהוידע, אבל זה יהיה מתג, זה לא כברירת מחדל. כי יהוידע היה
+    // אחרי שלמה המלך הרבה בבית ראשון"; 22:32 "3. כמלבים"; 22:49 the inner one "בעזרת ישראל"): BOTH CHESTS, AS THE MALBIM - not two
+    // readings but two chests at once: on II Kings 12:10 "ופה נזכר הארון של תקלין חדתין, וזה ניתן בפנים", and the one of Chronicles "לתקלין
+    // עתיקין... וזה נתנו בחוץ"; on II Chr 24:8 the inner one "לשם נדרים ונדבות החדשים", the outer "מתקלין עתיקין... שזה הולך כולו לבדק
+    // הבית". The inner: "ויתן אתו אצל המזבח מימין בבוא איש בית ה׳" (II Kings 12:10) - Rashi "אצל המזבח - בעזרה"; "מימין ביאת
+    // האנשים"; Metzudat David "בימין הבא אל הבית, לא בימין היוצא" - so: in the inner court's east part (חצר הכהנים ועזרת ישראל, Rashi
+    // on I Kings 6:36: one court here), 5 amot east of the altar and 8 north of the axis, on the right of him who comes in from the east
+    // gate (the spot: model choice). The outer: "ויתנהו בשער בית ה׳ חוצה" (II Chr 24:8) - the chest that stood by the outer court's east gate
+    // since 1.0.x. One switch (ctx.shared.yehoyada; a place and a pill), OFF by default; the label layer "yehoyada".
     try {
       const R = MNT_ARON;
+      const yh = new Group();
+      yh.name = "yehoyada";
+      yh.visible = false;
+      g.add(yh);
+      ctx.layers.yehoyada = yh;
       const chestMat = M2.cedar.clone();
       chestMat.color.set(0x9A6A3C); // a warmer, darker cedar than the court's wall bands (model choice)
       const slotMat = new MeshStandardMaterial({ color: 0x1A1410, roughness: 0.95, metalness: 0 });
       const lidH = 0.2, bodyH = R.h - lidH; // body 1.0 + lid 0.2 = 1.2 high
-      H2.box(g, R.w, bodyH, R.l, chestMat, R.x, WC.y, R.z);                                                  // body 1.2 x 1.0 x 2 (y 3..4)
-      H2.box(g, R.w + 0.1, lidH, R.l + 0.1, chestMat, R.x, WC.y + bodyH, R.z);                              // lid 1.3 x 0.2 x 2.1, 0.05 proud all round (y 4..4.2)
-      H2.box(g, 0.12, 0.03, R.l * 0.6, slotMat, R.x, WC.y + R.h, R.z);                                       // the slot in the lid (II Kings 12:10 "ויקב חר בדלתו"): 0.12 x 1.2, a hair above the lid
-      for (const yb of [0.3, 0.75]) H2.box(g, R.w + 0.06, 0.14, R.l + 0.06, M2.bronze, R.x, WC.y + yb, R.z); // 2 bronze bands round the body, 0.14 high, 0.03 proud (model choice)
-      lbl("ארון הנדבות (דברי הימים ב כד, ח)", R.x, WC.y + 5, R.z, 2.5);
-      ocItem("aronNedavot", "ארון הנדבות (דברי הימים ב כד, ח)", R.x, WC.y + R.h / 2, R.z, [216, 8, 13]); // cam from the west-south-west, the gate behind
+      // a cedar chest 2 x 1.2 x 1.2 (its long side along z), two bronze bands, a lid with the slot (II Kings 12:10 "ויקב חר בדלתו";
+      // Ralbag: "והיה בדלת שהיא מכסה הארון כדי שלא יוכל אחד לקחת ממנו בזולת פתיחת הארון")
+      const chest = (x, y, z) => {
+        H2.box(yh, R.w, bodyH, R.l, chestMat, x, y, z);                                                 // body 1.2 x 1.0 x 2
+        H2.box(yh, R.w + 0.1, lidH, R.l + 0.1, chestMat, x, y + bodyH, z);                               // lid 1.3 x 0.2 x 2.1, 0.05 proud all round
+        H2.box(yh, 0.12, 0.03, R.l * 0.6, slotMat, x, y + R.h, z);                                       // the slot: 0.12 x 1.2, a hair above the lid
+        for (const yb of [0.3, 0.75]) H2.box(yh, R.w + 0.06, 0.14, R.l + 0.06, M2.bronze, x, y + yb, z); // 2 bronze bands, 0.14 high, 0.03 proud (model choice)
+      };
+      chest(R.x, WC.y, R.z);
+      ctx.labels.push({ text: "ארון יהוידע שבשער — לתקלין עתיקין (דברי הימים ב כד, ח; מלבי״ם)", x: R.x, y: WC.y + 5, z: R.z, size: 2.5, layer: "yehoyada" });
+      ocItem("aronNedavot", "ארון יהוידע שבשער (דברי הימים ב כד, ח)", R.x, WC.y + R.h / 2, R.z, [216, 8, 13]); // cam from the west-south-west, the gate behind
+      const YI = MNT_ARON_IN;
+      chest(YI.x, LV.AZ, YI.z);
+      ctx.labels.push({ text: "ארון יהוידע אצל המזבח — לתקלין חדתין (מלכים ב יב, י; מלבי״ם)", x: YI.x, y: LV.AZ + 4.6, z: YI.z, size: 2.2, layer: "yehoyada" });
+      ctx.shared.yehoyada = { get on() { return yh.visible; }, set(v) { yh.visible = !!v; return yh.visible; }, inner: [YI.x, LV.AZ, YI.z], outer: [R.x, WC.y, R.z] };
+      ctx.shared.modelButtons = ctx.shared.modelButtons || [];
+      ctx.shared.modelButtons.push({
+        id: "mnt-yehoyada",
+        label: "הצג את ארון יהוידע (בימי יואש)",
+        labelOn: "הסתר את ארון יהוידע",
+        title: "שני ארונות, כמלבי״ם: אחד אצל המזבח — ״ויתן אתו אצל המזבח מימין בבוא איש בית ה׳״ (מלכים ב יב, י), ואחד בשער — ״ויתנהו בשער בית ה׳ חוצה״ (דברי הימים ב כד, ח). בימי שלמה עוד לא היו — לכן אינם מוצגים כברירת מחדל.",
+        anchor: [YI.x, LV.AZ + 3.2, YI.z],
+        maxDist: 140,
+        get: () => yh.visible,
+        set: (on) => { yh.visible = !!on; }
+      });
     } catch (e) {
-      console.warn("[mount] outer court donation chest skipped:", e);
+      console.warn("[mount] the chests of Yehoyada skipped:", e);
     }
     // d. The court's gate is named "השער המזרחי של החצר החיצונה" (label below; ctx.shared.gates.newCourtE.name). Tradition also names an
     //    upper gate of the house, "שער בית ה' העליון" built by Yotam (II Kings 15:35), and "שער בית ה' החדש" in "החצר העליון" (Jer 36:10) - names

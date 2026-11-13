@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), '..');
 const src = path.join(root, 'src');
-const order = ['00-lib.js', '10-core.js', '20-mount.js', '30-courts.js', '40-altar.js', '45-vessels.js', '50-heichal.js', '55-interior.js', '57-kelim.js', '60-palace.js', '70-ui.js', '72-words.js', '75-tour.js', '90-entry.js'];
+const order = ['00-lib.js', '10-core.js', '20-mount.js', '30-courts.js', '40-altar.js', '45-vessels.js', '50-heichal.js', '55-interior.js', '57-kelim.js', '58-ark.js', '60-palace.js', '70-ui.js', '72-words.js', '75-tour.js', '90-entry.js'];
 const header = fs.readFileSync(path.join(src, 'header.txt'), 'utf8');
 let out = header;
 for (const f of order) {

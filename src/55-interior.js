@@ -1086,6 +1086,10 @@
                                             // were lengthened inward too - their west ends at the west wall itself (x -63.5; was 0.2 inside the ark's west face)
     const STAFF_LEN = XW - STAFF_X0;        // 15.55 (model choice, SPEC 7 "~15"): their east ends reach the parochet's west face (x -43.5) and press it (I Kings 8:8)
     const STAFF_PRESS = 0.3, STAFF_BULGE = 0.28;   // 1.0.1-L (L.54): the staffs 0.3 longer, into the curtain's swelling, 0.28 high (model choices)
+    // ARK_GATES_208 (58-ark.js, the demonstration "דבקו שערים"): the ark's own pieces - its body, the kaporet with its cherubim, the rings
+    // (body), the two staffs and their two swellings in the curtain - so that the demonstration can hide them while it carries a copy
+    const ARK_PARTS = ctx.shared.arkParts = { body: [], staffs: [], swell: [], x: ARK_X, y0: F + ROCK_H, w: ARK_W, l: ARK_L, h: ARK_H,
+      staffZ: STAFF_Z, staffX0: STAFF_X0, staffLen: STAFF_LEN + STAFF_PRESS, staffMat: null };
 
     // ---- materials ----
     const olive = M.cedar.clone(); olive.color.set(0xB89A6A);          // עצי שמן = olive (Targum, Rashi on 6:23); Ralbag (and Radak as a 2nd reading): a resinous cedar/pine - DEV note
@@ -2170,12 +2174,17 @@
     ctx.shared.kodeshLayout = {
       current: "rabbi",
       keys: ["rabbi", "rashbash"],
+      hidden: false,   // ARK_GATES_208 (58-ark.js): the demonstration "דבקו שערים" takes the heichal's vessels away while the ark passes
       set(key) {
         if (!layouts[key]) return;
         this.current = key;
-        for (const k in layouts) layouts[k].group.visible = k === key;
+        for (const k in layouts) layouts[k].group.visible = !this.hidden && k === key;
         moveLabels(key);
         setLayoutFlyPoints(key);
+      },
+      hide(v) {
+        this.hidden = !!v;
+        for (const k in layouts) layouts[k].group.visible = !this.hidden && k === this.current;
       }
     };
     ctx.shared.modelButtons = ctx.shared.modelButtons || [];
@@ -2320,11 +2329,13 @@
     //   Radak: "חמש צלעות זו לפנים מזו" (five receding steps); Ralbag and Malbim: "the fifth doorway" of the Temple - DEV notes, UI text.
     const DX = TRK_X;
     const devVar = {};
+    const devParts = {};   // ARK_GATES_208 (58-ark.js): each reading's door leaves (their hinges) and its curtain, for the demonstration
     const buildDevirDoorway = (key) => {
       const vg = new Group();
       vg.name = "devir-door-" + key;
       g.add(vg);
       const pent = key === "pent";
+      const parts = devParts[key] = { hinges: [], curtain: [], pivZ: 0 };
       const holeW = pent ? INT_DEVIR_HOLE : INT_DEVIR_CLEAR + 2;      // 9.08 (the pentagons stand in the hole) / 8 (square posts 1 thick)
       trkPiers(vg, holeW, pent ? INT_DEVIR_HOLE : 0);                // 1.0.1-L (L.32): Rashi's reading - the lintel fills the band's hole
       const fixed = vg.children.slice();                             // 1.3.7: the wall's own pieces - all that is added after them goes up DOOR_UP (below)
@@ -2419,11 +2430,13 @@
       // the wall's soffit (x -44.35, |z| 3.12), so the leaf hangs on its post; "five" - just west of the square post's corner and of the
       // threshold (x -44.66, |z| 3), so the open leaf clears both
       const PIV_X = pent ? DX - 0.35 : DX - 0.66, PIV_Z = pent ? 3.12 : INT_DEVIR_CLEAR / 2;
+      parts.pivZ = PIV_Z;
       for (const s of [-1, 1]) {
         const hinge = new Group();
         hinge.position.set(PIV_X, F, s * PIV_Z);
         hinge.rotation.y = s * 0.26;      // ~105 deg open: past the perpendicular, leaning toward the devir side of the wall (model choice)
         vg.add(hinge);
+        parts.hinges.push({ hinge, s, open: s * 0.26 });
         const leaf = H.box(hinge, 3, INT_DEVIR_DOOR_H - 0.2, 0.25, s > 0 ? goldCarvedDevirDoorSouth : goldCarvedDevirDoor, -1.5, 0.1, 0);
         if (s < 0) goldKey(hinge, -2.7, 2.2, 0.125, 1);   // 1.3.3: the key of gold in the lock of the north leaf (Rashi on 7:50)
         // 1.0.1-K (K.5): uvs in the leaf's frame (xi -3..0 from the pivot): the cell scaled to 3 x 5.9 (two registers on the 11.8), the pair of
@@ -2454,6 +2467,7 @@
       const PAR_BEND0 = INT_DEVIR_DOOR_H - 0.7;
       const parH = PAR_BEND0;
       const par = H.box(vg, 0.12, parH, pent ? 6.9 : INT_DEVIR_CLEAR, parochetMats, XW + 0.06, F, 0);   // x -43.5..-43.38, to the bend
+      parts.curtain.push(par);
       {
         const run = 0.56, rise = INT_DEVIR_DOOR_H + 0.03 - PAR_BEND0, fl = Math.hypot(run, rise);
         const fg = new BoxGeometry(0.12, fl, 5.98);
@@ -2465,6 +2479,7 @@
         flap.rotation.z = Math.atan2(run, rise);   // its top toward -x, the devir
         flap.castShadow = flap.receiveShadow = true;
         vg.add(flap);
+        parts.curtain.push(flap);
       }
       // 1.0.1-K (K.5): its weave from world positions (the heichal face u = -z, the devir face u = z, v = y - 12): the same for both readings,
       // symmetric about the doorway's middle, and continued by the swellings of the staffs (below)
@@ -2483,6 +2498,7 @@
     ctx.shared.devirDoor = {
       current: "pent",
       keys: ["pent", "five"],
+      parts(key) { return devParts[key || this.current] || null; },   // ARK_GATES_208
       set(key) {
         if (!devVar[key]) return;
         this.current = key;
@@ -2556,6 +2572,7 @@
         b.position.set(XW + 0.12, STAFF_Y, s * STAFF_Z);
         b.receiveShadow = true;
         g.add(b);
+        ARK_PARTS.swell.push(b);
       }
     }
 
@@ -2628,16 +2645,18 @@
       // 1.0.1-L (L.85): hollow, its walls half a tefach - Bava Batra 14a "צא מהן טפח – חציו לכותל זה וחציו לכותל זה" (the floor the same: model
       // choice). The crown round its top: Ex 25:11 "ועשית עליו זר זהב סביב" (a band under the kaporet; its teeth with the open ark, as the book draws them)
       const ARK_T = 1 / 12;
-      H.box(g, ARK_W, ARK_T, ARK_L, vesselGold, ARK_X, ay, 0);
+      ARK_PARTS.body.push(H.box(g, ARK_W, ARK_T, ARK_L, vesselGold, ARK_X, ay, 0));
       for (const sd of [-1, 1]) {
-        H.box(g, ARK_T, ARK_H - ARK_T, ARK_L, vesselGold, ARK_X + sd * (ARK_W - ARK_T) / 2, ay + ARK_T, 0);
-        H.box(g, ARK_W - 2 * ARK_T, ARK_H - ARK_T, ARK_T, vesselGold, ARK_X, ay + ARK_T, sd * (ARK_L - ARK_T) / 2);
-        H.box(g, 0.03, 0.12, ARK_L + 0.06, vesselGold, ARK_X + sd * (ARK_W / 2 + 0.015), ay + ARK_H - 0.12, 0);
-        H.box(g, ARK_W, 0.12, 0.03, vesselGold, ARK_X, ay + ARK_H - 0.12, sd * (ARK_L / 2 + 0.015));
+        ARK_PARTS.body.push(H.box(g, ARK_T, ARK_H - ARK_T, ARK_L, vesselGold, ARK_X + sd * (ARK_W - ARK_T) / 2, ay + ARK_T, 0));
+        ARK_PARTS.body.push(H.box(g, ARK_W - 2 * ARK_T, ARK_H - ARK_T, ARK_T, vesselGold, ARK_X, ay + ARK_T, sd * (ARK_L - ARK_T) / 2));
+        ARK_PARTS.body.push(H.box(g, 0.03, 0.12, ARK_L + 0.06, vesselGold, ARK_X + sd * (ARK_W / 2 + 0.015), ay + ARK_H - 0.12, 0));
+        ARK_PARTS.body.push(H.box(g, ARK_W, 0.12, 0.03, vesselGold, ARK_X, ay + ARK_H - 0.12, sd * (ARK_L / 2 + 0.015)));
       }
+      ARK_PARTS.staffMat = vesselGold;
       const arkLid = new Group();                                       // the kaporet with its cherubim: lifted off by the pill "arkInside" (L.85)
       arkLid.name = "ark-kaporet";
       g.add(arkLid);
+      ARK_PARTS.body.push(arkLid);
       ctx.layers.arkLid = arkLid;                                       // gates the labels "הארון ובדיו" and "אבן השתייה" (with the ark open they cover what is shown)
       H.box(arkLid, ARK_W + 0.1, 0.17, ARK_L + 0.1, vesselGold, ARK_X, ay + ARK_H, 0);    // kaporet (Ex 25:17), a tefach thick (Sukkah 5a)
       // (the two small cherubim of the kaporet are built with the great ones below - 1.0.1-K, K.4)
@@ -2651,11 +2670,13 @@
         st.position.set(STAFF_X0 + (STAFF_LEN + STAFF_PRESS) / 2, STAFF_Y, s * STAFF_Z);
         st.castShadow = true;
         g.add(st);
+        ARK_PARTS.staffs.push(st);
         for (const dx of [-0.5, 0.5]) {                                   // rings (Ex 25:12)
           const rg = new Mesh(new TorusGeometry(0.18, 0.04, 6, 12), vesselGold);
           rg.rotation.y = Math.PI / 2;
           rg.position.set(ARK_X + dx, STAFF_Y, s * (ARK_L / 2 + 0.03));
           g.add(rg);
+          ARK_PARTS.body.push(rg);
         }
       }
       // ---- the cherubim (I Kings 6:23-28; II Chr 3:10-13) - 1.0.1-K (K.4): rebuilt after the book p07L (the user's reference; the user: "את

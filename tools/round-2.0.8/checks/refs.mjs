@@ -1,0 +1,11 @@
+import { open } from '../fs/h.mjs';
+import fs from 'node:fs';
+const [,, dir] = process.argv;
+const keys = JSON.parse(fs.readFileSync('/home/claude/qa/chash/allkeys.json', 'utf8'));
+const where = JSON.parse(fs.readFileSync('/home/claude/qa/chash/keywhere.json', 'utf8'));
+const P = await open(dir); const pg = P.page;
+await P.settle(30000, 3);
+const bad = await pg.evaluate((keys) => { const S = window.__ctx.shared; return keys.filter((k) => { const r = S.refIndex(k); return !r || r.index == null; }); }, keys);
+console.log('total', keys.length, 'unresolved', bad.length);
+for (const k of bad) console.log(k, ' <- ', (where[k] || []).join(' | '));
+await P.close(); process.exit(0);
