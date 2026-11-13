@@ -1147,7 +1147,7 @@
   document.addEventListener("click", (ev) => {
     const t = ev.target && ev.target.closest ? ev.target.closest("button, input, select, [role='button'], .tm-op a") : null;
     // TOUR_SOFT_204 (the user, 12.11.2026 02:14): closing a floating card, folding it, folding the panel - no command, the demonstration goes on
-    if (!t || t.closest(".tm-pill, #tm-news, #tm-help, .tm-src, .tm-srcl, #tm-xcard .x, #tm-card .x, #tm-burger, #tm-dpause")) return;   // DEMO_PAUSE_207: + the pause bar
+    if (!t || t.closest(".tm-pill, #tm-news, #tm-help, .tm-src, .tm-srcl, #tm-xcard .x, #tm-card .x, #tm-burger, #tm-dpause, #tm-tour-box")) return;   // DEMO_PAUSE_207: + the pause bar; TOUR_DEMO_PAUSE_209: + the presentation's banner (its buttons pause, step and end it - its own undo stops a slide's demonstration; until 2.0.8 its "⏸" ENDED the slide's demonstration)
     ctx.shared.stopDemos();
   }, true);
   // 1.0.1-K: the shadow pass's depth programs. renderer.compile() prepares the materials of the scene only; WebGLShadowMap draws every

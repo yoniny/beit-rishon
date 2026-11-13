@@ -1,0 +1,12 @@
+      const setPaused = (p) => {
+        paused = !!p;
+        if (!paused) idleUntil = 0;
+        bPause.textContent = paused ? "▶ המשך" : "⏸ השהה";
+        // TOUR_DEMO_PAUSE_209: the slide's demonstration pauses with the presentation and goes on with it (90-entry.js DEMO_PAUSE_207)
+        try {
+          if (paused) { if (fnc(ctx.shared.demoPause)) ctx.shared.demoPause(); }
+          else if (fnc(ctx.shared.demoPaused) && ctx.shared.demoPaused() && fnc(ctx.shared.demoResume)) ctx.shared.demoResume();
+        } catch (_) {
+        }
+        showWait();
+      };

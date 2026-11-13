@@ -509,6 +509,13 @@ body.tm-measuring #tm-tour-box{bottom:96px}
       then: { go: [{ fp: "heichalFront" }], at: 0.45, dur: 3500 },
       x: "'בירח האתנים בחג הוא החדש השביעי' — תשרי (רש״י בשם התרגום) — הקהיל שלמה את זקני ישראל 'להעלות את ארון ברית ה׳ מעיר דוד היא ציון' — 'שנתנו שם דוד כשהביאו מבית עובד אדום' (רש״י); הכהנים נשאו את הארון, והלוים את אהל מועד — 'וגנזו שלמה' (רש״י ח, ד). המבט עולה מן הדרום — מצד עיר דוד ובית המלך — אל הבית.",
       r: [["ח, ב", ["V", 10, 8, 2]], ["ח, ד", ["V", 10, 8, 4]], ["דברי הימים ב ה, ב", ["V", 39, 5, 2]]] },
+    // 2.0.9 (TOUR_ARK_209, the user, 13.11.2026 02:57, "א: כן" - the demonstration "דבקו שערים" in the presentation too): in the topics'
+    // order it is the panel's own button (one slide per button); here, by the verses, before 8:6-9 - the ark brought in, then its
+    // staffs and the tablets, then the cloud (8:10-11). A completion (the Gemara, Shabbat 30a; no verse repeated); the slide holds until
+    // the demonstration ends (TOUR_DEMO_HOLD_206), and the devir's cloud question is asked as for any devir slide
+    { v: [8, 6, 6], compl: true, t: "הכנסת הארון — ״דבקו שערים״", go: [{ place: "הכנסת הארון — ״דבקו שערים״ (הדגמה)", act: true }, { fp: "devirDoor" }],
+      x: "הגמרא (שבת ל.): ״כשבנה שלמה את בית המקדש, ביקש להכניס ארון לבית קדשי הקדשים. דבקו שערים זה בזה״ — ״של בית קדשי הקדשים״ (רש״י). שלמה התפלל, ואמר ״שאו שערים ראשיכם״ (תהלים כד, ז), ולא נענה; ״כיון שאמר: ׳ה׳ אלהים אל תשב פני משיחך זכרה לחסדי דוד עבדך׳, מיד נענה״ — ״ויבאו הכהנים את ארון ברית ה׳ אל מקומו אל דביר הבית״ (ח, ו). בהדגמה: ארבעה כהנים נושאים את הארון, השערים דבקים, שלמה מתפלל על הכיור שבעזרה, השערים נפתחים, הארון נכנס תחת כנפי הכרובים, והענן ממלא את הבית.",
+      r: [["שבת ל.", ["L", 104, 624]], ["רש״י שבת ל.", ["L", 2156, 1417]], ["תהלים כד, ז–י", ["L", 28, 346]], ["ח, ו", ["V", 10, 8, 6]], ["דברי הימים ב ו, מב", ["V", 39, 6, 42]]] },
     { v: [8, 6, 9], t: "הארון אל תחת כנפי הכרובים", go: [{ place: "הארון ובדיו", f: "arkInside" }, { fp: "kodeshHakodashim", f: "arkInside" }],   // 1.3.3 (the user): the ark opens by itself - 8:9 "אין בארון רק שני לחות האבנים"
       // "ביטול": from the heichal, low, at the two bulges of the staffs in the parochet (55-interior.js: x -43.4, y ~12.9, z +-1.4) - 8:8
       // "ויראו ראשי הבדים מן הקדש על פני הדביר"; camera = model choice
@@ -1366,6 +1373,12 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         paused = !!p;
         if (!paused) idleUntil = 0;
         bPause.textContent = paused ? "▶ המשך" : "⏸ השהה";
+        // TOUR_DEMO_PAUSE_209: the slide's demonstration pauses with the presentation and goes on with it (90-entry.js DEMO_PAUSE_207)
+        try {
+          if (paused) { if (fnc(ctx.shared.demoPause)) ctx.shared.demoPause(); }
+          else if (fnc(ctx.shared.demoPaused) && ctx.shared.demoPaused() && fnc(ctx.shared.demoResume)) ctx.shared.demoResume();
+        } catch (_) {
+        }
         showWait();
       };
       const showWait = () => {

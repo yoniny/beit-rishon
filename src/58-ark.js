@@ -914,7 +914,13 @@
       if (s.arkInside && ctx.shared.arkInside) ctx.shared.arkInside.set(true);
       if (s.lift && ctx.shared.arkLift) ctx.shared.arkLift.set(true);
       pillsOff(false);
-      if (ctx.ui && typeof ctx.ui.setCloud === "function") ctx.ui.setCloud(D.cloudWas);
+      // TOUR_ARK_209: inside the presentation a "כן" to the devir's question holds for the next slide too - the demonstration ends
+      // with the cloud (8:10), and the next slide (8:6-9, in the devir) would ask the same question again at once. So there the cloud
+      // goes off at the end; it comes back by itself as always (once the eye has been near it and goes away), and the slide of
+      // 8:10-11 puts it back
+      let inTour = false;
+      try { const TR = ctx.shared.tour; inTour = !!(TR && typeof TR.state === "function" && TR.state().running); } catch (_) { inTour = false; }
+      if (ctx.ui && typeof ctx.ui.setCloud === "function") ctx.ui.setCloud(inTour && D.wantOff ? false : D.cloudWas);
     };
     const finish = () => { D.run = false; leave(); };
     const start = (again) => {

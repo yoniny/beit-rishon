@@ -1,0 +1,6 @@
+      const setPaused = (p) => {
+        paused = !!p;
+        if (!paused) idleUntil = 0;
+        bPause.textContent = paused ? "▶ המשך" : "⏸ השהה";
+        showWait();
+      };

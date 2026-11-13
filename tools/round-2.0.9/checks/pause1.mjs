@@ -1,0 +1,20 @@
+// B1: the presentation's pause pauses the ark's demonstration: node pause1.mjs <plugin>
+import { open } from '../fs/h.mjs';
+const [,, dir] = process.argv;
+const P = await open(dir); const pg = P.page;
+await P.settle(30000, 3);
+const idx = await pg.evaluate(() => { const T = window.__ctx.shared.tour; T.start('verses'); return T.plan('verses').findIndex((s) => /דבקו שערים/.test(s.title || '')); });
+await pg.waitForTimeout(1200);
+await pg.evaluate((i) => window.__ctx.shared.tour.goto(i), idx);
+await pg.waitForTimeout(1500);
+await pg.click('#tm-confirm .y');
+await pg.waitForTimeout(9000);
+const st = () => pg.evaluate(() => { const c = window.__ctx, s = c.shared.tour.state(), W = c.shared.walk; return { tour: s.running, paused: s.paused, idx: s.idx, ark: c.shared.arkGates.isRunning(), now: W && W.on ? +W.now().toFixed(2) : null, wp: W && typeof W.paused === 'function' ? W.paused() : null }; });
+console.log('running', JSON.stringify(await st()));
+await pg.click('#tm-tour-box button.pause');
+await pg.waitForTimeout(1500); const a = await st(); console.log('paused', JSON.stringify(a));
+await pg.waitForTimeout(3000); const b = await st(); console.log('later', JSON.stringify(b), 'frozen:', a.now === b.now);
+await pg.click('#tm-tour-box button.pause');
+await pg.waitForTimeout(3000); console.log('resumed', JSON.stringify(await st()));
+console.log('errors:', JSON.stringify(P.errs.slice(0, 6)));
+await P.close(); process.exit(0);
