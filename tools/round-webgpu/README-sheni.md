@@ -45,3 +45,17 @@ and gold, so a `Material.prototype.envMap` accessor makes a standard material wi
 stays the switch (null at night). The WebGPU build vs 3.0.0's views: mean RMSE 0.129 → 0.094, median 0.069 → 0.020; mean luminance of the
 clean views +8.5 → −0.3. Left: three.js 187 lights `MeshLambertMaterial` / `MeshPhongMaterial` by `scene.environment` too (160 did
 not) — here one material, the incense cloud.
+
+## Stage 2 — "אור אמיתי יותר" (step `2` of `sheni_patch.py`, run by `make_sheni.sh ... webgpu`)
+
+Two rows in the panel's viewing tools, both **off** by default, kept for both houses in localStorage: `tm.hq.ao` —
+"איכות גבוהה: צל רך בפינות" (ambient occlusion, three.js's GTAO `ao()`, half resolution, read through four taps that blur its 4 × 4 noise)
+and `tm.hq.gi` — "אור חוזר מהקירות (כבד מאוד)" (screen-space GI, `ssgi()`, without temporal filtering).
+- **Off:** `renderer.contextNode` is stage 1's own; nothing else is made or run — the picture is stage 1's, at no cost.
+- **On:** a prepass (`pass()`, opaque things only, its own context turning AO/GI off) draws depth and view normals — for GI also the lit
+  colour (linear: a render target, which stage 1's `getOutput` leaves untouched). The canvas pass takes the effects through
+  `renderer.contextNode`'s `getAO` / `getGI` (entry: `ent_hqSet`, `ent_hqApply`, `ent_hqBuild`): the AO dims only the indirect light
+  (environment, sky light), never the sun; the GI is added to the irradiance and not dimmed by the AO again (as three.js's
+  `builtinGIContext`); transparent materials take neither. The canvas is still drawn directly, every material tone-mapping itself.
+- Each combination's context is built once, after `ent_gpuReady` (the first switch compiles its shaders; later switches compile nothing).
+  The materials' `maskNode` (the live section, the cuts) cuts the prepass too. The print picture renders the canvas, so it has them.

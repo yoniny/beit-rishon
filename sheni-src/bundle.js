@@ -18,6 +18,15 @@
  *   nodes); the sparks are an instanced Sprite with a PointsNodeMaterial (THREE.Points are one pixel wide in the node renderer). core:
  *   material.clippingPlanes / clipIntersection / clipShadows become the material's maskNode / maskShadowNode (the WebGPU renderer clips
  *   by ClippingGroup only).
+ * HQ_LIGHT (webgpu round, stage 2; Yoni: "אור אמיתי יותר"; tools/round-webgpu/): two rows in the panel's viewing tools, both OFF by
+ *   default, kept for both houses in localStorage - "tm.hq.ao" "איכות גבוהה: צל רך בפינות" (ambient occlusion: three.js's GTAO, ao(),
+ *   at half resolution, slightly blurred) and "tm.hq.gi" "אור חוזר מהקירות (כבד מאוד)" (screen-space GI: ssgi()). entry: ent_hqSet /
+ *   ent_hqApply / ent_hqBuild. Off: renderer.contextNode is stage 1's own and nothing else runs (the same picture, no cost). On: a
+ *   prepass (PassNode, opaque things only, AO/GI off inside it) draws depth and view normals (for GI also the lit colour, linear) and
+ *   the canvas pass gets the effects through renderer.contextNode's getAO / getGI: the AO dims only the indirect light (environment,
+ *   sky light), never the sun; the GI is added to the irradiance, not dimmed by the AO again (as three.js's builtinGIContext);
+ *   transparent materials take neither. The canvas is still drawn directly, every material tone-mapping itself (stage 1). Each
+ *   combination's context is built once (the first switch compiles its shaders) after ent_gpuReady.
  * 1.9.0 (9.11.2026): the cells - five a storey in the north and the south (were fifteen), the mesibah 27..30 with a wall of 5, and eight
  *   readings of how they widen (50-heichal.js CELLS_R / buildCells / ctx2.shared.cellsReading; the opinions table "צורת התאים", each in a
  *   section across the house at x -38, its labels shown only there; tools/rows_190.py).
@@ -106629,6 +106638,31 @@ body.tm-measuring canvas{cursor:crosshair}
         window.addEventListener("focus", syncS); //
         document.addEventListener("visibilitychange", syncS); //
       } //
+      // HQ_LIGHT (webgpu round, stage 2; Yoni: "אור אמיתי יותר"): soft shadow in the corners (ambient occlusion) and light bounced from the //
+      // walls (screen-space GI) - both off by default, kept for both houses (localStorage "tm.hq.ao" / "tm.hq.gi", read again when the //
+      // other house writes them, as "קולות בהדגמות"); entry's ent_hqSet does the rest //
+      { //
+        const rdHQ = (k) => { try { return localStorage.getItem(k) === "1"; } catch (_) { return false; } }; //
+        const wrHQ = (k, v) => { try { localStorage.setItem(k, v ? "1" : "0"); } catch (_) {} }; //
+        let hqAO = rdHQ("tm.hq.ao"), hqGI = rdHQ("tm.hq.gi"); //
+        const inpAO = toggleRow("איכות גבוהה: צל רך בפינות", hqAO, (on) => { hqAO = on; wrHQ("tm.hq.ao", on); ent_hqSet(hqAO, hqGI); }); //
+        const inpGI = toggleRow("אור חוזר מהקירות (כבד מאוד)", hqGI, (on) => { hqGI = on; wrHQ("tm.hq.gi", on); ent_hqSet(hqAO, hqGI); }); //
+        if (inpAO && inpAO.parentNode) inpAO.parentNode.title = "צל רך בפינות, בחריצים ולרגלי הקירות. במחשב חלש זה עלול להאט את התנועה."; //
+        if (inpGI && inpGI.parentNode) inpGI.parentNode.title = "אור שחוזר מהקירות ומהרצפה אל מה שסביבם. כבד מאוד: עלול להאט גם מחשב טוב."; //
+        if (hqAO || hqGI) ent_hqSet(hqAO, hqGI); //
+        const syncHQ = () => { //
+          const a = rdHQ("tm.hq.ao"), g = rdHQ("tm.hq.gi"); //
+          if (a === hqAO && g === hqGI) return; //
+          hqAO = a; //
+          hqGI = g; //
+          if (inpAO) inpAO.checked = a; //
+          if (inpGI) inpGI.checked = g; //
+          ent_hqSet(a, g); //
+        }; //
+        window.addEventListener("storage", (e) => { if (!e || e.key == null || e.key === "tm.hq.ao" || e.key === "tm.hq.gi") syncHQ(); }); //
+        window.addEventListener("focus", syncHQ); //
+        document.addEventListener("visibilitychange", syncHQ); //
+      } //
       const units = document.createElement("div"); //
       units.id = "tm-units"; //
       units.textContent = "המידות באמות. יחידה אחת במודל = אמה אחת. לחיצה על מבט, מקום או שיטה פותחת את ההסבר ומקורותיו בכרטיס ליד התפריט (✕ או Esc סוגר). מה שאין לו מקור מסומן בכרטיסים ״בחירת מודל״; המחלוקות — בתפריט, תחת ״שיטות ומחלוקות״."; //
@@ -111480,6 +111514,86 @@ body.tm-measuring #tm-tour-box{bottom:96px}
     controls = c; //
     if (ctx) ctx.controls = c; //
     return c; //
+  } //
+  // ===== HQ_LIGHT (webgpu round, stage 2; Yoni: "אור אמיתי יותר"): soft shadow in the corners (ambient occlusion) and light bounced from //
+  // the walls (screen-space GI), switched by the panel's rows "איכות גבוהה: צל רך בפינות" / "אור חוזר מהקירות (כבד מאוד)" (ui.js; //
+  // localStorage "tm.hq.ao" / "tm.hq.gi"), both off by default. //
+  // Off: renderer.contextNode is stage 1's own (ent_hq.base) and nothing else runs - the picture as before, at no cost. //
+  // On: a prepass (a PassNode of the opaque things only; AO and GI are off inside it, so nothing feeds back) draws the depth and the view //
+  // normals - for GI also the lit colour, linear (a render target: stage 1's getOutput leaves it untouched) - three.js's GTAO (ao(), at //
+  // half resolution, read through four taps that blur its 4 x 4 noise) and SSGI (ssgi(), without temporal filtering: no TRAA here) read //
+  // them, and the canvas pass takes them through renderer.contextNode's getAO / getGI: the AO dims only the INDIRECT light (environment, //
+  // sky light), never the sun; the GI is added to the irradiance and not dimmed by the AO a second time (as three.js's builtinGIContext); //
+  // transparent materials (the flames, the smoke, the labels) take neither. The canvas is still drawn directly, every material doing its //
+  // own tone mapping (stage 1), so the transparent things blend as before. The prepass and the effects are made the first time a row is //
+  // switched on, after renderer.init() and the environment map (ent_gpuReady); each combination's context is kept, so switching back //
+  // and forth compiles nothing new. The live section and the cuts (the materials' maskNode) cut the prepass too. The print picture is a //
+  // render of the canvas, so it has them. //
+  var ent_hq = { ao: false, gi: false, base: null, ctx: {}, nodes: {} }; //
+  function ent_hqSet(useAO, useGI) { //
+    ent_hq.ao = !!useAO; //
+    ent_hq.gi = !!useGI; //
+    Promise.resolve(ent_gpuReady).then(ent_hqApply); //
+  } //
+  function ent_hqApply() { //
+    if (ent_hq.base === null) ent_hq.base = renderer.contextNode; //
+    if (!ent_hq.ao && !ent_hq.gi) { //
+      renderer.contextNode = ent_hq.base; //
+      return; //
+    } //
+    const key = (ent_hq.ao ? "ao" : "") + (ent_hq.gi ? "gi" : ""); //
+    if (!ent_hq.ctx[key]) ent_hq.ctx[key] = ent_hqBuild(ent_hq.ao, ent_hq.gi); //
+    renderer.contextNode = ent_hq.ctx[key]; //
+  } //
+  function ent_hqBuild(useAO, useGI) { //
+    const T = TSL, N = ent_hq.nodes; //
+    const quiet = T.context({ getAO: (n) => n, getGI: (n) => n });   // inside the prepass: no AO / GI //
+    const prepass = (name, mrt) => { //
+      if (!N[name]) { //
+        N[name] = T.pass(scene, camera); //
+        N[name].transparent = false;   // the opaque things only (the flames, the smoke, the labels and the sky's glow cast no AO) //
+        N[name].contextNode = quiet; //
+        N[name].setMRT(mrt); //
+      } //
+      return N[name]; //
+    }; //
+    let depth, normal, color = null; //
+    if (useGI) { //
+      const p = prepass("preLit", T.mrt({ output: T.output, normal: T.normalView })); //
+      color = p.getTextureNode("output"); //
+      normal = p.getTextureNode("normal"); //
+      depth = p.getTextureNode("depth"); //
+    } else { //
+      const p = prepass("preNormal", T.mrt({ output: T.normalView })); //
+      normal = p.getTextureNode("output"); //
+      depth = p.getTextureNode("depth"); //
+    } //
+    let aoVal = null, giVal = null; //
+    if (useAO) { //
+      const g = ao(depth, normal, camera); //
+      g.resolutionScale = 0.5; //
+      g.radius.value = 2;   // amot: the corners of the rooms and the feet of the walls (three.js's default 0.25 is a room at human scale) //
+      g.thickness.value = 1; //
+      const t = g.getTextureNode(); //
+      const px = T.vec2(1).div(T.screenSize); //
+      const tap = (x, y) => t.sample(T.screenUV.add(px.mul(T.vec2(x, y)))).r; //
+      aoVal = tap(-1, -1).add(tap(1, -1)).add(tap(-1, 1)).add(tap(1, 1)).mul(0.25);   // GTAO's noise is a 4 x 4 pattern //
+    } //
+    if (useGI) { //
+      const s = ssgi(color, depth, normal, camera); //
+      s.useTemporalFiltering = false;   // no TRAA here: three.js's preset without temporal filtering ("Low") //
+      s.sliceCount.value = 2; //
+      s.stepCount.value = 6; //
+      s.giIntensity.value = 3; //
+      giVal = s.getGINode().sample(T.screenUV).rgb; //
+    } //
+    const data = { ...ent_hq.base.getFlowContextData() }; //
+    if (aoVal) data.getAO = (n, b) => (b.material.transparent === true ? n : (n !== null ? n.mul(aoVal) : aoVal)); //
+    if (giVal) { //
+      const gi = aoVal ? giVal.div(aoVal.max(1e-3)) : giVal;   // the lighting multiplies the indirect diffuse by the AO: not the GI again //
+      data.getGI = (n, b) => (b.material.transparent === true ? n : (n !== null ? n.add(gi) : gi)); //
+    } //
+    return T.context(data); //
   } //
   var ctx = null; //
   makeControls(new Vector3(0, 30, 0)); //
