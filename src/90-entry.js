@@ -131,14 +131,98 @@
   function ent_outputPerMaterial() {
     renderer.toneMapping = NoToneMapping;
     renderer.outputColorSpace = LinearSRGBColorSpace;
-    renderer.contextNode = TSL.context({
-      getOutput: (out, builder) => {
-        if (builder.renderer.isOutputTarget === false) return out;
-        const m = builder.material;
-        const o = m && m.toneMapped === false ? out : TSL.toneMapping(ACESFilmicToneMapping, TSL.toneMappingExposure, out);
-        return TSL.workingToColorSpace(o, SRGBColorSpace);
-      }
-    });
+    renderer.contextNode = TSL.context({ getOutput: ent_getOutput });
+    ent_hqBase = renderer.contextNode;    // STAGE2_LIGHT: the context of stage 1, restored whenever both light toggles are off
+  }
+  function ent_getOutput(out, builder) {
+    if (builder.renderer.isOutputTarget === false) return out;
+    const m = builder.material;
+    const o = m && m.toneMapped === false ? out : TSL.toneMapping(ACESFilmicToneMapping, TSL.toneMappingExposure, out);
+    return TSL.workingToColorSpace(o, SRGBColorSpace);
+  }
+  // STAGE2_LIGHT (webgpu round, stage 2, "אור אמיתי יותר"; the user, 18.11.2026): two display toggles of 70-ui.js, both OFF by default
+  // and kept in localStorage for both houses - "tm.hq.ao" (soft shadow in corners: ambient occlusion) and "tm.hq.gi" (light bounced
+  // from the walls: screen-space GI).
+  // - Off (both): renderer.contextNode is stage 1's very object (ent_hqBase): no prepass, no extra pass, the same shaders, the same
+  //   pixels.
+  // - AO: a prepass of the opaque objects (depth + view normals, half resolution) feeds three.js's GTAO (ao(), half resolution); the
+  //   value multiplies the INDIRECT light of the lit materials (the environment map and the hemisphere light) through the context's
+  //   getAO, so corners, joints and the feet of walls darken while the sunlit faces keep their light.
+  // - GI: a lit prepass (half resolution; LINEAR light - ent_getOutput's steps apply to the canvas only) with normals feeds three.js's
+  //   SSGI (ssgi(), half resolution, no temporal filtering - the frame is drawn straight to the canvas, there is no TRAA): its GI
+  //   texture is added to the materials' irradiance (getGI) and, with AO on, its own AO texture is the AO (one prepass for both). As
+  //   builtinGIContext does, the GI is divided by the AO, since the lighting multiplies the whole indirect diffuse term by it.
+  // - Both hooks act only on the canvas (renderer.isOutputTarget) and never on transparent materials: the prepasses, the shadow maps
+  //   and the environment map are drawn without them (no cycle), and the fire, the smoke and the labels blend exactly as in stage 1.
+  // - The prepasses draw the same scene, so the live section's and the lul holes' ClippingGroups cut them too; the print picture is a
+  //   canvas frame, so it carries AO / GI when they are on. A new contextNode changes the render objects' cache key, so switching a
+  //   toggle rebuilds the materials' shaders once (a short stutter) and takes effect on the next frame. A toggle saved ON is applied
+  //   only once the load has ended (see the tm-ready line of initModules).
+  var ent_hqBase;   // set by ent_outputPerMaterial, which runs before this block's statements
+  var ent_hq = { ao: false, gi: false, aoTex: null, giAO: null, giGI: null, aoPass: null, giPass: null };
+  function ent_hqNodes() {
+    if (ent_hq.aoTex) return;
+    const T = TSL;
+    const pre = T.pass(scene, camera);
+    pre.name = "tm-hq-prepass";
+    pre.transparent = false;
+    pre.setResolutionScale(0.5);
+    pre.setMRT(T.mrt({ output: T.packNormalToRGB(T.normalView) }));
+    const preNormalTex = pre.getTextureNode();
+    const aoPass = ao(pre.getTextureNode("depth"), T.sample((uv) => T.unpackRGBToNormal(preNormalTex.sample(uv))), camera);
+    aoPass.resolutionScale = 0.5;
+    aoPass.radius.value = 1.6;        // amot: the reach of the shadow from a corner (the model's unit is the amah)
+    aoPass.thickness.value = 1.5;
+    aoPass.distanceFallOff.value = 1;
+    aoPass.scale.value = 1;
+    aoPass.samples.value = 16;
+    ent_hq.aoPass = aoPass;
+    ent_hq.aoTex = aoPass.getTextureNode();
+    const gp = T.pass(scene, camera);
+    gp.name = "tm-hq-gipass";
+    gp.transparent = false;
+    gp.setResolutionScale(0.5);
+    gp.setMRT(T.mrt({ output: T.output, normal: T.packNormalToRGB(T.normalView) }));
+    const gpNormalTex = gp.getTextureNode("normal");
+    const giPass = ssgi(gp.getTextureNode("output"), gp.getTextureNode("depth"), T.sample((uv) => T.unpackRGBToNormal(gpNormalTex.sample(uv))), camera);
+    giPass.resolutionScale = 0.5;
+    giPass.useTemporalFiltering = false;
+    giPass.sliceCount.value = 2;      // SSGINode's "low, without temporal filtering" preset
+    giPass.stepCount.value = 6;
+    giPass.radius.value = 12;         // amot
+    ent_hq.giPass = giPass;
+    ent_hq.giAO = giPass.getAONode();   // SSGINode (187) draws two textures: AO (r) and GI (rgb)
+    ent_hq.giGI = giPass.getGINode();
+  }
+  function ent_hqContext() {
+    if (!ent_hq.ao && !ent_hq.gi) return ent_hqBase;
+    ent_hqNodes();
+    const T = TSL;
+    const aoV = ent_hq.ao ? (ent_hq.gi ? ent_hq.giAO.sample(T.screenUV).r : ent_hq.aoTex.sample(T.screenUV).r) : null;
+    const giV = ent_hq.gi ? ent_hq.giGI.sample(T.screenUV).rgb : null;
+    const aoSafe = aoV ? aoV.max(1e-3) : null;
+    const fns = { getOutput: ent_getOutput };
+    if (aoV) {
+      fns.getAO = (input, builder) => {
+        if (builder.renderer.isOutputTarget === false || (builder.material && builder.material.transparent === true)) return input;
+        const a = giV ? aoSafe : aoV;
+        return input !== null ? input.mul(a) : a;
+      };
+    }
+    if (giV) {
+      fns.getGI = (input, builder) => {
+        if (builder.renderer.isOutputTarget === false || (builder.material && builder.material.transparent === true)) return input;
+        const g = aoSafe ? giV.div(aoSafe) : giV;
+        return input !== null ? input.add(g) : g;
+      };
+    }
+    return T.context(fns);
+  }
+  function ent_hqSet(aoOn, giOn) {
+    ent_hq.ao = !!aoOn;
+    ent_hq.gi = !!giOn;
+    if (!ent_hqBase || ent_load.loading) return;   // during the load: applied when it ends (the tm-ready line below)
+    renderer.contextNode = ent_hqContext();
   }
   var mainEl = document.getElementById("main");
   if (mainEl) mainEl.appendChild(renderer.domElement);
@@ -1216,7 +1300,8 @@
     layers: {},
     shared: {
       walkMode: { on: false, set: (on) => ent_walkModeSet(on) },                                    // 1.2.9
-      section: { on: false, axis: "z", v: 0, set: (on, axis, v) => ent_sectionSet(on, axis, v) }    // 1.2.9
+      section: { on: false, axis: "z", v: 0, set: (on, axis, v) => ent_sectionSet(on, axis, v) },   // 1.2.9
+      hq: { get ao() { return ent_hq.ao; }, get gi() { return ent_hq.gi; }, set: (aoOn, giOn) => ent_hqSet(aoOn, giOn), nodes: () => ent_hq }   // STAGE2_LIGHT
     },
     flyTo,
     camIndoors: cam_indoors,   // 1.2.0: mode "look" - 70-ui.js's nav buttons and keys turn in place
@@ -1798,6 +1883,10 @@
     ent_load.loading = false;
     // 1.0.2: the bar's buttons (the panel's, the presentation's) were hidden while the loading view was up (index.html: it no longer covers the bar)
     document.documentElement.classList.add("tm-ready");
+    // STAGE2_LIGHT: a light toggle saved ON takes effect here, after the load: the load's shaders (compileAsync) and first frame are
+    // stage 1's, and the AO / GI shaders build on the first frames in view (with them built into the load, SwiftShader's WebGL lost the
+    // device; switched on after the load - the same shaders - it did not)
+    ent_hqSet(ent_hq.ao, ent_hq.gi);
     const loadEl = document.getElementById("loading");
     if (loadEl) {
       loadEl.style.pointerEvents = "none";   // 1.0.2: it fades out now (index.html), and the model takes the clicks at once
