@@ -10,7 +10,9 @@ TITLE_S = 6.0
 NAME = 'בית ראשון - לפי סדר הפסוקים במלכים - למקרן.mp4'
 PLAN = [
     ('V1', lambda s: True),           # verses 0..23 (3.0.0)
-    ('V2', lambda s: True),           # verses 24..46; the base's demonstration (33) with the plugin's follow view
+    ('V2', lambda s: s < 33),         # verses 24..32
+    ('R5', lambda s: True),           # 33..34 again: the base's whole round under the follow view (FOLLOW_WHOLE_300), then its text pages
+    ('V2', lambda s: s > 34),         # verses 35..46
     ('T1', lambda s: True),           # the throne: Targum Sheni
     ('T2', lambda s: True),           # the throne: Esther Rabbah..., Beit HaMidrash
 ]
@@ -18,7 +20,7 @@ PLAN = [
 EXTEND = {('V2', 41): 5.0}
 # frames added after a slide's last frame: the base's demonstration (a looping one) filled its slide, and its text pages 2 and 3 were
 # composed from the panel (panel41.mjs 33) over the slide's last picture
-INSERT = {('V2', 33): [('f/x33-2.jpg', 26.0), ('f/x33-3.jpg', 26.0)]}   # the base's slide ended with its demonstration: pages 2 and 3 (panel41.mjs 33) over its last frame
+INSERT = {}   # (2.0.18 / the first 3.0.0 cut: the base's slide ended at the marble tables, its pages 2-3 composed over its last frame)
 
 
 def q40(d):

@@ -56,7 +56,7 @@ if __name__ == '__main__':
     if what == 'seg1':
         t = listfile(A.PLAN[:-1], True, 'seg1')
         print('seg1', round(t, 2))
-        enc('seg1', t, 'fade=t=in:st=0:d=0.8', 1)
+        enc('seg1', t, 'fade=t=in:st=0:d=0.8', 2)
     elif what == 'seg2':
         t = listfile(A.PLAN[-1:], False, 'seg2')
         print('seg2', round(t, 2))

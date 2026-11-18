@@ -151,8 +151,11 @@ try {
       if (!followOn) {
         // the plugin's follow view: a 1.6 s flight to the view of the present moment; after it, the view of each moment (snap) every frame
         await page.evaluate(() => { const m = window.__ctx.shared.mechona; window.__fol = { t0: m.follow.view(0).target, far: 0, from: performance.now() + 1750 }; m.follow.start(); });
+        // FOLLOW_WHOLE_300 (the user, 18.11.2026: "תבדוק את המכונה אם המצלמה עוקבת עד הסוף"): the tour holds, the base goes on - its
+        // whole round (the ramp, the marble tables, home) under the follow view; the slide's own time cut it at the tables until now
+        await page.evaluate(() => { const S = window.__ctx.shared; window.__cap.pause(true); if (typeof S.demoResume === 'function') S.demoResume(); });
         followOn = true;
-        log('  the follow view: on');
+        log('  the follow view: on (the tour holds; the base goes its whole round)');
       } else {
         const r = await page.evaluate(() => {
           const m = window.__ctx.shared.mechona, W = window.__fol;
@@ -196,6 +199,7 @@ try {
         if (staticRun >= 3 && !s.demo && (!expectDemo || demoSeen || noDemoAfterAll || slideEnding || s.t - slideStartT > 20000)) {
           await settle();
           paged = true; budget = 0; dynPrev = false;
+          if (FOLLOW === curIdx && followOn) { await page.evaluate((i) => window.__ctx.shared.tour.goto(i), curIdx + 1); log('  FOLLOW_WHOLE_300: on to the next slide'); }
         }
       } else {
         if (dynPrev) { budget = 2.0; dynPrev = false; }
