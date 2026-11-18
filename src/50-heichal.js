@@ -728,8 +728,9 @@
     // עשוי מעלות מעלות, וההולך בהן דומה כמקיף סביבות עמוד, ועולין בו כמה וכמה אמות גבוה, ואין צריך לשפע כשאר סלם, כי הקיפו הוא שפוע";
     // "אל השלשים. כמו אל השלישים"). Two parts: (1) at a man's eye, from the court through the outside door (x -36.5) into the middle
     // chamber of the lowest south row, before the stair; (2) the climb - the yatzia section opens (ctx.shared.yatziaSection, its measures
-    // off), the eye steps out to the cut and rises with the climber, who is a light in a floating colour on the steps (the figure is not
-    // drawn): one turn to the middle storey ("על התיכנה", a pause) and one more to the third ("אל השלשים"), and off the stair eastward. At
+    // off), the eye follows the climber, who is a light in a floating colour on the steps (the figure is not drawn), up the stair itself,
+    // round the column: one turn to the middle storey ("על התיכנה", a pause) and one more to the third ("אל השלשים"), and off the stair
+    // eastward, the eye out to the cut. At
     // the end the section goes back as it was (its set(false) takes the eye out of the opened segment). Rashi's reading only (the Rambam's,
     // the row "צורת היציע", draws no lulim - the walk shows Rashi's). The timing, the eye's places and the light - model choices.
     // ctx.shared.lulimDemo(), a place of the tree and a button by the door.
@@ -751,12 +752,21 @@
         [2.2, [TA_DOOR_X, F + 3.2, ZT - 2.2], [TA_DOOR_X + 1.5, F + 2.8, TA_IN - 1]],
         [3.8, [TA_DOOR_X + 0.4, F + 3.2, TA_IN - 0.5], [LUL_X, F + 2.2, LUL_Z]],
         [5.0, [TA_DOOR_X + 0.4, F + 3.2, TA_IN - 0.5], [LUL_X, F + 2.2, LUL_Z]],
-        [6.6, [CX, F + 3.4, LUL_Z + 1.2], [LUL_X, F + 1.8, LUL_Z]]
+        // 1.4.9 (3.0.0; the user, 18.11.2026: "כל ההדגמה בורחת מעבר לסיבוב"): round the column's south side, over its lowest steps, to
+        // the foot of the stair, inside the chamber (until 1.4.8 the eye went on east through the stair and out of the chamber, to 4.6
+        // beyond the cut, and only rose there while the light went round the column)
+        [6.2, [LUL_X, F + 3.2, LUL_Z + 1.7], [LUL_X + 1.45, F + 1.6, LUL_Z]]
       ];
-      for (let s2 = 0; s2 <= 24; s2 += 2) {
-        const y = stepTop(Math.min(s2, 23));
-        keys.push([tOf(s2), [CX, y + 2.6, LUL_Z + 1.2], [LUL_X, y + 0.6, LUL_Z]]);
-        if (s2 === 10) keys.push([tOf(11) + PAUSE, [CX, stepTop(11) + 2.6, LUL_Z + 1.2], [LUL_X, stepTop(11) + 0.6, LUL_Z]]);
+      // the climb IN the built stair (sec. 4: step s at s * 30 degrees round the column, its top stepTop(s); the light on the ring r 1.45):
+      // the eye on the ring RE (inside the stair's 2.3), LAG steps behind the light and EYE over its own step, looking down at the light - it
+      // goes round the column with him (Rashi: "וההולך בהן דומה כמקיף סביבות עמוד"); until the light is LAG steps up the eye waits at the
+      // foot, 1 east of the first step's end; a key at every step, so the spline keeps to the ring (model choices)
+      const LAG = 3, RE = 1.9, EYE = 3.0, FOOT = [LUL_X + LUL_R + 1, stepTop(0) + EYE, LUL_Z];
+      const eyeAt = (s) => (s < LAG ? FOOT : onRing(s - LAG, RE, EYE));
+      const lookAt = (s) => { const p = onRing(s, 1.45, 0.3); p[1] = stepTop(Math.min(s, 23)) + 0.3; return p; };   // his feet: the light and his step above the captions
+      for (let s2 = 0; s2 <= 24; s2++) {
+        keys.push([tOf(s2), eyeAt(s2), lookAt(s2)]);
+        if (s2 === 11) keys.push([tOf(11) + PAUSE, eyeAt(11), lookAt(11)]);   // "על התיכנה": the pause on the middle storey
       }
       const tEnd = tOf(24);
       keys.push([tEnd + 2.6, [CX - 0.6, SY[2] + 3.2, LUL_Z + 1.6], [LUL_X + 1.5, SY[2] + 1.2, LUL_Z]]);

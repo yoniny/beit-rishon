@@ -887,6 +887,7 @@
   };
   // 1.0.6 (the user): what is new by version, newest first - one who saw a version is shown only the versions after it; nothing stored -> all
   var UI_NEWS_VERS = [
+    ["1.4.9", ["**מבט במקום — גם כלפי מטה** — בתוך מבנה מקורה, ובמצב הליכה, אפשר עכשיו להוריד את המבט כמעט עד למטה ממש. עד עכשיו, כשהמבט ירד הרבה ושחררו את העכבר, המצלמה קפצה ממקומה והמבט הסתובב; ובמצב הליכה העין החליקה לאחור ושקעה.", "**מעבר חלק אל כל מקום** — כל מעבר — בלחיצה על מקום, על מבט, או במצגת — עובר עכשיו בדרך חלקה מתחילתו ועד סופו. עד עכשיו, במעבר שעבר מעל המקום, המבט קפץ והתמונה הסתובבה בבת אחת באמצע הדרך.", "**עצירת מעבר באמצעו** — לחיצה על המודל, גלגלת העכבר, מקש או כפתור ניווט בזמן מעבר עוצרים אותו במקום שבו הוא נמצא, ומשם אפשר להסתובב ולהתקרב מיד. עד עכשיו גרירה בזמן מעבר לא נקלטה, ושארית שלה המשיכה להזיז את המבט אחרי סוף המעבר.", "**התקרבות לכלי** — כשמתקרבים מאוד לכלי — בכפתור ״+״, במקש + או בצביטה — הכלי כבר אינו נחתך.", "**מצב הליכה עולה ויורד עם הרצפה** — בהליכה העין שומרת על גובהה מעל הרצפה שתחתיה: עולה במדרגות ויורדת מהן. עד עכשיו, במעבר מן החצר אל מקום גבוה ממנה, העין נכנסה לתוך הרצפה.", "**הדגמות במצגת הרציפה** — כשמסתכלים סביב בזמן הדגמה במצגת הרציפה, ההדגמה נעצרת והמבט חופשי; כשהמצגת ממשיכה, גם ההדגמה ממשיכה מאותו רגע. עד עכשיו ההדגמה המשיכה להוביל את המבט, ואי אפשר היה להסתובב עד סופה.", "**המצפן** — לחיצה על מקום מיד אחרי לחיצה על אות במצפן כבר אינה מעקמת את המעבר.", "**צביטה במסך מגע** — צביטה בשתי אצבעות בתוך מבנה מקורה מקרבת ומרחיקה את המבט. עד עכשיו היא הרעידה אותו.", "**קבוצת ״הדגמות״** — בראש רשימת המקומות יש עכשיו קבוצה חדשה, ״הדגמות״, ובה כל ההדגמות של הבית במקום אחד.", "**כפתורי ההדגמה בצד** — הכפתורים ״השהה״ ו״עצור״, שמופיעים בזמן הדגמה, עברו לצד שמאל, מעל המצפן. עד עכשיו הם עמדו באמצע המסך והסתירו את המודל.", "**קולות בהדגמות** — בעוד הדגמות נשמעים עכשיו קולות, בעוצמה נמוכה. השהיה או עצירה של ההדגמה משתיקות אותם מיד. אפשר לכבות את כל הקולות בהגדרות, בשורה ״קולות בהדגמות״.", "**מדידה באמות** — נקודת מדידה נקבעת עכשיו רק על מה שרואים: לא על חלק שהחתך הסתיר, ולא על משהו שקרוב מדי לעין. עד עכשיו נקודה יכלה ליפול על חלק שאינו נראה, והמידה יצאה שגויה.", "**עלייה בלולים** — בהדגמה, העין עולה עכשיו בתוך הלולים עצמם, סביב העמוד, אחרי העולה. עד עכשיו העין נשארה מחוץ לתא, ורק עלתה במקום אחד.", "**הקולות בהדגמות של בית ראשון** — גלגלי המכונה והמים שבכיור, חריקת דלתות הדביר, החצוצרות והמצלתיים כשהענן ממלא את הבית, ונקישה בכל אחת משש המעלות של כסא שלמה."]],   // CAM_219, SOUNDS_300, DEMOS_GROUP_300, DPAUSE_LEFT_300, MEASURE_300, the lulim
     ["1.4.8", ["**פירוש רש״י: ״פעמים בזה פעמים בזה״** — בשיטת רבי אלעזר בן שמוע, ״על כולם היו מסדרין... ובכולן היו מדליקין״ (מנחות צט.), נוסף לכרטיס השיטה פירוש רש״י שם: ״פעמים בזה פעמים בזה״ — כלומר, לא על כולם בבת אחת. במודל הלחם והנרות מצוירים על כולם יחד, כמו שהיה.", "**סרגל במסך הבחירה** — במסך הפתיחה, שבו בוחרים בית ראשון או בית שני, יש עכשיו סרגל בתחתית. באוצריא יש בו מתג לכפתור ״פתח בתוסף בית המקדש״, שבסרגל העליון של ספרים כמו מלכים, דברי הימים ומידות: אפשר להסתיר את הכפתור ולהחזיר אותו, בלי לבטל הרשאה. מתג לכפתור שבשדה החיפוש יפעל מגרסה 0.9.99 של אוצריא. בקובץ לצפייה בלי אוצריא נמצא בסרגל הזה כפתור ״בדיקת עדכונים״ — עד עכשיו הוא היה בסוף התפריט."]],
     ["1.4.7", ["**קידוש ידיים ורגליים** — בהדגמת המכונה, בעצירה של הקידוש: הכהן מרים את רגל ימין, ומניח עליה את יד ימין, תחת הזרם שיורד מן הברז. אחר כך הוא מוריד אותה, מסתובב, ועושה כך ברגל שמאל וביד שמאל (זבחים יט, ב). בזמן הקידוש המבט של ההדגמה יורד אל הכהן, ואחר כך חוזר למקומו — עד עכשיו גוף המכונה הסתיר אותו. ועד עכשיו הכהן רק שחה מן המותניים, והניח את ידיו על רגליו."]],
     ["1.4.6", ["**קידוש ידיים ורגליים** — בהדגמת המכונה, בעצירה של הקידוש, הכהן עומד עכשיו ורגליו זקופות, שוחה מן המותניים, וידיו על רגליו (זבחים יט, ב). עד עכשיו נטה כל גופו באלכסון, כמו נופל."]],
@@ -2768,6 +2769,12 @@ body.tm-measuring canvas{cursor:crosshair}
         const el = ctx.renderer.domElement, r = el.getBoundingClientRect();
         mNdc.set((ev.clientX - r.left) / r.width * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
         mRay.setFromCamera(mNdc, ctx.camera);
+        // MEASURE_300 (the user, 18.11.2026: "לפעמים אני שם נקודה על נקודה, והוא לא באמת מציג את הנקודה"): a point is put only on what
+        // is drawn - not on a surface nearer than the camera's near plane (it is not drawn), not on a face that a clipping plane cuts
+        // away (the live section: its meshes stay whole, only their drawing is cut), and for a mesh of several materials, by the
+        // material of the face that was hit
+        mRay.near = ctx.camera.near || 0;
+        mRay.far = Infinity;
         for (const h of mRay.intersectObjects(ctx.root.children, true)) {
           const o = h.object;
           if (o.isSprite || o.isLine || o.isPoints || o.userData.noPick) continue;
@@ -2777,8 +2784,9 @@ body.tm-measuring canvas{cursor:crosshair}
             break;
           }
           if (!vis) continue;
-          const mt = o.material;
-          if (mt && !Array.isArray(mt) && (mt.opacity < 0.5 || mt.visible === false)) continue;
+          const mt0 = o.material, mt = Array.isArray(mt0) ? mt0[(h.face && h.face.materialIndex) || 0] : mt0;
+          if (mt && (mt.opacity < 0.5 || mt.visible === false)) continue;
+          if (mt && Array.isArray(mt.clippingPlanes) && mt.clippingPlanes.some((pl) => pl && pl.distanceToPoint(h.point) < -1e-4)) continue;
           return h.point.clone();
         }
         return null;
@@ -3065,6 +3073,20 @@ body.tm-measuring canvas{cursor:crosshair}
       });
       // NOTE 13 (F2-08): how far the altar stands from its default place now (the row "מקום המזבח בעזרה", R. Tam's four amot too)
       const altarShift = () => { try { const A = ctx.shared.altarPlace; return A && A.dz && A.current in A.dz ? A.dz[A.current] + (A.extra || 0) - A.dz.south : 0; } catch (_) { return 0; } };
+      // DEMOS_GROUP_300: the First Temple's demonstrations, for the group "הדגמות" at the head of the panel (built below, before the loop of
+      // the places): a place's own item, or the pill's on the model; the throne's two need a midrash's throne (in the verses' reading
+      // there is no ascent and no witnesses): Targum Sheni's, as the presentation shows them
+      function ui_demosList() {
+        const thr = () => { const V = ctx.shared.throneVersion; if (V && V.current === "pesukim" && typeof V.set === "function") V.set("targumSheni"); };
+        return [
+          { t: "המכונה מביאה את הכיור — לקידוש ידיים ורגליים ולהדחת העולה", pill: "mechonaDemo" },
+          { t: "פתיחת דלתות ההיכל", place: "פתיחת דלתות ההיכל — הדגמה" },
+          { t: "״דבקו שערים״ — הכנסת הארון", pill: "arkGatesDemo" },
+          { t: "עלייה בלולים", pill: "hei-lulim-demo" },
+          { t: "עליית המלך לכסא", pill: "palaceThroneAscent", layer: "palace", run: thr },
+          { t: "עדי השקר — הכסא מרעיש", pill: "palaceThroneWitnesses", layer: "palace", run: thr }
+        ];
+      }
       const PLACES = [
         ["הר הבית והחצרות", [
           { t: "הר הבית והחצר הגדולה", view: "harHabayit",
@@ -3302,7 +3324,7 @@ body.tm-measuring canvas{cursor:crosshair}
             refs: [["מלכים א ו, ח", V(10, 6, 8)], ["רש״י ו, ח", { book: 3673, index: 226 }], ["מדות ד, ג", MI(4, 3)]] },   // 1.3.4: Rashi's own line (was the verse's)
           // 1.3.4: the walk up the lulim (50-heichal.js ctx.shared.lulimDemo; a button by the door too)
           { t: "הליכה בלולים — הדגמה", action: () => { const L = ctx.shared.lulimDemo; if (typeof L === "function") L(); },
-            info: "לשון הכתוב (מלכים א ו, ח): ״פתח הצלע התיכנה אל כתף הבית הימנית, ובלולים יעלו על התיכנה, ומן התיכנה אל השלשים״.\n**רש״י:** ״שאחד מן התחתונים שבכותל דרומי, היה לו פתח אל החוץ, ודרך אותו פתח נכנסים לכולם״; ״בלולים — תרגם יונתן: מסבתא... והוא בנין עמוד אבנים עשוי מעלות מעלות, וההולך בהן דומה כמקיף סביבות עמוד, ועולין בו כמה וכמה אמות גבוה, ואין צריך לשפע כשאר סלם, כי הקיפו הוא שפוע״; ״אל השלשים — כמו אל השלישים״.\nההדגמה: בגובה העיניים — מן החצר, דרך הפתח שבתא האמצעי של השורה התחתונה בדרום, עד הלולים. בעלייה נפתח חתך היציע, והעין עומדת בצד ועולה עם העולה, המסומן באור בצבע צף: סיבוב אחד סביב העמוד אל הקומה האמצעית, וסיבוב נוסף אל השלישית. בסוף החתך נסגר.\nבקצרה — ״הצלע התיכנה״: לרש״י ולתרגום — האמצעי בחמשת התאים שבדרום, בשורה התחתונה (כך במודל); לרד״ק ולמצודות — הקומה התיכונה. ההדגמה בשיטת רש״י ליציע (ברירת המחדל); בשיטת הרמב״ם (המתג ״צורת היציע״) הלולים אינם מצוירים, וההדגמה מחזירה לשיטת רש״י.\nמקום העמוד בתוך התא, מספר המעלות וגובה העין — בחירת מודל.",
+            info: "לשון הכתוב (מלכים א ו, ח): ״פתח הצלע התיכנה אל כתף הבית הימנית, ובלולים יעלו על התיכנה, ומן התיכנה אל השלשים״.\n**רש״י:** ״שאחד מן התחתונים שבכותל דרומי, היה לו פתח אל החוץ, ודרך אותו פתח נכנסים לכולם״; ״בלולים — תרגם יונתן: מסבתא... והוא בנין עמוד אבנים עשוי מעלות מעלות, וההולך בהן דומה כמקיף סביבות עמוד, ועולין בו כמה וכמה אמות גבוה, ואין צריך לשפע כשאר סלם, כי הקיפו הוא שפוע״; ״אל השלשים — כמו אל השלישים״.\nההדגמה: בגובה העיניים — מן החצר, דרך הפתח שבתא האמצעי של השורה התחתונה בדרום, עד הלולים. בעלייה נפתח חתך היציע, והעין עולה בלולים עצמם, סביב העמוד, אחרי העולה, המסומן באור בצבע צף: סיבוב אחד אל הקומה האמצעית, וסיבוב נוסף אל השלישית. בסוף העין יוצאת אל החתך, והחתך נסגר.\nבקצרה — ״הצלע התיכנה״: לרש״י ולתרגום — האמצעי בחמשת התאים שבדרום, בשורה התחתונה (כך במודל); לרד״ק ולמצודות — הקומה התיכונה. ההדגמה בשיטת רש״י ליציע (ברירת המחדל); בשיטת הרמב״ם (המתג ״צורת היציע״) הלולים אינם מצוירים, וההדגמה מחזירה לשיטת רש״י.\nמקום העמוד בתוך התא, מספר המעלות וגובה העין — בחירת מודל.",
             refs: [["מלכים א ו, ח", V(10, 6, 8)], ["רש״י ו, ח", { book: 3673, index: 226 }], ["רש״י ו, ח — בלולים", { book: 3673, index: 228 }]] }
         ]],
         ["הבית מבפנים", [
@@ -3948,6 +3970,37 @@ body.tm-measuring canvas{cursor:crosshair}
       // 1.0.1-L (the contract with 75-tour.js): every place button in the panel's order, for ctx.ui.places()
       const placeList = [];
       const viewKeySet = new Set(ui_VIEWS.map((v) => v.key));
+      // DEMOS_GROUP_300 (the user, 18.11.2026: "והייתי מוסיף קטגוריה נפרדת להדגמות"): the house's demonstrations together, in a group of
+      // their own at the head of the panel, "הדגמות" (ui_demosList, the house's own list). Each starts as its own button does - a place's
+      // (the same item: its camera and its card) or the pill's on the model (its own flight; the card is the pill's tooltip) - and has
+      // no slide of its own in the presentation (noTour: each already has its place there)
+      try {
+        const list = typeof ui_demosList === "function" ? ui_demosList() : [];
+        const pillOf = (id) => (ctx.shared.modelButtons || []).find((x) => x && x.id === id) || null;
+        const D = [];
+        for (const d of list) {
+          let it = null;
+          if (d.place) {
+            for (const [, its] of PLACES) { const o = its.find((x) => x && x.t === d.place); if (o) { it = Object.assign({}, o, { t: d.t }); break; } }
+          } else {
+            it = { t: d.t };
+            Object.defineProperty(it, "info", { get: () => { const b = pillOf(d.pill); return (b && b.title) || ""; }, enumerable: true });
+          }
+          if (!it) continue;
+          if (d.pill) {
+            it.action = () => {
+              try { if (d.run) d.run(); } catch (_) {}
+              const b = pillOf(d.pill);
+              if (b && typeof b.set === "function" && !(typeof b.get === "function" && b.get())) b.set(true);
+            };
+          }
+          if (d.layer) it.layer = d.layer;
+          it.noTour = true;
+          delete it.noButton;
+          D.push(it);
+        }
+        if (D.length) PLACES.unshift(["הדגמות", D]);
+      } catch (_) {}
       for (const [gname, items] of PLACES) {
         const det = document.createElement("details");
         det.className = "tm-pl";
@@ -5892,6 +5945,7 @@ body.tm-measuring canvas{cursor:crosshair}
       // rotateSpeed 0.9 -> 0.5, 90-entry.js); "סיבוב איטי" (autoRotateSpeed 0.4) is unchanged
       // 1.0.1-L (Part 7, U1): indoors (ctx.camIndoors, 90-entry.js) the buttons and the keys turn the view round the camera's own place, as the drag does
       const orbitBy = (dir) => {
+        ctx.camFlyStop && ctx.camFlyStop();   // CAM_219 (2): a nav button or key in a flight ends it, and acts at once
         const cam = ctx.camera, tg = ctx.controls.target;
         if (ctx.camIndoors && ctx.camIndoors()) {
           const dx = tg.x - cam.position.x, dz = tg.z - cam.position.z, a = dir * 0.025, c = Math.cos(a), s2 = Math.sin(a);
@@ -5907,6 +5961,7 @@ body.tm-measuring canvas{cursor:crosshair}
       };
       // 1.0.1-K: up / down - the camera rises or sinks around the target within the controls' polar limits
       const tiltBy = (dir) => {
+        ctx.camFlyStop && ctx.camFlyStop();   // CAM_219 (2): a nav button or key in a flight ends it, and acts at once
         const cam = ctx.camera, c = ctx.controls, tg = c.target;
         const off = cam.position.clone().sub(tg);
         if (!(off.length() > 0)) return;
@@ -5925,6 +5980,7 @@ body.tm-measuring canvas{cursor:crosshair}
         c.update();
       };
       const zoomBy = (f) => {
+        ctx.camFlyStop && ctx.camFlyStop();   // CAM_219 (2): a nav button or key in a flight ends it, and acts at once
         const cam = ctx.camera, tg = ctx.controls.target;
         const off = cam.position.clone().sub(tg);
         off.setLength(Math.min(ctx.controls.maxDistance || 2200, Math.max(ctx.controls.minDistance || 2, off.length() * f)));
@@ -5936,6 +5992,7 @@ body.tm-measuring canvas{cursor:crosshair}
       // a drag on the model stops it.
       let turnAnim = null;
       const turnTo = (azT) => {
+        ctx.camFlyStop && ctx.camFlyStop();   // CAM_219 (2): a nav button or key in a flight ends it, and acts at once
         const cam = ctx.camera, tg = ctx.controls.target;
         const az0 = Math.atan2(cam.position.x - tg.x, cam.position.z - tg.z);
         let d = azT - az0;
@@ -5946,6 +6003,7 @@ body.tm-measuring canvas{cursor:crosshair}
       ctx.renderer.domElement.addEventListener("pointerdown", () => { turnAnim = null; });
       ctx.animated.push(function() {
         if (!turnAnim) return;
+        if (ctx.camFlying && ctx.camFlying()) { turnAnim = null; return; }   // CAM_219 (2): a flight that began in the turn takes the view (the turn bent it, then it snapped)
         const cam = ctx.camera, tg = ctx.controls.target;
         const k = Math.min(1, (performance.now() - turnAnim.t0) / turnAnim.dur), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
         const az = turnAnim.az0 + turnAnim.d * e, rh = Math.hypot(cam.position.x - tg.x, cam.position.z - tg.z);

@@ -2674,12 +2674,22 @@
         elapsed: () => elapsedOf("witnesses")
       };
       // the one per-frame hook: the clock, the tracks; at the end everything returns to rest ("then everything returns to rest")
+      let sndK = 0;   // SOUNDS_300: the highest step the king has reached in this run
       if (Array.isArray(ctx.animated)) ctx.animated.push(() => {
-        if (!anim.running) return;
+        if (!anim.running) { sndK = 0; return; }
         const t = (performance.now() - anim.t0) / 1000 / THR_SLOW();
         if (t >= anim.dur) { stopAll(); return; }
         evalAt(anim.tracks, anim.states, t);
         anim.lastT = t;
+        // SOUNDS_300 (the user's item 6, 18.11.2026: "עליית המלך לכסא: נקישה בכל מעלה"): a click of the work each time the king reaches a
+        // new step (once a step: his height swings a little as he leans and is lifted)
+        if (anim.mode === "ascent" && !anim.paused) {
+          try {
+            let k = 0;
+            if (sil.visible) for (let j = 1; j <= 6; j++) if (sil.position.y >= stepY(j) - 0.12) k = j;
+            if (k > sndK) { sndK = k; if (typeof ctx.shared.sfx === "function") ctx.shared.sfx("click"); }
+          } catch (_) {}
+        }
       });
       const script = {}, witnessScript = {};
       for (const k of VKEYS) { script[k] = CAP[k] || []; witnessScript[k] = WCAP[k] || []; }

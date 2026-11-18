@@ -1114,11 +1114,24 @@
       return start(false);
     };
     const stop = () => { if (!D.run) return; const Wk = W(); if (Wk && Wk.on) Wk.stop(); else finish(); };
+    let sndT = -1;   // SOUNDS_300
     ctx.animated.push(() => {
-      if (!D.run) return;
+      if (!D.run) { sndT = -1; return; }
       const Wk = W();
       const t = Wk && typeof Wk.now === "function" ? Wk.now() : 0;
       D.apply(Math.max(0, t));
+      // SOUNDS_300 (the user's items 3-4, 18.11.2026): the devir's doors creak as they open (T.open0); and as the priests come out of
+      // the holy and the cloud fills the house, the trumpets and the cymbals - "ויהי בצאת הכהנים מן הקדש... ויהי כאחד למחצצרים
+      // ולמשררים להשמיע קול אחד... וכהרים קול בחצצרות ובמצלתים ובכלי השיר... והבית מלא ענן" (II Chr 5:11-13) - at T.cloud0. Each once
+      // a run (the walk's clock stands while paused; a new run starts it again from 0)
+      try {
+        const SH = ctx.shared;
+        if (sndT >= 0 && t > sndT && SH && typeof SH.sfx === "function") {
+          if (sndT < T.open0 && t >= T.open0) { SH.sfx("creak"); SH.sfx("creak", { at: 0.4, gain: 0.8 }); }
+          if (sndT < T.cloud0 && t >= T.cloud0) { SH.sfx("trumpets", { pattern: "long" }); SH.sfx("cymbals", { at: 0.5 }); }
+        }
+      } catch (_) {}
+      sndT = Math.max(0, t);
     });
     const walkEntry = () => (ctx.shared.demoStops || []).find((d) => d.id === "walk");
     (ctx.shared.demoStops || (ctx.shared.demoStops = [])).push({

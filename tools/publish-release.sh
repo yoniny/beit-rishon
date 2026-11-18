@@ -19,7 +19,7 @@ set -e
 REPO=yoniny/beit-rishon
 DIR="${REPO_DIR:-/home/claude/beit-rishon}"
 TRAILER="Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01ERwCz16pMwzdq2YxaF3ZDJ"
+Claude-Session: https://claude.ai/code/session_01ERwCz1T6knu6c9Ybje5GoL"
 cmd="$1"; VER="$2"; HTML="$3"
 echo "$VER" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || { echo "bad version: $VER"; exit 1; }
 [ -f "$HTML" ] || { echo "no file: $HTML"; exit 1; }
