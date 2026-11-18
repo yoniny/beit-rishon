@@ -1688,23 +1688,6 @@
       setTimeout(go, 100);                              // the tab was hidden meanwhile: do not wait for a frame
     });
   }
-  // WEBGPU_R: how strongly each material takes the environment map - as in three.js 160. From 163 on, a material that reflects
-  // scene.environment (every material here but the mirrored south faces of 55-interior.js) gets scene.environmentIntensity INSTEAD of its
-  // own envMapIntensity: the stone's 0.55 became 1, the gold's 1.3 (the traksin's 3) became 1. All node materials read the one uniform
-  // TSL.materialEnvIntensity; its update is set back to the material's own envMapIntensity, times the one global factor below.
-  // ENT_ENV_INTENSITY - THE one global setting for the environment's strength (helper S keeps the same one in בית שני): three.js 187's
-  // PMREM filters the environment with GGX importance sampling (r160: a Gaussian blur), so rough stone takes more light from it; this
-  // factor brings the look back to 3.0.0's (measured: mean RMSE of the 36 views against 3.0.0, and the stone by eye).
-  var ENT_ENV_INTENSITY = 1;
-  function ent_envIntensityAsR160() {
-    scene.environmentIntensity = ENT_ENV_INTENSITY;
-    try {
-      TSL.materialEnvIntensity.onObjectUpdate(({ material, scene: sc }) =>
-        (material.envMapIntensity == null ? 1 : material.envMapIntensity) * (sc && sc.environmentIntensity != null ? sc.environmentIntensity : 1));
-    } catch (e) {
-      console.warn("[load] environment intensity:", e && e.message);
-    }
-  }
   // WEBGPU_R: the renderer's backend is chosen here (WebGPU; WebGL 2 where the browser has no WebGPU, or by the switch, ent_forceWebGL),
   // before anything is built. PMREMGenerator.fromScene needs the initialised backend, so the environment map is made here too.
   async function ent_rendererInit() {
@@ -1724,7 +1707,6 @@
       room.position.y = 0;   // three.js 187 lowers the room 3.5 (this.position.y = -3.5); r160 did not
       room.traverse((o) => { if (o.isPointLight) o.intensity = 5; });
       scene.environment = pmrem.fromScene(room, 0.04).texture;
-      ent_envIntensityAsR160();
     } catch (e) {
       console.warn("[load] environment map:", e && e.message);
     }
