@@ -1,0 +1,21 @@
+# הסרטון למקרן — בית ראשון לפי סדר הפסוקים במלכים (MP4)
+
+נבנה ב־17.11.2026 (מגרסה 2.0.18) ונבנה מחדש ב־18.11.2026 מגרסה 3.0.0. התוצאה: MP4 אחד, 1280×720, H.264 Main, כ־55 דקות.
+העיצוב (אישור המשתמש): הטקסט בצד שמאל באותיות גדולות (projector.css), המודל בצד ימין; בלי ממשק; קודש הקדשים בלי הענן;
+כסא שלמה בכל הקריאות, עם עליית המלך ועדי השקר; הדגמת המכונה במבט המעקב שבתוסף.
+
+## איך מריצים (בסביבה עם כרום ו־puppeteer-core של המאגר; הנתיבים בקבצים — /home/claude/usb/rec ו־/home/claude/src/beit-rishon)
+1. `ln -sfn <המאגר> /home/claude/src/beit-rishon`; לבנות את `unified-plugin/` (הגרסה הנוכחית).
+2. הגופנים: `npm install @fontsource/frank-ruhl-libre @fontsource/noto-sans-hebrew` ב־/home/claude/usb/fonts (fonts.css מפנה אליהם).
+3. כותרת: `node titlebg.mjs && node title.mjs` (title.html → title.jpg).
+4. הקלטה בזמן מדומה (vt.js; cap.js — מה השתנה, עמודי טקסט, תנועה איטית אחרי ההגעה), שתי עבודות במקביל (2 ליבות):
+   - `node rec.mjs --job V1 --from 0 --to 23`
+   - `node rec.mjs --job V2 --from 24 --to 46 --pre 23 --follow 33`
+   - אחריהן (sched3.sh): `--job T1 --throne --from 89 --to 89`, `--job T2 --throne --from 90 --to 91` (קריאות הכסא שבמצגת "לפי הנושאים").
+   ב־3.0.0: V1 120 דק׳, V2 158 דק׳, T1 30 דק׳, T2 70 דק׳.
+5. שקופית 33 (המכונה) נגמרת עם ההדגמה בלי עמודי הטקסט: `node panel41.mjs 33`, ועמודים 2–3 מורכבים על התמונה האחרונה (INSERT ב־assemble.py).
+   שקופית 41 ("דבקו שערים"): ההדגמה ממלאת את השקופית — EXTEND של 5 שניות.
+6. `python3 final.py seg1` (אחרי V1, V2, T1), `python3 final.py seg2` (אחרי T2), `python3 final.py mux`.
+
+## מקור הקוד
+הקוד נכתב בשיחה של 17.11.2026, ושוחזר ממנה ב־18.11.2026 (parse_page.py, replay.py — הכתיבות והתיקונים לפי הסדר).
