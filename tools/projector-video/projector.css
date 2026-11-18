@@ -1,25 +1,26 @@
+/* NARROW_300 (the user, 18.11.2026: "להצר את הכרטיס בשביל שנוכחות התמונה תהיה יותר רחבה"): the panel 540 -> 420, the letters a little smaller */
 /* "מסך מקרן" — the presentation's banner as a full-height text panel on the left, large letters; no interface on screen */
 #tm-topbar, #tm-nav, #tm-compass, #toast, #tm-tip, #tm-panel, #tm-xcard, #tm-card, #tm-help, #tm-tour-menu, #tm-confirm, #tm-printdlg, .tm-pill { display: none !important; }
-#tm-tour-box { left: 0 !important; top: 0 !important; bottom: 0 !important; right: auto !important; width: 540px !important; max-height: none !important;
+#tm-tour-box { left: 0 !important; top: 0 !important; bottom: 0 !important; right: auto !important; width: 420px !important; max-height: none !important;
   border-radius: 0 !important; border: 0 !important; border-right: 3px solid #c9a84c !important; background: #0d121c !important; backdrop-filter: none !important;
-  box-shadow: 0 0 28px rgba(0,0,0,.55) !important; font: 500 25px/1.55 'Noto Sans Hebrew', sans-serif !important; color: #f2ead3 !important; }
-#tm-tour-box .hd { font-size: 17px !important; padding: 16px 24px 0 !important; color: #c9b98a !important; }
+  box-shadow: 0 0 28px rgba(0,0,0,.55) !important; font: 500 23px/1.55 'Noto Sans Hebrew', sans-serif !important; color: #f2ead3 !important; }
+#tm-tour-box .hd { font-size: 16px !important; padding: 14px 20px 0 !important; color: #c9b98a !important; }
 #tm-tour-box .hd .part { color: #d4b45c !important; font-weight: 600 !important; }
-#tm-tour-box .ttl { font-size: 32px !important; line-height: 1.3 !important; padding: 6px 24px 0 !important; color: #f6d978 !important; }
-#tm-tour-box .sub { font-size: 20px !important; padding: 5px 24px 0 !important; color: #d8c89a !important; }
+#tm-tour-box .ttl { font-size: 29px !important; line-height: 1.3 !important; padding: 6px 20px 0 !important; color: #f6d978 !important; }
+#tm-tour-box .sub { font-size: 19px !important; padding: 5px 20px 0 !important; color: #d8c89a !important; }
 #tm-tour-box .wait, #tm-tour-box .prog, #tm-tour-box .ctl, #tm-tour-box .ctl2 { display: none !important; }
-#tm-tour-box .body { padding: 0 24px !important; margin: 14px 0 46px !important; overflow: hidden !important; }
-#tm-tour-box .vs { font-family: 'Frank Ruhl Libre', serif !important; font-size: 31px !important; line-height: 1.75 !important; color: #fff6dc !important; }
+#tm-tour-box .body { padding: 0 20px !important; margin: 14px 0 46px !important; overflow: hidden !important; }
+#tm-tour-box .vs { font-family: 'Frank Ruhl Libre', serif !important; font-size: 28px !important; line-height: 1.75 !important; color: #fff6dc !important; }
 #tm-tour-box .vs .vn { font: 600 17px 'Noto Sans Hebrew', sans-serif !important; color: #d4b45c !important; margin-left: 7px !important; vertical-align: 5px !important; }
-#tm-tour-box .txt { font-size: 25px !important; line-height: 1.6 !important; color: #f2ead3 !important; }
+#tm-tour-box .txt { font-size: 23px !important; line-height: 1.6 !important; color: #f2ead3 !important; }
 #tm-tour-box .txt b, #tm-tour-box .txt strong { color: #ffe9a8 !important; }
 #tm-tour-box .src { font-size: 18px !important; margin-top: 14px !important; line-height: 1.7 !important; }
 #tm-tour-box .src a { font-size: 17px !important; padding: 1px 8px !important; }
-#tm-tour-box .caps .cap { font-size: 23px !important; }
+#tm-tour-box .caps .cap { font-size: 21px !important; }
 #tm-tour-box .bubw { margin: 8px 18px 18px !important; }
-#tm-tour-box .bub { font-size: 21px !important; line-height: 1.5 !important; }
+#tm-tour-box .bub { font-size: 20px !important; line-height: 1.5 !important; }
 #tm-news { display: none !important; }
-#rec-pg { position: absolute; left: 24px; bottom: 13px; font: 600 17px 'Noto Sans Hebrew', sans-serif; color: #d4b45c; direction: rtl; }
+#rec-pg { position: absolute; left: 20px; bottom: 13px; font: 600 17px 'Noto Sans Hebrew', sans-serif; color: #d4b45c; direction: rtl; }
 #rec-pg:empty { display: none; }
 #tm-walk-cap { left: 911px !important; bottom: 34px !important; max-width: 700px !important; font-size: 24px !important; line-height: 1.5 !important; background: rgba(13,18,28,.88) !important; }
 #rec-curtB, #rec-curtT { position: absolute; left: 0; width: 100%; background: #0d121c; pointer-events: none; z-index: 3; display: none; }

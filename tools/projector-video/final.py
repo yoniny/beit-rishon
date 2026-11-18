@@ -61,6 +61,22 @@ if __name__ == '__main__':
         t = listfile(A.PLAN[-1:], False, 'seg2')
         print('seg2', round(t, 2))
         enc('seg2', t, f'fade=t=out:st={t - 1.6:.2f}:d=1.5', 2)
+    elif what == 'segA':   # NARROW_300: title + the verses (every part before the throne readings), while the throne readings record
+        t = listfile(A.PLAN[:4], True, 'segA')
+        print('segA', round(t, 2))
+        enc('segA', t, 'fade=t=in:st=0:d=0.8', 1)
+    elif what == 'segB':   # the throne readings but the last
+        t = listfile(A.PLAN[4:-1], False, 'segB')
+        print('segB', round(t, 2))
+        enc('segB', t, '', 2)
+    elif what == 'mux3':
+        open(f'{OUT}/segs.txt', 'w').write(f"file '{OUT}/segA.mp4'\nfile '{OUT}/segB.mp4'\nfile '{OUT}/seg2.mp4'\n")
+        out = f'{OUT}/{A.NAME}'
+        cmd = ['ffmpeg', '-y', '-v', 'error', '-f', 'concat', '-safe', '0', '-i', f'{OUT}/segs.txt', '-f', 'lavfi', '-i', 'anullsrc=r=48000:cl=stereo',
+               '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '64k', '-shortest',
+               '-map_metadata', '-1', '-metadata', 'title=בית המקדש הראשון — לפי סדר הפסוקים במלכים', '-movflags', '+faststart', out]
+        subprocess.run(cmd, check=True)
+        print('->', out)
     elif what == 'mux':
         open(f'{OUT}/segs.txt', 'w').write(f"file '{OUT}/seg1.mp4'\nfile '{OUT}/seg2.mp4'\n")
         out = f'{OUT}/{A.NAME}'

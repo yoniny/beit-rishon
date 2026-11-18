@@ -8,7 +8,7 @@
   // the animation loop's own draws to the screen are skipped; draws into render targets (cube cameras, shadows) still happen
   R.render = function (s, c) { if (allow || R.getRenderTarget() !== null) return realRender(s, c); };
   R.setScissorTest(true);
-  R.setScissor(540, 0, 740, 720);   // the area left of x=540 is under the opaque text panel
+  R.setScissor(420, 0, 860, 720);   // the area left of x=420 is under the opaque text panel (NARROW_300; 540 until then)
   const box = document.getElementById('tm-tour-box'), body = box.querySelector('.body');
   const elPart = box.querySelector('.hd .part'), elNum = box.querySelector('.hd .num');
   const pg = document.createElement('div');

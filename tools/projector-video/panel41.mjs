@@ -16,6 +16,6 @@ try {
   for (let k = 0; k < pl.length; k++) {
     await page.evaluate((k) => window.__cap.showPage(k), k);
     await sleep(300);
-    await page.screenshot({ path: `/home/claude/usb/out/panel${IDX}-${k + 1}.png`, clip: { x: 0, y: 0, width: 540, height: 720 } });
+    await page.screenshot({ path: `/home/claude/usb/out/panel${IDX}-${k + 1}.png`, clip: { x: 0, y: 0, width: 420, height: 720 } });
   }
 } finally { await browser.close(); srv.close(); }

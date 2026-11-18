@@ -9,15 +9,15 @@ TITLE = '/home/claude/usb/rec/title.jpg'
 TITLE_S = 6.0
 NAME = 'בית ראשון - לפי סדר הפסוקים במלכים - למקרן.mp4'
 PLAN = [
-    ('V1', lambda s: True),           # verses 0..23 (3.0.0)
-    ('V2', lambda s: s < 33),         # verses 24..32
-    ('R5', lambda s: True),           # 33..34 again: the base's whole round under the follow view (FOLLOW_WHOLE_300), then its text pages
-    ('V2', lambda s: s > 34),         # verses 35..46
-    ('T1', lambda s: True),           # the throne: Targum Sheni
-    ('T2', lambda s: True),           # the throne: Esther Rabbah..., Beit HaMidrash
+    ('N1', lambda s: s <= 4),         # NARROW_300 (the panel 420): verses 0..4 (the job stopped in 5 when the chat went idle)
+    ('N1b', lambda s: True),          # verses 5..23
+    ('N2', lambda s: s <= 28),        # verses 24..28 (stopped in 29)
+    ('N2b', lambda s: True),          # verses 29..46; the base's whole round under the follow view (FOLLOW_WHOLE_300)
+    ('NT1', lambda s: True),          # the throne: Targum Sheni
+    ('NT2', lambda s: True),          # the throne: Esther Rabbah..., Beit HaMidrash
 ]
 # extra seconds on a slide's last frame: (job, slide) -> s. The ark's demonstration fills its slide to the end; its last caption rests a moment
-EXTEND = {('V2', 41): 5.0}
+EXTEND = {('N2b', 41): 5.0}
 # frames added after a slide's last frame: the base's demonstration (a looping one) filled its slide, and its text pages 2 and 3 were
 # composed from the panel (panel41.mjs 33) over the slide's last picture
 INSERT = {}   # (2.0.18 / the first 3.0.0 cut: the base's slide ended at the marble tables, its pages 2-3 composed over its last frame)
