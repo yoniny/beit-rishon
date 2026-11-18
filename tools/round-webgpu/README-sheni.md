@@ -23,7 +23,7 @@ Two steps:
      buffer made the flames and sparks pale and the smoke light), and the night clear colour given in sRGB; `renderer.init()` before
      the environment map / compile / first frame (`ent_gpuReady`); `Sky` → `SkyMesh` (`sky.material.uniforms` = the mesh's uniform
      nodes); no depth-program stand-ins; the live flames as a TSL node material (`material.uniforms` = its nodes); the sparks as an
-     instanced `Sprite` with a `PointsNodeMaterial`; `material.clippingPlanes` / `clipIntersection` as the material's `maskNode`
+     instanced `Sprite` with a `PointsNodeMaterial`; `material.clippingPlanes` / `clipIntersection` / `clipShadows` as the material's `maskNode` / `maskShadowNode`
      (accessors on `Material.prototype`; the WebGPU renderer clips by `ClippingGroup` only); the header note.
 
 `make_sheni.sh <source> <out> <webgl|webgpu> [library dir]` runs both steps and `node --check`.

@@ -9,8 +9,8 @@
 #        the second), drawing straight to the canvas with sRGB encoding per material (blending as under WebGLRenderer; the night clear
 #        colour in sRGB), renderer.init() before the environment map, the compile and the first frame; Sky -> SkyMesh; the live flames' GLSL
 #        ShaderMaterial -> a TSL node material; the sparks (Points are one pixel wide in the node renderer) -> an instanced Sprite
-#        (PointsNodeMaterial); the materials' clipping planes as maskNode (the WebGPU renderer clips by ClippingGroup only); the header
-#        note. 1c needs 1b.
+#        (PointsNodeMaterial); the materials' clipping planes (and clipShadows) as maskNode (the WebGPU renderer clips by ClippingGroup
+#        only); the header note. 1c needs 1b.
 # The edits in the renderer setup are kept small and local (no reformatting), for the later merges.
 # Usage: python3 tools/round-webgpu/sheni_patch.py <bundle.js (rewritten in place)> 1b [1c]
 import sys, os
@@ -59,7 +59,8 @@ if '1c' in steps:
  *   Sky -> SkyMesh (sky.material.uniforms = the mesh's uniform nodes, so .sunPosition.value etc. work as before); no stand-ins for
  *   WebGLShadowMap's depth programs. altar: the live flames are a TSL node material (same noise and colours; material.uniforms = its
  *   nodes); the sparks are an instanced Sprite with a PointsNodeMaterial (THREE.Points are one pixel wide in the node renderer). core:
- *   material.clippingPlanes / clipIntersection become the material's maskNode (the WebGPU renderer clips by ClippingGroup only).''',
+ *   material.clippingPlanes / clipIntersection / clipShadows become the material's maskNode / maskShadowNode (the WebGPU renderer clips
+ *   by ClippingGroup only).''',
         'header note', raw=True, prefix=True)
 
     # ---------------------------------------------------------------- the materials' clipping planes (the live section, the cuts)
@@ -69,11 +70,12 @@ if '1c' in steps:
   // WEBGPU (webgpu round): material.clippingPlanes / clipIntersection (the live section, the cuts that open the house) - three.js 187's
   // WebGPU renderer clips by ClippingGroup only and ignores the material's planes. Every material's planes are kept here (accessors on
   // Material.prototype) and become its maskNode: a fragment on the clipped (negative) side of the planes is discarded - of any plane, or of
-  // all of them with clipIntersection - as WebGLRenderer did. The planes are read every frame (uniforms). maskShadowNode keeps the shadows
-  // of the clipped parts (WebGLRenderer's clipShadows false). The renderer copies maskNode when it turns a material into a node material.
+  // all of them with clipIntersection - as WebGLRenderer did. The planes are read every frame (uniforms). clipShadows as WebGLRenderer's:
+  // false (the default) - the clipped parts still cast their shadows (maskShadowNode: keep all); true (the live section) - they do not
+  // (the shadow pass takes maskNode). The renderer copies maskNode when it turns a material into a node material.
   (() => {
     const T = TSL, K = Symbol("tmClip");
-    const st = (m) => m[K] || (m[K] = { planes: null, inter: false, masked: false, prev: null });
+    const st = (m) => m[K] || (m[K] = { planes: null, inter: false, shadows: false, masked: false, prev: null });
     const build = (m) => {
       const s = st(m);
       if (!s.planes || !s.planes.length) {
@@ -85,12 +87,13 @@ if '1c' in steps:
       for (let i = 1; i < s.planes.length; i++) keep = s.inter ? keep.or(keepBy(s.planes[i])) : keep.and(keepBy(s.planes[i]));
       if (!s.masked) s.prev = m.maskNode || null;
       m.maskNode = s.prev ? s.prev.and(keep) : keep;
-      m.maskShadowNode = T.bool(true);
+      m.maskShadowNode = s.shadows ? null : T.bool(true);
       s.masked = true;
       m.needsUpdate = true;
     };
     Object.defineProperty(Material.prototype, "clippingPlanes", { configurable: true, get() { return this[K] ? this[K].planes : null; }, set(v) { st(this).planes = v || null; build(this); } });
     Object.defineProperty(Material.prototype, "clipIntersection", { configurable: true, get() { return this[K] ? this[K].inter : false; }, set(v) { const s = st(this); if (s.inter !== !!v) { s.inter = !!v; if (s.planes) build(this); } } });
+    Object.defineProperty(Material.prototype, "clipShadows", { configurable: true, get() { return this[K] ? this[K].shadows : false; }, set(v) { const s = st(this); if (s.shadows !== !!v) { s.shadows = !!v; if (s.masked) build(this); } } });
   })();
 ''', 'clipping planes by maskNode')
 

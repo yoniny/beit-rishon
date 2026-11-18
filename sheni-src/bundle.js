@@ -16,7 +16,8 @@
  *   Sky -> SkyMesh (sky.material.uniforms = the mesh's uniform nodes, so .sunPosition.value etc. work as before); no stand-ins for
  *   WebGLShadowMap's depth programs. altar: the live flames are a TSL node material (same noise and colours; material.uniforms = its
  *   nodes); the sparks are an instanced Sprite with a PointsNodeMaterial (THREE.Points are one pixel wide in the node renderer). core:
- *   material.clippingPlanes / clipIntersection become the material's maskNode (the WebGPU renderer clips by ClippingGroup only).
+ *   material.clippingPlanes / clipIntersection / clipShadows become the material's maskNode / maskShadowNode (the WebGPU renderer clips
+ *   by ClippingGroup only).
  * 1.9.0 (9.11.2026): the cells - five a storey in the north and the south (were fifteen), the mesibah 27..30 with a wall of 5, and eight
  *   readings of how they widen (50-heichal.js CELLS_R / buildCells / ctx2.shared.cellsReading; the opinions table "צורת התאים", each in a
  *   section across the house at x -38, its labels shown only there; tools/rows_190.py).
@@ -85627,11 +85628,12 @@ var OtzariaPlugin = (() => { //
   // WEBGPU (webgpu round): material.clippingPlanes / clipIntersection (the live section, the cuts that open the house) - three.js 187's //
   // WebGPU renderer clips by ClippingGroup only and ignores the material's planes. Every material's planes are kept here (accessors on //
   // Material.prototype) and become its maskNode: a fragment on the clipped (negative) side of the planes is discarded - of any plane, or of //
-  // all of them with clipIntersection - as WebGLRenderer did. The planes are read every frame (uniforms). maskShadowNode keeps the shadows //
-  // of the clipped parts (WebGLRenderer's clipShadows false). The renderer copies maskNode when it turns a material into a node material. //
+  // all of them with clipIntersection - as WebGLRenderer did. The planes are read every frame (uniforms). clipShadows as WebGLRenderer's: //
+  // false (the default) - the clipped parts still cast their shadows (maskShadowNode: keep all); true (the live section) - they do not //
+  // (the shadow pass takes maskNode). The renderer copies maskNode when it turns a material into a node material. //
   (() => { //
     const T = TSL, K = Symbol("tmClip"); //
-    const st = (m) => m[K] || (m[K] = { planes: null, inter: false, masked: false, prev: null }); //
+    const st = (m) => m[K] || (m[K] = { planes: null, inter: false, shadows: false, masked: false, prev: null }); //
     const build = (m) => { //
       const s = st(m); //
       if (!s.planes || !s.planes.length) { //
@@ -85643,12 +85645,13 @@ var OtzariaPlugin = (() => { //
       for (let i = 1; i < s.planes.length; i++) keep = s.inter ? keep.or(keepBy(s.planes[i])) : keep.and(keepBy(s.planes[i])); //
       if (!s.masked) s.prev = m.maskNode || null; //
       m.maskNode = s.prev ? s.prev.and(keep) : keep; //
-      m.maskShadowNode = T.bool(true); //
+      m.maskShadowNode = s.shadows ? null : T.bool(true); //
       s.masked = true; //
       m.needsUpdate = true; //
     }; //
     Object.defineProperty(Material.prototype, "clippingPlanes", { configurable: true, get() { return this[K] ? this[K].planes : null; }, set(v) { st(this).planes = v || null; build(this); } }); //
     Object.defineProperty(Material.prototype, "clipIntersection", { configurable: true, get() { return this[K] ? this[K].inter : false; }, set(v) { const s = st(this); if (s.inter !== !!v) { s.inter = !!v; if (s.planes) build(this); } } }); //
+    Object.defineProperty(Material.prototype, "clipShadows", { configurable: true, get() { return this[K] ? this[K].shadows : false; }, set(v) { const s = st(this); if (s.shadows !== !!v) { s.shadows = !!v; if (s.masked) build(this); } } }); //
   })(); //
   var LV = { HAR: 0, EZN: 6, AZ: 13.5, KOH: 16, HEI: 22 }; //
   // 1.9.3 (the user, of the kuntres "בגדרי ודיני צורת הבית", point 24 and its author's first note: "חובה לשנות", "בשניהם"): THE HOUSE'S //
