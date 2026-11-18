@@ -1670,7 +1670,10 @@
       const marble = new MeshStandardMaterial({ color: 0xE9E3D8, roughness: 0.6 });                         // "עמודים של שיש"
       const linen = new MeshStandardMaterial({ color: 0xF7F3EA, roughness: 0.9 });                          // "בגדי שש לבן"
       const frondMat = new MeshStandardMaterial({ color: 0x4F8034, roughness: 0.9, emissive: 0x20361A, emissiveIntensity: 0.9 });   // 1.0.1-L: with the plain leaf green their undersides read black
-      const spiceMat = new PointsMaterial({ map: pal_spiceTex(), color: 0xFFE9A8, size: 0.2, transparent: true, opacity: 0.95, depthWrite: false, alphaTest: 0.05 });   // round golden grains (bare points read as white squares)
+      // WEBGPU_R (three.js 187): WebGPU draws points 1 pixel wide whatever their size - every grain is a small sprite now (mkSpray), all of
+      // them sharing one material; the quad's world size 0.2 * tan(24 deg) matches the old point size 0.2 under the 48-degree camera.
+      // (An instanced sprite - Sprite.count with an instanced positionNode - drew a single quad under the WebGL 2 backend in the tests.)
+      const spiceMat = new SpriteMaterial({ map: pal_spiceTex(), color: 0xFFE9A8, transparent: true, opacity: 0.95, depthWrite: false, alphaTest: 0.05 });   // round golden grains (bare points read as white squares)
       const hiMat = new MeshBasicMaterial({ color: 0xFFE27A, transparent: true, opacity: 0.55, depthWrite: false });
       const gemMats = {
         // THRONE_GEMS_137 - 1.3.7 (the user, 11.11.2026: of the bright stones "נראים יותר תכשיטים"; 19:03 of setting them flat, small, in a
@@ -2054,10 +2057,17 @@
       // the scroll's end per version: on the knees or in the hands
       const SCR_KNEES = [X, sTop + 0.46, zHead + 0.66], SCR_HANDS = [X, sTop + 0.8, zHead + 0.88];   // KING_211: the king's own knees and hands
       const mkSpray = (grp, n, x, y, z, dx, dz) => {
-        const geo = new BufferGeometry();
         const pos = new Float32Array(n * 3);
-        geo.setAttribute("position", new BufferAttribute(pos, 3));
-        const pts = new Points(geo, spiceMat);
+        const pts = new Group();   // WEBGPU_R: one sprite per grain (see spiceMat)
+        const grains = [], gs = 0.2 * Math.tan(MathUtils.degToRad(24));
+        for (let i = 0; i < n; i++) {
+          const gr = new Sprite(spiceMat);
+          gr.scale.setScalar(gs);
+          gr.userData.noPick = true;
+          gr.raycast = () => {};
+          pts.add(gr);
+          grains.push(gr);
+        }
         pts.visible = false;
         pts.frustumCulled = false;
         pts.name = "throneSpices";
@@ -2072,7 +2082,7 @@
             pos[3 * i + 1] = y + seed[3 * i + 1] * 2.4 * tau * (1 - tau) - 0.66 * tau;   // up and down again, ending just above the ground under the mouth
             pos[3 * i + 2] = z + (dz * 1.6 + seed[3 * i + 2] * 0.8) * tau;
           }
-          geo.attributes.position.needsUpdate = true;
+          for (let i = 0; i < n; i++) grains[i].position.set(pos[3 * i], pos[3 * i + 1], pos[3 * i + 2]);
         };
         return sp;
       };

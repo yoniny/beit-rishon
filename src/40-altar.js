@@ -689,39 +689,47 @@
     // shader (no textures, offline): the tongue is bent and eaten by scrolling fractal noise, deep red at the edge, orange, pale-yellow core;
     // additive. The flames sit in the altar's group, so they go with it in every reading of its place. Tuning: FIRE.speed, FIRE.heat.
     const FIRE = { speed: 1, heat: 0.65 };
-    const flameVS = "uniform vec2 uSize; varying vec2 vUv; void main(){ vUv = uv; vec4 mv = modelViewMatrix * vec4(0.0,0.0,0.0,1.0); mv.xy += position.xy * uSize; gl_Position = projectionMatrix * mv; }";
-    const flameFS = [
-      "varying vec2 vUv; uniform float uTime; uniform float uSeed; uniform float uOp;",
-      "float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453); }",
-      "float noise(vec2 p){ vec2 i = floor(p); vec2 f = fract(p); f = f*f*(3.0-2.0*f);",
-      "  return mix(mix(hash(i), hash(i+vec2(1.0,0.0)), f.x), mix(hash(i+vec2(0.0,1.0)), hash(i+vec2(1.0,1.0)), f.x), f.y); }",
-      "float fbm(vec2 p){ return noise(p)*0.5 + noise(p*2.03)*0.25 + noise(p*4.1)*0.125 + noise(p*8.3)*0.0625; }",
-      "void main(){",
-      "  vec2 q = vec2(vUv.x - 0.5, vUv.y); float t = uTime + uSeed * 0.37;",
-      "  float n1 = fbm(vec2(q.x*2.6, q.y*1.8 - t*1.35) + uSeed);",
-      "  float n2 = fbm(vec2(q.x*5.5 + 3.1, q.y*3.6 - t*2.6) + uSeed*1.7);",
-      "  float sway = (n1 - 0.5) * 0.9 * q.y * q.y * 2.2;",
-      "  float xw = (q.x + sway) * (1.0 + q.y * 2.4);",
-      "  float body = 1.0 - smoothstep(0.0, 0.42 - 0.18*q.y, abs(xw));",
-      "  float h = q.y + (n2 - 0.5) * 0.55 * (0.3 + q.y);",
-      "  float top = 1.0 - smoothstep(0.30, 0.98, h);",
-      "  float a = body * top;",
-      "  a *= 0.75 + 0.5 * n2;",
-      "  a = clamp(a * smoothstep(0.0, 0.10, q.y), 0.0, 1.0);",
-      "  float heat = a * (1.15 - q.y * 0.75);",
-      "  vec3 col = mix(vec3(0.55,0.05,0.0), vec3(1.0,0.38,0.04), smoothstep(0.08,0.45,heat));",
-      "  col = mix(col, vec3(1.0,0.72,0.18), smoothstep(0.38,0.75,heat));",
-      "  col = mix(col, vec3(1.0,0.93,0.65), smoothstep(0.72,1.05,heat));",
-      "  gl_FragColor = vec4(col, pow(a, 1.25) * uOp);",
-      "}"
-    ].join("\n");
+    // WEBGPU_R (three.js 187, WebGPURenderer): the same flame as a node material written in TSL (was a GLSL ShaderMaterial): the quad
+    // faces the camera (vertexNode: the group's origin in view space, plus the quad's corner times uSize), the colour and the alpha are
+    // the same fractal-noise tongue. Unlit and not tone-mapped; the colour goes in through sRGBTransferEOTF, so that the output's
+    // linear-to-sRGB step gives back the values the GLSL shader wrote straight into the canvas. The uniforms keep their old names and
+    // ".value"s under material.uniforms (the flicker below sets uTime, uSize and uOp).
+    const flameMaterial = (seed, op, w, h) => {
+      const T = TSL;
+      const uTime = T.uniform(0), uSeed = T.uniform(seed), uOp = T.uniform(op), uSize = T.uniform(new Vector2(w, h));
+      const hash = (p) => T.fract(T.sin(T.dot(p, T.vec2(127.1, 311.7))).mul(43758.5453));
+      const noise = (p) => {
+        const i = T.floor(p), f0 = T.fract(p);
+        const f = f0.mul(f0).mul(T.float(3).sub(f0.mul(2)));
+        return T.mix(T.mix(hash(i), hash(i.add(T.vec2(1, 0))), f.x), T.mix(hash(i.add(T.vec2(0, 1))), hash(i.add(T.vec2(1, 1))), f.x), f.y);
+      };
+      const fbm = (p) => noise(p).mul(0.5).add(noise(p.mul(2.03)).mul(0.25)).add(noise(p.mul(4.1)).mul(0.125)).add(noise(p.mul(8.3)).mul(0.0625));
+      const vUv = T.uv();
+      const qx = vUv.x.sub(0.5), qy = vUv.y;
+      const t = uTime.add(uSeed.mul(0.37));
+      const n1 = fbm(T.vec2(qx.mul(2.6), qy.mul(1.8).sub(t.mul(1.35))).add(uSeed));
+      const n2 = fbm(T.vec2(qx.mul(5.5).add(3.1), qy.mul(3.6).sub(t.mul(2.6))).add(uSeed.mul(1.7)));
+      const sway = n1.sub(0.5).mul(0.9).mul(qy).mul(qy).mul(2.2);
+      const xw = qx.add(sway).mul(qy.mul(2.4).add(1));
+      const body = T.float(1).sub(T.smoothstep(0, T.float(0.42).sub(qy.mul(0.18)), T.abs(xw)));
+      const hh = qy.add(n2.sub(0.5).mul(0.55).mul(qy.add(0.3)));
+      const top = T.float(1).sub(T.smoothstep(0.3, 0.98, hh));
+      const a = T.clamp(body.mul(top).mul(n2.mul(0.5).add(0.75)).mul(T.smoothstep(0, 0.1, qy)), 0, 1);
+      const heat = a.mul(T.float(1.15).sub(qy.mul(0.75)));
+      let col = T.mix(T.vec3(0.55, 0.05, 0.0), T.vec3(1.0, 0.38, 0.04), T.smoothstep(0.08, 0.45, heat));
+      col = T.mix(col, T.vec3(1.0, 0.72, 0.18), T.smoothstep(0.38, 0.75, heat));
+      col = T.mix(col, T.vec3(1.0, 0.93, 0.65), T.smoothstep(0.72, 1.05, heat));
+      const mat = new MeshBasicNodeMaterial({ transparent: true, depthWrite: false, blending: AdditiveBlending, fog: false, toneMapped: false });
+      mat.vertexNode = T.cameraProjectionMatrix.mul(T.modelViewMatrix.mul(T.vec4(0, 0, 0, 1)).add(T.vec4(T.positionGeometry.xy.mul(uSize), 0, 0)));
+      mat.colorNode = T.sRGBTransferEOTF(col);
+      mat.opacityNode = T.pow(a, 1.25).mul(uOp);
+      mat.uniforms = { uTime, uSeed, uOp, uSize };
+      return mat;
+    };
     const flameGeo = new PlaneGeometry(1, 1);
     flameGeo.translate(0, 0.5, 0);
     const addFlame = (x, y, z, r, h, color, op) => {
-      const mat = new ShaderMaterial({
-        uniforms: { uTime: { value: 0 }, uSeed: { value: flames.length * 7.31 }, uOp: { value: op * FIRE.heat }, uSize: { value: new Vector2(r * 2.6, h * 1.35) } },
-        vertexShader: flameVS, fragmentShader: flameFS, transparent: true, depthWrite: false, blending: AdditiveBlending, fog: false
-      });
+      const mat = flameMaterial(flames.length * 7.31, op * FIRE.heat, r * 2.6, h * 1.35);   // WEBGPU_R
       const m = new Mesh(flameGeo, mat);
       m.position.set(x, y, z);
       m.castShadow = false;

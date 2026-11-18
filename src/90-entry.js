@@ -97,7 +97,14 @@
   // 1.0.1-H (the user: "ב-360 מעלות הוא נתקע ולא מסתובב נכון"): the renderer asks for the discrete GPU, the pixel ratio is capped at 1.5 (a
   // 4K/HiDPI screen rendered at 2x was the heaviest single cost) and the shadow map is 2048 (4096 at 1.0.0); see also the orbit limits below
   // and the lighter cloud ray test in ui.js
-  var renderer = new WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+  // WEBGPU_R (webgpu branch, three.js 187): WebGPURenderer - WebGPU where the browser has it, else three.js's own WebGL 2 backend (chosen
+  // in renderer.init(), see ent_rendererInit). The emergency switch to the WebGL 2 backend: localStorage "tm.engine" = "webgl", or
+  // ?engine=webgl in the address. window.__tmBackend tells which one runs ("webgpu" | "webgl").
+  function ent_forceWebGL() {
+    try { if (/[?&]engine=webgl(?:&|$)/.test(location.search)) return true; } catch (_) {}
+    try { return localStorage.getItem("tm.engine") === "webgl"; } catch (_) { return false; }
+  }
+  var renderer = new WebGPURenderer({ antialias: true, powerPreference: "high-performance", forceWebGL: ent_forceWebGL() });
   // LOAD_211 (the user, 14.11.2026: "זמן הטעינה הוכפל לפחות, יש דרך לקצר?"): the shaders' logs are not read - three.js then never waits
   // for a program to finish linking before its first use (on Windows/ANGLE the wait is the heaviest single cost of the first frame)
   renderer.debug.checkShaderErrors = false;
@@ -114,6 +121,25 @@
   renderer.shadowMap.type = PCFShadowMap;
   renderer.toneMapping = ACESFilmicToneMapping;
   renderer.toneMappingExposure = 0.95;
+  ent_outputPerMaterial();   // WEBGPU_R
+  // WEBGPU_R: the look of WebGLRenderer, kept exactly. WebGPURenderer by default draws into a linear half-float buffer and tone-maps
+  // and sRGB-encodes the whole frame at the end: transparent things (the labels' plates, the measures' tints, the cloud, the smoke) then
+  // blend in linear light and read lighter, and a material's "toneMapped: false" is not honoured. Here, as WebGLRenderer did, every
+  // material does the two steps (ACES at the exposure above, then sRGB) in its own output, straight into the canvas: the renderer's own
+  // tone mapping / output space are "none" / linear (so no extra buffer), and renderer.contextNode adds the steps to the output of every
+  // material drawn into the canvas - not into a render target (the environment map stays linear).
+  function ent_outputPerMaterial() {
+    renderer.toneMapping = NoToneMapping;
+    renderer.outputColorSpace = LinearSRGBColorSpace;
+    renderer.contextNode = TSL.context({
+      getOutput: (out, builder) => {
+        if (builder.renderer.isOutputTarget === false) return out;
+        const m = builder.material;
+        const o = m && m.toneMapped === false ? out : TSL.toneMapping(ACESFilmicToneMapping, TSL.toneMappingExposure, out);
+        return TSL.workingToColorSpace(o, SRGBColorSpace);
+      }
+    });
+  }
   var mainEl = document.getElementById("main");
   if (mainEl) mainEl.appendChild(renderer.domElement);
   else document.body.appendChild(renderer.domElement);
@@ -122,13 +148,12 @@
   ent_mark("renderer + scene", performance.now() - ent_load.tEntry);
   var ent_t = performance.now();
   var pmrem = new PMREMGenerator(renderer);
-  // webgpu branch (three.js 187): in three.js 160 RoomEnvironment's main light was 5 when no renderer was passed (as here),
-  // and 900 only for a renderer without legacy lights; from 163 on it is always 900, which made the whole model washed out.
-  // Keep the look the model was tuned with: 5.
-  var ent_room = new RoomEnvironment();
-  ent_room.traverse((o) => { if (o.isPointLight) o.intensity = 5; });
-  scene.environment = pmrem.fromScene(ent_room, 0.04).texture;
-  var sky = new Sky();
+  // WEBGPU_R: the environment map is made in ent_rendererInit (PMREMGenerator.fromScene needs the initialised backend; RoomEnvironment's
+  // main light at 5 there, as three.js 160 had it with no renderer passed - from 163 on it is 900 and the model washed out)
+  // WEBGPU_R: SkyMesh, the node version of Sky (same Preetham model); its settings are uniform nodes, kept reachable under the old names
+  var sky = new SkyMesh();
+  sky.cloudCoverage.value = 0;   // WEBGPU_R: SkyMesh 187 draws clouds by default (cloudCoverage 0.4); three.js 160's Sky had none
+  sky.material.uniforms = { sunPosition: sky.sunPosition, turbidity: sky.turbidity, rayleigh: sky.rayleigh, mieCoefficient: sky.mieCoefficient, mieDirectionalG: sky.mieDirectionalG };
   sky.scale.setScalar(6e3);
   scene.add(sky);
   ent_mark("PMREM environment + sky", performance.now() - ent_t);
@@ -735,12 +760,11 @@
       if (!(o.isMesh || o.isLine || o.isPoints) || !o.material) return;
       for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
         if (!m || m.isShaderMaterial || m.isSpriteMaterial) continue;
-        if (m.clippingPlanes && m.clippingPlanes.length === 1 && m.clippingPlanes[0] === P) continue;
-        // 1.3.5 (as the Second Temple plugin 1.9.1): a copy made while the section is on carries the plane and the two sides of its
-        // original - its own side is taken as the front's
-        if (!ent_sec.sides.has(m)) ent_sec.sides.set(m, m.clippingPlanes && m.clippingPlanes.length ? FrontSide : m.side);
-        m.clippingPlanes = [P];
-        m.clipShadows = true;
+        // WEBGPU_R: the cut itself is the ClippingGroup's (ent_secWrap; WebGPURenderer draws no material clippingPlanes); a material
+        // only turns two-sided. A copy made while the section is on (the wall fade) carries its original's side in userData.__secSide.
+        if (ent_sec.sides.has(m)) continue;
+        ent_sec.sides.set(m, m.userData && m.userData.__secSide != null ? m.userData.__secSide : m.side);
+        if (m.userData) m.userData.__secSide = ent_sec.sides.get(m);
         m.side = DoubleSide;
         m.needsUpdate = true;
       }
@@ -756,12 +780,11 @@
     else P.set(new Vector3(-1, 0, 0), ent_sec.v);                             // keeps p.x <= v (the west), cuts the east
     if (on !== ent_sec.on) {
       ent_sec.on = on;
-      renderer.localClippingEnabled = on || renderer.localClippingEnabled;
+      ent_secGroupSet(on);   // WEBGPU_R
       if (on) ent_sectionApply();
       else {
         for (const [m, side] of ent_sec.sides) {
-          if (m.clippingPlanes && m.clippingPlanes.indexOf(P) >= 0) m.clippingPlanes = null;
-          m.clipShadows = false;
+          if (m.userData) delete m.userData.__secSide;
           m.side = side;
           m.needsUpdate = true;
         }
@@ -771,6 +794,38 @@
     try { document.documentElement.classList.toggle("tm-section", on); } catch (_) {}
     if (ctx && ctx.shared && ctx.shared.section) Object.assign(ctx.shared.section, { on: ent_sec.on, axis: ent_sec.axis, v: ent_sec.v });
     if (ctx && ctx.shared && ctx.shared.navRepaint) try { ctx.shared.navRepaint(); } catch (_) {}
+  }
+  // WEBGPU_R (three.js 187): WebGPURenderer cuts only through a ClippingGroup, not through a material's clippingPlanes. The model's root
+  // is put inside one (ent_secWrap, when the root is made), carrying the section's plane (the same Plane object that ent_sectionSet
+  // moves; three.js re-projects it every frame) and cutting the shadows too; it is enabled only while the section is on. The labels stay
+  // whole across the cut, as before: their group leaves the ClippingGroup while the section is on, and goes back after.
+  function ent_secWrap(rootGroup) {
+    const g = new ClippingGroup();
+    g.name = "sectionClip";
+    g.clippingPlanes = [ent_sec.plane];
+    g.clipShadows = true;
+    g.enabled = false;
+    scene.add(g);
+    g.add(rootGroup);
+    ent_sec.group = g;
+  }
+  function ent_secGroupSet(on) {
+    if (ent_sec.group) ent_sec.group.enabled = !!on;
+    try {
+      if (on) {
+        const lg = ent_sec.labels || (ctx && ctx.root ? ctx.root.getObjectByName("labels") : null);
+        if (lg && !ent_sec.labelsHome && lg.parent) {
+          ent_sec.labels = lg;
+          ent_sec.labelsHome = lg.parent;
+          scene.attach(lg);
+        }
+      } else if (ent_sec.labels && ent_sec.labelsHome) {
+        ent_sec.labelsHome.attach(ent_sec.labels);
+        ent_sec.labelsHome = null;
+      }
+    } catch (e) {
+      console.warn("[section] labels:", e && e.message);
+    }
   }
   // 1.0.1-H (the user: "נתקע ולא מסתובב נכון"): pointer safety for the embedded webview. OrbitControls (r160) captures the pointer on
   // pointerdown and ends a drag only on a pointerup that reaches the canvas. Inside the host app the release can be lost (the button is let
@@ -1144,6 +1199,7 @@
   }
   var root = new Group();
   scene.add(root);
+  ent_secWrap(root);   // WEBGPU_R: the live section's ClippingGroup round the model
   ctx = {
     THREE: three_module_exports,
     scene,
@@ -1632,7 +1688,32 @@
       setTimeout(go, 100);                              // the tab was hidden meanwhile: do not wait for a frame
     });
   }
+  // WEBGPU_R: the renderer's backend is chosen here (WebGPU; WebGL 2 where the browser has no WebGPU, or by the switch, ent_forceWebGL),
+  // before anything is built. PMREMGenerator.fromScene needs the initialised backend, so the environment map is made here too.
+  async function ent_rendererInit() {
+    const t = performance.now();
+    try {
+      await renderer.init();
+    } catch (e) {
+      console.error("[load] renderer.init:", e && e.message);
+    }
+    const be = renderer.backend;
+    window.__tmBackend = be && be.isWebGPUBackend ? "webgpu" : "webgl";
+    try { document.documentElement.setAttribute("data-tm-backend", window.__tmBackend); } catch (_) {}
+    try {
+      // three.js 187: RoomEnvironment's main PointLight is always 900; in r160 it was 5 when no renderer was passed (as here) - with 900
+      // the environment map was far brighter and the whole model washed out. 5 keeps the look of 2.0.18 exactly.
+      const room = new RoomEnvironment();
+      room.position.y = 0;   // three.js 187 lowers the room 3.5 (this.position.y = -3.5); r160 did not
+      room.traverse((o) => { if (o.isPointLight) o.intensity = 5; });
+      scene.environment = pmrem.fromScene(room, 0.04).texture;
+    } catch (e) {
+      console.warn("[load] environment map:", e && e.message);
+    }
+    ent_mark("renderer.init + environment map", performance.now() - t, window.__tmBackend);
+  }
   async function initModules() {
+    await ent_rendererInit();   // WEBGPU_R
     const MODULES = [
       { name: "mount.js", build: buildMount },
       { name: "courts.js", build: buildCourts },
@@ -1690,22 +1771,12 @@
     const tc = performance.now();
     let how = "compile", variants = 0;
     try {
-      const ds = ent_depthScene();
-      variants = ds.variants;
-      const rt = new WebGLRenderTarget(4, 4);
+      // WEBGPU_R: WebGPURenderer compiles the scene's pipelines asynchronously (in parallel where the backend can); its shadow pass is
+      // node based, so the WebGL shadow-map warm-up (ent_depthScene) is not used. A hidden tab compiles on the first frame instead.
       if (!document.hidden && typeof renderer.compileAsync === "function") {
         how = "compileAsync";
-        const p1 = renderer.compileAsync(scene, camera);
-        renderer.setRenderTarget(rt);   // the depth programs: keyed as in the shadow pass (see ent_depthScene)
-        const p2 = renderer.compileAsync(ds.tiny, camera);
-        renderer.setRenderTarget(null);
-        await Promise.race([Promise.all([p1, p2]), new Promise((r) => setTimeout(r, 25e3))]);
-      } else {
-        renderer.compile(scene, camera);
-        renderer.setRenderTarget(rt);
-        renderer.compile(ds.tiny, camera);
-        renderer.setRenderTarget(null);
-      }
+        await Promise.race([renderer.compileAsync(scene, camera), new Promise((r) => setTimeout(r, 25e3))]);
+      } else how = "on the first frame";
     } catch (e) {
       try { renderer.setRenderTarget(null); } catch (_) {}
       console.warn("[load] shader compile:", e && e.message);

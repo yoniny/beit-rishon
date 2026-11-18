@@ -1195,6 +1195,17 @@ body.tm-measuring canvas{cursor:crosshair}
   #tm-xcard .r{max-height:66px}
   #tm-panel{max-height:calc(100vh - 132px)}}
 `;
+  // WEBGPU_R (three.js 187, WebGPURenderer): is a point of object o cut away by a ClippingGroup above it (the live section's round the
+  // model, a lul hole's round a wall)? As three.js does: a point is cut where its distance to a plane is negative - by any plane of a
+  // group, or, with clipIntersection, only by all of them. Disabled groups cut nothing.
+  function ui_cutByGroups(o, point) {
+    for (let p = o; p; p = p.parent) {
+      if (!p.isClippingGroup || p.enabled === false || !Array.isArray(p.clippingPlanes) || !p.clippingPlanes.length) continue;
+      const neg = (pl) => !!pl && pl.distanceToPoint(point) < -1e-4;
+      if (p.clipIntersection ? p.clippingPlanes.every(neg) : p.clippingPlanes.some(neg)) return true;
+    }
+    return false;
+  }
   async function buildUI(ctx) {
     try {
       const uiGroup = new Group();
@@ -2787,6 +2798,7 @@ body.tm-measuring canvas{cursor:crosshair}
           const mt0 = o.material, mt = Array.isArray(mt0) ? mt0[(h.face && h.face.materialIndex) || 0] : mt0;
           if (mt && (mt.opacity < 0.5 || mt.visible === false)) continue;
           if (mt && Array.isArray(mt.clippingPlanes) && mt.clippingPlanes.some((pl) => pl && pl.distanceToPoint(h.point) < -1e-4)) continue;
+          if (ui_cutByGroups(o, h.point)) continue;   // WEBGPU_R: the cut of the live section / the lul hole is a ClippingGroup's now
           return h.point.clone();
         }
         return null;
