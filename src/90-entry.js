@@ -110,7 +110,8 @@
   var viewWH = viewSize();
   renderer.setSize(viewWH[0], viewWH[1]);
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = PCFSoftShadowMap;
+  // webgpu branch (three.js 187): PCFSoftShadowMap was removed from three.js (it now warns and falls back to PCFShadowMap)
+  renderer.shadowMap.type = PCFShadowMap;
   renderer.toneMapping = ACESFilmicToneMapping;
   renderer.toneMappingExposure = 0.95;
   var mainEl = document.getElementById("main");
