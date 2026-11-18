@@ -122,7 +122,12 @@
   ent_mark("renderer + scene", performance.now() - ent_load.tEntry);
   var ent_t = performance.now();
   var pmrem = new PMREMGenerator(renderer);
-  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  // webgpu branch (three.js 187): in three.js 160 RoomEnvironment's main light was 5 when no renderer was passed (as here),
+  // and 900 only for a renderer without legacy lights; from 163 on it is always 900, which made the whole model washed out.
+  // Keep the look the model was tuned with: 5.
+  var ent_room = new RoomEnvironment();
+  ent_room.traverse((o) => { if (o.isPointLight) o.intensity = 5; });
+  scene.environment = pmrem.fromScene(ent_room, 0.04).texture;
   var sky = new Sky();
   sky.scale.setScalar(6e3);
   scene.add(sky);
