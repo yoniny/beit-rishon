@@ -1,0 +1,12 @@
+import { createRequire } from 'node:module';
+import http from 'node:http'; import fs from 'node:fs'; import path from 'node:path';
+const require = createRequire('/home/claude/beit-rishon/package.json');
+const puppeteer = require('puppeteer-core');
+const dir = process.argv[2], house = process.argv[3];
+const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); const f = path.join(dir, p); if (!fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404); res.end(); return; } res.writeHead(200, { 'Content-Type': f.endsWith('.js') ? 'text/javascript' : 'text/html; charset=utf-8' }); fs.createReadStream(f).pipe(res); }).listen(8797, '127.0.0.1');
+const b = await puppeteer.launch({ executablePath: '/usr/bin/google-chrome', headless: true, args: ['--no-sandbox', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+const pg = await b.newPage(); await pg.setViewport({ width: 400, height: 250 });
+await pg.goto('http://127.0.0.1:8797/' + house + '/index.html'); await pg.waitForFunction(() => document.documentElement.classList.contains('tm-ready'), { timeout: 300000, polling: 500 });
+const t = await pg.evaluate(() => window.__TM_CTX.ui.placeTitles());
+console.log(JSON.stringify(t.filter((x) => /היכל|קודש|מעלות|ניקנור|נקנור|אולם|מנורה|הר הבית|שער|מזבח/.test(x)), null, 0));
+await b.close(); server.close();

@@ -11,6 +11,11 @@
  * Units: 1 = 1 amah. +x east (front), +z south (right), y up. Levels: great court 0, inner court 6, house floor 12.
  * VERSION: plugin/manifest.json is the ONE source (tools/build.mjs writes it into the bundle and index.html; minAppVersion 0.9.98.1).
  * 1.1.0 (8.11.2026): build = node tools/build.mjs (assemble + version + checks + terser minify); plugin/bundle.js is a build product - edit src/ only.
+ * webgpu-rishon (branch, step 1c, 18.11.2026; unpublished, version not bumped): three.js 187 WebGPURenderer - WebGPU, else its own
+ *   WebGL 2 backend (?engine=webgl or localStorage tm.engine=webgl forces it; window.__tmBackend says which). The WebGLRenderer look:
+ *   per-material tone mapping + sRGB through renderer.contextNode (ent_outputPerMaterial), RoomEnvironment's light 5 (900 in r187).
+ *   Clipping only through ClippingGroup: the live section (ent_secWrap / ent_secGroupSet), the lul hole (50-heichal.js holeWrap), the
+ *   measuring ray (70-ui.js ui_cutByGroups). The fire is a TSL material (40-altar.js flameMaterial); spice grains one Sprite each. Search WEBGPU_R.
  * 1.3.2 (9.11.2026): the altar 26.5 east of the ulam (CO.xAltarW 45, CO.ALTAR_DX 5.5 moves the slaughter place and the views; mechZ back to
  *   33 / 45); R. Yose's 28 altar (ctx.shared.altarYose, defG / yoseG); the pyres in two rows (count, Yom Kippur); mizbeachTop straight down;
  *   the heichal's ceiling vaulted after Rashi II Chr 3:7 (50-heichal.js sec. 8; userData.tmFlat for the camera pass); ceiling quotes checked.

@@ -1332,6 +1332,7 @@ body.tm-measuring #tm-tour-box{bottom:96px}
       // ---- the state ----
       let mode = tour_MODES[0], slides = [], idx = -1, running = false, paused = false, ended = false, round = 1;
       let elapsed = 0, total = 1, lastT = 0, idleUntil = 0, cfSeenAt = -1e9, progAt = 0, waitTxt = "", menuOpen = false, orbitSide = 1;
+      let holdDemo = false;   // CAM_219: the continuous mode's hold paused the slide's demonstration
       let cur = null, saved = null;
       // 1.0.1-L: the cloud dialog was answered "ביטול" in this run: the next devir slides do not ask again, they use their views from outside
       let cloudDenied = false;
@@ -1372,6 +1373,7 @@ body.tm-measuring #tm-tour-box{bottom:96px}
       const setPaused = (p) => {
         paused = !!p;
         if (!paused) idleUntil = 0;
+        holdDemo = false;   // CAM_219: "⏸" / "▶" take the demonstration over (below)
         bPause.textContent = paused ? "▶ המשך" : "⏸ השהה";
         // TOUR_DEMO_PAUSE_209: the slide's demonstration pauses with the presentation and goes on with it (90-entry.js DEMO_PAUSE_207)
         try {
@@ -1899,6 +1901,7 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         ended = false;
         paused = false;
         idleUntil = 0;
+        holdDemo = false;   // CAM_219
         downPtrs.clear();
         round = 1;
         orbitSide = 1;
@@ -1948,6 +1951,7 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         viewShift();   // 1.0.1-L (L.93): the lens back to the centre
         paused = false;
         idleUntil = 0;
+        holdDemo = false;   // CAM_219
         downPtrs.clear();
         idx = -1;
         setBtn();
@@ -1991,6 +1995,10 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         if (mode.key === "continuous" && !paused) {
           idleUntil = now() + 8000;
           if (cur && cur.orbit) cur.orbit.dead = true;
+          // CAM_219 (the audit: in "רציפה" a demonstration that leads the eye - a walk, the lots - kept writing the camera through the
+          // hold, and a drag or a key did nothing until it ended): the slide's demonstration pauses with the hold (the eye is the
+          // viewer's), and goes on from the same moment when the hold ends (the tick, below) - as "⏸" does in the other modes
+          try { if (fnc(ctx.shared.demoPause) && ctx.shared.demoPause()) holdDemo = true; } catch (_) {}
           showWait();
         } else setPaused(true);
       };
@@ -2156,6 +2164,10 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         const hidden = typeof document !== "undefined" && document.hidden;
         if (downPtrs.size) holdOn();   // tour-6: a pointer is still down (a long drag, a nav button held)
         const hold = paused || cf || hidden || (mode.key === "continuous" && now() < idleUntil);
+        if (holdDemo && !paused && !(mode.key === "continuous" && now() < idleUntil)) {   // CAM_219: the hold is over - its demonstration goes on
+          holdDemo = false;
+          try { if (fnc(ctx.shared.demoPaused) && ctx.shared.demoPaused() && fnc(ctx.shared.demoResume)) ctx.shared.demoResume(); } catch (_) {}
+        }
         showWait();
         if (tn - fitAt > 1000) {
           fitAt = tn;
