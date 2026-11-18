@@ -14,13 +14,27 @@ Two steps:
 2. `sheni_patch.py <bundle> 1b [1c]` — the module edits (`patchlib.py`: lines compared without the ` //` endings; a missing anchor is
    reported and fails the run):
    - **1b** (three.js 187, WebGLRenderer): `PCFSoftShadowMap` → `PCFShadowMap` (removed in 187); `RoomEnvironment` as three.js 160 built
-     it without a renderer — PointLight 5 (187: 900) and the room not lowered (187: `position.y = -3.5`).
+     it without a renderer — PointLight 5 (187: 900) and the room not lowered (187: `position.y = -3.5`); the sky without 187's clouds
+     (`cloudCoverage` 0; 187's default 0.4).
    - **1c** (three.js 187, WebGPURenderer; needs 1b): the renderer (`tm.engine` = `webgl` / `?engine=webgl` forces its WebGL 2 backend;
-     `window.__tmBackend`), `renderer.init()` before the environment map / compile / first frame (`ent_gpuReady`), `Sky` → `SkyMesh`
-     (`sky.material.uniforms` = the mesh's uniform nodes), no depth-program stand-ins, the live flames as a TSL node material
-     (`material.uniforms` = its nodes), the sparks as an instanced `Sprite` with a `PointsNodeMaterial`, the header note.
+     `window.__tmBackend`); the canvas drawn directly, every material doing its own tone mapping (`ent_toneMapping`, skipped when
+     `toneMapped` is false) and sRGB encoding through `renderer.contextNode`'s `getOutput`, with `renderer.toneMapping` /
+     `outputColorSpace` left linear — so transparent things blend in display space as under WebGLRenderer (the renderer's own linear
+     buffer made the flames and sparks pale and the smoke light), and the night clear colour given in sRGB; `renderer.init()` before
+     the environment map / compile / first frame (`ent_gpuReady`); `Sky` → `SkyMesh` (`sky.material.uniforms` = the mesh's uniform
+     nodes); no depth-program stand-ins; the live flames as a TSL node material (`material.uniforms` = its nodes); the sparks as an
+     instanced `Sprite` with a `PointsNodeMaterial`; `material.clippingPlanes` / `clipIntersection` as the material's `maskNode`
+     (accessors on `Material.prototype`; the WebGPU renderer clips by `ClippingGroup` only); the header note.
 
 `make_sheni.sh <source> <out> <webgl|webgpu> [library dir]` runs both steps and `node --check`.
+
+On 3.0 (the source of truth is `sheni-src/bundle.js`; `unified-plugin/sheni/bundle.js` is its minified build by
+`tools/round-3.0.0/make.sh`):
+
+```sh
+git show origin/main:sheni-src/bundle.js > /tmp/sheni-src.js          # the pristine readable source
+sh tools/round-webgpu/make_sheni.sh /tmp/sheni-src.js sheni-src/bundle.js webgpu
+```
 
 Known difference that 1b does not remove: three.js 187 filters the environment map (PMREM) with GGX importance sampling
 (three.js 160: a Gaussian blur into the cubeUV atlas). Rough stone gets clearly more light from the environment than before

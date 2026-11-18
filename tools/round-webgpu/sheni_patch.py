@@ -3,11 +3,14 @@
 # library block was already replaced (sheni_lib.py). Re-runnable on 2.0.18's unified-plugin/sheni/bundle.js and on 3.0's
 # sheni-src/bundle.js. Steps:
 #   1b - three.js 187 with WebGLRenderer (lib187.js): PCFSoftShadowMap -> PCFShadowMap (three.js removed it); RoomEnvironment as
-#        three.js 160 built it (PointLight 5, room not lowered; 187: 900 and y -3.5 - the environment map came out far too bright)
+#        three.js 160 built it (PointLight 5, room not lowered; 187: 900 and y -3.5 - the environment map came out far too bright); the
+#        sky without 187's clouds
 #   1c - three.js 187 with WebGPURenderer (lib-webgpu.js): the renderer (WebGPU, else its own WebGL 2 backend; tm.engine = "webgl" forces
-#        the second), renderer.init() before the environment map, the compile and the first frame; Sky -> SkyMesh; the live flames' GLSL
+#        the second), drawing straight to the canvas with sRGB encoding per material (blending as under WebGLRenderer; the night clear
+#        colour in sRGB), renderer.init() before the environment map, the compile and the first frame; Sky -> SkyMesh; the live flames' GLSL
 #        ShaderMaterial -> a TSL node material; the sparks (Points are one pixel wide in the node renderer) -> an instanced Sprite
-#        (PointsNodeMaterial); the header note. 1c needs 1b.
+#        (PointsNodeMaterial); the materials' clipping planes as maskNode (the WebGPU renderer clips by ClippingGroup only); the header
+#        note. 1c needs 1b.
 # The edits in the renderer setup are kept small and local (no reformatting), for the later merges.
 # Usage: python3 tools/round-webgpu/sheni_patch.py <bundle.js (rewritten in place)> 1b [1c]
 import sys, os
@@ -35,6 +38,12 @@ if '1b' in steps:
   ent_room.traverse((o) => { if (o.isPointLight) o.intensity = 5; });
   scene.environment = pmrem.fromScene(ent_room, 0.04).texture;
 ''', 'environment room as in three.js 160')
+    # three.js 187's Sky draws clouds (cloudCoverage 0.4 by default; SkyMesh too); 160's had none - the sky is kept as it was
+    b.insert_after('''
+  var sky = new Sky();
+''', '''
+  sky.material.uniforms.cloudCoverage.value = 0;   // webgpu round: three.js 187's Sky draws clouds (coverage 0.4 by default); 160's had none
+''', 'sky without clouds')
 
 if '1c' in steps:
     # ---------------------------------------------------------------- the header note (inside the header comment: no " //" endings)
@@ -44,10 +53,46 @@ if '1c' in steps:
  *   localStorage "tm.engine" = "webgl" (or ?engine=webgl) forces the WebGL 2 backend; window.__tmBackend = "webgpu" / "webgl". The library
  *   is three.js's WebGPU build in its own inner scope (var __lib), its exports destructured into this scope; TSL functions as TSL.xxx.
  *   entry: renderer.init() is async - ent_gpuReady (the environment map after it) is awaited before the compile and the first frame;
+ *   the canvas is drawn directly and every material tone-maps (ent_toneMapping) and encodes to sRGB itself (renderer.contextNode's
+ *   getOutput; renderer.toneMapping / outputColorSpace stay linear), so the transparent things blend as under WebGLRenderer (the
+ *   renderer's linear buffer made the flames pale and the smoke light);
  *   Sky -> SkyMesh (sky.material.uniforms = the mesh's uniform nodes, so .sunPosition.value etc. work as before); no stand-ins for
  *   WebGLShadowMap's depth programs. altar: the live flames are a TSL node material (same noise and colours; material.uniforms = its
- *   nodes); the sparks are an instanced Sprite with a PointsNodeMaterial (THREE.Points are one pixel wide in the node renderer).''',
+ *   nodes); the sparks are an instanced Sprite with a PointsNodeMaterial (THREE.Points are one pixel wide in the node renderer). core:
+ *   material.clippingPlanes / clipIntersection become the material's maskNode (the WebGPU renderer clips by ClippingGroup only).''',
         'header note', raw=True, prefix=True)
+
+    # ---------------------------------------------------------------- the materials' clipping planes (the live section, the cuts)
+    b.insert_after('''
+  // plugin/js/core.js
+''', '''
+  // WEBGPU (webgpu round): material.clippingPlanes / clipIntersection (the live section, the cuts that open the house) - three.js 187's
+  // WebGPU renderer clips by ClippingGroup only and ignores the material's planes. Every material's planes are kept here (accessors on
+  // Material.prototype) and become its maskNode: a fragment on the clipped (negative) side of the planes is discarded - of any plane, or of
+  // all of them with clipIntersection - as WebGLRenderer did. The planes are read every frame (uniforms). maskShadowNode keeps the shadows
+  // of the clipped parts (WebGLRenderer's clipShadows false). The renderer copies maskNode when it turns a material into a node material.
+  (() => {
+    const T = TSL, K = Symbol("tmClip");
+    const st = (m) => m[K] || (m[K] = { planes: null, inter: false, masked: false, prev: null });
+    const build = (m) => {
+      const s = st(m);
+      if (!s.planes || !s.planes.length) {
+        if (s.masked) { m.maskNode = s.prev; m.maskShadowNode = null; s.masked = false; m.needsUpdate = true; }
+        return;
+      }
+      const keepBy = (p) => { const u = T.uniform(new Vector4()); u.onRenderUpdate(() => { u.value.set(p.normal.x, p.normal.y, p.normal.z, p.constant); }); return T.dot(T.positionWorld, u.xyz).add(u.w).greaterThanEqual(0); };
+      let keep = keepBy(s.planes[0]);
+      for (let i = 1; i < s.planes.length; i++) keep = s.inter ? keep.or(keepBy(s.planes[i])) : keep.and(keepBy(s.planes[i]));
+      if (!s.masked) s.prev = m.maskNode || null;
+      m.maskNode = s.prev ? s.prev.and(keep) : keep;
+      m.maskShadowNode = T.bool(true);
+      s.masked = true;
+      m.needsUpdate = true;
+    };
+    Object.defineProperty(Material.prototype, "clippingPlanes", { configurable: true, get() { return this[K] ? this[K].planes : null; }, set(v) { st(this).planes = v || null; build(this); } });
+    Object.defineProperty(Material.prototype, "clipIntersection", { configurable: true, get() { return this[K] ? this[K].inter : false; }, set(v) { const s = st(this); if (s.inter !== !!v) { s.inter = !!v; if (s.planes) build(this); } } });
+  })();
+''', 'clipping planes by maskNode')
 
     # ---------------------------------------------------------------- the renderer
     b.rep('''
@@ -57,7 +102,20 @@ if '1c' in steps:
   // "tm.engine" = "webgl" (or ?engine=webgl) forces the WebGL 2 backend. window.__tmBackend: "webgpu" / "webgl" (set by ent_gpuReady below)
   var ent_engine = (() => { try { const q = new URLSearchParams(location.search).get("engine"); if (q) return q; } catch (_) {} try { return localStorage.getItem("tm.engine") || ""; } catch (_) { return ""; } })();
   var renderer = new WebGPURenderer({ antialias: true, powerPreference: "high-performance", forceWebGL: ent_engine === "webgl" });
+  // WEBGPU: the picture is drawn straight to the canvas and every material does its own tone mapping (ent_toneMapping, below; not when its
+  // toneMapped is false) and sRGB encoding, as WebGLRenderer did, so the transparent things (the pyres' flames and sparks, the smoke, the
+  // labels) blend over it as before. The renderer's own way - a linear buffer, tone-mapped and converted at the end - blends them in linear
+  // light: the flames and the sparks came out pale, the smoke light. renderer.toneMapping and outputColorSpace are therefore left linear
+  // (they would bring that buffer back); render targets (the environment map, the shadow maps) stay linear.
+  renderer.outputColorSpace = LinearSRGBColorSpace;
+  renderer.contextNode = TSL.context({ ...renderer.contextNode.getFlowContextData(), getOutput: (n, b) => { if (b.renderer.getRenderTarget() !== null) return n; const o = TSL.renderOutput(n, b.material.toneMapped === false ? NoToneMapping : ent_toneMapping, SRGBColorSpace); o.premultipliedAlpha = b.material.premultipliedAlpha; return o; } });
 ''', 'renderer')
+
+    b.rep('''
+  renderer.toneMapping = ACESFilmicToneMapping;
+''', '''
+  var ent_toneMapping = ACESFilmicToneMapping;   // WEBGPU: done in each material (renderer.contextNode above); renderer.toneMapping stays NoToneMapping
+''', 'tone mapping per material')
 
     b.rep('''
   scene.environment = pmrem.fromScene(ent_room, 0.04).texture;
@@ -76,8 +134,16 @@ if '1c' in steps:
   // WEBGPU: SkyMesh, the node version of the same sky; its uniforms are nodes on the mesh. material.uniforms holds the same nodes, so the
   // modules' sky.material.uniforms.X.value (the WebGL Sky's way: the morning service's dawn, the night) work as before
   var sky = new SkyMesh();
-  sky.material.uniforms = { sunPosition: sky.sunPosition, turbidity: sky.turbidity, rayleigh: sky.rayleigh, mieCoefficient: sky.mieCoefficient, mieDirectionalG: sky.mieDirectionalG };
+  sky.material.uniforms = { sunPosition: sky.sunPosition, turbidity: sky.turbidity, rayleigh: sky.rayleigh, mieCoefficient: sky.mieCoefficient, mieDirectionalG: sky.mieDirectionalG, cloudCoverage: sky.cloudCoverage };
 ''', 'sky')
+
+    # the night background colour (the classic night of the morning service, before the sky shows): a clear colour is not encoded per
+    # material, so with the canvas drawn directly (see the renderer) it is given already in sRGB
+    b.rep('''
+      ctx2.scene.background = s > 0.6 ? saved.bg : SKYC.night;
+''', '''
+      ctx2.scene.background = s > 0.6 ? saved.bg : (SKYC.nightOut || (SKYC.nightOut = SKYC.night.clone().convertLinearToSRGB()));   // WEBGPU: a clear colour, given in sRGB (the canvas is drawn directly)
+''', 'night background in sRGB')
 
     # ---------------------------------------------------------------- the compile step of initModules
     b.rep('''
