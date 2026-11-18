@@ -1171,7 +1171,6 @@
       const planes = [new Plane(new Vector3(-1, 0, 0), LB.x0), new Plane(new Vector3(1, 0, 0), -LB.x1), new Plane(new Vector3(0, -1, 0), LB.y0),
         new Plane(new Vector3(0, 1, 0), -LB.y1), new Plane(new Vector3(0, 0, -1), LB.z0), new Plane(new Vector3(0, 0, 1), -LB.z1)];
       const lbox = new Box3(new Vector3(LB.x0, LB.y0, LB.z0), new Vector3(LB.x1, LB.y1, LB.z1));
-      const clones = new Map();
       let meshes = null, tick = 0;
       // the openings' reveals (the walls are hollow boxes): thin plates just outside the box, in the two walls' thickness, and the cut
       // ends of the chambers' floor beams
@@ -1202,22 +1201,27 @@
           } catch (_) {}
         });
       };
-      const cloneOf = (m) => {
-        if (!m || m.isShaderMaterial || m.isSpriteMaterial || (m.userData && m.userData.__lul)) return m;
-        let c = clones.get(m);
-        if (!c) { c = m.clone(); c.clippingPlanes = planes; c.clipIntersection = true; c.userData = Object.assign({}, m.userData, { __lul: true }); clones.set(m, c); }
-        return c;
+      // WEBGPU_R (three.js 187): WebGPURenderer draws no material clippingPlanes - every mesh in the hole's box is put inside its own
+      // ClippingGroup that carries the six planes (clipIntersection: what is inside all six is cut away; its world place is unchanged,
+      // the group sits where the mesh sat). While the live section is on the groups are off: the section replaces the hole, as before.
+      const holes = [];
+      const holeWrap = (o) => {
+        const p = o.parent;
+        if (!p || p.isClippingGroup) return;
+        const cg = new ClippingGroup();
+        cg.name = "lulHole";
+        cg.clippingPlanes = planes;
+        cg.clipIntersection = true;
+        p.add(cg);
+        cg.add(o);
+        holes.push(cg);
       };
       (ctx.animated = ctx.animated || []).push(() => {
-        const S = ctx.shared.section;
-        if (S && S.on) return;
+        const S = ctx.shared.section, off = !!(S && S.on);
+        for (const cg of holes) cg.enabled = !off;
+        if (off) return;
         if (!meshes || ++tick % 180 === 0) find();
-        for (const o of meshes) {
-          if (Array.isArray(o.material)) { let ch = false; const a = o.material.map((m) => { const c = cloneOf(m); if (c !== m) ch = true; return c; }); if (ch) o.material = a; }
-          else { const c = cloneOf(o.material); if (c !== o.material) o.material = c; }
-        }
-        for (const c of clones.values()) if (c.clippingPlanes !== planes) { c.clippingPlanes = planes; c.clipIntersection = true; c.needsUpdate = true; }   // after a section
-        if (ctx.renderer && !ctx.renderer.localClippingEnabled) ctx.renderer.localClippingEnabled = true;
+        for (const o of meshes) holeWrap(o);
       });
       ctx.shared.lul = { box: LB };
     }
