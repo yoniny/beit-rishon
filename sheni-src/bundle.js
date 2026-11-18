@@ -85653,6 +85653,13 @@ var OtzariaPlugin = (() => { //
     Object.defineProperty(Material.prototype, "clipIntersection", { configurable: true, get() { return this[K] ? this[K].inter : false; }, set(v) { const s = st(this); if (s.inter !== !!v) { s.inter = !!v; if (s.planes) build(this); } } }); //
     Object.defineProperty(Material.prototype, "clipShadows", { configurable: true, get() { return this[K] ? this[K].shadows : false; }, set(v) { const s = st(this); if (s.shadows !== !!v) { s.shadows = !!v; if (s.masked) build(this); } } }); //
   })(); //
+  // webgpu round: THE ENVIRONMENT LIGHT AS IN THREE.JS 160 - 160 applied a material's envMapIntensity to the scene's environment map too; //
+  // since 163 only to the material's own envMap (else scene.environmentIntensity, 1). The materials here tune it (stone and paving 0.5-0.7, //
+  // gold and bronze 1.1-1.3): a standard material without an envMap of its own whose envMapIntensity is not 1 reports the scene's current //
+  // environment map as its envMap, so its envMapIntensity counts again (scene.environment stays the switch: null at night) //
+  Object.defineProperty(Material.prototype, "envMap", { configurable: true, //
+    get() { if (this._tmEnvMap) return this._tmEnvMap; return this.isMeshStandardMaterial && this.envMapIntensity !== 1 && typeof scene !== "undefined" && scene ? scene.environment : null; }, //
+    set(v) { this._tmEnvMap = v && !(typeof scene !== "undefined" && scene && v === scene.environment) ? v : null; } }); //
   var LV = { HAR: 0, EZN: 6, AZ: 13.5, KOH: 16, HEI: 22 }; //
   // 1.9.3 (the user, of the kuntres "בגדרי ודיני צורת הבית", point 24 and its author's first note: "חובה לשנות", "בשניהם"): THE HOUSE'S //
   // FLOOR SLOPES - Rashi Menachot 99a "כתלמיד היושב לפני רבו - נמוך הימנו, כך אותם של שלמה נמוכין משל משה, דבית המקדש היה משופע ולצד מערב //

@@ -36,7 +36,12 @@ git show origin/main:sheni-src/bundle.js > /tmp/sheni-src.js          # the pris
 sh tools/round-webgpu/make_sheni.sh /tmp/sheni-src.js sheni-src/bundle.js webgpu
 ```
 
-Known difference that 1b does not remove: three.js 187 filters the environment map (PMREM) with GGX importance sampling
-(three.js 160: a Gaussian blur into the cubeUV atlas). Rough stone gets clearly more light from the environment than before
-(the "env only" part of a view: 55 → 86, 89 → 130, 120 → 152 in mean brightness), gold and bronze about the same (90 → 100, 135 → 131).
-No single `scene.environmentIntensity` matches both; see the round's report.
+The environment light (in 1b, so in both builds): three.js 160 applied a material's `envMapIntensity` to the scene's environment map
+too; since 163 it applies only with the material's own `envMap`, else `scene.environmentIntensity` (1). This house tunes it per material
+(stone and paving 0.5–0.7, marble 1.1, gold and bronze 1.1–1.3), so under 187 the stone took about twice the environment light — the
+brighter stone of the first comparisons (it was not the GGX filter of the PMREM). No single `scene.environmentIntensity` fits both stone
+and gold, so a `Material.prototype.envMap` accessor makes a standard material without an envMap of its own, whose `envMapIntensity` is not
+1, report the scene's current environment map as its envMap: both renderers apply its `envMapIntensity` again, and `scene.environment`
+stays the switch (null at night). The WebGPU build vs 3.0.0's views: mean RMSE 0.129 → 0.094, median 0.069 → 0.020; mean luminance of the
+clean views +8.5 → −0.3. Left: three.js 187 lights `MeshLambertMaterial` / `MeshPhongMaterial` by `scene.environment` too (160 did
+not) — here one material, the incense cloud.

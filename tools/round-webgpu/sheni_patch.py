@@ -38,6 +38,24 @@ if '1b' in steps:
   ent_room.traverse((o) => { if (o.isPointLight) o.intensity = 5; });
   scene.environment = pmrem.fromScene(ent_room, 0.04).texture;
 ''', 'environment room as in three.js 160')
+    # THE ENVIRONMENT LIGHT (the one global compensation of the round; the First Temple can take the same block): three.js 160 applied a
+    # material's envMapIntensity to the scene's environment map too; since 163 it applies only with the material's own envMap, else
+    # scene.environmentIntensity (1). This house tunes it per material (stone and paving 0.5-0.7, marble 1.1, gold and bronze 1.1-1.3),
+    # so under 187 the stone took about twice the environment light (the "brighter stone" of the first comparisons; not the GGX
+    # filter) and the gold less - no single scene.environmentIntensity fits both. A standard material without an envMap of its own whose
+    # envMapIntensity is not 1 reports the scene's current environment map as its envMap, so both renderers apply its envMapIntensity again
+    # (scene.environment stays the switch: null at night).
+    b.insert_after('''
+  // plugin/js/core.js
+''', '''
+  // webgpu round: THE ENVIRONMENT LIGHT AS IN THREE.JS 160 - 160 applied a material's envMapIntensity to the scene's environment map too;
+  // since 163 only to the material's own envMap (else scene.environmentIntensity, 1). The materials here tune it (stone and paving 0.5-0.7,
+  // gold and bronze 1.1-1.3): a standard material without an envMap of its own whose envMapIntensity is not 1 reports the scene's current
+  // environment map as its envMap, so its envMapIntensity counts again (scene.environment stays the switch: null at night)
+  Object.defineProperty(Material.prototype, "envMap", { configurable: true,
+    get() { if (this._tmEnvMap) return this._tmEnvMap; return this.isMeshStandardMaterial && this.envMapIntensity !== 1 && typeof scene !== "undefined" && scene ? scene.environment : null; },
+    set(v) { this._tmEnvMap = v && !(typeof scene !== "undefined" && scene && v === scene.environment) ? v : null; } });
+''', 'environment light as in three.js 160')
     # three.js 187's Sky draws clouds (cloudCoverage 0.4 by default; SkyMesh too); 160's had none - the sky is kept as it was
     b.insert_after('''
   var sky = new Sky();
