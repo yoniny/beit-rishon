@@ -1,0 +1,32 @@
+import http from 'node:http'; import fs from 'node:fs'; import path from 'node:path';
+import { createRequire } from 'node:module';
+const require = createRequire('/home/claude/beit-rishon/package.json');
+const puppeteer = require('puppeteer-core');
+const [dir0, out] = process.argv.slice(2); const dir = path.resolve(dir0);
+const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); const f = path.join(dir, p); if (!f.startsWith(dir) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404); res.end(); return; } res.writeHead(200, { 'Content-Type': f.endsWith('.js') ? 'text/javascript; charset=utf-8' : 'text/html; charset=utf-8' }); fs.createReadStream(f).pipe(res); }).listen(8800, '127.0.0.1');
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const b = await puppeteer.launch({ executablePath: '/usr/bin/google-chrome', headless: true, protocolTimeout: 600000, args: ['--no-sandbox', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+const pg = await b.newPage(); await pg.setViewport({ width: 900, height: 600 });
+await pg.evaluateOnNewDocument(() => { try { for (const k of ['tm1.news.seen', 'tm2.news.seen']) localStorage.setItem(k, '99.0.0'); } catch (_) {} });
+await pg.goto('http://127.0.0.1:8800/sheni/index.html'); await pg.waitForFunction(() => document.documentElement.classList.contains('tm-ready'), { timeout: 300000, polling: 300 });
+await sleep(1500);
+await pg.evaluate(() => { try { window.__renderer.shadowMap.enabled = false; } catch (_) {} const c = window.__TM_CTX; const t = c.ui.placeTitles().find((x) => x.includes('שמחת בית השואבה')); c.ui.placeButton(t).click(); });
+await sleep(8000);
+await pg.evaluate(() => { try { window.__TM_CTX.shared.stopDemos(); } catch (_) {} });
+await sleep(6000);
+const info = await pg.evaluate(() => {
+  const c = window.__TM_CTX, T = c.THREE; let m = null;
+  c.scene.traverse((o) => { if (!m && o.name === 'pirchaKehunah' && o.isInstancedMesh) m = o; });
+  if (!m) return null;
+  const G = m.parent.parent, p = new T.Vector3(); G.getWorldPosition(p);
+  const yaw = G.rotation.y, fx = Math.sin(yaw), fz = Math.cos(yaw);   // the figure's face: +z of its group
+  const head = [p.x, p.y + 2.25, p.z];
+  const eye = [p.x + fx * 1.9, p.y + 2.35, p.z + fz * 1.9];
+  c.flyTo(eye, head, 300);
+  return { p: [p.x, p.y, p.z], yaw, eye, head };
+});
+await sleep(6000);
+await pg.evaluate(() => { for (const id of ['tm-news', 'tm-help', 'tm-xcard', 'tm-card', 'tm-panel']) { const e = document.getElementById(id); if (e) e.style.display = 'none'; } });
+await pg.screenshot({ path: out, type: 'jpeg', quality: 85 });
+console.log(JSON.stringify(info));
+await b.close(); server.close();

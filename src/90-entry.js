@@ -122,7 +122,12 @@
   ent_mark("renderer + scene", performance.now() - ent_load.tEntry);
   var ent_t = performance.now();
   var pmrem = new PMREMGenerator(renderer);
-  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  // webgpu branch (three.js 187): in three.js 160 RoomEnvironment's main light was 5 when no renderer was passed (as here),
+  // and 900 only for a renderer without legacy lights; from 163 on it is always 900, which made the whole model washed out.
+  // Keep the look the model was tuned with: 5.
+  var ent_room = new RoomEnvironment();
+  ent_room.traverse((o) => { if (o.isPointLight) o.intensity = 5; });
+  scene.environment = pmrem.fromScene(ent_room, 0.04).texture;
   var sky = new Sky();
   sky.scale.setScalar(6e3);
   scene.add(sky);
@@ -217,6 +222,21 @@
   var ENT_POLAR = Math.PI - 0.03;
   var CAM_NEAR = 18;   // a target closer than this is "a thing" one orbits, even under a roof (1.0.5's ENT_ORBIT_NEAR)
   var CAM_DOWN = new Vector3(0, -1, 0);
+  // CAM_219 (2.0.19; the user, 18.11.2026: "יש בעיה במצלמה עדיין קיימת... זה בעיה באנימציות, זה בעיה בכפתורים, בעיה בהרבה דברים";
+  // found by a code audit of both houses and a browser sweep):
+  // (1) the polar limit follows the mode (cam_polarFit): in "look" and in walk mode the view may go down to 0.03 from the nadir - as the
+  //     look drag and the walk mode's mouse always let it - and OrbitControls' 0.2 (ENT_MIN_POLAR) is the limit of "orbit" only. Until
+  //     2.0.18 a look drag steeply down was undone on release by update()'s clamp (the eye jumped up to 3.7 amot, the view turned ~10
+  //     degrees), and in walk mode the eye slid back and sank every frame. A pose past the limit of a new mode is fitted by turning the
+  //     VIEW (the target moves, the eye stays).
+  // (2) a flight is the flight's alone: no controls.update() on its in-between poses (update()'s clamp spun the picture where a flight
+  //     passed over its target - 314 pairs of this house's views), OrbitControls' leftover glide is cleared when it starts and when it
+  //     lands (cam_killInertia), and a press, a wheel turn or a key on the model ENDS it where it is (cam_flyStop): until now a drag in a
+  //     flight was eaten, and its rest went on after the landing.
+  // (3) the near plane follows the distance to the target (cam_nearStep): a vessel seen from 0.3 (the + button, a pinch) is not cut.
+  // (4) walk mode climbs and descends with the floors (cam_walkFloor); (5) the mode of a wheel / walk / lift that just ended is decided
+  //     at the press, not 0.4 s later; (6) a pinch under a roof pinches (PINCH_219).
+  var CAM_LOOK_MIN = 0.03;
   var cam = { mode: "orbit", inside: true, lookLock: false, roofed: false, floorY: -Infinity, decideAt: 0, ray: null, n: new Vector3(), tmp: new Vector3(), s: new Spherical(), dirs: [new Vector3(1, 0, 0), new Vector3(-1, 0, 0), new Vector3(0, 0, 1), new Vector3(0, 0, -1)], up: new Vector3(0, 1, 0) };
   var ent_look = cam;   // (the name the roofed test below uses for its ray and directions)
   var ent_sol = { t: -1e9, all: [], roof: [], walls: [], big: [] };
@@ -312,6 +332,40 @@
     // distance now); a flight to a near thing (a vessel) gives "orbit"
     cam.mode = (ent_wm.on || cam.roofed && (cam.lookLock || p.distanceTo(q) > CAM_NEAR)) ? "look" : "orbit";   // 1.2.9: walk mode is always "look"
     if (cam.mode === "look") cam.lookLock = true;
+    cam_polarFit();   // CAM_219 (1)
+  }
+  var cam_pf = { s: new Spherical(), v: new Vector3(), p: new Vector3(), q: new Vector3() };
+  function cam_polarFit() {   // CAM_219 (1): the polar limits of the mode; a pose past them is fitted by turning the view - the eye stays
+    const c = controls;
+    if (!c) return;
+    c.minPolarAngle = cam.mode === "look" ? CAM_LOOK_MIN : ENT_MIN_POLAR;
+    const v = cam_pf.v.copy(camera.position).sub(c.target);
+    if (!(v.lengthSq() > 1e-12)) return;
+    const s = cam_pf.s.setFromVector3(v);
+    if (s.phi >= c.minPolarAngle - 1e-6 && s.phi <= c.maxPolarAngle + 1e-6) return;
+    s.phi = Math.max(c.minPolarAngle, Math.min(c.maxPolarAngle, s.phi));
+    c.target.copy(camera.position).sub(v.setFromSpherical(s));
+    camera.lookAt(c.target);
+  }
+  function cam_killInertia() {   // CAM_219 (2): OrbitControls' leftover glide (its deltas are private): one update() with the full factor
+    const c = controls;           // spends them, and the pose is put back as it was
+    if (!c) return;
+    const p = cam_pf.p.copy(camera.position), q = cam_pf.q.copy(c.target), df = c.dampingFactor, ar = c.autoRotate;
+    c.dampingFactor = 1;
+    c.autoRotate = false;
+    try { c.update(); } catch (_) {}
+    c.dampingFactor = df;
+    c.autoRotate = ar;
+    camera.position.copy(p);
+    c.target.copy(q);
+    camera.lookAt(q);
+  }
+  function cam_flyStop() {   // CAM_219 (2): the user takes the view in a flight - it ends where it is (ctx.camFlyStop)
+    if (!flyAnim) return false;
+    flyAnim = null;
+    cam_killInertia();
+    cam_decide();
+    return true;
   }
   var cam_in = { dir: new Vector3() };
   function cam_keepInside(p, q) {
@@ -395,10 +449,27 @@
   {
     const el = renderer.domElement;
     el.addEventListener("pointerdown", (e) => {
+      if (e.__tmSynthetic) return;   // PINCH_219: the first finger, handed to OrbitControls below
       if (cam_drag) {
-        if (e.pointerId !== cam_drag.id) cam_lookEnd();   // a second finger: a pinch - OrbitControls takes both, as ever
+        if (e.pointerId !== cam_drag.id) {
+          // a second finger: a pinch. PINCH_219 (the audit: under a roof a pinch shook the view instead of zooming): the first finger
+          // was the look drag's and OrbitControls never saw it, so with the second alone it TURNED the view. The first is handed over
+          // now (a synthetic press at its last place), and OrbitControls holds both fingers: a pinch.
+          const first = cam_drag;
+          cam_lookEnd();
+          if (e.pointerType === "touch" && controls && controls.enabled !== false) {
+            try {
+              const ev = new PointerEvent("pointerdown", { bubbles: true, cancelable: true, pointerId: first.id, pointerType: "touch", isPrimary: true,
+                clientX: first.x, clientY: first.y, button: 0, buttons: 1 });
+              ev.__tmSynthetic = true;
+              el.dispatchEvent(ev);
+            } catch (_) {}
+          }
+        }
         return;
       }
+      if (flyAnim) cam_flyStop();             // CAM_219 (2): a press in a flight ends it - what follows is the user's
+      else if (cam.decideAt) cam_decide();    // CAM_219 (5): the mode of a wheel / walk / lift that just ended, now
       if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || !controls || controls.enabled === false || flyAnim || ent_load.loading) return;
       if (cam.mode !== "look") return;
       cam_drag = { id: e.pointerId, x: e.clientX, y: e.clientY, d: camera.position.distanceTo(controls.target) };
@@ -425,12 +496,19 @@
     window.addEventListener("pointerup", end, true);
     window.addEventListener("pointercancel", end, true);
     window.addEventListener("blur", () => cam_lookEnd());
-    el.addEventListener("wheel", () => { if (!cam_drag) cam_decideSoon(400); }, { capture: true, passive: true });
+    el.addEventListener("wheel", () => {
+      if (flyAnim && !ent_load.loading) cam_flyStop();   // CAM_219 (2): the wheel in a flight ends it (registered before wheelZoom's listener: the zoom then applies)
+      if (!cam_drag) cam_decideSoon(400);
+    }, { capture: true, passive: true });
   }
   var ent_turn = { v: new Vector3(), s: new Spherical() };
   function cam_update() {   // controls.update(), and "סיבוב איטי" in place in mode "look"
     const c = controls;
     if (cam_drag) return;   // the look drag moves the camera itself
+    if (flyAnim) {   // CAM_219 (2): a flight's pose is the flight's - no limits, no glide on its way (only aimed, as update() would)
+      camera.lookAt(c.target);
+      return;
+    }
     const inPlace = c.autoRotate && !flyAnim && cam.mode === "look";
     if (inPlace) c.autoRotate = false;
     try {
@@ -502,7 +580,10 @@
     W.vs += (sd * ent_walkSpeed() * 0.8 - W.vs) * ease;
     if (!dir && Math.abs(W.v) < 0.02) W.v = 0;
     if (!sd && Math.abs(W.vs) < 0.02) W.vs = 0;
-    if (!W.v && !W.vs) return;
+    if (!W.v && !W.vs) {
+      cam_wf.h = NaN;   // CAM_219 (4): standing - the next walk takes its height over the floor afresh
+      return;
+    }
     const p = camera.position, q = controls.target, d = W.dir.copy(q).sub(p);
     d.y = 0;
     if (d.lengthSq() < 1e-6) return;
@@ -511,7 +592,42 @@
     d.multiplyScalar(W.v * dt / 1000).add(W.side);
     p.add(d);
     q.add(d);
+    if (ent_wm.on) cam_walkFloor(dt);   // CAM_219 (4)
     cam_decideSoon(400);
+  }
+  // CAM_219 (4) (the audit: walk mode set the eye 3 amot over the floor once, when it began, and then walked level - from the court into
+  // the house the eye went into the higher floor, or popped up later with the view tilted down): while one walks, the eye keeps its height
+  // over the floor under it - the height it had when the walk began (3 amot, unless PageUp / PageDown changed it) - eased, a step or a
+  // stair climbed and a drop descended in about a third of a second. The floor is found by a ray down from a knee's height over the feet
+  // (a ledge higher than 1.2 is a wall, not a step); a new ray every 90 ms or half an amah, the easing every frame.
+  var cam_wf = { h: NaN, rayAt: -1e9, x: NaN, z: NaN, fy: NaN, o: new Vector3() };
+  function cam_walkFloor(dt) {
+    const p = camera.position, q = controls.target, F = cam_wf, now = performance.now();
+    if (!Number.isFinite(F.h)) F.rayAt = -1e9;   // a new walk (ent_walkStep: the walk stood): its height over the floor is taken afresh
+    if (now - F.rayAt >= 90 || Math.hypot(p.x - F.x, p.z - F.z) > 0.5) {
+      F.rayAt = now;
+      const feet = Number.isFinite(F.h) ? p.y - F.h : p.y - ent_wm.eye;
+      let fy = NaN;
+      try {
+        const ray = cam.ray || (cam.ray = new Raycaster());
+        ray.camera = camera;
+        ray.set(F.o.set(p.x, feet + 1.2, p.z), CAM_DOWN);
+        ray.near = 0;
+        ray.far = 400;
+        const h = ray.intersectObjects(ent_solids(false), false);
+        if (h.length) fy = h[0].point.y;
+      } catch (_) {}
+      F.x = p.x;
+      F.z = p.z;
+      F.fy = fy;
+      if (!Number.isFinite(F.h) && Number.isFinite(fy)) F.h = Math.max(0.5, p.y - fy);
+    }
+    if (!Number.isFinite(F.fy) || !Number.isFinite(F.h)) return;
+    const want = F.fy + F.h, dy = want - p.y;
+    if (Math.abs(dy) < 0.003) return;
+    const s = dy * (1 - Math.exp(-Math.max(1, dt) / 110));
+    p.y += s;
+    q.y += s;
   }
   (function liftKeys() {
     const KEYS = { ArrowUp: 1, PageUp: 1, ArrowDown: -1, PageDown: -1 };
@@ -522,6 +638,7 @@
       const f = WK[e.key];
       if (!f || !ent_wm.on || e.ctrlKey || e.altKey || e.metaKey || ent_load.loading || !free(e.target)) return;
       e.preventDefault();
+      if (flyAnim) cam_flyStop();   // CAM_219 (2): a key in a flight ends it - the walk is the user's at once
       ent_walk[f] = true;
     }, true);
     window.addEventListener("keyup", (e) => { const f = WK[e.key]; if (f) ent_walk[f] = false; }, true);
@@ -533,6 +650,7 @@
       const cf = document.getElementById("tm-confirm");   // the cloud's dialog (70-ui.js) is open: its keys
       if (cf && cf.style.display === "flex") return;
       e.preventDefault();
+      if (flyAnim) cam_flyStop();   // CAM_219 (2)
       const walk = e.key.indexOf("Arrow") === 0;   // 1.2.2: the arrows walk, PageUp / PageDown lift
       const S = walk ? ent_walk : ent_lift, a = walk ? "fwd" : "up", b = walk ? "back" : "down";
       if (k > 0) {
@@ -735,14 +853,17 @@
   // (the small offset that set the picture's up), or from the south when there is none
   function ent_tiltFromZenith(p, q) {
     const d = p.clone().sub(q), r = d.length();
-    if (!(r > 1e-6) || d.y <= 0) return p;
+    if (!(r > 1e-6)) return p;
     const h = Math.hypot(d.x, d.z), phi = Math.atan2(h, d.y);
-    if (phi >= ENT_MIN_POLAR - 1e-4) return p;
+    // CAM_219 (2): and from the nadir too (OrbitControls' maxPolarAngle): the first update() after a landing changes nothing
+    const lim = d.y > 0 ? ENT_MIN_POLAR : ENT_POLAR;
+    if (d.y > 0 ? phi >= lim - 1e-4 : phi <= lim + 1e-4) return p;
     const ux = h > 1e-3 ? d.x / h : 0, uz = h > 1e-3 ? d.z / h : 1;
-    const nh = r * Math.sin(ENT_MIN_POLAR), ny = r * Math.cos(ENT_MIN_POLAR);
+    const nh = r * Math.sin(lim), ny = r * Math.cos(lim);
     return new Vector3(q.x + ux * nh, q.y + ny, q.z + uz * nh);
   }
   function flyTo(pos, target, dur = 1600) {
+    cam_killInertia();   // CAM_219 (2): the glide of a drag just before is spent where it stands
     cam_lookEnd();   // 1.2.0
     cam.lookLock = false;   // a flight decides afresh (cam_decide at its end)
     ent_zoom.pending = 0;   // 1.0.1-K: a fly cancels a smooth zoom that is still running
@@ -1047,6 +1168,8 @@
     camPassHit: cam_passHit,   //   (every building surface but a floor at or under the target)
     camMode: () => cam.mode,
     camDecide: cam_decide,
+    camFlying: () => !!flyAnim,      // CAM_219 (2): 70-ui.js's compass turn gives way to a flight
+    camFlyStop: () => cam_flyStop(), // CAM_219 (2): the nav buttons and keys end a flight, as a press on the model does
     camInside: { get: () => cam.inside, set: (on) => { cam.inside = !!on; } },   // "סיבוב בתוך הבית בלבד" (70-ui.js)
     camera,
     controls,
@@ -1167,10 +1290,13 @@
   ctx.shared.demoSlow = ctx.shared.demoSlow || 1.5;
   ctx.shared.demoStops = ctx.shared.demoStops || [];
   ctx.shared.stopDemos = (except) => {
+    let any = false;
     for (const d of ctx.shared.demoStops) {
       if (except && d.id === except) continue;
-      try { if (d.running()) d.stop(); } catch (_) {}
+      try { if (d.running()) { d.stop(); any = true; } } catch (_) {}
     }
+    // SOUNDS_300: what a stopped demonstration sounds stops with it (a one-shot already playing - the gate, the wheel - is cut, not left to end)
+    if (any && typeof ctx.shared.sfxCut === "function") ctx.shared.sfxCut();
   };
   // DEMO_PAUSE_207 (the user, 12.11.2026 20:34: "יש סיכוי להשהות"): a demonstration may pause - its entry has pause(), resume(), paused()
   // (and restart()). A press on the model pauses it; the bar below resumes it from the same second, starts it again or ends it.
@@ -1195,13 +1321,30 @@
       el = document.createElement("div");
       el.id = "tm-dpause";
       el.setAttribute("dir", "rtl");
-      Object.assign(el.style, { position: "fixed", left: "50%", bottom: "118px", transform: "translateX(-50%)", display: "none", gap: "8px",
+      // DPAUSE_LEFT_300 (the user, 18.11.2026: "הכפתור הזה לא במרכז, הוא מסתיר ראות, שים אותו בצד שמאל מעל המצפן"): no longer in the
+      // middle of the picture - at the left, over the compass and the nav row (place(), below)
+      Object.assign(el.style, { position: "fixed", left: "12px", bottom: "110px", display: "none", gap: "8px",
         background: "rgba(14,17,28,0.82)", padding: "6px 10px", borderRadius: "10px", zIndex: "41", boxShadow: "0 2px 10px rgba(0,0,0,0.35)" });
       bP = mk("⏸ השהה", "השהיית ההדגמה. אפשר להסתובב ולהסתכל, ואחר כך להמשיך מאותו רגע.", () => (live().some((d) => !isPaused(d)) ? ctx.shared.demoPause() : ctx.shared.demoResume()));
       bR = mk("⟲ מההתחלה", "מתחיל את ההדגמה מההתחלה.", () => { for (const d of live()) if (fnc(d.restart)) { d.restart(); return; } });
       bS = mk("■ עצור", "עוצר את ההדגמה.", () => ctx.shared.stopDemos());
       el.appendChild(bP); el.appendChild(bR); el.appendChild(bS);
       document.body.appendChild(el);
+    };
+    // DPAUSE_LEFT_300: over whichever is higher, the compass or the nav row, 8 px above it; its left edge with the compass's
+    const place = () => {
+      try {
+        const c = document.getElementById("tm-compass"), n = document.getElementById("tm-nav");
+        let top = window.innerHeight - 102, left = 12;
+        for (const x of [c, n]) {
+          if (!x) continue;
+          const r = x.getBoundingClientRect();
+          if (r.width > 0 && r.height > 0) top = Math.min(top, r.top);
+        }
+        if (c) { const r = c.getBoundingClientRect(); if (r.width > 0) left = Math.max(4, Math.round(r.left)); }
+        el.style.left = left + "px";
+        el.style.bottom = Math.max(8, Math.round(window.innerHeight - top + 8)) + "px";
+      } catch (_) {}
     };
     const paint = () => {
       const L = tourOn() ? [] : live();
@@ -1210,6 +1353,7 @@
       if (!el) return;
       if (on !== shown) { el.style.display = on ? "flex" : "none"; shown = on; }
       if (!on) return;
+      place();   // DPAUSE_LEFT_300
       const any = L.some((d) => !isPaused(d));
       const t = any ? "⏸ השהה" : "▶ המשך";
       if (bP.textContent !== t) bP.textContent = t;
@@ -1217,7 +1361,9 @@
       const rs = L.some((d) => fnc(d.restart));
       bR.style.display = rs ? "" : "none";
     };
-    ctx.shared.demoPause = () => { const L = live(); for (const d of L) if (!isPaused(d)) { try { d.pause(); } catch (_) {} } paint(); return L.length > 0; };
+    ctx.shared.demoPause = () => { const L = live(); for (const d of L) if (!isPaused(d)) { try { d.pause(); } catch (_) {} } paint();
+      if (L.length && typeof ctx.shared.sfxCut === "function") ctx.shared.sfxCut();   // SOUNDS_300: a pause is silent at once
+      return L.length > 0; };
     ctx.shared.demoResume = () => { for (const d of live()) if (isPaused(d)) { try { d.resume(); } catch (_) {} } paint(); };
     ctx.shared.demoPaused = () => live().some(isPaused);
     setInterval(paint, 300);
@@ -1228,6 +1374,201 @@
         if (live().some((d) => !isPaused(d))) ctx.shared.demoPause();
       }, true);
     } catch (_) {}
+  })();
+  // ===== SOUNDS_300 (the user, 18.11.2026: "תוסיף קולות. מה שאפשר לכל ההדגמות, להוסיף קולות"; the list he approved, items 1-4, 6-10,
+  // 12, 16; and "תעשה התאמת ווליום לקולות, לדוג' קול צעדים יחפ אמור להיות יחסית נמוך"): one small synthesizer for the demonstrations -
+  // WebAudio, made here, no files (the plugin works offline), as the doors' and the witnesses' sounds. "קולות בהדגמות"
+  // (ctx.shared.soundOff) silences it; its stopper is in ctx.shared.soundStops (what sounds now is cut). Every sound has its own level
+  // (LEVEL), all under one master gain and a compressor; the steps - barefoot on stone, as the priests walked - are the softest.
+  // The sounds and their levels - model choices.
+  //   ctx.shared.sfx(name, { at, dur, gain, pattern }) - once: "water" (a stream, dur), "creak" (a heavy door or gate on its pivot),
+  //     "bigGate" (the great gate: deep, heard far), "trumpets" (silver trumpets; pattern "long" - one long blast together, else tekia -
+  //     terua - tekia), "cymbals", "click" (a step of the throne's work), "step" (one barefoot step), "hiss" (incense put on the
+  //     coals, dur), "wicket" (a small door on its pivot), "wheel" (a wooden wheel turning: the laver's machine, dur)
+  //   ctx.shared.sfxLoop(name) -> { set(level 0..1), stop() } - while a thing moves: "wheels" (bronze wheels on stone), "steps" (a
+  //     walk: soft barefoot steps, about two a second while the level is up)
+  (function sounds() {
+    let ac = null, comp = null, master = null, noiseBuf = null;
+    const loops = new Set();
+    const A = () => {
+      if (ctx.shared.soundOff) return null;
+      try {
+        if (!ac) {
+          const C = window.AudioContext || window.webkitAudioContext;
+          if (!C) return null;
+          ac = new C();
+          comp = ac.createDynamicsCompressor();
+          comp.connect(ac.destination);
+          master = ac.createGain();
+          master.gain.value = 0.9;
+          master.connect(comp);
+          const n = ac.sampleRate * 2, buf = ac.createBuffer(1, n, ac.sampleRate), d = buf.getChannelData(0);
+          for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+          noiseBuf = buf;
+        }
+        if (ac.state === "suspended") ac.resume();
+        return ac;
+      } catch (_) {
+        return null;
+      }
+    };
+    const cut = () => {   // what sounds now stops: the master is replaced (every node scheduled on the old one goes silent)
+      for (const L of Array.from(loops)) L.stop();
+      try {
+        if (ac && master) { const old = master; master = ac.createGain(); master.gain.value = 0.9; master.connect(comp); old.disconnect(); }
+      } catch (_) {}
+    };
+    const LEVEL = { water: 0.07, creak: 0.06, bigGate: 0.16, trumpets: 0.045, cymbals: 0.045, click: 0.05, step: 0.02, hiss: 0.03, wicket: 0.045, wheel: 0.05, wheels: 0.05, steps: 0.02 };
+    const env = (g, t, att, peak, hold, rel) => {
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(peak, t + att);
+      g.gain.setValueAtTime(peak, t + att + hold);
+      g.gain.linearRampToValueAtTime(0, t + att + hold + rel);
+    };
+    const noise = (a, t, dur, peak, type, freq, q, att, rel) => {
+      const src = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+      src.buffer = noiseBuf;
+      src.loop = true;
+      f.type = type;
+      f.frequency.value = freq;
+      f.Q.value = q;
+      env(g, t, att, peak, Math.max(0, dur - att - rel), rel);
+      src.connect(f); f.connect(g); g.connect(master);
+      src.start(t, Math.random() * 1.5);
+      src.stop(t + dur + 0.05);
+      return { src, f, g };
+    };
+    const osc = (a, type, freq, t, dur, peak, att, rel) => {
+      const o = a.createOscillator(), g = a.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(freq, t);
+      env(g, t, att, peak, Math.max(0, dur - att - rel), rel);
+      o.connect(g); g.connect(master);
+      o.start(t);
+      o.stop(t + dur + 0.05);
+      return o;
+    };
+    const brass = (a, t, dur, k, f) => {   // a silver trumpet: two detuned saws through a low-pass that opens
+      const g = a.createGain(), lp = a.createBiquadFilter();
+      env(g, t, 0.04, k, Math.max(0, dur - 0.12), 0.08);
+      lp.type = "lowpass";
+      lp.Q.value = 1.2;
+      lp.frequency.setValueAtTime(700, t);
+      lp.frequency.linearRampToValueAtTime(2600, t + Math.min(0.3, dur));
+      for (const dt of [-5, 5]) { const o = a.createOscillator(); o.type = "sawtooth"; o.frequency.setValueAtTime(f || 466, t); o.detune.value = dt; o.connect(lp); o.start(t); o.stop(t + dur + 0.1); }
+      lp.connect(g); g.connect(master);
+    };
+    const make = {
+      water(a, t, k, o) {
+        const dur = Math.max(0.8, +o.dur || 2.5);
+        noise(a, t, dur, 0.9 * k, "bandpass", 1100, 0.7, 0.25, Math.min(0.8, dur / 3));
+        for (let i = 0; i < dur * 7; i++) noise(a, t + Math.random() * dur, 0.08, 0.6 * k, "bandpass", 1400 + Math.random() * 1800, 2, 0.01, 0.06);
+      },
+      creak(a, t, k) {
+        const o = osc(a, "sawtooth", 85, t, 1.6, 0.5 * k, 0.15, 0.5);
+        o.frequency.linearRampToValueAtTime(62, t + 1.6);
+        noise(a, t, 1.6, 0.35 * k, "bandpass", 700, 4, 0.2, 0.5);
+        osc(a, "sine", 48, t + 1.5, 0.5, 0.9 * k, 0.01, 0.45);
+      },
+      bigGate(a, t, k) {
+        const o = osc(a, "sawtooth", 46, t, 4.5, 0.55 * k, 0.6, 1.8);
+        o.frequency.linearRampToValueAtTime(38, t + 4.5);
+        noise(a, t, 4.5, 0.6 * k, "lowpass", 220, 0.8, 0.8, 2);
+        osc(a, "sine", 34, t + 4, 1.4, k, 0.02, 1.2);
+      },
+      trumpets(a, t, k, o) {
+        if (o.pattern === "long") { brass(a, t, 2.6, k, 466); brass(a, t + 0.03, 2.6, k * 0.8, 470); return; }
+        brass(a, t, 1.4, k);
+        for (let i = 0; i < 9; i++) brass(a, t + 1.8 + i * 0.16, 0.08, k);
+        brass(a, t + 3.4, 1.4, k);
+      },
+      cymbals(a, t, k) {
+        for (let i = 0; i < 3; i++) {
+          noise(a, t + i * 0.9, 1.6, 0.8 * k, "highpass", 5200, 0.7, 0.005, 1.5);
+          noise(a, t + i * 0.9, 0.6, 0.4 * k, "bandpass", 3200, 3, 0.005, 0.5);
+        }
+      },
+      click(a, t, k) {
+        noise(a, t, 0.06, k, "bandpass", 1800, 5, 0.002, 0.05);
+        osc(a, "sine", 220, t, 0.08, 0.6 * k, 0.002, 0.07);
+      },
+      step(a, t, k) {
+        noise(a, t, 0.09, k, "lowpass", 380, 0.8, 0.008, 0.07);
+      },
+      hiss(a, t, k, o) {
+        const dur = Math.max(1, +o.dur || 2.4);
+        noise(a, t, dur, 0.9 * k, "highpass", 3800, 0.6, 0.15, dur * 0.6);
+        for (let i = 0; i < dur * 5; i++) noise(a, t + Math.random() * dur, 0.015, 0.7 * k, "highpass", 5000, 1, 0.002, 0.012);
+      },
+      wicket(a, t, k) {
+        const o = osc(a, "sawtooth", 160, t, 0.9, 0.35 * k, 0.05, 0.3);
+        o.frequency.linearRampToValueAtTime(110, t + 0.9);
+        noise(a, t, 0.9, 0.3 * k, "bandpass", 1100, 5, 0.05, 0.3);
+        osc(a, "sine", 90, t + 0.85, 0.25, 0.7 * k, 0.005, 0.22);
+      },
+      wheel(a, t, k, o) {
+        const dur = Math.max(1, +o.dur || 3), w = osc(a, "sawtooth", 70, t, dur, 0.4 * k, 0.3, 0.5);
+        w.frequency.linearRampToValueAtTime(92, t + dur);
+        noise(a, t, dur, 0.4 * k, "bandpass", 600, 3, 0.3, 0.5);
+        for (let i = 0; i < dur * 2.5; i++) noise(a, t + i * 0.4, 0.05, 0.6 * k, "bandpass", 900, 6, 0.004, 0.04);
+      }
+    };
+    ctx.shared.sfx = (name, o) => {
+      o = o || {};
+      const fn = make[name], a = fn ? A() : null;
+      if (!a) return;
+      try { fn(a, a.currentTime + Math.max(0, +o.at || 0) + 0.02, (LEVEL[name] || 0.05) * (o.gain == null ? 1 : +o.gain), o); } catch (_) {}
+    };
+    ctx.shared.sfxLoop = (name) => {
+      const L = { level: 0, bed: null, timer: 0, next: 0 };
+      L.stop = () => {
+        loops.delete(L);
+        if (L.timer) { clearInterval(L.timer); L.timer = 0; }
+        if (L.bed) { const b = L.bed; L.bed = null; try { b.g.gain.setTargetAtTime(0, ac.currentTime, 0.05); setTimeout(() => { try { b.srcs.forEach((x) => x.stop()); } catch (_) {} }, 400); } catch (_) {} }
+        L.level = 0;
+      };
+      L.set = (v) => {
+        v = Math.max(0, Math.min(1, +v || 0));
+        if (v === L.level && (v === 0 || L.bed || L.timer)) return;
+        L.level = v;
+        if (v > 0 && !A()) return;
+        if (name === "steps") {
+          if (v > 0 && !L.timer) {
+            loops.add(L);
+            L.timer = setInterval(() => {
+              if (ctx.shared.soundOff || L.level <= 0.02) return;
+              const now = performance.now();
+              if (now < L.next) return;
+              L.next = now + 520 + Math.random() * 60;
+              ctx.shared.sfx("step", { gain: L.level });
+            }, 60);
+          }
+          return;
+        }
+        if (name === "wheels" && ac) {
+          if (!L.bed && v > 0) {
+            const g = ac.createGain(), srcs = [];
+            g.gain.value = 0;
+            g.connect(master);
+            for (const [type, f, q, m] of [["lowpass", 260, 0.9, 1], ["bandpass", 1500, 9, 0.18]]) {
+              const s = ac.createBufferSource(), fl = ac.createBiquadFilter(), gg = ac.createGain();
+              s.buffer = noiseBuf; s.loop = true;
+              fl.type = type; fl.frequency.value = f; fl.Q.value = q;
+              gg.gain.value = m;
+              s.connect(fl); fl.connect(gg); gg.connect(g);
+              s.start(0, Math.random() * 1.5);
+              srcs.push(s);
+            }
+            L.bed = { g, srcs };
+            loops.add(L);
+          }
+          if (L.bed) L.bed.g.gain.setTargetAtTime(LEVEL.wheels * v * 2.2, ac.currentTime, 0.12);
+        }
+      };
+      return L;
+    };
+    (ctx.shared.soundStops || (ctx.shared.soundStops = [])).push(cut);
+    ctx.shared.sfxCut = cut;   // (stopDemos and demoPause above: a stop or a pause cuts what sounds now)
   })();
   document.addEventListener("click", (ev) => {
     const t = ev.target && ev.target.closest ? ev.target.closest("button, input, select, [role='button'], .tm-op a") : null;
@@ -1423,6 +1764,20 @@
   // viewSize), restore the last good camera and rebuild the controls (their closure holds the NaN deltas); the fly animation is dropped.
   // 1.0.1-K: a pose closer than controls.minDistance (2) is never saved as "good" and is not accepted either: the camera goes back to the
   // last good pose (OrbitControls' update() clamps the radius itself; this catches a pose set from outside between two updates).
+  // CAM_219 (3) (the audit; Gemini's report said "near 0.05" - everywhere that would make the depth 10 times coarser, and the far walls
+  // of the mount's views would flicker): the near plane is a fifth of the distance to the target, between 0.04 and 0.5 - from 2.5 amot
+  // out it is 0.5 as it always was (every fly view stands farther), and only an eye brought nearer (the + button and key, a pinch, a
+  // middle-button drag: minDistance 0.3) gets a nearer plane, so the vessel it looks at is not cut
+  var CAM_NEAR_MIN = 0.04, CAM_NEAR_MAX = 0.5;
+  function cam_nearStep() {
+    if (!controls) return;
+    const d = camera.position.distanceTo(controls.target);
+    const n = Number.isFinite(d) ? Math.max(CAM_NEAR_MIN, Math.min(CAM_NEAR_MAX, d * 0.2)) : CAM_NEAR_MAX;
+    if (Math.abs(n - camera.near) > camera.near * 0.05) {
+      camera.near = n;
+      camera.updateProjectionMatrix();
+    }
+  }
   var lastGoodPos = camera.position.clone(), lastGoodTarget = controls.target.clone();
   function guardCamera() {
     const p = camera.position, q = controls.target;
@@ -1431,7 +1786,9 @@
       // (1.0.1-L closed the polar limit here after looking up indoors, back to PI * 0.495; 1.0.2 (M): the limit is the floor's, ent_floorStep)
       // 1.2.0: the floor under the target and the ground - the only height limits (a lift, not a stop: the move goes on sideways)
       if (!flyAnim && !cam_drag) {
-        const lo = Math.max(-27.5, isFinite(cam.floorY) ? cam.floorY + 0.35 : -Infinity);
+        // CAM_219 (4): not in walk mode - there the eye keeps its height over the floor under ITSELF (cam_walkFloor); the target's floor
+        // held it up when one walked backward down a stair (the target still on the top step)
+        const lo = Math.max(-27.5, !ent_wm.on && isFinite(cam.floorY) ? cam.floorY + 0.35 : -Infinity);
         if (p.y < lo) p.y = lo;
         // 1.2.0 (the user: "לראות אותו מאחור... מתוך הבית"): "סיבוב בתוך הבית בלבד" - indoors the eye never leaves the room: when a
         // building surface (userData.tmPass) stands between the target and the eye, the eye is drawn back to the surface's inner side
@@ -1465,6 +1822,7 @@
       controls.target.lerpVectors(flyAnim.c0, flyAnim.c1, e);
       if (k >= 1) {
         flyAnim = null;
+        cam_killInertia();   // CAM_219 (2): nothing of an input in the flight goes on after it
         cam_decide();   // 1.2.0
         // 1.0.4: a thing to orbit round only when the flight ends under a roof (the menorot, the ulam's tables); a view from outside (Yachin and Boaz from the
         // court, 15.9 amot, its target before the ulam) stays as it was
@@ -1484,6 +1842,7 @@
       }
     }
     if (ent_sec.on) ent_sectionApply();   // 1.3.4: the materials swapped in since (the wall fade's copies) are cut too
+    cam_nearStep();   // CAM_219 (3): after every writer of the camera (ctx.animated too)
     if (ent_load.printed) {
       renderer.render(scene, camera);
     } else {
@@ -1505,6 +1864,7 @@
         } catch (_) {
         }
       }
+      cam_nearStep();   // CAM_219 (3)
       renderer.render(scene, camera);
     }
   }, 250);

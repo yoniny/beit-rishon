@@ -1430,11 +1430,12 @@
       st.dirty = false;
     };
     apply();
+    const snd = { wheels: null, flow: false };   // SOUNDS_300
     ctx.animated.push((t) => {
       const now = typeof t === "number" && isFinite(t) ? t : performance.now();
       const dt = st.last == null ? 0 : Math.min(0.1, Math.max(0, (now - st.last) / 1000));
       st.last = now;
-      let changed = st.dirty;
+      let changed = st.dirty, spd = 0;
       if (st.running || st.homing) {
         st.tau += dt * (st.homing ? 3 : 1 / ((ctx.shared && ctx.shared.demoSlow) || 1.5));   // 1.3.4 (the user: "כל ההדגמות יותר איטיות"); homing stays quick
         if (st.tau >= TL.total) {
@@ -1442,6 +1443,7 @@
         }
         poseAt(st.tau, np);
         const dx = np.x - pose.x, dz = np.z - pose.z;
+        spd = dt > 0 ? Math.hypot(dx, dz) / dt : 0;   // SOUNDS_300: amot a second
         if (dx || dz) for (let k = 0; k < 4; k++) {
           const psi = VSL_REST[k] + np.alpha;
           phi[k] -= (dx * Math.cos(psi) - dz * Math.sin(psi)) / VSL_WHEEL_R;   // rolling without slipping along the wheel's own x
@@ -1457,6 +1459,23 @@
         changed = true;
       }
       if (changed) apply();
+      // SOUNDS_300 (the user's items 1-2, 18.11.2026): the bronze wheels on the stone while the base drives ("וארבעה אופני נחשת למכונה
+      // האחת", I Kings 7:30) - louder as it goes faster; and the tap's water at a stop (the washing of hands and feet, the rinsing at
+      // the tables), for as long as the stop's window lasts
+      try {
+        const SH = ctx.shared;
+        if (SH && typeof SH.sfxLoop === "function") {
+          if (!snd.wheels && spd > 0.05) snd.wheels = SH.sfxLoop("wheels");
+          if (snd.wheels) snd.wheels.set(Math.min(1, spd / 2.5));
+          const fl = pose.flow > 0.001 && st.ex < 0.01 && (st.running || st.homing);
+          if (fl && !snd.flow && typeof SH.sfx === "function") {
+            const w = st.tau >= TL.wash[0] - 0.6 && st.tau <= TL.wash[1] + 0.6 ? TL.wash : st.tau >= TL.pour[0] - 0.6 && st.tau <= TL.pour[1] + 0.6 ? TL.pour : null;
+            const slow = st.homing ? 1 / 3 : (SH.demoSlow || 1.5);
+            SH.sfx("water", { dur: w ? Math.max(1, (w[1] - st.tau) * slow) : 2.5 });
+          }
+          snd.flow = fl;
+        }
+      } catch (_) {}
     });
     const demo = {
       start() {

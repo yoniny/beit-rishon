@@ -1,0 +1,30 @@
+[
+ {
+  "old": "        face(k, yaw, t) { if (tau >= t) fig(k).st.yaw = yaw; },",
+  "new": "        // LAMPS_HANDS_219: at lamp i of the menorah from t0 to t1 - the hand on its side at its wick's mouth (applyFig, trimArm) //\n        trim(k, i, t0, t1) { if (tau >= t0 && tau < t1) { const f = fig(k); f.st.pose = \"trim\"; f.st.lamp = i; f.st.t = tau - t0; f.st.tl = t1 - tau; } }, //\n        face(k, yaw, t) { if (tau >= t) fig(k).st.yaw = yaw; },"
+ },
+ {
+  "old": "    const kidReach = (f) => {",
+  "new": "    // LAMPS_HANDS_219 (the user, 18.11.2026: \"הוא לא באמת מטיב שם, הוא מתעסק שם למעלה\"): the arm that reaches lamp s.lamp (the foot of //\n    // its flame, ctx2.shared.menorah.lampPos) - the hand on the lamp's side of him; the target in the frame of the arm's parent, as kidFoot's //\n    const trimArm = (f, s) => { //\n      const q = SH.menorah.lampPos(s.lamp), c = Math.cos(s.yaw), sn = Math.sin(s.yaw), dx = q[0] - s.x, dz = q[2] - s.z; //\n      const lx = dx * c - dz * sn, lz = dx * sn + dz * c, side = lx > 0.05 ? 1 : -1, A = f.A, WY = f.bend ? f.bend.position.y : 0; //\n      return { side, arm: reach([side * A.sx, A.sy - WY, 0], [lx, q[1] - s.y - WY, lz - 0.12], A.up, A.fo + 0.08, side) }; //\n    }; //\n    const kidReach = (f) => {"
+ },
+ {
+  "old": "        else if ((p === \"kidR\" || p === \"kidL\") && f.legs && SH.priestKit) {",
+  "new": "        else if (p === \"trim\" && f.A && SH.menorah && fnc(SH.menorah.lampPos)) {   // LAMPS_HANDS_219: the hand to the lamp and back, the other arm as he stands //\n          const H = trimArm(f, s), tl = s.tl == null ? 9 : s.tl, u = smooth(clamp(t / 0.4, 0, 1)) * smooth(clamp(tl / 0.3, 0, 1)); //\n          const mix = (q, w) => [lerp(q[0], w[0], u), lerp(q[1], w[1], u), lerp(q[2], w[2], u)]; //\n          if (H.side < 0) R = mix(POSES.stand[0], H.arm); else Lv = mix(POSES.stand[1], H.arm); //\n        } //\n        else if ((p === \"kidR\" || p === \"kidL\") && f.legs && SH.priestKit) {"
+ },
+ {
+  "old": "        if (L.light) a.lamp(i, 0, 1, t + 1.8, t + 2.4);   // the Rambam: \"ומדליק נר שכבה\" (3:12)",
+  "new": "        a.trim(\"s4\", i, t, t + 2.6);   // LAMPS_HANDS_219: his hand at this lamp while it is dressed (and lit, in the Rambam's reading) //\n        a.hold(\"s4\", \"kuz\", i > 3 ? \"R\" : \"L\", t);   // the kuz in his other hand (the lamps past the middle are on his left, in both readings) //\n        if (L.light) a.lamp(i, 0, 1, t + 1.8, t + 2.4);   // the Rambam: \"ומדליק נר שכבה\" (3:12)"
+ },
+ {
+  "old": "      a.pose(\"s4\", \"reach\", 6, 19.5);",
+  "new": "      a.hold(\"s4\", \"kuz\", \"R\", 19);   // LAMPS_HANDS_219: until now \"reach\" 6..19.5 - both hands 1.2..1.4 amot over the lamps"
+ },
+ {
+  "old": "      a.pose(\"s4\", \"reach\", 5, 12);",
+  "new": "      a.trim(\"s4\", L.east, 5.2, 11.2);   // LAMPS_HANDS_219: his hand at the eastern lamp while it is dressed (until now \"reach\" 5..12, over the lamps)"
+ },
+ {
+  "old": "      const caps = (R && st.capsR ? st.capsR : st.caps).map(([t, c]) => ({ t, text: c }));",
+  "new": "      const caps = (R && st.capsR ? st.capsR : st.caps).map(([t, c]) => ({ t, text: c }));\n      // LAMPS_CAP_300 (the user, 18.11.2026, \"א+ג\": the lamp he fixes as it was, and a caption): in the Rambam's reading all seven lamps\n      // burn at the second dressing - at the first he lit the five (\"והדלקת הנרות היא הטבתם\", Temidin 3) - the caption says so at the\n      // stage's start, and the Mishnah's first words follow at 3.6 (he reaches the menorah at 4.6)\n      if (id === \"lamps2\" && TM.lamps !== \"rashi\" && caps.length) { caps[0].t = Math.max(caps[0].t, 3.6); caps.unshift({ t: 0, text: \"כרמב״ם: בהטבה הראשונה הדליק את החמישה, ולכן כל השבעה דולקים\" }); }"
+ }
+]
