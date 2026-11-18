@@ -199,5 +199,23 @@
   if (document.body) startButtons();
   else document.addEventListener("DOMContentLoaded", startButtons);
 
+  // ---------- 4. (webgpu round) the drawing engine, next to the version in the bar's corner ----------
+  // Each house sets window.__tmBackend ("webgpu" or "webgl") when its WebGPURenderer is up; WebGPU falls back to WebGL 2 by
+  // itself where the computer has no WebGPU. Shown as "v1.4.9 · WebGPU", so a report or a screenshot says which one ran.
+  (function () {
+    var tries = 0;
+    var t = setInterval(function () {
+      tries++;
+      var b = window.__tmBackend, el = document.getElementById("version");
+      if ((b && el && ready()) || tries > 600) {
+        clearInterval(t);
+        if (b && el && el.textContent.indexOf("·") < 0) {
+          el.textContent += " · " + (b === "webgpu" ? "WebGPU" : "WebGL");
+          el.title = "מנוע הציור: " + (b === "webgpu" ? "WebGPU" : "WebGL 2");
+        }
+      }
+    }, 500);
+  })();
+
   post({ tm: "hello" });
 })();
