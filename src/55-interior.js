@@ -1124,6 +1124,7 @@
       try {
         if (!(ctx.renderer && typeof PMREMGenerator === "function" && typeof RoomEnvironment === "function")) return;
         const room = new RoomEnvironment();
+        room.position.y = 0;   // WEBGPU_R: three.js 187 lowers the room 3.5; r160 did not (see 90-entry.js)
         room.traverse((o) => { if (o.isPointLight) o.intensity = 5; });   // three.js 187: the light is 900 there (5 in r160 here), see 90-entry.js
         room.scale.z = -1;
         room.updateMatrixWorld(true);
