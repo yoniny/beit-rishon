@@ -1261,19 +1261,18 @@
         // Gate (x -20.5..-16), along the chel (z 74..80) east to the stair's foot, and up it (z 70.1..73.8) to the landing before the gate
         const iDiv = Math.round(OUT.near(-3.85, 300) / STEP), rev = [];
         for (let i = OUT.N - 1; i >= iDiv; i--) rev.push([OUT.xs[i], OUT.zs[i]]);
-        const BP = [[OUT.xs[iDiv], OUT.zs[iDiv]], [-3.85, 290], [-4.6, 280], [-7, 268], [-12.6, 180], [-17, 110], [-18.2, 92], [-18.2, 84], [-18.2, 79],
-          [-17.2, 77.4], [-14, 76.9], [-4, 76.9], [2, 76.9], [4.6, 76.0], [5.6, 74.4], [5.0, 72.8], [3.4, 72.05], [1.5, 72.0], [-6, 72.0], [-12.5, 72.0],
-          [-15.5, 72.0], [-18, 72.0]];
+        const BP = [[OUT.xs[iDiv], OUT.zs[iDiv]], [-3.85, 290], [-4.6, 280], [-7, 268], [6, 230], [22, 180], [37, 115], [43.8, 92], [43.8, 84], [43.8, 79],
+          [44.8, 77.4], [48, 76.9], [58, 76.9], [64, 76.9], [66.6, 76.0], [67.6, 74.4], [67.0, 72.8], [65.4, 72.05], [63.5, 72.0], [56, 72.0], [49.5, 72.0],
+          [46.5, 72.0], [44, 72.0]];   // WATER_GATE_N4: the Water Gate now stands at x 44, opposite the altar (30-courts.js; the way from the soreg's opening to the landing as before, 62 amot east)
         const BACK = mkLeg("back", rev.concat(denseOf(BP).slice(1)), FLOOR(sf[0], sf[1], 20));
         // IN: through the gate (its passage x -23..-13), then east between the ulam's steps (their south end at z 51.5) and the laver (its base from
         // z 53, its spouts to about 52.4 - moved north by fix-a: the old way went through it), north of the chambers along the south (from z 54.5),
         // round onto the ramp's foot (z 53.25) and up it
-        const IN = mkLeg("in", denseOf([[-18, 72.0], [-18, 70.5], [-18, 68.5], [-18, 66], [-18, 63], [-17, 59.4], [-12.5, 55.4], [-5, 53.4], [4, 52.5],
-          [12, 52.1], [17, 52.05], [22.25, 52.05], [27, 52.3], [33, 53.0], [40, 53.4], [46, 53.6], [50.5, 53.6], [55.0, 53.0], [57.1, 50.9], [57.4, 48],
+        const IN = mkLeg("in", denseOf([[44, 72.0], [44, 70.5], [44, 68.5], [44, 66], [44, 63], [44, 58], [45.5, 54.6], [49, 53.2], [53, 52.4], [55.6, 51.6], [57.1, 50.3], [57.4, 48],   // WATER_GATE_N4: straight in from the gate, north of the Madichin (z 55), onto the ramp's foot
           A2(57.4, 30), A2(57.4, 18.5), A2(57.0, 12.6), A2(50.8, 9.8), A2(46.6, 8.4), sp]), 13.5);
         const WINE = mkLeg("wine", denseOf([A2(58.8, 43.3), A2(58.8, 41.2), A2(58.8, 30), A2(58.8, 18.5), A2(58.4, 12.8), A2(52, 10.4), A2(47.9, 8.8),
           [sp[0] + 0.9, sp[1]]]), 16);
-        const S_TG = OUT.near(224, 0), S_SOR = OUT.near(241, 0), S_T = OUT.len, U_SOR = BACK.near(-18.2, 84);
+        const S_TG = OUT.near(224, 0), S_SOR = OUT.near(241, 0), S_T = OUT.len, U_SOR = BACK.near(43.8, 84);
         const L = { OUT, BACK, IN, WINE, S_TG, S_D: S_TG - 4.2, S_J: S_SOR + 34.6, S_A: S_T - 26, U_R: 26, U_P: U_SOR - 30,
           S_FOOT: IN.near(...A2(57.4, 41.2)), S_CHULDA: OUT.near(-1.0, 334), S_RAMPF: OUT.near(0, RP.zf), U_CHULDA: BACK.near(-1.0, 334), U_SOR };
         // the eye's distance ahead of him on the leg and its height (by his place on it; smooth between the knots)
@@ -1281,9 +1280,9 @@
         L.rig = new Map([
           [OUT, [[0, 12, 3.6], [S_TG - 12, 12, 5.0], [S_TG + 4, 12, 6.2], [S_SOR, 12, 5.6], [L.S_J - 26, 15, 6.5], [L.S_J + 6, 16, 8], [sO(244, 98) + 15, 20, 11], [sO(-2.5, 276) - 40, 20, 11],
             [sO(-2.5, 276) - 14, 15, 4.8], [L.S_CHULDA + 6, 15, 4.8], [sO(0, 376), 16, 6.5], [L.S_RAMPF + 8, 15, 6.5], [L.S_A - 20, 14, 5.5], [S_T, 10, 3.6]]],
-          [BACK, [[0, 10, 3.6], [L.U_R + 4, 15, 6], [BACK.near(0, 376), 16, 6.5], [L.U_CHULDA - 6, 15, 4.8], [sB(-4.6, 280) + 6, 15, 4.8], [sB(-12.6, 180), 20, 10],
-            [L.U_P - 20, 18, 9], [L.U_P + 4, 14, 6], [U_SOR, 10, 4.6], [sB(4.6, 76.0), 9, 4.6], [BACK.len, 9, 4.6]]],
-          [IN, [[0, 6, 4.4], [12, 7, 4.8], [IN.near(-5, 53.4), 11, 8.5], [IN.near(40, 53.4), 12, 7], [IN.len, 10, 4.5]]]]);   // (over the laver and the ulam's steps)
+          [BACK, [[0, 10, 3.6], [L.U_R + 4, 15, 6], [BACK.near(0, 376), 16, 6.5], [L.U_CHULDA - 6, 15, 4.8], [sB(-4.6, 280) + 6, 15, 4.8], [sB(22, 180), 20, 10],
+            [L.U_P - 20, 18, 9], [L.U_P + 4, 14, 6], [U_SOR, 10, 4.6], [sB(66.6, 76.0), 9, 4.6], [BACK.len, 9, 4.6]]],
+          [IN, [[0, 6, 4.4], [IN.near(44, 63), 8, 5], [IN.near(49, 53.2), 11, 8.5], [IN.near(57.1, 50.3), 12, 7], [IN.len, 10, 4.5]]]]);   // WATER_GATE_N4: straight in from the gate to the ramp's foot
         // PACE_G: the speed along each leg (amot a demonstration second; V_WALK - a man's walk)
         const W = V_WALK, sStoa = sO(-2.5, 276), uStoaN = sB(-4.6, 280), uRampF = BACK.near(0, RP.zf);
         L.pace = new Map([
@@ -1441,7 +1440,7 @@
           // would stand in the gate's open leaves)
           [smooth(clamp((t - T2.decl0 + 2.4) / 2.4, 0, 1)) * (1 - smooth(clamp((t - T2.decl1) / 2.4, 0, 1))), [[213.5, 10.6, 0.8], [223.5, 8.0, 0]]],   // (in line with the gate: the blend out goes through its opening)
           [smooth(clamp((t - T2.rim1 + 2.6) / 2.6, 0, 1)) * (1 - smooth(clamp((t - T2.back0 - 0.2) / 2.8, 0, 1))), [[SP.x + 3.4, sy + 2.0, SP.z - 5.6], [SP.x - 0.4, SP.y - 0.3, SP.z - 0.4]]],
-          [smooth(clamp((t - T2.wg0 + 3) / 3, 0, 1)) * (1 - smooth(clamp((t - T2.in0 + 2.0) / 2.4, 0, 1))), [[-21, 16.6, 83.2], [-16.5, 14.8, 72.4]]],   // (into the court before he goes: the eye through the gate's opening)   // the Water Gate, near (in line with its opening: the blend into the court goes through it)
+          [smooth(clamp((t - T2.wg0 + 3) / 3, 0, 1)) * (1 - smooth(clamp((t - T2.in0 + 2.0) / 2.4, 0, 1))), [[41, 16.6, 83.2], [45.5, 14.8, 72.4]]],   // (into the court before he goes: the eye through the gate's opening)   // the Water Gate, near (in line with its opening: the blend into the court goes through it)
           [smooth(clamp((t - T2.top1 + 3.2) / 3.2, 0, 1)), pourV]
         ];
         for (const [w, [E, Lk]] of shots) if (w > 0) { eye = eye.map((v, i) => lerp(v, E[i], w)); look = look.map((v, i) => lerp(v, Lk[i], w)); }
@@ -1502,11 +1501,11 @@
           }
         }
         // the two at the Water Gate, on its landing either side of the way in - there from the start; they blow when he comes
-        for (const [f, x] of [[D2.t5, -21.4], [D2.t6, -14.4]]) {
+        for (const [f, x] of [[D2.t5, 40.6], [D2.t6, 47.6]]) {
           f.g.visible = true;
-          if (SHL.wgY == null) SHL.wgY = rayFloor(-18, 73.2, 16);
+          if (SHL.wgY == null) SHL.wgY = rayFloor(44, 73.2, 16);
           f.g.position.set(x, SHL.wgY, 73.2);
-          f.g.rotation.y = x < -18 ? 0.35 : -0.35;   // their faces out, to the chel, a little toward the way in
+          f.g.rotation.y = x < 44 ? 0.35 : -0.35;   // their faces out, to the chel, a little toward the way in
           const up = smooth(clamp((t - T.blow0 + 0.6) / 0.5, 0, 1)) * (1 - smooth(clamp((t - T.blow1) / 0.5, 0, 1)));
           setArm(f.R, ARM.rest.map((v, i) => lerp(v, ARM.tR[i], up)), -1);
           setArm(f.L, ARM.rest.map((v, i) => lerp(v, ARM.tL[i], up)), 1);
@@ -3675,7 +3674,7 @@
     // Rashi, Yoma 31a (2157:1138): "עין עיטם - ממנו באה אמת המים לבית טבילת שער המים שעל החומה ולפי ענין המקראות נראה לי שהוא מעיין מי
     // נפתוח"; Rashi, Yoma 19a (2157:606): "מעיין משוך שם באמה מעין עיטם"; Yoma 31a (107:740): "עין עיטם גבוה מקרקע עזרה עשרים ושלש
     // אמות": from the west, on a low embankment outside the mount, into its western wall, under its surface, and up inside the court's
-    // wall to the bath on the Water Gate (30-courts.js: x -30, y 40.3, z 67.5 - 24 amot over the court's floor). At the drawn part's western
+    // wall to the bath on the Water Gate (30-courts.js: x 32, y 40.3, z 67.5 - 24 amot over the court's floor). At the drawn part's western
     // end (x -340) a sign with an arrow. The hidden parts are seen through the ground by the places' features (as the mesibah's way, 30-courts.js
     // MESIBAH_303: ghosts drawn where they are hidden). The ways, the forms, the exit and the sign - model choices. Built after the first
     // seconds, or when a place's feature turns on (rays to the ground).
@@ -3692,7 +3691,7 @@
       const line = (P, w, h, m, list) => { for (let i = 1; i < P.length; i++) piece(P[i - 1], P[i], w, h, m, list); };
       let built = false, t0 = -1, seeK = false, seeE = false;
       const SHI = [40, 24.55], F0 = LV.KOH;   // the shitin (40-altar.js SHITIN_LABEL: mv's frame 40, 12.05 + the altar's 12.5)
-      const EXZ = 300, WALL_E = 356, WALL_W = -150, EZ = 67.5, BATH = [-30, 40.2, 67.5];
+      const EXZ = 300, WALL_E = 356, WALL_W = -150, EZ = 67.5, BATH = [32, 40.2, 67.5];
       const R = {};
       const build = () => {
         if (built) return; built = true;
