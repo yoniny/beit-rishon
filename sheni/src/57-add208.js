@@ -3880,7 +3880,14 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
         nK1 = XRK.length;   // the first ghosts (the shaft and the ring) are the mouth's own; the rest of the way is the Kidron card's
         line(K2, 1.1, 0.9, stoneM, XRK);
         R.shitin = [sx, F0, sz]; R.wallIn = K2[2].slice();   // AZARA_AQ_H: for the place "אמת המים — בעזרה" (the shaft under the shitin, and where it goes down in the court wall's foundation)
-        for (let i = 1; i < K2.length; i++) { const a = K2[i - 1], b = K2[i]; piece([a[0], a[1] + 0.47, a[2]], [b[0], b[1] + 0.47, b[2]], 0.56, 0.06, waterM, XRK); }   // the water in it, seen with it
+        // AMAH_FLOW_420 (the user 25.11.2026 01:07: "בתיקון המים אתה צריך לקחת בחשבון את אמת המים בעזרה"): the water in it is ONE running
+        // stream, from the shitin down through the court and under the mount to the Kidron, its ripples carried toward the Kidron - and so in
+        // its ghost (the Kidron card's look through the ground); until now a still strip in seven straight pieces
+        { const yOn = (x, z) => { let best = Infinity, y = K2[0][1]; for (let i = 1; i < K2.length; i++) { const a = K2[i - 1], b = K2[i], dx = b[0] - a[0], dz = b[2] - a[2], L2 = dx * dx + dz * dz || 1e-9, t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[2]) * dz) / L2)), d = Math.hypot(a[0] + dx * t - x, a[2] + dz * t - z); if (d < best) { best = d; y = a[1] + (b[1] - a[1]) * t; } } return y + 0.5; };
+          const W = tm_waterRibbon(K2.map((q) => [q[0], q[2]]), { width: () => 0.26, ground: (x, z) => yOn(x, z), lift: 0, edge: 1, speed: 1.5, scale: 0.35 });
+          AQ.add(W);
+          const gm = tm_water(new MeshStandardMaterial({ color: 0x3f78ab, roughness: 0.1, emissive: 0x16324c, emissiveIntensity: 0.5, vertexColors: true, transparent: true, opacity: 0.7, depthWrite: false, depthTest: true, depthFunc: GreaterDepth }), { mode: "ribbon", flow: [1.5, 0], scale: 0.35 });
+          const gw = new Mesh(W.geometry, gm); gw.visible = false; gw.renderOrder = 30; gw.userData.noPick = true; gw.raycast = () => {}; W.add(gw); XRK.push(gw); }   // (its ghost, as piece's)
         // the exit: an arched opening in the wall's foot, a sill, and the small stream down to the valley
         { const ex = WALL_E + 0.08; const hole = new Mesh(new CircleGeometry(1.05, 18, 0, Math.PI), darkM); hole.rotation.y = Math.PI / 2; hole.position.set(ex, yX - 0.05, EXZ); AQ.add(hole);
           const low = new Mesh(new PlaneGeometry(2.1, 0.45), darkM); low.rotation.y = Math.PI / 2; low.position.set(ex, yX - 0.27, EXZ); AQ.add(low);
