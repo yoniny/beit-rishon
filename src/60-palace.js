@@ -1437,7 +1437,7 @@
     const G = pal_groundLevel(ctx, X - 8, X + 8, TZ1, TZ1 + 24, Y);
     const STEPS_S = Math.max(1, Math.round((Y - G) / 0.5)), RUN_S = STEPS_S * 0.5;   // e.g. -21 -> 22 steps, run 11
     H.box(g, 16, 10, RUN_S + 4, M.stone, X, G - 10, TZ1 + (RUN_S + 4) / 2);          // the plinth, 4 amot beyond the first step
-    H.stairs(g, { width: 16, totalRise: Y - G, steps: STEPS_S, dir: "N", x: X, y: G, z: TZ1 + RUN_S, tread: 0.5 });
+    H.stairs(g, { width: 16, totalRise: Y - G, steps: STEPS_S, dir: "N", x: X, y: G, z: TZ1 + RUN_S, tread: 0.5, ramp: true });
 
     // the way up from the palace to the Temple (1.0.1, FIXES E.3; the verses that put the king's house BELOW the house of the LORD are
     // in the header: I Kings 10:5 "ועלתו אשר יעלה בית ה'", Jer 26:10 "ויעלו מבית המלך בית ה'", II Kings 11:19): from the north edge of the

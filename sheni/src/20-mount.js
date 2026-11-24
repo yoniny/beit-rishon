@@ -335,8 +335,8 @@
       ctx2.shared.chuldaRamp = { xs: [0, 110], z0: Z0, zf, yf, w: RW, yAt: (z) => -(Math.min(zf, Math.max(Z0, z)) - Z0) * SL };
     }
     // (1.9.5: no steps at the Shushan gate - the ramp of the Parah, below)
-    H2.stairs(g, { width: 12, totalRise: 28, steps: 36, dir: "S", x: 55, y: GROUND_Y, z: CO.harN - T / 2 - RUN, tread: 0.8 });
-    H2.stairs(g, { width: 12, totalRise: 28, steps: 36, dir: "E", x: CO.harW - T / 2 - RUN, y: GROUND_Y, z: 0, tread: 0.8 });
+    H2.stairs(g, { width: 12, totalRise: 28, steps: 36, dir: "S", x: 55, y: GROUND_Y, z: CO.harN - T / 2 - RUN, tread: 0.8, ramp: true });
+    H2.stairs(g, { width: 12, totalRise: 28, steps: 36, dir: "E", x: CO.harW - T / 2 - RUN, y: GROUND_Y, z: 0, tread: 0.8, ramp: true });
     // 1.9.1 (the user: "מדרגות — להשאיר, להוסיף מעקה"): a railing on both sides of each of the five outer stairs - posts on every fourth
     // step and a sloped handrail two amot over the steps. The stairs and their railings are a model choice (the Mishnah gives the gates of
     // the Mount, not the way up to them); the cards say so

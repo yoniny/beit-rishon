@@ -537,10 +537,10 @@
     // so the flight really reaches the ground.
     const STEPS = Math.round(-GROUND_Y / MNT_STEP), RUN = STEPS * MNT_STEP; // 56 steps, run 28
     const SW = 14; // model choice: flight width 14 (as the 1.0.19 Shushan gate steps)
-    H2.stairs(g, { width: SW, totalRise: -GROUND_Y, steps: STEPS, dir: "W", x: CO2.harE + T / 2 + RUN, y: GROUND_Y, z: gE.z, tread: MNT_STEP });
-    H2.stairs(g, { width: SW, totalRise: -GROUND_Y, steps: STEPS, dir: "E", x: CO2.harW - T / 2 - RUN, y: GROUND_Y, z: gW.z, tread: MNT_STEP });
-    H2.stairs(g, { width: SW, totalRise: -GROUND_Y, steps: STEPS, dir: "S", x: gN.x, y: GROUND_Y, z: CO2.harN - T / 2 - RUN, tread: MNT_STEP });
-    H2.stairs(g, { width: SW, totalRise: -GROUND_Y, steps: STEPS, dir: "N", x: gS.x, y: GROUND_Y, z: CO2.harS + T / 2 + RUN, tread: MNT_STEP });
+    H2.stairs(g, { width: SW, totalRise: -GROUND_Y, steps: STEPS, dir: "W", x: CO2.harE + T / 2 + RUN, y: GROUND_Y, z: gE.z, tread: MNT_STEP, ramp: true });
+    H2.stairs(g, { width: SW, totalRise: -GROUND_Y, steps: STEPS, dir: "E", x: CO2.harW - T / 2 - RUN, y: GROUND_Y, z: gW.z, tread: MNT_STEP, ramp: true });
+    H2.stairs(g, { width: SW, totalRise: -GROUND_Y, steps: STEPS, dir: "S", x: gN.x, y: GROUND_Y, z: CO2.harN - T / 2 - RUN, tread: MNT_STEP, ramp: true });
+    H2.stairs(g, { width: SW, totalRise: -GROUND_Y, steps: STEPS, dir: "N", x: gS.x, y: GROUND_Y, z: CO2.harS + T / 2 + RUN, tread: MNT_STEP, ramp: true });
 
     // ---------- the outer court (החצר החיצונה) ----------
     // Source: Rashi on I Kings 6:36 "קורא אותה פנימית לפי שהיתה לפנים מעזרת נשים" (the only mention; Rashi's term is "עזרת נשים"; the model
@@ -577,7 +577,7 @@
       console.warn("[mount] outer court gate trim skipped:", e);
     }
     // 6 steps (3 rise) from the platform up to the outer court gate (model choice), dir W, bottom at x 232.5; flight width 12 (model choice: a little wider than the 10-wide gate)
-    H2.stairs(g, { width: 12, totalRise: WC.y - LV2.HAR, steps: 6, dir: "W", x: wcPodE + 6 * MNT_STEP, y: LV2.HAR, z: 0, tread: MNT_STEP });
+    H2.stairs(g, { width: 12, totalRise: WC.y - LV2.HAR, steps: 6, dir: "W", x: wcPodE + 6 * MNT_STEP, y: LV2.HAR, z: 0, tread: MNT_STEP, ramp: true });
 
     // ---------- the uses of the outer court (1.0.1, FIXES D.2: the user - "היו בה שימושים, הוסף") ----------
     // The sources name things that stood in this court but give no measures or places; every number below is a model choice (MNT_LISHKA,

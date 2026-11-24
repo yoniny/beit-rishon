@@ -550,10 +550,18 @@
     if (occlude) occ(m);
     return m;
   }
-  function stairs(parent, { width, totalRise, steps, dir = "W", x = 0, y = 0, z = 0, mat = M.stoneSmooth, tread = 0.75 }) {
+  function stairs(parent, { width, totalRise, steps, dir = "W", x = 0, y = 0, z = 0, mat = M.stoneSmooth, tread = 0.75, ramp = false }) {
     const rise = totalRise / steps;
     const g = new Group();
     const geos = [];
+    if (ramp) {
+      // 4.2.0 (the user: "כל המדרגות בכל השערים צריכים לעוף ובמקומם כבשים"): a ramp (כבש) in place of the flight - the same run, the same rise
+      const sh = new Shape();
+      sh.moveTo(0, 0); sh.lineTo(steps * tread, 0); sh.lineTo(steps * tread, totalRise); sh.closePath();
+      const rg = new ExtrudeGeometry(sh, { depth: width, bevelEnabled: false });
+      rg.translate(0, 0, -width / 2);
+      geos.push(rg);
+    } else
     for (let i = 0; i < steps; i++) {
       const h = (i + 1) * rise;
       const bg = new BoxGeometry(tread, h, width);
@@ -561,7 +569,7 @@
       bg.translate(i * tread + tread / 2, h / 2, 0);
       geos.push(bg);
     }
-    const merged = mergeGeometries(geos);
+    const merged = ramp ? geos[0] : mergeGeometries(geos);
     const mesh = new Mesh(merged, mat);
     mesh.castShadow = mesh.receiveShadow = true;
     g.add(mesh);

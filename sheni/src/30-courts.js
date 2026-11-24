@@ -232,7 +232,7 @@
       H2.box(parent, wL, top, dp, M2.stoneSmooth, gx, 0, zc);
       if (rw) H2.box(parent, wL, top, rw, M2.stoneSmooth, gx, 0, s > 0 ? z1 + rw / 2 : z0 - rw / 2);
       platRail(parent, gx - wL / 2, gx + wL / 2, rw && s < 0 ? z0 - rw : z0, rw && s > 0 ? z1 + rw : z1, top, [s < 0 ? "n" : "s"].concat(o.endRail === false ? [] : [dx > 0 ? "w" : "e"]));
-      stairsR(parent, { width: dp, totalRise: top, steps: n, dir: dx > 0 ? "W" : "E", x: gx + dx * (wL / 2 + n * 0.5), y: 0, z: zc, tread: 0.5 });
+      stairsR(parent, { width: dp, totalRise: top, steps: n, dir: dx > 0 ? "W" : "E", x: gx + dx * (wL / 2 + n * 0.5), y: 0, z: zc, tread: 0.5, ramp: true });
     };
     // RAMPS_N4 (the user, 24.11.2026: "הכבש לבהמות מיושר ומחובר למדרגות של השער - חלק מדרגות וחלק כבש באותו גרם, עד נחיתת השער"): at the gate of the
     // firstborn (south) and the gate of the offering (north) the flight is two strips side by side, from the gate's landing (13.5): the steps (4 wide, as the
@@ -1329,7 +1329,7 @@
         const sg = Math.sign(z), wt = WEST_T.get(grp);   // WEST2_D: the TYT's west gates' landings and flights
         H2.box(wt, 4, 13.5, 6, M2.stoneSmooth, -98, 0, z);
         platRail(wt, -100, -96, z - 3, z + 3, 13.5, ["w", sg > 0 ? "n" : "s"]);
-        stairsR(wt, { width: 4, totalRise: 13.5, steps: 27, dir: sg > 0 ? "N" : "S", x: -98, y: 0, z: z + sg * 16.5, tread: 0.5 });
+        stairsR(wt, { width: 4, totalRise: 13.5, steps: 27, dir: sg > 0 ? "N" : "S", x: -98, y: 0, z: z + sg * 16.5, tread: 0.5, ramp: true });
       }
     }
     H2.box(g13, 8.5, 13.5, 4, M2.stoneSmooth, -37.75, 0, -72);

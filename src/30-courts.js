@@ -292,8 +292,8 @@
     // 12 steps (6 rise) outside each north / south gate, from the great court (LV.HAR = 0) up to the podium edge (LV.AZ = 6): model choice
     const SW = 12; // model choice: flight width 12, a little wider than the 10-wide gate opening
     for (const gx of CRT_NS_GATES) {
-      H2.stairs(g, { width: SW, totalRise: AZ - LV2.HAR, steps: 12, dir: "S", x: gx, y: LV2.HAR, z: -podW / 2 - 12 * STEP, tread: STEP }); // z -78.5 -> -72.5
-      H2.stairs(g, { width: SW, totalRise: AZ - LV2.HAR, steps: 12, dir: "N", x: gx, y: LV2.HAR, z: podW / 2 + 12 * STEP, tread: STEP });  // z 78.5 -> 72.5
+      H2.stairs(g, { width: SW, totalRise: AZ - LV2.HAR, steps: 12, dir: "S", x: gx, y: LV2.HAR, z: -podW / 2 - 12 * STEP, tread: STEP, ramp: true }); // z -78.5 -> -72.5
+      H2.stairs(g, { width: SW, totalRise: AZ - LV2.HAR, steps: 12, dir: "N", x: gx, y: LV2.HAR, z: podW / 2 + 12 * STEP, tread: STEP, ramp: true });  // z 78.5 -> 72.5
     }
     // the east gate: 6 steps (3 rise) from the outer court (החצר החיצונה) floor (level 3, 20-mount.js) up to the podium edge at x 98.5: model choice
     const wcY = ctx.shared && ctx.shared.newCourt && typeof ctx.shared.newCourt.y === "number" ? ctx.shared.newCourt.y : 3;
