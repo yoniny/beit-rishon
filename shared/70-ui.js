@@ -518,6 +518,10 @@
   ];
   var ui_CSS = `
 /* 1.1.0: #tm-burger and the bar's buttons (.tm-topbtn) are styled by index.html (header.topbar); nothing here */
+/* 4.2.0: on a phone (390 px) the seven round buttons, the burger and the version left the title 41 of its 125 px - "בי..." was all that showed. Below 860 px the version is hidden
+   (the same version is the one "what's new" shows) and the title may take two lines, so the name of the house shows whole. */
+@media(max-width:860px){header.topbar #version{display:none}header.topbar .title{white-space:normal;line-height:1.15;text-overflow:clip}}
+@media(max-width:600px){header.topbar .title{font-size:13px}}
 html,body{overscroll-behavior:none}
 .tm-src{font-size:.74em;opacity:.8;font-weight:400}
 .tm-src a.tm-srcl{color:inherit;text-decoration:none;cursor:pointer}
@@ -728,7 +732,7 @@ body.tm-measuring canvas{cursor:crosshair}
 @media(max-width:${ui_PHONE_MAX}px){#tm-nav .tm-grp .cap{display:none}
   #tm-xcard{left:8px;right:8px;top:auto;bottom:76px;width:auto;max-height:min(42vh,calc(50vh - 60px))}
   #tm-xcard .r{max-height:66px}
-  #tm-panel{max-height:calc(100vh - 132px)}}
+  #tm-panel{max-height:calc(100vh - var(--topbar-h, 56px) - 9px - 112px)}}   /* 4.2.0: the old 100vh - 132px forgot that the panel starts below the bar, so on a 390 x 800 phone its bottom edge (721) went 21 px under the row of nav buttons (from 700) */
 `;
   async function buildUI(ctx) {
     try {

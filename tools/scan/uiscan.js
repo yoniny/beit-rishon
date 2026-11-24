@@ -6,7 +6,10 @@
   const txt = (e) => (e.textContent || e.value || e.title || e.getAttribute('aria-label') || '').trim().replace(/\s+/g, ' ').slice(0, 50);
   const R = (r) => [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)];
   const add = (type, e, detail) => { const k = type + '|' + desc(e) + '|' + txt(e); if (seen.has(k) || out.length >= 60) return; seen.add(k); out.push({ type, el: desc(e), text: txt(e), rect: R(e.getBoundingClientRect()), detail }); };
-  const shown = (e) => { for (let p = e; p && p.nodeType === 1; p = p.parentElement) { const cs = getComputedStyle(p); if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) return false; } const r = e.getBoundingClientRect(); return r.width > 1 && r.height > 1; };
+  // The content of a CLOSED <details> is not on the screen, but the browser still gives it a box (the content is skipped in layout, not removed): a button
+  // in a closed group is not "covered" and not "out of the frame", the user cannot see it. Only the <summary> of a closed <details> is on the screen.
+  const inClosedDetails = (e) => { for (let p = e, ch = null; p && p.nodeType === 1; ch = p, p = p.parentElement) if (p.tagName === 'DETAILS' && !p.open && !(ch && ch.tagName === 'SUMMARY')) return true; return false; };
+  const shown = (e) => { for (let p = e; p && p.nodeType === 1; p = p.parentElement) { const cs = getComputedStyle(p); if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) return false; } if (inClosedDetails(e)) return false; const r = e.getBoundingClientRect(); return r.width > 1 && r.height > 1; };
   const all = [...document.body.querySelectorAll('*')].filter((e) => !/^(SCRIPT|STYLE|LINK|META|CANVAS|BR|PATH|SVG|G|CIRCLE|RECT|LINE|POLYGON|USE|DEFS)$/i.test(e.tagName) && !(e instanceof SVGElement && e.tagName !== 'svg') && shown(e));
   const isCtl = (e) => /^(BUTTON|A|INPUT|SELECT|SUMMARY|TEXTAREA)$/.test(e.tagName) || e.getAttribute('role') === 'button' || e.classList.contains('tm-pill');
   const ui = (e) => e.closest('#tm-panel, #tm-xcard, #tm-nav, #tm-compass, #tm-dpause, .tm-pill, #tm-tour-box, #tm-news, #tm-help, #tm-confirm, header, #tm-card, #tm-burger, nav, dialog, .topbar, #shell, .shell, aside, footer') || e.id === 'tm-burger';
@@ -15,7 +18,9 @@
     const inUi = !!ui(e);
     if (!inUi && !isCtl(e)) continue;
     // 1. out of the frame (fixed / absolute roots of the UI; and any control)
-    if ((isCtl(e) || /^(fixed|absolute|sticky)$/.test(cs.position)) && (r.right > W + 1 || r.left < -1 || r.bottom > H + 1 || r.top < -1)) {
+    // (an element that takes no clicks and is not a control - such as the compass's rotating square, whose bounding box grows past its round frame when it turns - is
+    // not a button the user can lose; the letters inside it are controls and are checked on their own)
+    if ((isCtl(e) || (/^(fixed|absolute|sticky)$/.test(cs.position) && cs.pointerEvents !== 'none')) && (r.right > W + 1 || r.left < -1 || r.bottom > H + 1 || r.top < -1)) {
       let inScroll = false; for (let p = e.parentElement; p && p !== document.body; p = p.parentElement) { const o = getComputedStyle(p); if (/(auto|scroll)/.test(o.overflowY + o.overflowX) && p.scrollHeight > p.clientHeight) { const pr = p.getBoundingClientRect(); if (r.left >= pr.left - 1 && r.right <= pr.right + 1) inScroll = true; break; } }
       if (!inScroll) add('out-of-frame', e, `הפריט יוצא מהחלון (${W}×${H}): ימין ${Math.round(r.right)}, שמאל ${Math.round(r.left)}, למטה ${Math.round(r.bottom)}, למעלה ${Math.round(r.top)}`);
     }
