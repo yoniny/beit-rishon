@@ -91,6 +91,14 @@
   ent_room.position.y = 0;
   ent_room.traverse((o) => { if (o.isPointLight) o.intensity = 5; });
   scene.environment = pmrem.fromScene(ent_room, 0.04).texture;
+  // Only the generated PMREM is used after this one-shot bake. Release its source
+  // cubemap, convolution shaders and room buffers; the returned texture is owned
+  // by the scene and PMREMGenerator.dispose() deliberately leaves it intact.
+  // RoomEnvironment.dispose() owns geometry/materials, but not instance buffers.
+  ent_room.traverse((o) => { if (o.isInstancedMesh) o.dispose(); });
+  ent_room.dispose();
+  pmrem.dispose();
+  ent_room = pmrem = null;
   var sky = new Sky();
   //@@slot after-sky
   sky.scale.setScalar(6e3);
@@ -270,7 +278,7 @@
   var CAM_LOOK_MIN = 0.03;
   var cam = { mode: "orbit", inside: true, lookLock: false, roofed: false, floorY: -Infinity, decideAt: 0, ray: null, n: new Vector3(), tmp: new Vector3(), s: new Spherical(), dirs: [new Vector3(1, 0, 0), new Vector3(-1, 0, 0), new Vector3(0, 0, 1), new Vector3(0, 0, -1)], up: new Vector3(0, 1, 0) };
   var ent_look = cam;   // (the name the roofed test below uses for its ray and directions)
-  var ent_sol = { t: -1e9, all: [], roof: [], floor: [], walls: [], big: [] };
+  var ent_sol = { t: -1e9, all: [], roof: [], floor: [] };
   //@@include raycast-bounds
   function ent_solids(withCut) {
     const now = performance.now();
@@ -318,27 +326,6 @@
       ent_sol.all = all;
       ent_sol.roof = roof;
       ent_sol.floor = floor;
-      const walls = [], big = [];
-      for (const o of all) {
-        try {
-          const pa = o.geometry && o.geometry.attributes && o.geometry.attributes.position;
-          if (pa && pa.count > 30000) big.push(o);
-          if (!pa || pa.count > 30000) continue;
-          let bs;
-          if (o.isInstancedMesh) {
-            if (!o.boundingSphere && typeof o.computeBoundingSphere === "function") o.computeBoundingSphere();
-            bs = o.boundingSphere;
-          } else {
-            if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
-            bs = o.geometry.boundingSphere;
-          }
-          if (!bs || !isFinite(bs.radius)) continue;
-          walls.push({ o, c: bs.center.clone().applyMatrix4(o.matrixWorld), r: bs.radius * o.matrixWorld.getMaxScaleOnAxis() + 2 });
-        } catch (_) {
-        }
-      }
-      ent_sol.walls = walls;
-      ent_sol.big = big;
     }
     return withCut === "floor" ? ent_sol.floor : withCut ? ent_sol.roof : ent_sol.all;
   }
@@ -1283,6 +1270,7 @@
       hq: { get ao() { return ent_hq.S.ao; }, get gi() { return false; }, giReady: false, set: (aoOn) => ent_hq.set(aoOn, false) }   // HQ_302; GI_OFF_303
     },
     flyTo,
+    raycast: ent_intersect,
     camIndoors: cam_indoors,   // 1.2.0: mode "look" - 70-ui.js's nav buttons and keys turn in place
     camPass: cam_pass,         // 1.2.0: indoors the fade loop of 70-ui.js lets the eye see through the buildings' walls and ceilings
     camPassHit: cam_passHit,   //   (every building surface but a floor at or under the target)
@@ -1932,14 +1920,14 @@
         const p1 = renderer.compileAsync(scene, camera);
         renderer.setRenderTarget(rt);   // the depth programs: keyed as in the shadow pass (see ent_depthScene)
         const p2 = renderer.compileAsync(ds.tiny, camera);
-        const p3 = renderer.compileAsync(ent_hq.warmScene(), camera);   // HQ_302: drawn into targets too, keyed as there
+        const p3 = renderer.compileAsync(ent_hq.warmScene(ctx.shared.hq.giReady), camera);   // only exposed effects; GI warms on first use
         renderer.setRenderTarget(null);
         await Promise.race([Promise.all([p1, p2, p3]), new Promise((r) => setTimeout(r, 25e3))]);
       } else {
         renderer.compile(scene, camera);
         renderer.setRenderTarget(rt);
         renderer.compile(ds.tiny, camera);
-        renderer.compile(ent_hq.warmScene(), camera);   // HQ_302
+        renderer.compile(ent_hq.warmScene(ctx.shared.hq.giReady), camera);   // only exposed effects
         renderer.setRenderTarget(null);
       }
     } catch (e) {
@@ -2052,6 +2040,29 @@
   // document exactly as before (the 250ms interval below), because WebView2 inside Otzaria was not tested with it. Only the house bridge's own
   // pause (__tmHouseVisible === false) stops it; set window.__tmBgRenderStop = true to also stop on document.hidden.
   function ent_isVisible() { return window.__tmHouseVisible !== false && !(window.__tmBgRenderStop === true && document.hidden); }
+  function ent_renderFrame() {
+    const autoWorld = scene.matrixWorldAutoUpdate;
+    try {
+      // Model animations have finished before this call. HQ only swaps materials,
+      // so its normal/lit passes and the beauty pass can share one world update.
+      // Camera updates remain the renderer's responsibility for every pass.
+      if (ent_hq.on && autoWorld === true) {
+        scene.updateMatrixWorld();
+        scene.matrixWorldAutoUpdate = false;
+      }
+      ent_hq.frame();
+      if (ent_load.printed) {
+        renderer.render(scene, camera);
+      } else {
+        const t0 = performance.now();
+        renderer.render(scene, camera);
+        ent_load.firstVisibleMs = performance.now() - t0;
+        ent_printLoad();
+      }
+    } finally {
+      scene.matrixWorldAutoUpdate = autoWorld;
+    }
+  }
   renderer.setAnimationLoop((t) => {
     if (ent_load.loading || !ent_isVisible()) return;   // nothing is drawn behind the loading overlay or by a hidden house/tab
     if (flyAnim) {
@@ -2086,15 +2097,7 @@
     }
     //@@slot after-guardCamera
     cam_nearStep();   // CAM_219 (3): after every writer of the camera (ctx.animated too)
-    ent_hq.frame();   // HQ_302: with a light toggle on, its prepass and AO (nothing otherwise)
-    if (ent_load.printed) {
-      renderer.render(scene, camera);
-    } else {
-      const t0 = performance.now();
-      renderer.render(scene, camera);
-      ent_load.firstVisibleMs = performance.now() - t0;
-      ent_printLoad();
-    }
+    ent_renderFrame();
   });
   setInterval(() => {
     if (document.hidden && !ent_load.loading && window.__tmBgRenderStop !== true && window.__tmHouseVisible !== false) {

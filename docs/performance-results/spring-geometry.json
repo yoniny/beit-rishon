@@ -1,0 +1,205 @@
+{
+  "baseline": "f8b9bef4ab312467f1a03367879e88df8422d1ba",
+  "note": "Model/resource counts only; all foliage retained. Float32 instance transforms use the existing 2e-5-amah tolerance. First-house postmerge material/shadow policy preserved.",
+  "results": [
+    {
+      "name": "second-house-spring",
+      "cleared": 0,
+      "baselineRaw": {
+        "objects": 980,
+        "meshes": 974,
+        "visibleMeshes": 974,
+        "components": 974,
+        "visibleComponents": 974,
+        "geometries": 20,
+        "materials": 11,
+        "geometryBytes": 897436,
+        "instanceBytes": 0,
+        "triangles": 49026
+      },
+      "candidateBatched": {
+        "objects": 60,
+        "meshes": 54,
+        "visibleMeshes": 54,
+        "components": 974,
+        "visibleComponents": 974,
+        "geometries": 20,
+        "materials": 11,
+        "geometryBytes": 897436,
+        "instanceBytes": 59200,
+        "triangles": 49026
+      },
+      "baselineFinal": {
+        "objects": 980,
+        "meshes": 974,
+        "visibleMeshes": 974,
+        "components": 974,
+        "visibleComponents": 974,
+        "geometries": 20,
+        "materials": 11,
+        "geometryBytes": 897436,
+        "instanceBytes": 0,
+        "triangles": 49026
+      },
+      "candidateFinal": {
+        "objects": 60,
+        "meshes": 54,
+        "visibleMeshes": 54,
+        "components": 974,
+        "visibleComponents": 974,
+        "geometries": 20,
+        "materials": 11,
+        "geometryBytes": 897436,
+        "instanceBytes": 59200,
+        "triangles": 49026
+      },
+      "validation": {
+        "comparedComponents": 974,
+        "visibleOnly": false,
+        "maxMatrixError": 4.6938657760620117e-7,
+        "equivalent": true
+      },
+      "lateValidation": {
+        "comparedComponents": 991,
+        "visibleOnly": false,
+        "maxMatrixError": 4.6938657760620117e-7,
+        "equivalent": true
+      }
+    },
+    {
+      "name": "first-house-channel",
+      "cleared": 23,
+      "baselineRaw": {
+        "objects": 1186,
+        "meshes": 1180,
+        "visibleMeshes": 1180,
+        "components": 1180,
+        "visibleComponents": 1180,
+        "geometries": 27,
+        "materials": 15,
+        "geometryBytes": 901916,
+        "instanceBytes": 0,
+        "triangles": 64510
+      },
+      "candidateBatched": {
+        "objects": 101,
+        "meshes": 95,
+        "visibleMeshes": 95,
+        "components": 1180,
+        "visibleComponents": 1180,
+        "geometries": 27,
+        "materials": 15,
+        "geometryBytes": 901916,
+        "instanceBytes": 69760,
+        "triangles": 64510
+      },
+      "baselineFinal": {
+        "objects": 21,
+        "meshes": 15,
+        "visibleMeshes": 14,
+        "components": 15,
+        "visibleComponents": 14,
+        "geometries": 15,
+        "materials": 15,
+        "geometryBytes": 3855068,
+        "instanceBytes": 0,
+        "triangles": 64510
+      },
+      "candidateFinal": {
+        "objects": 22,
+        "meshes": 16,
+        "visibleMeshes": 15,
+        "components": 1101,
+        "visibleComponents": 1100,
+        "geometries": 16,
+        "materials": 15,
+        "geometryBytes": 2076956,
+        "instanceBytes": 69760,
+        "triangles": 64510
+      },
+      "validation": {
+        "comparedComponents": 1180,
+        "visibleOnly": false,
+        "maxMatrixError": 0.0000015844043446122669,
+        "equivalent": true
+      },
+      "lateValidation": null
+    },
+    {
+      "name": "small-basin-scaled",
+      "cleared": 0,
+      "baselineRaw": {
+        "objects": 922,
+        "meshes": 916,
+        "visibleMeshes": 916,
+        "components": 916,
+        "visibleComponents": 916,
+        "geometries": 20,
+        "materials": 11,
+        "geometryBytes": 895788,
+        "instanceBytes": 0,
+        "triangles": 47872
+      },
+      "candidateBatched": {
+        "objects": 45,
+        "meshes": 39,
+        "visibleMeshes": 39,
+        "components": 916,
+        "visibleComponents": 916,
+        "geometries": 20,
+        "materials": 11,
+        "geometryBytes": 895788,
+        "instanceBytes": 56448,
+        "triangles": 47872
+      },
+      "baselineFinal": {
+        "objects": 922,
+        "meshes": 916,
+        "visibleMeshes": 916,
+        "components": 916,
+        "visibleComponents": 916,
+        "geometries": 20,
+        "materials": 11,
+        "geometryBytes": 895788,
+        "instanceBytes": 0,
+        "triangles": 47872
+      },
+      "candidateFinal": {
+        "objects": 45,
+        "meshes": 39,
+        "visibleMeshes": 39,
+        "components": 916,
+        "visibleComponents": 916,
+        "geometries": 20,
+        "materials": 11,
+        "geometryBytes": 895788,
+        "instanceBytes": 56448,
+        "triangles": 47872
+      },
+      "validation": {
+        "comparedComponents": 916,
+        "visibleOnly": false,
+        "maxMatrixError": 0.000001005643497364872,
+        "equivalent": true
+      },
+      "lateValidation": {
+        "comparedComponents": 933,
+        "visibleOnly": false,
+        "maxMatrixError": 0.000001005643497364872,
+        "equivalent": true
+      }
+    }
+  ],
+  "integrations": [
+    {
+      "house": "rishon",
+      "plantBatches": 5,
+      "plantComponents": 1130
+    },
+    {
+      "house": "sheni",
+      "plantBatches": 5,
+      "plantComponents": 925
+    }
+  ]
+}

@@ -20,7 +20,8 @@ async function run(house) {
   scene.add(solid, transparent); scene.background = new T.Color(0x445566); scene.updateMatrixWorld(true);
   camera.position.set(1, 2, 3); camera.updateMatrixWorld(true);
   const bg = scene.background, allocated = new Map(), targets = new Set(), passes = [], hooks = [];
-  let rt = null, width = 1920, height = 1080, alpha = 0.3, clear = new T.Color(0x102030), hq, resolveCompile;
+  let rt = null, width = 1920, height = 1080, alpha = 0.3, clear = new T.Color(0x102030), hq, resolveCompile, compilePromise;
+  const compileScenes = [];
   const originalClear = clear.clone();
   const record = (target) => {
     if (!target) return;
@@ -36,7 +37,7 @@ async function run(house) {
     getClearColor: (out) => out.copy(clear),
     setClearColor: (value, a) => { clear.set(value); alpha = a; },
     getDrawingBufferSize: (out) => out.set(width, height),
-    compileAsync: () => new Promise((resolve) => { resolveCompile = resolve; }),
+    compileAsync: (root) => { compileScenes.push(root); return compilePromise || (compilePromise = new Promise((resolve) => { resolveCompile = resolve; })); },
     render(root) {
       if (root === scene) {
         const normal = solid.material.isMeshNormalMaterial;
@@ -79,7 +80,11 @@ async function run(house) {
       // Depth backing storage depends on the driver. This explicitly uses a common four-byte allocation for its estimate.
       estimatedBytesWith4ByteDepth: a.reduce((sum, x) => sum + x.width * x.height * ((x.halfFloat ? 8 : 4) + (x.depth ? 4 : 0)), 0) };
   };
-  hq.warmScene();
+  const warmAO = hq.warmScene(false), warmAll = hq.warmScene();
+  assert.equal(warmAO.children.filter(o => o.material.isMeshNormalMaterial).length, 3);
+  assert.equal(warmAO.children.length, 5, 'normal variants and the two AO shaders are still warmed');
+  assert.deepEqual(warmAO.children.filter(o => o.material.isShaderMaterial).map(o => o.material), [hq.mats().gtaoM, hq.mats().pdM]);
+  assert.equal(warmAll.children.length, 7, 'an exposed GI capability still receives full startup warmup');
   assert.equal(allocated.size, 0, 'shader warmup alone must not allocate framebuffer attachments');
   hq.set(true, false); frame(['normal', 'gtaoM', 'pdM']);
   const ao = metrics();
@@ -89,11 +94,13 @@ async function run(house) {
   hq.set(false, false); frame([]);
   assert.equal(hq.U.tmHQOn.value, 0);
   hq.set(false, true);
+  assert.equal(compileScenes[0], scene, 'GI warms the actual lit scene');
+  assert.deepEqual(compileScenes[1].children.map(o => o.material), [hq.mats().giM, hq.mats().gdM], 'deferred GI shaders compile on first use');
   for (let i = 0; i < 120; i++) frame([]); // GI-only warmup does no discarded scene prepasses.
   assert.equal(hq.U.tmHQOn.value, 0);
   hq.set(true, true); frame(['normal', 'gtaoM', 'pdM']); // AO still works while GI is compiling.
   assert.deepEqual(hq.U.tmAOMask.value.toArray(), [1, 0, 0, 0]);
-  resolveCompile(); await Promise.resolve(); await Promise.resolve();
+  resolveCompile(); await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
   assert.equal(hq.S.giWarm, 2);
   frame(['normal', 'lit', 'giM', 'gdM']);
   hq.set(true, true); frame(['normal', 'lit', 'giM', 'gdM']);

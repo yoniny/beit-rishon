@@ -1,0 +1,25 @@
+{
+  "payisLabelLifecycle": {
+    "baselineRef": "f8b9bef4ab312467f1a03367879e88df8422d1ba",
+    "equivalentStates": 172,
+    "readings": 2,
+    "peakVisible": 13,
+    "replayCycles": 20,
+    "originalAfterComparisons": {
+      "sprites": 1452,
+      "materials": 1452,
+      "textures": 1452
+    },
+    "pooledAfterComparisons": {
+      "sprites": 16,
+      "materials": 16,
+      "textures": 16
+    },
+    "afterReplays": {
+      "sprites": 16,
+      "materials": 16,
+      "textures": 16
+    },
+    "note": "Actual scripts and label painter with a canvas stub; resource bounds and equivalent visible inputs, not GPU pixels."
+  }
+}

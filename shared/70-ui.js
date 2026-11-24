@@ -844,6 +844,7 @@ body.tm-measuring canvas{cursor:crosshair}
       uiGroup.add(labelGroup);
       for (const spr of labelGroup.children) spr.userData.base = spr.scale.clone();
       ctx.animated.push(function() {
+        if (!labelGroup.visible) return;   // all label state is refreshed before the first frame after re-enabling it
         const cp = ctx.camera.position;
         const tanHalf = Math.tan(((ctx.camera.fov || 50) * Math.PI) / 360);   // LABEL_CAP_S1
         for (const spr of labelGroup.children) {
@@ -936,7 +937,7 @@ body.tm-measuring canvas{cursor:crosshair}
           upRay.set(cam, UPV);
           upRay.near = 0;
           upRay.far = 60;
-          for (const h of upRay.intersectObjects(roofList(), false)) {
+          for (const h of ctx.raycast(upRay, roofList())) {
             let vis = true;
             for (let p = h.object; p; p = p.parent) if (p.visible === false) { vis = false; break; }
             if (!vis) continue;
@@ -1062,7 +1063,7 @@ body.tm-measuring canvas{cursor:crosshair}
                 // 1.0.1-K review (ui-3): 3 amot short of the target (was 1): with a far "מרחק טשטוש" these rays reach the target, and the
                 // face of the wall it stands in faded with them (the eastGate view at 400: the gate's own wall); 3 = model choice
                 ray.far = Math.min(L - 3, FADE_DIST);
-                for (const h of ray.intersectObjects(OCCL, false)) blocked.add(h.object);
+                for (const h of ctx.raycast(ray, OCCL)) blocked.add(h.object);
               }
               // 1.0.16: a wall right in front of the camera (within NEAR amot along the view direction) fades too,
               // even when the orbit target is on this side of it / on the wall itself (e.g. close to a gate).
@@ -1077,7 +1078,7 @@ body.tm-measuring canvas{cursor:crosshair}
                 ray.set(cam, dd.normalize());
                 ray.near = 0;
                 ray.far = NEAR + 2;
-                for (const h of ray.intersectObjects(OCCL, false)) blocked.add(h.object);
+                for (const h of ctx.raycast(ray, OCCL)) blocked.add(h.object);
               }
               // 1.0.2 (D): the building's walls that hide the target (see above); 1.0.4: and the pass (see above)
               let pass = false;
@@ -1093,7 +1094,7 @@ body.tm-measuring canvas{cursor:crosshair}
                   ray.near = 0;
                   ray.far = far;
                   hideHits.length = 0;
-                  ray.intersectObjects(list, false, hideHits);
+                  ctx.raycast(ray, list, hideHits);
                   for (const h of hideHits) {
                     const o = h.object;
                     if (hideBlocked.has(o) || !hideShown(o)) continue;
@@ -1122,7 +1123,7 @@ body.tm-measuring canvas{cursor:crosshair}
                 dd.subVectors(tgp, cp).normalize();
                 ray.set(cp, dd); ray.near = 0; ray.far = Lt + 2;
                 const cand = [...blocked, ...hideBlocked];
-                for (const h of ray.intersectObjects(cand, false)) {
+                for (const h of ctx.raycast(ray, cand)) {
                   if (h.distance < Lt - 2) continue;
                   blocked.delete(h.object); hideBlocked.delete(h.object);
                   break;
@@ -2266,7 +2267,7 @@ body.tm-measuring canvas{cursor:crosshair}
           cRay.set(cam, cDir);
           cRay.near = 0;
           cRay.far = Math.max(1, d - 3);
-          for (const h of cRay.intersectObjects(cTargets, false)) {
+          for (const h of ctx.raycast(cRay, cTargets)) {
             if (isVis(h.object) && solidEnough(h.object)) return false;
           }
           return true;
@@ -2352,6 +2353,20 @@ body.tm-measuring canvas{cursor:crosshair}
         mOut.textContent = txt;
         mOut.style.display = txt ? "block" : "none";
       };
+      const mAccept = (h) => {
+        const o = h.object;
+        if (o.isSprite || o.isLine || o.isPoints || o.userData.noPick) return false;
+        let vis = true;
+        for (let p = o; p; p = p.parent) if (!p.visible) {
+          vis = false;
+          break;
+        }
+        if (!vis) return false;
+        const mt0 = o.material, mt = Array.isArray(mt0) ? mt0[(h.face && h.face.materialIndex) || 0] : mt0;
+        if (mt && (mt.opacity < 0.5 || mt.visible === false)) return false;
+        if (mt && Array.isArray(mt.clippingPlanes) && mt.clippingPlanes.some((pl) => pl && pl.distanceToPoint(h.point) < -1e-4)) return false;
+        return true;
+      };
       const mPick = (ev) => {
         const el = ctx.renderer.domElement, r = el.getBoundingClientRect();
         mNdc.set((ev.clientX - r.left) / r.width * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
@@ -2362,21 +2377,8 @@ body.tm-measuring canvas{cursor:crosshair}
         // material of the face that was hit
         mRay.near = ctx.camera.near || 0;
         mRay.far = Infinity;
-        for (const h of mRay.intersectObjects(ctx.root.children, true)) {
-          const o = h.object;
-          if (o.isSprite || o.isLine || o.isPoints || o.userData.noPick) continue;
-          let vis = true;
-          for (let p = o; p; p = p.parent) if (!p.visible) {
-            vis = false;
-            break;
-          }
-          if (!vis) continue;
-          const mt0 = o.material, mt = Array.isArray(mt0) ? mt0[(h.face && h.face.materialIndex) || 0] : mt0;
-          if (mt && (mt.opacity < 0.5 || mt.visible === false)) continue;
-          if (mt && Array.isArray(mt.clippingPlanes) && mt.clippingPlanes.some((pl) => pl && pl.distanceToPoint(h.point) < -1e-4)) continue;
-          return h.point.clone();
-        }
-        return null;
+        const h = ctx.raycast.firstVisible(mRay, ctx.root, mAccept);
+        return h ? h.point.clone() : null;
       };
       const M_RED = 0xe53935, M_WHITE = 0xffffff, M_Y = new Vector3(0, 1, 0);
       const mPiece = (geo, color, order, kind, f) => {
@@ -2996,6 +2998,16 @@ body.tm-measuring canvas{cursor:crosshair}
         const el = ctx.renderer.domElement;
         const lRay = new Raycaster(), lNdc = new Vector2();
         const visibleLabels = () => (labelGroup.visible ? labelGroup.children.filter((s) => s.visible && s.userData.target) : []);
+        const labelOccluder = (m) => {
+          const o = m.object;
+          if (o.isSprite || o.isLine || o.isPoints || o.userData.noPick) return false;
+          let vis = true;
+          for (let p = o; p; p = p.parent) if (!p.visible) { vis = false; break; }
+          if (!vis) return false;
+          const mt = o.material;
+          if (mt && !Array.isArray(mt) && (mt.opacity < 0.5 || mt.visible === false)) return false;
+          return true;
+        };
         const pickLabel = (ev, occlusion) => {
           const r = el.getBoundingClientRect();
           if (!r.width || !r.height) return null;
@@ -3011,17 +3023,8 @@ body.tm-measuring canvas{cursor:crosshair}
               if (ch.length && ch[0].distance < h.distance - 1) return null;
             }
             // a label behind a wall is hidden by the depth test: ignore it when a visible, opaque mesh is clearly nearer
-            for (const m of lRay.intersectObjects(ctx.root.children, true)) {
-              const o = m.object;
-              if (o.isSprite || o.isLine || o.isPoints || o.userData.noPick) continue;
-              let vis = true;
-              for (let p = o; p; p = p.parent) if (!p.visible) { vis = false; break; }
-              if (!vis) continue;
-              const mt = o.material;
-              if (mt && !Array.isArray(mt) && (mt.opacity < 0.5 || mt.visible === false)) continue;
-              if (m.distance < h.distance - 1) return null;
-              break;
-            }
+            const m = ctx.raycast.firstVisible(lRay, ctx.root, labelOccluder);
+            if (m && m.distance < h.distance - 1) return null;
           }
           return h.object;
         };
@@ -3205,7 +3208,17 @@ body.tm-measuring canvas{cursor:crosshair}
           setAged(true);
           toggleRow("גוון אבן עתיקה", true, setAged);
           ctx.shared.stoneAged = { set: setAged, isOn: () => on, count: () => aged.size };
-          setInterval(() => { const n = aged.size; scan(); if (aged.size !== n) apply(); }, 2500);   // pieces built or re-clad later
+          let stoneScanDeferred = false;
+          const refreshDeferredStone = () => {
+            if (!stoneScanDeferred || document.hidden || window.__tmHouseVisible === false) return;
+            stoneScanDeferred = false;
+            const n = aged.size; scan(); if (aged.size !== n) apply();
+          };
+          setInterval(() => { stoneScanDeferred = true; refreshDeferredStone(); }, 2500);
+          // The house bridge emits resize on resume. Apply an overdue tint before the next visible frame,
+          // including materials created while hidden; ordinary resizes do not trigger another scan.
+          document.addEventListener("visibilitychange", refreshDeferredStone);
+          window.addEventListener("resize", refreshDeferredStone);
         }
       }
       // SOUND_211 (the user, 15.11.2026: sounds in the demonstrations - and a way to silence them): the row "קולות בהדגמות", on by
@@ -4439,7 +4452,7 @@ body.tm-measuring canvas{cursor:crosshair}
           oRay.set(cam, oDir.multiplyScalar(1 / L));
           oRay.near = 0;
           oRay.far = L - 1.5;
-          for (const hh of oRay.intersectObjects(bigMeshes(), false)) {
+          for (const hh of ctx.raycast(oRay, bigMeshes())) {
             const o = hh.object;
             if (!visUp(o)) continue;
             const m = Array.isArray(o.material) ? o.material[0] : o.material;

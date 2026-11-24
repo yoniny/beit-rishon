@@ -959,10 +959,17 @@
       S.giWarm = 1;
       try {
         if (!pre) build();
+        // GI can be omitted from startup when the host does not expose it. Compile
+        // its full-screen shaders alongside the lit scene if it is enabled later.
+        const effects = new Scene();
+        effects.add(new Mesh(quad.geometry, giM), new Mesh(quad.geometry, gdM));
         const rt = renderer.getRenderTarget();
-        renderer.setRenderTarget(litRT);
-        const p = typeof renderer.compileAsync === "function" ? renderer.compileAsync(scene, camera) : (renderer.compile(scene, camera), Promise.resolve());
-        renderer.setRenderTarget(rt);
+        let p;
+        try {
+          renderer.setRenderTarget(litRT);
+          if (typeof renderer.compileAsync === "function") p = Promise.all([renderer.compileAsync(scene, camera), renderer.compileAsync(effects, qcam)]);
+          else { renderer.compile(scene, camera); renderer.compile(effects, qcam); p = Promise.resolve(); }
+        } finally { renderer.setRenderTarget(rt); }
         Promise.race([p, new Promise((r) => setTimeout(r, 25e3))]).then(() => { S.giWarm = 2; }, () => { S.giWarm = 2; });
       } catch (e) {
         S.giWarm = 2;
@@ -976,14 +983,16 @@
     }
     // the prepass and AO programs, ready at the load (none built when a toggle is first switched on): the entry adds this scene to its
     // compileAsync of the load
-    function warmScene() {
+    function warmScene(includeGI = true) {
       if (!pre) build();
       const s = new Scene(), box = new BoxGeometry(1, 1, 1);
       const sides = [FrontSide, BackSide, DoubleSide];
       for (const sd of sides) { const m = new MeshNormalMaterial(); m.side = sd; m.blending = NoBlending; s.add(new Mesh(box, m)); }
-      const q1 = new Mesh(quad.geometry, gtaoM), q2 = new Mesh(quad.geometry, pdM), q3 = new Mesh(quad.geometry, giM), q4 = new Mesh(quad.geometry, gdM);
-      q1.frustumCulled = q2.frustumCulled = q3.frustumCulled = q4.frustumCulled = false;
-      s.add(q1, q2, q3, q4);
+      for (const m of includeGI ? [gtaoM, pdM, giM, gdM] : [gtaoM, pdM]) {
+        const q = new Mesh(quad.geometry, m);
+        q.frustumCulled = false;
+        s.add(q);
+      }
       return s;
     }
     // QA: the AO texture drawn on the canvas, grey (the headless checks)

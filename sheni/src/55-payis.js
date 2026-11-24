@@ -254,8 +254,15 @@
     ladder(89.9, RY, WZ, 91.3, WY, WZ);
     // ---------- small text sprites over the winners (the UI's label painter; none if it is not there)
     const tags = [];
+    const tagPool = new Map();
     const tag = (text, size) => {
       if (typeof ui_makeLabelSprite !== "function") return null;
+      // Replays/seeks hide the old winners. Reuse their canvas, texture and sprite;
+      // retain separate copies when the same caption is visible more than once.
+      const key = JSON.stringify([text, size || 0.55]);
+      const pool = tagPool.get(key);
+      const spare = pool && pool.find((s) => !s.visible);
+      if (spare) return spare;
       let s = null;
       try { s = ui_makeLabelSprite(text, size || 0.55); } catch (_) { s = null; }
       if (!s) return null;
@@ -264,6 +271,7 @@
       s.visible = false;
       g.add(s);
       tags.push(s);
+      if (pool) pool.push(s); else tagPool.set(key, [s]);
       return s;
     };
     // ---------- the night: the sky's sun under the eastern horizon, the lights low, no environment; then the dawn, the morning, the day back

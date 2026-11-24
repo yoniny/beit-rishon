@@ -103,6 +103,14 @@ check('custom raycasts, morph targets and invalid bounds safely use Three.js', (
   morph.geometry.morphAttributes.position = [morph.geometry.attributes.position.clone()];
   morph.updateMorphTargets(); morph.updateMatrixWorld();
   compare(cast, down(0, 0), [morph]);
+  const displaced = new Mesh(new BoxGeometry(2, 2, 2), mat);
+  displaced.getVertexPosition = function (i, target) {
+    return Mesh.prototype.getVertexPosition.call(this, i, target).add(new Vector3(20, 0, 0));
+  };
+  displaced.geometry.computeBoundingSphere();
+  displaced.geometry.boundingSphere.radius = 100;
+  displaced.updateMatrixWorld();
+  assert.ok(compare(cast, down(20, 0), [displaced]).length, 'custom vertices outside the attribute box are not pruned');
   const invalid = new Mesh(new BoxGeometry(2, 2, 2), mat);
   invalid.geometry.attributes.position.setX(0, NaN); invalid.updateMatrixWorld();
   const warn = console.error; console.error = () => {};

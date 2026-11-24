@@ -1147,7 +1147,7 @@
       }
       const mergeStatic = (G0) => {   // the kit's many fronds, boulders, leaves and spires - one mesh for each of their materials (few draw calls)
         const by = new Map();
-        for (const o of G0.children) if (o.isMesh && o.material && !o.material.transparent) { const l = by.get(o.material) || []; l.push(o); by.set(o.material, l); }
+        for (const o of G0.children) if (o.isMesh && !o.isInstancedMesh && o.material && !o.material.transparent) { const l = by.get(o.material) || []; l.push(o); by.set(o.material, l); }
         for (const [mat, list] of by) {
           if (list.length < 3) continue;
           let mg = null;
@@ -1178,6 +1178,7 @@
           // is not drawn (a question to the user)
           { const rm2 = []; kit.G.traverse((o) => { if (o.isMesh && o.material && o.material.color && o.material.color.getHex() === 0x8fc3ec && o.geometry && o.geometry.type === "PlaneGeometry") rm2.push(o); }); for (const o of rm2) { if (o.parent) o.parent.remove(o); if (o.geometry) o.geometry.dispose(); } SHL.rillHidden = rm2.length; }
           { const CHANNEL_C = (ctx.shared.shiloach1 && ctx.shared.shiloach1.channel) || { x: 4.0, z0: -3.4, z1: -50.9 }; const rmC = []; kit.G.traverse((o) => { if (!o.isMesh || !o.geometry || o === kit.G) return; if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere(); const r = o.geometry.boundingSphere.radius * Math.max(o.scale.x, o.scale.y, o.scale.z); if (r > 2.2) return; const p = o.position; if (Math.abs(p.x - CHANNEL_C.x) < 1.5 && p.z < -2.4 && p.z > CHANNEL_C.z1 - 1.2) rmC.push(o); }); for (const o of rmC) if (o.parent) o.parent.remove(o); SHL.chCleared = rmC.length; }   // CHANNEL_189
+          kit.batchPlants(true);
           mergeStatic(kit.G);
           kit.setBottom(basinY);
           const fp = Wl(0, -0.5);   // where the fall comes down (fallZ: 0.5 before the face)

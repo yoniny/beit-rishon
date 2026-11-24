@@ -1,0 +1,66 @@
+{
+  "baseline": "f8b9bef4ab312467f1a03367879e88df8422d1ba",
+  "note": "Same current models and rays; compares the original UI ray/predicate path with the optimized path. Node CPU only, DOM/canvas/audio stubbed.",
+  "syntheticComparisons": 204,
+  "houses": [
+    {
+      "house": "rishon",
+      "identicalSolidLists": 3,
+      "removedUnusedWallRecords": 776,
+      "exactUIComparisons": 48,
+      "exactFlatListComparisons": 12,
+      "views": [
+        "overview",
+        "ulamInside",
+        "menorot",
+        "kodesh"
+      ],
+      "times": [
+        {
+          "kind": "measure",
+          "queriesPerBatch": 12,
+          "beforeMs": 819.4848060000004,
+          "afterMs": 691.371858999999
+        },
+        {
+          "kind": "label",
+          "queriesPerBatch": 12,
+          "beforeMs": 815.971368999999,
+          "afterMs": 640.3157069999979
+        }
+      ]
+    },
+    {
+      "house": "sheni",
+      "identicalSolidLists": 3,
+      "removedUnusedWallRecords": 1882,
+      "exactUIComparisons": 48,
+      "exactFlatListComparisons": 12,
+      "views": [
+        "overview",
+        "menorah",
+        "kodesh",
+        "kodeshHakodashim"
+      ],
+      "times": [
+        {
+          "kind": "measure",
+          "queriesPerBatch": 12,
+          "beforeMs": 1042.367634000002,
+          "afterMs": 708.5843539999987
+        },
+        {
+          "kind": "label",
+          "queriesPerBatch": 12,
+          "beforeMs": 988.7592719999957,
+          "afterMs": 722.3237789999985
+        }
+      ]
+    }
+  ],
+  "sourceHashes": {
+    "shared/70-ui.js": "d8ac96b7dd4538ab57de57bed4c9b722b6196f9328f541764bf0d83dd1e8b612",
+    "shared/90-entry.js": "6e5c262b18259b829deea79d5363ac08ee2e4a17403bddfea7a843f119909e8d",
+    "shared/frag/raycast-bounds.js": "5bb644698794f2a0c82faf78fae2e59caa17af3d485ab301c98c948c5f2b9504"
+  }
+}

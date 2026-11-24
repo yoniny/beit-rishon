@@ -3395,7 +3395,14 @@
       {   // KIYOR_A2: 1 - the west spout (the winner), 12 - all twelve; built again when the laver's size changed
         const sz = SH.kiyorSize ? SH.kiyorSize.mode : "", want = N.kidWater >= 12 ? "all" : N.kidWater > 0 ? "one" : "";
         if (want && (!W.kidWater || W.kidWater.userData.k !== want + sz)) {
-          if (W.kidWater) W.group.remove(W.kidWater);
+          if (W.kidWater) {
+            W.group.remove(W.kidWater);
+            // KID.water owns these geometries and its one shared-within-the-group material. Removing the group alone
+            // leaves their renderer allocations alive after every one/all-spout or laver-size change.
+            const materials = new Set();
+            W.kidWater.traverse((o) => { if (o.isMesh) { o.geometry.dispose(); materials.add(o.material); } });
+            for (const material of materials) material.dispose();
+          }
           try { W.kidWater = KID.water(want === "all" ? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] : [6]); W.kidWater.userData.k = want + sz; } catch (_) { W.kidWater = null; }
         }
         if (W.kidWater) { W.kidWater.visible = !!want; if (want) KID.waterAt(W.kidWater); }   // KIDDUSH_WATER_A2

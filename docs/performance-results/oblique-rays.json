@@ -1,0 +1,316 @@
+{
+  "baseCommit": "2f846d2d81435ff9d1846382cb1b4eaa0c3ea1e4",
+  "sourceHashes": {
+    "shared/frag/terrain-raycast.js": "f4c5a58912fd38249e9110ba9b5d3ce9d8b0a067a28a363cc049c370e73faca3",
+    "shared/frag/raycast-bounds.js": "5bb644698794f2a0c82faf78fae2e59caa17af3d485ab301c98c948c5f2b9504"
+  },
+  "note": "Same current model/scene/candidates. Reference replaces only the coarse terrain triangle method with original Three.js. Node CPU queries; DOM/canvas/audio stubbed, no GPU/FPS/whole-application claim.",
+  "environment": {
+    "node": "v24.22.3",
+    "platform": "linux",
+    "arch": "x64",
+    "cpu": "AMD EPYC 9V74 80-Core Processor"
+  },
+  "viewport": {
+    "width": 960,
+    "height": 600,
+    "fov": 48
+  },
+  "statistic": "Median of three paired warm batches after one warmup of each path; alternate measurement order. No timing threshold is asserted.",
+  "states": [
+    {
+      "house": "rishon",
+      "state": "coarse-rashi",
+      "reading": "rashi",
+      "valleyCells": 0,
+      "probeRays": 64,
+      "exactComparisons": 192,
+      "terrainHits": 80,
+      "views": [
+        "overview",
+        "ulamInside",
+        "menorot",
+        "kodesh"
+      ],
+      "timings": [
+        {
+          "workload": "terrain-only",
+          "queriesPerBatch": 24,
+          "hitQueries": 24,
+          "baselineMs": 1261.3962820000015,
+          "candidateMs": 3.4071680000015476,
+          "samples": {
+            "before": [
+              {
+                "ms": 1261.3962820000015,
+                "hits": 24
+              },
+              {
+                "ms": 1242.548479000001,
+                "hits": 24
+              },
+              {
+                "ms": 1280.2280539999992,
+                "hits": 24
+              }
+            ],
+            "after": [
+              {
+                "ms": 3.4071680000015476,
+                "hits": 24
+              },
+              {
+                "ms": 3.873416999998881,
+                "hits": 24
+              },
+              {
+                "ms": 2.9920860000020184,
+                "hits": 24
+              }
+            ]
+          }
+        },
+        {
+          "workload": "cursor-anchor",
+          "queriesPerBatch": 24,
+          "hitQueries": 24,
+          "baselineMs": 1093.5871609999995,
+          "candidateMs": 77.81142499999987,
+          "samples": {
+            "before": [
+              {
+                "ms": 1082.6412859999982,
+                "hits": 24
+              },
+              {
+                "ms": 1093.5871609999995,
+                "hits": 24
+              },
+              {
+                "ms": 1148.6876679999987,
+                "hits": 24
+              }
+            ],
+            "after": [
+              {
+                "ms": 84.86233600000196,
+                "hits": 24
+              },
+              {
+                "ms": 77.81142499999987,
+                "hits": 24
+              },
+              {
+                "ms": 74.30702100000053,
+                "hits": 24
+              }
+            ]
+          }
+        }
+      ],
+      "firstMeasuredQueryMs": 59.388215000000855
+    },
+    {
+      "house": "rishon",
+      "state": "refined-rashi",
+      "reading": "rashi",
+      "valleyCells": 995,
+      "probeRays": 64,
+      "exactComparisons": 192,
+      "terrainHits": 68,
+      "views": [
+        "overview",
+        "ulamInside",
+        "menorot",
+        "kodesh"
+      ],
+      "timings": [
+        {
+          "workload": "terrain-only",
+          "queriesPerBatch": 24,
+          "hitQueries": 24,
+          "baselineMs": 1269.291406999997,
+          "candidateMs": 3.094398999994155,
+          "samples": {
+            "before": [
+              {
+                "ms": 1272.0594869999986,
+                "hits": 24
+              },
+              {
+                "ms": 1263.574225999997,
+                "hits": 24
+              },
+              {
+                "ms": 1269.291406999997,
+                "hits": 24
+              }
+            ],
+            "after": [
+              {
+                "ms": 3.094398999994155,
+                "hits": 24
+              },
+              {
+                "ms": 2.9237240000002203,
+                "hits": 24
+              },
+              {
+                "ms": 3.1051949999964563,
+                "hits": 24
+              }
+            ]
+          }
+        },
+        {
+          "workload": "cursor-anchor",
+          "queriesPerBatch": 24,
+          "hitQueries": 24,
+          "baselineMs": 1096.4255430000048,
+          "candidateMs": 77.70150000000285,
+          "samples": {
+            "before": [
+              {
+                "ms": 1096.4255430000048,
+                "hits": 24
+              },
+              {
+                "ms": 1069.0477679999967,
+                "hits": 24
+              },
+              {
+                "ms": 1106.859304000005,
+                "hits": 24
+              }
+            ],
+            "after": [
+              {
+                "ms": 78.80404499999713,
+                "hits": 24
+              },
+              {
+                "ms": 77.41473199999746,
+                "hits": 24
+              },
+              {
+                "ms": 77.70150000000285,
+                "hits": 24
+              }
+            ]
+          }
+        }
+      ],
+      "firstMeasuredQueryMs": 54.81910499999867
+    },
+    {
+      "house": "rishon",
+      "state": "refined-rambam",
+      "reading": "rambam",
+      "valleyCells": 995,
+      "probeRays": 64,
+      "exactComparisons": 192,
+      "terrainHits": 68,
+      "views": [
+        "overview",
+        "ulamInside",
+        "menorot",
+        "kodesh"
+      ],
+      "timings": [],
+      "firstMeasuredQueryMs": 53.67841499999486
+    },
+    {
+      "house": "sheni",
+      "state": "default",
+      "reading": null,
+      "valleyCells": 0,
+      "probeRays": 64,
+      "exactComparisons": 192,
+      "terrainHits": 76,
+      "views": [
+        "overview",
+        "menorah",
+        "kodesh",
+        "kodeshHakodashim"
+      ],
+      "timings": [
+        {
+          "workload": "terrain-only",
+          "queriesPerBatch": 24,
+          "hitQueries": 24,
+          "baselineMs": 1266.9660900000017,
+          "candidateMs": 3.0349800000112737,
+          "samples": {
+            "before": [
+              {
+                "ms": 1266.9660900000017,
+                "hits": 24
+              },
+              {
+                "ms": 1213.8171180000063,
+                "hits": 24
+              },
+              {
+                "ms": 1337.0467109999881,
+                "hits": 24
+              }
+            ],
+            "after": [
+              {
+                "ms": 3.2069570000021486,
+                "hits": 24
+              },
+              {
+                "ms": 3.0349800000112737,
+                "hits": 24
+              },
+              {
+                "ms": 2.996211999998195,
+                "hits": 24
+              }
+            ]
+          }
+        },
+        {
+          "workload": "cursor-anchor",
+          "queriesPerBatch": 24,
+          "hitQueries": 24,
+          "baselineMs": 1545.7152270000079,
+          "candidateMs": 121.09248400000797,
+          "samples": {
+            "before": [
+              {
+                "ms": 1545.7152270000079,
+                "hits": 24
+              },
+              {
+                "ms": 1506.595272999999,
+                "hits": 24
+              },
+              {
+                "ms": 1603.9168740000023,
+                "hits": 24
+              }
+            ],
+            "after": [
+              {
+                "ms": 122.06908799998928,
+                "hits": 24
+              },
+              {
+                "ms": 117.13025400000333,
+                "hits": 24
+              },
+              {
+                "ms": 121.09248400000797,
+                "hits": 24
+              }
+            ]
+          }
+        }
+      ],
+      "firstMeasuredQueryMs": 0.38571800000499934
+    }
+  ],
+  "firstQueryNote": "First measured query after each model state change is reported separately. It is not necessarily cold because model builders can query the terrain."
+}

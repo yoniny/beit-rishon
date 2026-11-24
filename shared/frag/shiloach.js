@@ -87,6 +87,35 @@
     const clumpL = (lx, ly, lz, s, n) => { for (let k = 0; k < (n || 8); k++) { const f = new Mesh(frond, fernM); f.position.set(lx, ly, lz); f.rotation.set(-0.35 - rr() * 0.6, k * (6.28 / (n || 8)) + rr() * 0.5, 0, "YXZ"); f.scale.setScalar(s * (0.75 + rr() * 0.45)); G.add(noPick(f)); } };
     const boulderL = (lx, ly, lz, s) => { const b = new Mesh(BLOBS[Math.floor(rr() * BLOBS.length)], boulM); b.position.set(lx, ly, lz); b.scale.set(s * (1 + rr() * 0.4), s * (0.55 + rr() * 0.25), s * (0.9 + rr() * 0.3)); b.rotation.y = rr() * 6.3; b.castShadow = b.receiveShadow = true; G.add(noPick(b)); return b; };
     const bushL = (lx, ly, lz, s) => { for (let k = 0; k < 4; k++) { const b = new Mesh(BLOBS[(k + 2) % BLOBS.length], leafM[k % 3]); b.position.set(lx + (rr() - 0.5) * s, ly + s * (0.35 + rr() * 0.3), lz + (rr() - 0.5) * s); b.scale.set(s * 0.6, s * 0.45, s * 0.6); G.add(noPick(b)); } clumpL(lx, ly, lz, s * 0.8, 5); };
+    // Finalize after the house has cleared individual plants out of its channel. Ferns use alphaTest, not blended
+    // transparency: their identical geometry/material can share draws while retaining every leaf and its depth test.
+    // The first house's existing opaque merge makes every merged material receive shadows; retain that policy there.
+    const batchPlants = (mergedShadows = false) => {
+      const batches = new Map(), materialCounts = new Map();
+      for (const m of G.children) if (m.isMesh && !m.isInstancedMesh && m.material && !m.material.transparent) materialCounts.set(m.material, (materialCounts.get(m.material) || 0) + 1);
+      for (const m of G.children) {
+        if (!m.isMesh || m.isInstancedMesh || !m.visible || m.material.transparent ||
+            !(m.geometry === frond && m.material === fernM || BLOBS.includes(m.geometry) && leafM.includes(m.material))) continue;
+        const key = m.geometry.uuid + ":" + m.material.uuid + ":" + m.castShadow + ":" + m.receiveShadow + ":" + m.renderOrder + ":" + m.layers.mask;
+        if (!batches.has(key)) batches.set(key, []);
+        batches.get(key).push(m);
+      }
+      for (const list of batches.values()) {
+        if (list.length < 2) {
+          if (mergedShadows && materialCounts.get(list[0].material) >= 3) list[0].receiveShadow = true;
+          continue;
+        }
+        const first = list[0], im = new InstancedMesh(first.geometry, first.material, list.length);
+        list.forEach((m, i) => { m.updateMatrix(); im.setMatrixAt(i, m.matrix); });
+        im.instanceMatrix.needsUpdate = true;
+        im.castShadow = first.castShadow;
+        im.receiveShadow = mergedShadows && materialCounts.get(first.material) >= 3 ? true : first.receiveShadow;
+        im.renderOrder = first.renderOrder; im.layers.mask = first.layers.mask;
+        im.computeBoundingSphere(); im.userData.noPick = true;
+        for (const m of list) G.remove(m);
+        G.add(im);
+      }
+    };
     // (BROW_OFF_B2, the user's decision 176 a: the orange stone over the opening, "like a hat" - removed; the opening stays in the rock)
     const toL = (fn) => (wx, wy, wz, s) => { const [lx, lz] = L(wx, wz); return fn(lx, wy, lz, s); };
     // ---- the basin under the fall: a round bed of stone, its water turning (the whirlpool), grey boulders round it, open toward the front
@@ -201,5 +230,5 @@
     // where one stands to fill a vessel under the fall (NATURAL_POOL_B2): on the bank on the fall's left, facing across it; off = the vessel's
     // mouth from the figure in the figure's own frame (facing +z) - { x, z } -> { x, z, yaw } in the world
     const standFor = (off) => { const ox = (off && off.x) || 0, oz = (off && off.z) || 0.9; if (!LK) { const [x, z] = W(-ox, FZ - oz); return { x, z, yaw }; } const [x, z] = W(-oz, FZ + ox); return { x, z, yaw: yaw + Math.PI / 2 }; };
-    return { G, mouth: { x: mx, y: MY, z: mz }, basinY: BY, pool: POOL, lake: LAKE, standFor, setBottom, setLit, roar, tick, swirlMat, clump: toL(clumpL), boulder: toL(boulderL), bush: toL(bushL), lights: { torch, moon } };
+    return { G, mouth: { x: mx, y: MY, z: mz }, basinY: BY, pool: POOL, lake: LAKE, standFor, setBottom, setLit, roar, tick, swirlMat, batchPlants, clump: toL(clumpL), boulder: toL(boulderL), bush: toL(bushL), lights: { torch, moon } };
   }

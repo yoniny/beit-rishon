@@ -12,6 +12,7 @@
       const g = o.geometry, p = g && g.attributes && g.attributes.position;
       // A custom/deformed raycast may hit outside the ordinary vertex box. Let it run.
       if (!o.isMesh || o.isSkinnedMesh || o.isBatchedMesh || !p || p.isGLBufferAttribute ||
+          o.getVertexPosition !== Mesh.prototype.getVertexPosition ||
           (g.morphAttributes.position && g.morphAttributes.position.length) ||
           o.raycast !== (o.isInstancedMesh ? InstancedMesh.prototype.raycast : Mesh.prototype.raycast)) return null;
       let gb = geometryBounds.get(g);
@@ -64,10 +65,10 @@
     // only once their conservative entry distance exceeds the nearest exact hit.
     // Tied hits retain the input object's order, exactly as Raycaster's stable sort.
     const entry = new Vector3();
-    intersect.first = (ray, objects) => {
+    const first = (ray, objects, accept, recursive) => {
       const candidates = [];
       for (let i = 0; i < objects.length; i++) {
-        const o = objects[i], box = bounds(o);
+        const o = objects[i], descend = !!(recursive && recursive.has(o)), box = descend ? null : bounds(o);
         let distance = -Infinity;   // no conservative bound: this object must be tested
         if (box) {
           if (box.containsPoint(ray.ray.origin)) distance = 0;
@@ -77,15 +78,17 @@
             if (distance > ray.far) continue;
           }
         }
-        candidates.push({ o, distance, order: i });
+        candidates.push({ o, distance, order: i, descend });
       }
       candidates.sort((a, b) => a.distance - b.distance || a.order - b.order);
       let best = null, order = Infinity;
       const hits = [];
       for (const c of candidates) {
         if (best && c.distance > best.distance) break;
-        ray.intersectObject(c.o, false, hits);
-        const h = hits[0];
+        ray.intersectObject(c.o, c.descend, hits);
+        // A clipped face or a transparent material can precede another usable face
+        // of the same mesh. Keep looking within that mesh before choosing the hit.
+        const h = accept ? hits.find(accept) : hits[0];
         if (h && (!best || h.distance < best.distance || h.distance === best.distance && c.order < order)) {
           best = h;
           order = c.order;
@@ -93,6 +96,31 @@
         hits.length = 0;
       }
       return best;
+    };
+    intersect.first = (ray, objects, accept) => first(ray, objects, accept);
+    // UI picks used to raycast the entire model, including hidden demonstrations,
+    // before rejecting their hits. Preserve their per-face filters and depth-first
+    // tie order, but visit only visible candidates. Custom raycasts keep their own
+    // recursive traversal: returning false must still suppress their children.
+    intersect.firstVisible = (ray, root, accept) => {
+      const objects = [], recursive = new Set();
+      for (let p = root; p; p = p.parent) if (!p.visible) return null;
+      const visit = (o) => {
+        if (!o.visible) return;
+        const cast = o.raycast;
+        const ordinary = cast === Object3D.prototype.raycast || cast === Mesh.prototype.raycast ||
+          cast === InstancedMesh.prototype.raycast || cast === Line.prototype.raycast ||
+          cast === Points.prototype.raycast || cast === Sprite.prototype.raycast;
+        if (!ordinary && o.layers.test(ray.layers)) {
+          objects.push(o);
+          recursive.add(o);
+          return;
+        }
+        if (o.isMesh && !o.userData.noPick) objects.push(o);
+        for (const child of o.children) visit(child);
+      };
+      for (const child of root.children) visit(child);
+      return first(ray, objects, accept, recursive);
     };
     return intersect;
   }

@@ -546,9 +546,26 @@
       LOD.push({ near, mid, far, anchor, parent, R: R * 1.0, lv: 1, k: o.lodK > 0 ? o.lodK : 1, min: o.minLv | 0, tef, close });   // PEOPLE_LOD_304: lodK, minLv (this house's copy); TEFILLIN_A2; FACE_E: close
       // MUSICIANS_305: the crowd's handle - its level of detail, and a figure moved (its matrix: place, turn, scale)
       const lodE = LOD[LOD.length - 1], allIm = [cloth, skin, fm, mCl, mSk, mHr].concat(avN ? [avN, avD] : [], tef ? [tef] : []).filter(Boolean);   // AVNET_305, TEFILLIN_A2
+      let disposed = false;
       near.userData.crowd = {
         lod: lodE,
+        // Removing scene children alone leaves their LOD entry (and sash-material subscription) alive. Release only this
+        // crowd's instance buffers: its geometry, face textures and ordinary materials belong to the shared people cache.
+        dispose() {
+          if (disposed) return;
+          disposed = true;
+          const i = LOD.indexOf(lodE);
+          if (i >= 0) LOD.splice(i, 1);
+          for (const im of avN ? [avN, avD] : []) {
+            const j = AVN.meshes.indexOf(im);
+            if (j >= 0) AVN.meshes.splice(j, 1);
+          }
+          for (const im of allIm.concat([head], hairs, clAll)) im.dispose();
+          if (o.mum && o.mum.legOut) mCl0.dispose();   // this crowd's private double-sided clone
+          for (const g of [near, mid, far, anchor]) { g.removeFromParent(); g.clear(); }
+        },
         pose(i, m) {
+          if (disposed) return;
           for (const im of allIm) im.setMatrixAt(i, m);
           M[i].copy(m);
           poseVersion++;
@@ -556,7 +573,7 @@
           if (c) { CL.head.setMatrixAt(c[0], m); CL.eyes.setMatrixAt(c[0], m); CL.hair[c[1]].setMatrixAt(c[2], m); }   // FACE_E: a near one - its full face moves
           else { head.setMatrixAt(i, m); if (sl) hairs[sl[0]].setMatrixAt(sl[1], m); }
         },
-        done() { for (const im of allIm.concat([head], hairs, clAll)) im.instanceMatrix.needsUpdate = true; }
+        done() { if (!disposed) for (const im of allIm.concat([head], hairs, clAll)) im.instanceMatrix.needsUpdate = true; }
       };
       return near;
     };

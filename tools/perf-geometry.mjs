@@ -29,11 +29,12 @@ function domStub() {
   // No pixel claims are made from this stub; retaining texture dimensions/settings still catches accidental material changes.
   const canvas = () => {
     const style = { setProperty: noop };
-    const cv = { width: 256, height: 256, style, addEventListener: noop, removeEventListener: noop, appendChild: noop };
+    const cv = { width: 256, height: 256, style, textCalls: [], addEventListener: noop, removeEventListener: noop, appendChild: noop, setAttribute: noop };
     const gradient = { addColorStop: noop };
     const context = new Proxy({
       canvas: cv, createLinearGradient: () => gradient, createRadialGradient: () => gradient,
       measureText: text => ({ width: String(text).length * 12 }),
+      fillText(text, x, y) { cv.textCalls.push([text, x, y, this.font, this.fillStyle]); },
       createImageData: (w, h) => ({ data: new Uint8ClampedArray(w * h * 4) }),
       getImageData: (x, y, w, h) => ({ data: new Uint8ClampedArray(w * h * 4) }), getLineDash: () => []
     }, { get: (target, key) => key in target ? target[key] : noop });
@@ -47,7 +48,7 @@ function domStub() {
   };
 }
 
-export async function buildModel(house, sourceRoot) {
+export async function buildModel(house, sourceRoot, { uiLabels = false } = {}) {
   const document = domStub();
   const window = { performance, addEventListener: noop, removeEventListener: noop, innerWidth: 640, innerHeight: 400, devicePixelRatio: 1 };
   const sandbox = { console, document, window, performance, setTimeout: noop, clearTimeout: noop, setInterval: noop,
@@ -57,7 +58,17 @@ export async function buildModel(house, sourceRoot) {
   const entry = houseText(house, '90-entry.js', sourceRoot);
   const sectionStart = entry.indexOf('  var ent_sec ='), sectionEnd = entry.indexOf('  // 1.0.1-H', sectionStart);
   assert(sectionStart >= 0 && sectionEnd > sectionStart, 'entry section block could not be found');
-  const code = modules[house].map(name => houseText(house, name, sourceRoot)).join('\n') + `
+  // Opt in to the real label painter for replay/resource tests, without initializing the UI.
+  let labelCode = '';
+  if (uiLabels) {
+    const ui = houseText(house, '70-ui.js', sourceRoot);
+    const names = ui.match(/^  var UI_SRC_NAME = .+$/m);
+    const runs = ui.indexOf('  function ui_srcIs('), runsEnd = ui.indexOf('  function ui_fillSrc(', runs);
+    const paint = ui.indexOf('  function ui_labelText('), paintEnd = ui.indexOf('  // UI_UNIFY_A2', paint);
+    assert(names && runs >= 0 && runsEnd > runs && paint >= 0 && paintEnd > paint, 'production label painter boundaries');
+    labelCode = names[0] + '\n' + ui.slice(runs, runsEnd) + ui.slice(paint, paintEnd);
+  }
+  const code = modules[house].map(name => houseText(house, name, sourceRoot)).join('\n') + labelCode + `
     var scene = new Scene(), camera = new PerspectiveCamera(45, 1, .1, 10000), root = new Group();
     scene.add(root); camera.position.set(500, 300, 500);
     var controls = { target: new Vector3(), update: () => {}, addEventListener: () => {} };

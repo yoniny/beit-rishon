@@ -797,6 +797,7 @@
         SHL.kit = tm_shiloach(ctx2, { x: SP.x, z: SP.z, mouthY: SP.y, yaw: 0, ground: (x, z) => groundY(x, z, 20), parent: SG, seed: 5507, name: "shiloachSpring",
           basinY: SP.base, basinDz: 0.55, fallZ: SP.z - SP.zT, pool: null, lake: { dx: SHL.POOL[0] - SP.x, dz: SHL.POOL[1] - SP.z, rx: 3.2, rz: 2.3 },   // NATURAL_POOL_B2 (decision 122 b): the fall drops into a natural pool; the walled pool of before - gone
           lights: { torch: 85, moon: 34 }, sfx: (n, op) => { if (typeof SH.sfx === "function") SH.sfx(n, op); }, roar: { name: "water", dur: 4.5, gain: 3.2 } });
+        SHL.kit.batchPlants();
         Y0 = SHL.kit.pool ? SHL.kit.pool.y0 : gy;
         SP.base = SHL.kit.basinY;
         if (!(typeof SH.camLow === "number" && SH.camLow <= Y0 - 3)) SH.camLow = Y0 - 3;   // SHILOACH_WEST_B2: the eye (and the walk mode) may go down into the valley, to the spring
@@ -2126,7 +2127,11 @@
         //      their plainer levels sooner than the kit's (lodK 2.2: PEOPLE_LOD_304)
         const crowdG = new Group(); crowdG.name = "simchaCrowd"; DG.add(crowdG);
         const fillCrowd = () => {   // SIMCHA_LAMPS_B2: the people's layout, again when the lamps have moved
-        for (let i = crowdG.children.length - 1; i >= 0; i--) crowdG.remove(crowdG.children[i]);
+        for (const child of crowdG.children.slice()) {
+          const crowd = child.userData.crowd;
+          if (crowd) crowd.dispose();
+        }
+        crowdG.clear();
         const SPOTS = lampSpots(), COLS = SH.eznRoof && SH.eznRoof.on && Array.isArray(SH.eznRoof.cols) ? SH.eznRoof.cols : [];
         B.crowdKey = lampKey();
         const free = (x, z) => {

@@ -548,7 +548,7 @@
       ];
       const RIM = { k: "#e2a400", l: "#c0552f", i: "#3f9a55", p: "#6f93c4" }, ROBES = { k: 0xf1ede2, l: 0x8f8468, i: 0x6b5a3e, p: 0x56606e };
       const mDisc = { k: new MeshBasicMaterial({ color: 0xe2a400 }), l: new MeshBasicMaterial({ color: 0xa8452a }), i: new MeshBasicMaterial({ color: 0x3f9a55 }), p: new MeshBasicMaterial({ color: 0x5f84b8 }) };
-      const gDisc = new CylinderGeometry(1.1, 1.1, 0.25, 20), DISCS = [], RODS = [], ROD_OF = [], LBL = [];
+      const gDisc = new CylinderGeometry(1.1, 1.1, 0.25, 20), DISCS = [], RODS = [], ROD_OF = [], LBL = [], MEN = [];
       for (const [num, name, kind, x, z, fl, , , sh] of OFF) {
         // NOTE 8 (U-55): the plate seen from above carries the name too ("1 · יוחנן בן פנחס — החותמות"), a little smaller for its length
         const a = { text: num, x: x + sh[0], y: fl + 9.5 + sh[1], z: z + sh[2], size: 2.1, box: true, rim: RIM[kind], onTop: true, far: 1500, layer: "memunim" };
@@ -565,7 +565,10 @@
           const [, , kind, x, z, fl, yaw, tone] = OFF[i];
           let y = typeof fy === "function" ? fy(x, fl + 2.2, z) : NaN;
           if (!(isFinite(y) && Math.abs(y - fl) < 1.2)) y = fl;
-          if (tone >= 0) PP.crowd(MG, [[x, z, yaw]], { y, s: 1.5, pose: "stand", kind: kind === "k" ? "kohen" : kind === "l" ? "levi" : "worker", robe: ROBES[kind], tone: () => tone, name: "memuneh" + (i + 1) });
+          if (tone >= 0) {
+            const near = PP.crowd(MG, [[x, z, yaw]], { y, s: 1.5, pose: "stand", kind: kind === "k" ? "kohen" : kind === "l" ? "levi" : "worker", robe: ROBES[kind], tone: () => tone, name: "memuneh" + (i + 1) });
+            MEN[i] = near.userData.crowd;
+          }
           return y;
         };
         OFF.forEach(([, , kind, x, z, fl], i) => {
@@ -625,11 +628,13 @@
           }
         });
         if (!built) return;
-        for (const c of MG.children.filter((c) => c.name === "memuneh" + (GEV_I + 1))) MG.remove(c);
+        // The name belongs to the instanced meshes, not their four LOD groups. Keep the handle so all siblings and their
+        // animation/material subscriptions are released when this officer moves to the other gate reading.
+        if (MEN[GEV_I]) MEN[GEV_I].dispose();
         const y = makeMan(GEV_I);
         DISCS[GEV_I].position.set(x, y + 6.6, z);
         const old = ROD_OF[GEV_I];
-        if (old) { MG.remove(old); const j = RODS.indexOf(old); if (j >= 0) RODS.splice(j, 1); ROD_OF[GEV_I] = null; }
+        if (old) { MG.remove(old); old.geometry.dispose(); const j = RODS.indexOf(old); if (j >= 0) RODS.splice(j, 1); ROD_OF[GEV_I] = null; }
         if (sh[0] || sh[2]) {
           const p = new Vector3(x, y + 6.6, z), q = new Vector3(x + sh[0], fl + 9.5 + sh[1], z + sh[2]), v = q.clone().sub(p), L = v.length();
           const rod = new Mesh(new CylinderGeometry(0.1, 0.1, L, 6), mDisc[row[2]]);

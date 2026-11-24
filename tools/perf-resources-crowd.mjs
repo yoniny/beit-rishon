@@ -99,3 +99,40 @@ assert.equal(current.staticWork, 600, 'stationary crowds must do only the one LO
 assert.equal(current.hiddenWork, 0, 'hidden ancestors must skip crowd LOD and head selection');
 if (baseline) assert.deepEqual(current.states, baseline.states, 'visible LOD/face selection behaviour changed');
 else assert.equal(current.digest, 'af12cd29939bd59f415e976b0548628b017be2e9f889dd98b1cc81b4da5bb58b', 'visible LOD/face selection behaviour changed');
+
+// Removed crowds must leave both animation and material-subscription lists. The geometry/material caches are shared by
+// crowds which remain in the scene, while each InstancedMesh owns GPU instance buffers released by its dispose event.
+{
+  const T = load(source), scene = new T.Scene(), parent = new T.Group(); scene.add(parent);
+  const camera = new T.PerspectiveCamera(45, 1, 0.1, 1000); camera.position.set(0, 2.075, 2);
+  const ctx = { camera, animated: [], shared: { peopleAvnet: { meshes: [], mat: () => new T.MeshStandardMaterial() } } };
+  const kit = T.tm_people(ctx), options = { pose: 'stand', kind: 'kohen', s: 1, y: 0, exact: true, arms: false };
+  const frame = () => { scene.updateMatrixWorld(true); camera.updateMatrixWorld(true); ctx.animated.forEach(f => f()); };
+  const survivor = kit.crowd(parent, [[1, 0, 0]], options);
+  frame();
+  const survivorMeshes = []; parent.traverse(o => { if (o.isInstancedMesh) survivorMeshes.push(o); });
+  const sharedGeometry = new Set(survivorMeshes.map(o => o.geometry)), sharedMaterial = new Set(survivorMeshes.map(o => o.material));
+  let sharedDisposals = 0;
+  for (const resource of [...sharedGeometry, ...sharedMaterial]) resource.addEventListener('dispose', () => sharedDisposals++);
+  const survivors = parent.children.length, subscriptions = ctx.shared.peopleAvnet.meshes.length;
+  let released = 0;
+  for (let cycle = 0; cycle < 40; cycle++) {
+    const near = kit.crowd(parent, [[0, 0, 0], [3, 0, 0]], options), h = near.userData.crowd;
+    frame();
+    const meshes = []; for (const g of [h.lod.near, h.lod.mid, h.lod.far]) g.traverse(o => { if (o.isInstancedMesh) meshes.push(o); });
+    let disposed = 0; for (const mesh of meshes) mesh.addEventListener('dispose', () => disposed++);
+    assert.equal(ctx.shared.peopleAvnet.meshes.length, subscriptions + 2);
+    h.dispose(); h.dispose(); // repeated cleanup is harmless
+    assert.equal(disposed, meshes.length, 'every attached crowd instance buffer must be released exactly once');
+    assert.equal(parent.children.length, survivors, 'all four LOD/anchor siblings must be removed');
+    assert.equal(ctx.shared.peopleAvnet.meshes.length, subscriptions, 'disposed sash meshes must be unsubscribed');
+    assert.equal(sharedDisposals, 0, 'surviving crowds still use the shared geometry and materials');
+    T.reset(); frame();
+    assert.equal(T.work(), 1, 'only the surviving crowd may perform a LOD distance check');
+    released += disposed;
+  }
+  survivor.userData.crowd.dispose(); T.reset(); frame();
+  assert.equal(T.work(), 0, 'disposing the last crowd must remove all LOD work');
+  assert.equal(ctx.shared.peopleAvnet.meshes.length, 0);
+  console.log(JSON.stringify({ lifecycle: { rebuildCycles: 40, releasedInstanceMeshes: released, retainedSashSubscriptions: 0, disposedSharedResources: sharedDisposals } }));
+}

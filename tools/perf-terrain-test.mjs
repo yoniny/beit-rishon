@@ -192,14 +192,14 @@ check('widespread horizontal deformation keeps the exact full-triangle fallback'
   for (let z = 2; z < nz; z += 3) for (let x = 2; x < nx; x += 3) compare(m, ray(...coordinate(m, nx, x, z)));
 });
 
-check('parent translation/rotation/nonuniform and negative scale; angled-ray fallback', () => {
+check('parent translation/rotation/nonuniform and negative scale; local oblique rays', () => {
   const m = make(), parent = new T.Group(); parent.add(m);
   parent.position.set(50, 20, -30); parent.scale.set(-2, 3, 0.7); parent.rotation.y = 0.3; parent.updateMatrixWorld(true);
   const local = new T.Vector3(317.123, 0, -23.75), world = local.clone().applyMatrix4(m.matrixWorld);
   assert.ok(compare(m, ray(world.x, world.z)).length);
   parent.rotation.x = 0.2; parent.rotation.z = -0.1; parent.updateMatrixWorld(true);
   world.copy(local).applyMatrix4(m.matrixWorld);
-  assert.ok(compare(m, ray(world.x, world.z)).length, 'a world vertical ray can require the local angled fallback');
+  assert.ok(compare(m, ray(world.x, world.z)).length, 'a world vertical ray can be oblique in mesh-local coordinates');
   const origin = world.clone().add(new T.Vector3(10, 100, 20)), direction = world.clone().sub(origin).normalize();
   assert.ok(compare(m, new T.Raycaster(origin, direction, 0, 500)).length);
 });
@@ -291,5 +291,99 @@ check('eight locally shifted vertices retain a bounded fast path on the real 220
     assert.ok(vertices > 0 && vertices <= (15 + 9) * 6, `sparse changes must not fall back to all 96,800 triangles (${vertices / 3} visited)`);
     console.log(JSON.stringify({ workload: 'one warm 220-grid ray after eight vertices shift horizontally', optimizedTriangles: vertices / 3 }));
   } finally { T.Mesh.prototype.getVertexPosition = get; }
+});
+const aim = (origin, target, near = 0, far = 1e20) => new T.Raycaster(origin, target.clone().sub(origin).normalize(), near, far);
+const trianglePoint = (m, face, weights = [1 / 3, 1 / 3, 1 / 3]) => {
+  const p = m.geometry.attributes.position, index = m.geometry.index, v = new T.Vector3();
+  for (let j = 0; j < 3; j++) {
+    const i = index.getX(face * 3 + j); v.x += p.getX(i) * weights[j]; v.y += p.getY(i) * weights[j]; v.z += p.getZ(i) * weights[j];
+  }
+  return v;
+};
+
+check('320 seeded oblique rays on the 220 grid, including upward and shallow multi-hit rays', () => {
+  const m = make(220, 220, 5200, 5200);
+  let seed = 1207324, hitQueries = 0;
+  const random = () => ((seed = Math.imul(seed, 1664525) + 1013904223 | 0) >>> 0) / 4294967296;
+  for (let i = 0; i < 320; i++) {
+    const target = trianglePoint(m, Math.floor(random() * m.geometry.index.count / 3));
+    const origin = target.clone().add(new T.Vector3((random() - 0.5) * 8000, (random() - 0.5) * (i % 3 ? 600 : 5), (random() - 0.5) * 8000));
+    if (compare(m, aim(origin, target)).length) hitQueries++;
+  }
+  assert(hitQueries > 300, 'the randomized workload must exercise actual terrain hits');
+});
+
+check('oblique rays at vertices and shared edges, grid exits, grazing and nearly vertical directions', () => {
+  const nx = 7, nz = 9, m = make(nx, nz), p = m.geometry.attributes.position;
+  const directions = [[1, 0, 0], [0, 0, 1], [1, 0, 1], [1, -0.2, -1], [-1, 0.2, 1],
+    [1e-12, -1, 0], [0, 1, 1e-12], [1e-300, -1, 1e-300], [Number.MIN_VALUE, -1, 0]];
+  for (let z = 0; z <= nz; z += 2) for (let x = 0; x <= nx; x += 2) {
+    const i = z * (nx + 1) + x, target = new T.Vector3(p.getX(i), p.getY(i), p.getZ(i));
+    for (const d of directions) for (const delta of [0, 1e-7, -1e-7]) {
+      const direction = new T.Vector3(...d).normalize(), origin = target.clone().addScaledVector(direction, -150); origin.x += delta;
+      compare(m, new T.Raycaster(origin, direction, 0, 500));
+    }
+  }
+  const [x0, x1, z0, z1] = bounds(m);
+  for (const origin of [new T.Vector3(x0 - 1, 0, z0 - 1), new T.Vector3(x1 + 1, 0, z1 + 1), new T.Vector3(x0, 100, z1)]) {
+    for (const direction of [new T.Vector3(1, 0, 0), new T.Vector3(-1, 0, 0), new T.Vector3(0, 0, 1), new T.Vector3(0, 0, -1)])
+      compare(m, new T.Raycaster(origin, direction, 0, 500));
+  }
+});
+
+check('oblique folds outside the grid, missing/reordered cells, attribute versions and partial draw ranges', () => {
+  const nx = 18, nz = 16, m = make(nx, nz, 180, 160), g = m.geometry, p = g.attributes.position;
+  const moved = new Set([5 * (nx + 1) + 4, 10 * (nx + 1) + 9]);
+  compare(m, aim(new T.Vector3(300, 80, 100), trianglePoint(m, 50))); // warm before deformation
+  let step = 0;
+  for (const i of moved) { p.setX(i, p.getX(i) + (step++ ? -340 : 400)); p.setY(i, p.getY(i) + 45); p.setZ(i, p.getZ(i) + 230); }
+  p.needsUpdate = true; refresh(m);
+  const test = () => {
+    const faces = [];
+    for (let i = 0; i < g.index.count; i += 3) if ([0, 1, 2].some(j => moved.has(g.index.getX(i + j)))) faces.push(i / 3);
+    for (const face of faces) for (const weights of [[1 / 3, 1 / 3, 1 / 3], [1, 0, 0], [0.5, 0.5, 0]]) {
+      const target = trianglePoint(m, face, weights);
+      for (const offset of [[-500, 100, -80], [250, -30, 400], [100, 0.01, -350], [0, 180, 1e-8]])
+        compare(m, aim(target.clone().add(new T.Vector3(...offset)), target));
+    }
+  };
+  test();
+  const index = [...g.index.array], blocks = Array.from({ length: index.length / 6 }, (_, i) => index.slice(i * 6, i * 6 + 6));
+  g.setIndex(blocks.filter((_, i) => i % 5 !== 0).reverse().flat()); test();
+  const swap = g.index.array.slice(0, 6); g.index.array.copyWithin(0, g.index.count - 6); g.index.array.set(swap, g.index.count - 6);
+  g.index.needsUpdate = true; test();
+  p.setY([...moved][0], -80); p.needsUpdate = true; refresh(m); test();
+  for (const [start, count] of [[0, 0], [3, 27], [15, 88], [1, 23], [0, Infinity]]) { g.setDrawRange(start, count); test(); }
+});
+
+check('oblique transformed, nonuniform/negative-scale terrain, material sides, near/far and large origins', () => {
+  const m = make(16, 18, 320, 360), parent = new T.Group(); parent.add(m);
+  parent.position.set(50, 20, -30); parent.scale.set(-2, 3, 0.7); parent.rotation.set(0.2, 0.3, -0.1); parent.updateMatrixWorld(true);
+  for (const face of [0, 91, 288, 395, 575]) {
+    const target = trianglePoint(m, face).applyMatrix4(m.matrixWorld);
+    for (const offset of [[180, 100, 230], [80, -90, -100], [1e8, 1e8, 1e8], [1e12, 1e12, -1e12], [1e15, -1e15, 1e15]]) {
+      for (const side of [T.FrontSide, T.BackSide, T.DoubleSide]) {
+        m.material.side = side;
+        const origin = target.clone().add(new T.Vector3(...offset)), distance = origin.distanceTo(target);
+        for (const [near, far] of [[0, Infinity], [distance - 1, distance + 1], [0, distance - 10]]) compare(m, aim(origin, target, near, far));
+      }
+    }
+  }
+});
+
+check('a warm grazing diagonal visits a bounded strip instead of all 96,800 triangles', () => {
+  const nx = 220, m = make(nx, nx, 5200, 5200), accelerated = m._computeIntersections, [x0, , z0] = bounds(m);
+  const r = new T.Raycaster(new T.Vector3(x0 - 100, 0, z0 - 100), new T.Vector3(1, 0, 1).normalize(), 0, Infinity);
+  compare(m, r); // warm lookup
+  let vertices = 0; const get = T.Mesh.prototype.getVertexPosition;
+  T.Mesh.prototype.getVertexPosition = function (i, v) { vertices++; return get.call(this, i, v); };
+  try {
+    vertices = 0; m._computeIntersections = original; const expected = r.intersectObject(m, false), baselineVertices = vertices;
+    vertices = 0; m._computeIntersections = accelerated; const actual = r.intersectObject(m, false), optimizedVertices = vertices;
+    assert.deepEqual(actual.map(fullHit), expected.map(fullHit)); assert.ok(actual.length > 0);
+    assert.equal(baselineVertices / 3, 96800);
+    assert.ok(optimizedVertices > 0 && optimizedVertices / 3 < 10 * (nx + nx), 'diagonal triangle work stays proportional to grid width/height');
+    console.log(JSON.stringify({ workload: 'warm grazing diagonal through a 220-grid', hits: actual.length, baselineTriangles: baselineVertices / 3, optimizedTriangles: optimizedVertices / 3 }));
+  } finally { m._computeIntersections = accelerated; T.Mesh.prototype.getVertexPosition = get; }
 });
 console.log(`${groups} terrain regression groups passed; ${queries} full-hit comparisons (Three.js r${T.REVISION}).`);
