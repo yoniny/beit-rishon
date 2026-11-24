@@ -2265,7 +2265,7 @@
             ["o1", "הרמב״ם — שבכה נמוכה ברצפה", "**פירוש המשניות לרמב״ם** (מידות א, ו): ״...ושתים חול, עשו בקרקעיתם ממעל שבכות להבדיל קרקע השתים של הקדש מקרקע שתים של חול. ופשפש הוא דבר קטן מפסיק מנוקב נקבים קטנים, לפעמים עושים אותו מקנים... ולפעמים עושין מעצים ונקראים אצלנו שבכות״.\nבמודל: שבכה נמוכה של עץ על הרצפה, לאורך הקו — בבית המוקד (חוץ מן המעבר שבין השערים), ובין עזרת ישראל לעזרת כהנים. גובהה וצורתה — בחירת מודל."]],
           current: "o0",
           onPick: (k) => { const P = ctx.shared.pispasin; if (P && typeof P.set === "function") P.set(k === "o1" ? "rambam" : "bartenura"); },
-          fly: () => { fly([-18, 27, -48], [-18, 16, -66]); if (ctx.shared.openFor) ctx.shared.openFor("crt-lishkot-roofs", 15000); }
+          fly: () => { fly([-18, 27, -48], [-18, 16, -66]); if (ctx.shared.openFor) ctx.shared.openFor("crt-lishkot-roofs", 15000); const PA = ctx.shared.pispasin; if (PA && typeof PA.arrows === "function") { PA.arrows(true); const AO = ctx.ui && ctx.ui.autoOff; if (AO && typeof AO.arm === "function") AO.arm("pisArrows", () => { try { PA.arrows(false); } catch (_) {} }); else setTimeout(() => { try { PA.arrows(false); } catch (_) {} }, 15000); } }
         });
         if (ctx.shared.rovdin) opRow({
           id: "sh67", short: "רובדין של אבן בבית המוקד — מדרגות או גומחות", cardFly: true,
