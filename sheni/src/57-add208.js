@@ -393,7 +393,7 @@
       SH.northZones = { get mode() { return N.mode; }, get line() { return N.line; }, set(m) { N.mode = m === "yose" || m === "elazar" ? m : "rebbi"; apply(); return N.mode; },
         setLine(l) { N.line = l === "rambam" ? "rambam" : "rashi"; apply(); return N.line; } };
       SH.features = SH.features || {};
-      SH.features.northZones = { key: "northZones", isOn: () => N.on, on: () => { N.on = true; apply(); }, off: () => { N.on = false; NG.visible = false; } };
+      SH.features.northZones = { key: "northZones", secs: 30, isOn: () => N.on, on: () => { N.on = true; apply(); }, off: () => { N.on = false; NG.visible = false; } };
       // ZONES_FOLLOW_211 (the function review, F1-09): the zones were laid out for the altar's place and measure of the moment they came on;
       // when a row moved the altar while they showed (the presentation's slides do so), they stayed behind. They follow now.
       { let k0 = ""; if (Array.isArray(ctx2.animated)) ctx2.animated.push(() => { if (!N.on) { k0 = ""; return; } const AP = SH.altarPlace, AM = SH.altarMeasures; const k = (AP ? AP.current : "") + "|" + (AM ? AM.mode : ""); if (k0 && k !== k0) apply(); k0 = k; }); }
