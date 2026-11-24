@@ -1042,7 +1042,9 @@
           if (!kid) {
             const T0 = new Group(); T0.position.set(boy ? -0.27 : -0.36, boy ? 0.98 : 1.3, 0.3); T0.rotation.x = 0.15; G.add(T0);
             T0.add(new Mesh(stickG, torchM));
-            fl = new Mesh(flameG, flameM); fl.position.y = 1.1; T0.add(fl);
+            // TORCHES_LIVE_N3 (the user: "כל הלפידים צריכים להיות באש חיה כמו במזבח"): the altar's live fire on the stick's head; the glow and the light stay on a marker at its foot
+            fl = new Group(); fl.position.y = 1.1; T0.add(fl);
+            if (typeof SH.liveFlame === "function") SH.liveFlame(fl, 0, -0.05, 0, 0.17, 0.62, 0.95); else fl.add(new Mesh(flameG, flameM));
             const gl = new Sprite(glowM); gl.scale.set(1.7, 1.7, 1); gl.position.y = 0.2; gl.userData.noPick = true; fl.add(gl);
             if (LIT.includes(i)) { const lt = new PointLight(0xffa040, 42, 30, 1.5);   /* SHILOACH_ROUTE_G: brighter (the user: "יותר תאורה") */ lt.position.y = 0.25; fl.add(lt); }
           }

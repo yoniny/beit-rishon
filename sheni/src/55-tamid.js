@@ -938,21 +938,32 @@
       const sleepers = new Group(), piles = [];
       group.add(sleepers);
       {
-        const body = new CapsuleGeometry(0.42, 2.0, 4, 10).rotateX(HP);
+        const body = new CapsuleGeometry(0.42, 2.0, 4, 10).rotateX(HP), bodyS = new CapsuleGeometry(0.4, 0.95, 4, 10).rotateX(HP);
         const head = new SphereGeometry(0.2, 10, 8), capG = new SphereGeometry(0.21, 10, 6, 0, Math.PI * 2, 0, HP);
+        // SLEEPERS_N3 (fix-n3, 24.11.2026 - the user: "לא רואים כהנים ישנים על הרובדים"): the four elders of the house of the father - Middot 1:8 "וזקני
+        // בית אב ישנים שם" (on the rovdin) - lie where the chosen reading of "רובדין של אבן" puts them (30-courts.js ROVDIN_A2, SH.rovdin.mode): the Rosh's, the
+        // Bartenura's, the Rambam's and the Tiferet Yisrael's - on the top terrace of each end wall ("וברובד העליון היו ישנים זקני הבית אב", Yachin 1:56),
+        // two side by side; the Mefaresh's - each in a bed-niche in the wall. Until 4.1.0 they lay inside the terraces' stone (the terraces had grown to
+        // five, and these four were still where the two old steps had been). The young - "ופרחי כהונה איש כסתו בארץ" - on the floor, as before.
+        // Every elder is built twice (the terrace's and the niche's, a shorter lying figure), and the one of the chosen reading is shown (sleepersNow)
+        const GEO = () => SH.rovdinGeo || { FL: F, wxW: -33, wxE: -3, d0: 4.5, ds: 0.6, n: 5, z0: -69.9, z1: -65.1, NY0: [F + 1.6, F + 4.4], NDEP: 0.9, zc: -68.8 };
+        const eld = [];
         SLEEP.forEach(([x, y, z, yaw], i) => {
+          const mk = (compact) => {
           const s = new Group();
-          const b = new Mesh(body, MAT.blanket[i % 4]);
+          const b = new Mesh(compact ? bodyS : body, MAT.blanket[i % 4]);
           b.scale.set(1, 0.62, 1);
           b.position.y = 0.26;
           s.add(b);
+          const hz = compact ? 1.05 : 1.45;
           const h = new Mesh(head, MAT.skin);
-          h.position.set(0, 0.32, 1.45);
+          h.position.set(0, 0.32, hz);
           s.add(h);
           const c = new Mesh(capG, MAT.cap);
           c.rotation.x = HP;
-          c.position.set(0, 0.32, 1.5);
+          c.position.set(0, 0.32, hz + 0.05);
           s.add(c);
+          if (!compact) {
           const pl = new Mesh(G.pile, MAT.fig);   // "כנגד ראשיהן"
           pl.position.set(0, 0, 1.83);
           s.add(pl);
@@ -960,10 +971,29 @@
           roll.position.set(-0.03, 0.143, 1.76);
           s.add(roll);
           piles.push(roll);
+          }
+          sleepers.add(s);
+          return s;
+          };
+          const s = mk(false);
           s.position.set(x, y, z);
           s.rotation.y = yaw;
-          sleepers.add(s);
+          if (i < 4) { const sN = mk(true); eld.push({ i, s, sN }); }
         });
+        // where the elder i lies: [x, y, z, yaw] on the top terrace, or in his niche - the walkers' hint (hintY below) and the rising (RISEn) use these too
+        const sleeperSpot = (i, mef) => {
+          const g = GEO(), west = i < 2, sx = west ? 1 : -1, wallX = west ? g.wxW : g.wxE, k = i % 2;
+          if (mef) return [wallX - sx * (g.NDEP / 2 - 0.05), g.NY0[k] + 0.2, g.zc - 0.45, 0];
+          const dTop = g.d0 - g.ds * (g.n - 1);   // the top terrace's width (2.1)
+          return [wallX + sx * (dTop * (k ? 0.76 : 0.26)), g.FL + g.n, -67.5 + (k ? 0.2 : -0.2), k ? Math.PI : 0];
+        };
+        W_sleeperSpot = sleeperSpot;
+        sleepersNow = () => {
+          const mef = !!(SH.rovdin && SH.rovdin.mode === "mefaresh");
+          for (const e of eld) { const p = sleeperSpot(e.i, mef); e.s.visible = !mef; e.sN.visible = mef; const t = mef ? e.sN : e.s; t.position.set(p[0], p[1], p[2]); t.rotation.y = p[3]; }
+        };
+        sleepersNow();
+        SH.sleepersNow = () => sleepersNow();   // SLEEPERS_N3: called by the rovdin switch (30-courts.js)
       }
       // ---- the lamb (Tamid 3:3): faces +z; legs that swing; bound = on its side, the legs together (4:1 "ראשו לדרום ופניו למערב")
       // LAMB_211 (the user, 14.11.2026: "את הטלאים עשית ציוריים מדי, אני רוצה אותם ממש אמיתיים"): the kit's lamb (10-core.js
@@ -1070,9 +1100,9 @@
       const torch = (k) => {   // "ושתי אבוקות של אור בידם" (1:3)
         const g = new Group();
         g.add(mesh(new CylinderGeometry(0.05, 0.04, 1.3, 6), MAT.wood, 0, 0.45, 0));
-        const fl = new Mesh(new ConeGeometry(0.16, 0.5, 8), new MeshBasicMaterial({ color: 0xffb04a }));
-        fl.position.y = 1.32;
-        g.add(fl);
+        // TORCHES_LIVE_N3 (fix-n3, 24.11.2026 - the user: "כל הלפידים צריכים להיות באש חיה כמו במזבח"): the altar's live fire (40-altar.js, SH.liveFlame - a camera-facing
+        // flame, always up on the screen) on the stick's head, instead of an orange cone that leaned with the torch in the hand
+        const fl = fnc(SH.liveFlame) ? SH.liveFlame(g, 0, 1.05, 0, 0.26, 1.15, 0.95) : (() => { const c = new Mesh(new ConeGeometry(0.16, 0.5, 8), new MeshBasicMaterial({ color: 0xffb04a })); c.position.y = 1.32; g.add(c); return c; })();
         const li = new PointLight(0xffa04a, 0, 34, 1.6);
         li.position.y = 1.5;
         g.add(li);
@@ -1111,9 +1141,7 @@
           gl.position.y = 2.81;
           gl.renderOrder = 2;
           g.add(gl);
-          const fl = new Mesh(new ConeGeometry(0.075, 0.26, 8), mFlame);
-          fl.position.y = 2.7;
-          g.add(fl);
+          const fl = fnc(SH.liveFlame) ? SH.liveFlame(g, 0, 2.62, 0, 0.17, 0.62, 0.9) : (() => { const c = new Mesh(new ConeGeometry(0.075, 0.26, 8), mFlame); c.position.y = 2.7; g.add(c); return c; })();   // TORCHES_LIVE_N3
           LG.add(g);
           return { g, fl };
         });
@@ -1185,7 +1213,7 @@
         // the torch of the lantern at the gate of the spark (lantern 1 shows no flame while it is out)
         const ltG = new Group();
         ltG.add(mesh(new CylinderGeometry(0.03, 0.025, 0.7, 6), MAT.wood, 0, 0.2, 0));
-        { const f = new Mesh(new ConeGeometry(0.075, 0.26, 8), mFlame); f.position.y = 0.66; ltG.add(f); }
+        if (fnc(SH.liveFlame)) SH.liveFlame(ltG, 0, 0.55, 0, 0.14, 0.62, 0.95); else { const f = new Mesh(new ConeGeometry(0.075, 0.26, 8), mFlame); f.position.y = 0.66; ltG.add(f); }   // TORCHES_LIVE_N3
         prop("ltorch", ltG, { p: [0, -0.08, 0.08], r: [-0.3, 0, 0] }, false);
         // none of these is a floor or a wall: the figures' floor ray (floorAt) and the camera pass through them
         for (const o of [grp, cloakG, stickG, pakG, ltG]) o.traverse((m) => { m.userData.noPick = true; });
@@ -1398,6 +1426,15 @@
     const LOT1 = ["t", "b1", "b2", "b3", "b4", "s1", "s5", "s6", "s7", "s8"];   // those who woke in Beit HaMoked (model choice: ten)
     const ALLP = ["t", "mc", "b1", "b2", "b3", "b4", ...R13, "k", "f", "e", "sg", "tr1", "tr2"];   // the priests of the hall of hewn stone
     const REST = ["t", "b1", "b2", "b3", "s1", "s2", "s5", "s6", "s7", "s8", "s9", "s10"];   // the priests who have no vessel in the stages of the heichal
+    let W_sleeperSpot = null, sleepersNow = () => {};   // SLEEPERS_N3 (set when the sleepers are built)
+    // SLEEPERS_N3: where the elder i stands up (the first four, by the chosen reading of the rovdin): on the top terrace where he lay, or on the floor before his niche
+    const riseOf = (i) => {
+      if (i >= 4 || !W_sleeperSpot) return RISE[i];
+      const mef = !!(SH.rovdin && SH.rovdin.mode === "mefaresh"), p = W_sleeperSpot(i, mef), g = SH.rovdinGeo || { wxW: -33, wxE: -3 };
+      if (!mef) return [p[0], p[2]];
+      return [i < 2 ? g.wxW + 2.6 : g.wxE - 2.6, p[2] + 0.45];
+    };
+    const riseH = (i) => { const r = riseOf(i); return hintY(r[0], r[1]); };
     // the sleepers: [x, y, z, yaw] (the body along its local z, the head at +z), and where each rises - the ten of LOT1 in order
     const SLEEP = [[-31.6, F + 1, -67.5, 0], [-32.5, F + 2, -67.5, Math.PI], [-4.4, F + 1, -67.5, 0], [-3.5, F + 2, -67.5, Math.PI],
       // (SLEEP_CLEAR_211: the two by the hearth lie beside the aisle's middle line, not on it - the officer's way in from the north gate
@@ -1409,7 +1446,15 @@
     // ---------------------------------------------------------------- the floor under a point, and the ways of the court
     const hintY = (x, z) => {
       const lz = z - D;
-      if (x > -34 && x < -2 && z > -77.5 && z < -57.5) return F;                                             // Beit HaMoked (MOKED_WIDE_211, FLOOR_211: 32 wide, one floor at the court's level; the steps inside its gate to the chel are found from above)
+      if (x > -34 && x < -2 && z > -77.5 && z < -57.5) {
+        // SLEEPERS_N3: the rovdin's terraces (the Rosh's reading and its like) - the elders walk down them from where they lay
+        const g = SH.rovdinGeo;
+        if (g && !(SH.rovdin && SH.rovdin.mode === "mefaresh") && z > g.z0 && z < g.z1) {
+          const d = x < -18 ? x - g.wxW : g.wxE - x;
+          if (d > 0 && d < g.d0) return F + Math.min(g.n, Math.floor((g.d0 - d) / g.ds) + 1);
+        }
+        return F;
+      }                                             // Beit HaMoked (MOKED_WIDE_211, FLOOR_211: 32 wide, one floor at the court's level; the steps inside its gate to the chel are found from above)
       if (x > -34 && x < 9 && z <= -77.5 && z > -100) return null;                                           // before its gate to the chel: whatever is there (CHEL_211: the landing and the flight along the north face)
       if (x > 77.8 && x < 89.2 && z > -78.2 && z < -55.8) return F;                                          // GAZIT_PLACE_211: the hall of hewn stone's floor (over the court of Israel's strip too)
       if (x > 41 && x < 70 && lz > -18 && lz < 11) return TOP;                                               // the altar's top
@@ -1824,11 +1869,11 @@
         a.set("sleepers", 0, 2.2);
         LOT1.forEach((k, i) => {
           const sp = MOKED_RING[i], yaw = Math.atan2(-18 - sp[0], -67.5 - sp[1]);
-          a.at(k, RISE[i][0], RISE[i][1], yaw, 2.2, { h: F });
+          { const r0 = riseOf(i); a.at(k, r0[0], r0[1], yaw, 2.2, { h: i < 4 ? riseH(i) : F }); }
           // LOT1_RING_211: the ring's spot is [x, z, yaw] - given whole as a path point, its yaw was read as the floor's height, and the
           // ten sank under the floor when they reached the ring (so it was in 2.0.1 as published, found 15.11.2026 while the wider
           // house was checked)
-          a.walk(k, [RISE[i], [sp[0], sp[1]]], 2.6 + i * 0.12, 5.4 + i * 0.12, { yaw });
+          a.walk(k, [riseOf(i), [sp[0], sp[1]]], 2.6 + i * 0.12, 5.4 + i * 0.12, { yaw });
         });
         a.walk("mem", [[-18, -79.4, 13.5], [-18, -74.4], [-18, -72.2]], 3, 6.5, { yaw: 0 });
         for (const k of LOT1) a.pose(k, "fingers", 8, 13);
@@ -1862,7 +1907,7 @@
         a.fx("door", 1.7);   // SOUND_211: "והם פתחו לו"
         a.ramp("chelG", 0, 1, 1.7, 2.6);   // CHEL_GATE_215
         a.set("sleepers", 0, 2.4);
-        LOT1.forEach((k, i) => { a.at(k, RISE[i][0], RISE[i][1], Math.PI, 2.4, { h: F }); start[k] = RISE[i]; });
+        LOT1.forEach((k, i) => { const r0 = riseOf(i); a.at(k, r0[0], r0[1], Math.PI, 2.4, { h: i < 4 ? riseH(i) : F }); start[k] = r0; });
       } else LOT1.forEach((k) => { start[k] = a.from(k, [-18, -64]); });
       // KEY_SLAB_211 (stage ב; the user, 14.11.2026 22:22): first to the marble tablet - he lifts it by its ring and takes the key from the
       // chain under it ("נטל את המפתח" - Tamid 1:3; "מתחת הטבלא של שיש" - Melechet Shlomo there; Middot 1:9), puts the tablet back, and
@@ -3306,7 +3351,7 @@
     const applyWorld = () => {
       W.altarG.position.z = D;
       W.altarG.position.y = TOP - TOP0;
-      W.sleepers.visible = N.sleepers > 0.5;
+      W.sleepers.visible = N.sleepers > 0.5; sleepersNow();   // SLEEPERS_N3
       if (W.night) W.night.apply(N);   // NIGHT_WATCH_305
       W.L1.forEach((m, i) => { m.visible = N.l1 > i + 0.5; });
       W.L2.forEach((m, i) => { m.visible = N.l2 > i + 0.5; });

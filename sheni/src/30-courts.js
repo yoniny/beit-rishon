@@ -1011,9 +1011,10 @@
           stack(2, cx + 14, S0, 0, 6.5, 0.36, 9, 7);  stack(0, cx - 9.5, cz + 7, 0, 3, 0.22, 7, 5);  crib(1, cx + 1.5, cz + 7, 1.7, 0.11, 8);
           stack(2, cx + 10.5, cz + 6.7, 0, 3, 0.22, 7, 5);
           // ...and more, so the chamber is full: the aisle's east end, and the gaps between the rows
-          stack(1, cx + 13, cz, HP, 6.5, 0.36, 9, 7);  stack(0, cx + 5, cz, 0, 4.6, 0.3, 8, 6);  stack(2, cx - 9.5, cz - 8, 0, 3, 0.22, 7, 5);
+          stack(1, cx + 13, cz, HP, 6.5, 0.36, 9, 7);  stack(2, cx - 9.5, cz - 8, 0, 3, 0.22, 7, 5);
           crib(1, cx - 3, cz - 7, 1.7, 0.11, 8);  stack(1, cx - 5, cz + 7, 0, 3, 0.22, 7, 5);  crib(2, cx + 6.3, cz + 7, 1.7, 0.11, 7);
           stack(0, cx + 15.1, cz + 6, HP, 4.6, 0.3, 8, 6);
+          const WP = new Group(); WP.name = "woodPiles"; g.add(WP); ctx2.layers.woodPiles = WP;   // WOOD_ONLY_G10: every pile in a group of its own (the toggle "the priests only" hides it with its label)
           const mm = new Matrix4(), qq = new Quaternion(), vs = new Vector3(), vp = new Vector3(), yAx = new Vector3(0, 1, 0);
           L.forEach((list, w) => {
             if (!list.length) return;
@@ -1022,9 +1023,10 @@
             im.instanceMatrix.needsUpdate = true;
             im.castShadow = im.receiveShadow = true;
             im.computeBoundingSphere();
-            g.add(im);
+            WP.add(im);
           });
-          lbl("ערמות העצים — תאנה, אגוז ועץ שמן (תמיד ב, ג)", cx, 13, cz + 10, 1.1);
+          ctx2.labels.push({ text: "ערמות העצים — תאנה, אגוז ועץ שמן (תמיד ב, ג)", x: cx, y: 13, z: cz + 10, size: 1.1, layer: "woodPiles" });
+          ctx2.shared.woodPiles = { get on() { return WP.visible; }, set(on) { WP.visible = !!on; return WP.visible; } };
         }
       } else if (c.prop === "mikveh") {
         // 1.9.1 (the user: "לשכת המצורעין אני רוצה לראות בור מים 40 סאה"): the bath is the measure of the Gemara - "אמה על אמה ברום שלש
@@ -2123,7 +2125,7 @@
       // ROVDIN_NICHES_N2 (the user's decision, 23.11.2026, on the Mefaresh): the bed-niches are CUT INTO the end walls (0.7 deep in the wall's one
       // amah), in the northern half of the hall only (the half built in the chel: z -70..-67.5 - "אותו בית המוקד שבנוי בחול היה מוקף רובדין",
       // 2105:10), two levels, one bed in each. In the other reading (the Rosh's) the niches are filled back with stone (ctx2 rovdin group below).
-      const NZ0 = -69.8, NZ1 = -67.7, NY0 = [FL + 1.6, FL + 4.4], NH = 1.5, NDEP = 0.7;
+      const NZ0 = -70, NZ1 = -67.6, NY0 = [FL + 1.6, FL + 4.4], NH = 1.5, NDEP = 0.9;   // SLEEPERS_N3 (fix-n3, 24.11.2026 - the user: "לא רואים כהנים ישנים על הרובדים"): the niche 2.4 long and 0.9 deep (2.1 and 0.7 until 4.1.0) - a sleeper (55-tamid.js) lies in it
       const carvedWall = (xc, innerSign, za, zb, parts) => {   // a wall one amah thick, centred on xc, z za..zb, the niches cut in its inner face (the side `innerSign`: +1 = the +x face)
         const xi = xc + innerSign * 0.5;                       // the inner face
         const put = (mat) => (x0, x1, y0, y1, z0, z1) => { if (x1 - x0 > 1e-6 && y1 - y0 > 1e-6 && z1 - z0 > 1e-6) H2.box(parts, x1 - x0, y1 - y0, z1 - z0, mat, (x0 + x1) / 2, y0, (z0 + z1) / 2); };
@@ -2189,12 +2191,24 @@
         for (const sx of [-1, 1]) for (const y of [17.5, 20, 22.5, 25, 28, 31]) H2.box(pB, 1.6, 0.45, 0.45, M2.cedar, X + sx * (W / 2 - 1.8), y, -65.2);   // ראשי פספסין
         const lat = (parent, x0, x1, z, y0, h) => {   // a low lattice along x at z: rails and a close row of slats, crossed
           const L = x1 - x0, cx = (x0 + x1) / 2;
-          H2.box(parent, L, 0.08, 0.12, M2.cedar, cx, y0 + h - 0.08, z); H2.box(parent, L, 0.08, 0.12, M2.cedar, cx, y0, z);
-          const n = Math.floor(L / 0.25), sg = new BoxGeometry(0.05, h * 1.25, 0.05), im = new InstancedMesh(sg, M2.cedar, 2 * n), m4 = new Matrix4(), qq = new Quaternion(), e = new Euler(), ps = new Vector3(), one = new Vector3(1, 1, 1);
+          // PISPASIN_SEE_N3 (fix-n3, 24.11.2026 - the user: pressing "הרמב"ם — שבכה נמוכה ברצפה" showed nothing): the rails were 0.08 x 0.12 and the slats 0.05 thick
+          // (2.4 cm on the ground at the scale of the court) - lost to the eye from any distance; now rails 0.2 x 0.28, slats 0.12, posts every 2.5, 0.8 high (0.5 until 4.1.0)
+          H2.box(parent, L, 0.2, 0.28, M2.cedar, cx, y0 + h - 0.2, z); H2.box(parent, L, 0.2, 0.28, M2.cedar, cx, y0, z);
+          for (let px = x0; px <= x1 + 1e-6; px += Math.max(1, L / Math.max(1, Math.round(L / 2.5)))) H2.box(parent, 0.3, h, 0.3, M2.cedar, px - 0.15, y0, z - 0.15 + 0.15);
+          const n = Math.floor(L / 0.45), sg = new BoxGeometry(0.12, h * 1.25, 0.12), im = new InstancedMesh(sg, M2.cedar, 2 * n), m4 = new Matrix4(), qq = new Quaternion(), e = new Euler(), ps = new Vector3(), one = new Vector3(1, 1, 1);
           for (let i = 0; i < n; i++) for (const k of [0, 1]) { e.set(0, 0, k ? 0.6 : -0.6); qq.setFromEuler(e); m4.compose(ps.set(x0 + (i + 0.5) * (L / n), y0 + h / 2, z), qq, one); im.setMatrixAt(2 * i + k, m4); }
           im.castShadow = true; parent.add(im);
         };
-        lat(pR, X - W / 2 + 1, X - 5, -65.2, FL, 0.55); lat(pR, X + 5, X + W / 2 - 1, -65.2, FL, 0.55);   // across the hall, apart from the way between the gates (model choice)
+        lat(pR, X - W / 2 + 1, X - 5, -65.2, FL, 0.8); lat(pR, X + 5, X + W / 2 - 1, -65.2, FL, 0.8);   // across the hall, apart from the way between the gates (model choice)
+        // PISPASIN_SEE_N3 (the user: pressing "הרמב"ם — שבכה נמוכה ברצפה" showed nothing): the two lattices at z -65.2 stand in the south chambers' north walls (0.4 thick, the
+        // same line) - hidden by them - and the aisle between the gates was left out; so nothing at all was seen. Now a floor grating (a grille 1 amah wide, 0.16 high - flat enough to
+        // walk over; the Rambam: "בקרקעיתם ממעל שבכות") crosses the whole aisle on the line, from chamber to chamber
+        {
+          const gx0 = X - RMX - 1, gx1 = X + RMX + 1, gl = gx1 - gx0, gcx = (gx0 + gx1) / 2;
+          for (const dz of [-0.4, 0, 0.4]) H2.box(pR, gl, 0.16, 0.12, M2.cedar, gcx, FL, -65.2 + dz - 0.06);
+          const ns = Math.round(gl / 0.5);
+          for (let i = 0; i <= ns; i++) H2.box(pR, 0.14, 0.12, 1.0, M2.cedar, gx0 + (gl * i) / ns - 0.07, FL, -65.2 - 0.5);
+        }
         PIS.lat = lat;
         // ... and between the court of Israel and the priests' (the user's decision 64; Middot 2:6 "וראשי פספסין מבדילין בין עזרת ישראל
         // לעזרת הכהנים"; the Bartenura 643:99 "ראשי קורות בולטים ויוצאים מן הכתל להבדיל בין עזרת ישראל לעזרת כהנים"): on the line x 85,
@@ -2205,7 +2219,7 @@
           g.add(iB); g.add(iR); PIS.B.push(iB); PIS.R.push(iR); iR.visible = false;
           for (const [zw, sz] of [[-54, 1], [65, -1]]) for (const y of [18, 20.5, 23, 25.5, 28.5, 31.5]) H2.box(iB, 0.45, 0.45, 1.6, M2.cedar, 85, y, zw + sz * 0.8);
           const sub = new Group(); sub.rotation.y = HP; sub.position.set(85.25, 0, 0); iR.add(sub);
-          lat(sub, -65, 54, 0, 13.5, 0.5);   // local x -> the world's -z: z -54 .. 65
+          lat(sub, -65, 54, 0, 13.5, 0.8);   // local x -> the world's -z: z -54 .. 65
           const PI = { info: "**ראשי פספסין** (מידות ב, ו): ״וראשי פספסין מבדילין בין עזרת ישראל לעזרת הכהנים״. ברטנורא: ״ראשי קורות בולטים ויוצאים מן הכתל להבדיל בין עזרת ישראל לעזרת כהנים״; ולפירוש המשניות לרמב״ם — שבכה נמוכה ברצפה (ראו בבית המוקד). המתג — בתפריט, ״ראשי פספסין — קורות או שבכה ברצפה״.", refs: [["מידות ב, ו", { book: 89, index: 17 }], ["ברטנורא מידות ב, ו", { book: 643, index: 99 }], ["פירוש המשניות לרמב״ם מידות א, ו", { book: 573, index: 10 }]] };
           ctx2.labels.push(Object.assign({ text: "ראשי פספסין — בין עזרת ישראל לעזרת כהנים (ברטנורא מידות ב, ו)", x: 85, y: 33, z: 60, size: 1.1, layer: "pisIB" }, PI),
             Object.assign({ text: "פשפש — שבכה ברצפה בין עזרת ישראל לעזרת כהנים (הרמב״ם)", x: 86.5, y: 15.6, z: 40, size: 1.0, layer: "pisIR" }, PI));
@@ -2453,7 +2467,7 @@
         for (const sx of [-1, 1]) {
           const wallX = X + sx * (W / 2 - 1);   // the end wall's inner face
           const at = (d) => wallX - sx * d / 2;   // the centre of a block d deep, standing on the wall
-          for (let k = 0; k < 5; k++) H2.box(rR, 4.5 - 0.9 * k, 1, 4.8, M2.stoneSmooth, at(4.5 - 0.9 * k), FL + k, Z);
+          for (let k = 0; k < 5; k++) H2.box(rR, 4.5 - 0.6 * k, 1, 4.8, M2.stoneSmooth, at(4.5 - 0.6 * k), FL + k, Z);   // SLEEPERS_N3: each 0.6 shorter than the one under it (0.9 until 4.1.0: the top one, 0.9 wide, was too narrow to lie on; now 2.1)
           for (const y0 of NY0) {
             H2.box(rR, NDEP, NH, NZ1 - NZ0, M2.stoneLight, wallX + sx * NDEP / 2, y0, zc);                  // the niche filled back (the Rosh's reading)
             H2.box(rM, 1.1, 0.7, 1.4, M2.stoneSmooth, at(1.1), y0 - 1.2, zc);                               // the stone that stands out of the wall, under the bed
@@ -2466,7 +2480,8 @@
           const [cx, cz] = chC(sx2, sz2), par = (sx2 > 0 && sz2 < 0) ? rRne : rR, wz = Z + sz2 * (D / 2 - 1);
           for (let k = 0; k < 3; k++) H2.box(par, 2 * RMX, 1, 2.4 - 0.8 * k, M2.stoneSmooth, cx, FL + CHH + 0.3 + k, wz - sz2 * (2.4 - 0.8 * k) / 2);
         }
-        ctx2.shared.rovdin = { mode: "rosh", set(m) { this.mode = m === "mefaresh" ? "mefaresh" : "rosh"; rR.visible = rRne.visible = this.mode === "rosh"; rM.visible = this.mode === "mefaresh"; return this.mode; } };
+        ctx2.shared.rovdinGeo = { FL, wxW: X - (W / 2 - 1), wxE: X + (W / 2 - 1), d0: 4.5, ds: 0.6, n: 5, z0: Z - 2.4, z1: Z + 2.4, NY0, NDEP, zc };   // SLEEPERS_N3: for the morning service's sleepers and the walkers' floor (55-tamid.js)
+        ctx2.shared.rovdin = { mode: "rosh", set(m) { this.mode = m === "mefaresh" ? "mefaresh" : "rosh"; rR.visible = rRne.visible = this.mode === "rosh"; rM.visible = this.mode === "mefaresh"; if (typeof ctx2.shared.sleepersNow === "function") ctx2.shared.sleepersNow(); return this.mode; } };   // SLEEPERS_N3: the elders of the morning service move with it
         ctx2.layers = ctx2.layers || {}; ctx2.layers.rovdinR = rR; ctx2.layers.rovdinM = rM;
         const RV = { info: "**רובדין של אבן** (מידות א, ח): ״מקף רובדין של אבן, וזקני בית אב ישנים שם״. להרא״ש, לברטנורא, לרמב״ם ולתפארת ישראל — אצטבאות של אבן זו על גבי זו, כעין מדריגות; למפרש — גומחות בכותל כעין מטות, ואבנים בולטות מן הכותל לעלות אליהן. המתג — בתפריט, ״רובדין של אבן בבית המוקד״.", refs: [["מידות א, ח", { book: 89, index: 9 }], ["פירוש הרא״ש תמיד כה:", { book: 2224, index: 9 }], ["המפרש תמיד כה:", { book: 2105, index: 9 }]] };   // QUOTES_Q: מידות א, ח (89:9): 'מקף' בלי ו׳
         ctx2.labels.push(Object.assign({ text: "רובדין של אבן — זקני בית אב ישנים שם", x: X, y: FL + 3.5, z: Z, size: 1.2, layer: "rovdinR" }, RV),
@@ -3741,10 +3756,10 @@
         const logM = M2.cedar;
         const log = (x, y, z, yaw, len = 1.5, r = 0.13) => { const m = new Mesh(new CylinderGeometry(r, r * 1.08, len, 8), logM); m.rotation.z = HP; m.rotation.y = yaw; m.position.set(x, y, z); m.castShadow = true; m.userData.noPick = true; O.add(m); return m; };
         const ahead = (x, z, yaw, d) => [x + Math.sin(yaw) * d, z + Math.cos(yaw) * d];
-        const HX = 193.4, HZ = -47.6;                                                  // the heap being checked
+        const HX = 208.5, HZ = -47.5;                                                  // the heap being checked (WOOD_CENTRE_G10: the chamber's middle, 24.11.2026 - until now 15 amot west of it, among the piles)
         for (const [dx, dy, dz, a] of [[0, 0.14, 0, 0.3], [0.1, 0.14, 0.32, 0.2], [-0.1, 0.14, -0.32, 0.45], [0.05, 0.4, 0.15, 0.1], [0, 0.4, -0.18, 0.5]]) log(HX + dx, 6 + dy, HZ + dz, a);
         const toHeap = (x, z) => Math.atan2(HX - x, HZ - z);
-        const A = [196.2, -45.3], B = [196.4, -49.9], C = [191.2, -49.2];
+        const A = [211.3, -45.2], B = [211.5, -49.8], C = [206.3, -49.1];
         const ya = toHeap(A[0], A[1]), yb = toHeap(B[0], B[1]), yc = toHeap(C[0], C[1]);
         // MUMIN_W (agent W, the user's decision 214: "אתה חייב לעשות מום, כמו שתום עין, שבור רגל וכד', אחרת איך יבינו שהם בעלי מום?"):
         // each of the three has one blemish of the verse's (Leviticus 21:18-20, 3:639-641) - seen plainly, decent and not frightening:
