@@ -52,10 +52,10 @@ export async function run(S, out, opt) {
       let a = B.anchor; try { if (typeof a === 'function') a = a(); } catch (_) { a = null; }
       const P0 = SC.getPose();
       if (Array.isArray(a)) { const cp = c.camera.position, d = c.camera.position.clone().sub({ x: a[0], y: a[1], z: a[2] }); const L = d.length() || 1; d.multiplyScalar(Math.min(45, L) / L); SC.setPose({ p: [a[0] + d.x, a[1] + Math.max(8, d.y), a[2] + d.z], t: a }); }
-      window.__step(100); const s0 = SC.snap(), p0 = SC.px(16);
+      window.__step(100); const s0 = SC.snap(), p0 = SC.px(16); window.__step(100); const sN = SC.snap(), ign = SC.noise(s0, sN);
       await run(!o.start); o.mid = get(); window.__step(100); const s1 = SC.snap(), p1 = SC.px(16);
-      o.cmp = SC.cmp(s0, s1); o.px = SC.pdiff(p0, p1).frac; o.img = SC.jpg(420);
-      await run(!!o.start); window.__step(100); const s2 = SC.snap(); o.back = SC.cmp(s0, s2); o.end = get();
+      o.cmp = SC.cmp(s0, s1, ign); o.px = SC.pdiff(p0, p1).frac; o.img = SC.jpg(420);
+      await run(!!o.start); window.__step(100); const s2 = SC.snap(); o.back = SC.cmp(s0, s2, ign); o.end = get();
       SC.setPose(P0); return o;
     }, b.i).catch((e) => ({ id: b.id, err: String(e.message) }));
     const errs = S.errsSince(n0);
@@ -78,9 +78,9 @@ export async function run(S, out, opt) {
     const res = await S.ev(async (i) => {
       const SC = window.__SCAN, e = document.querySelectorAll('#tm-panel input[type=checkbox]')[i], o = {};
       if (!e || e.disabled) return { skip: true };
-      SC.openUp(e); window.__step(100); const s0 = SC.snap(), p0 = SC.px(16), st0 = e.checked;
+      SC.openUp(e); window.__step(100); const s0 = SC.snap(), p0 = SC.px(16), st0 = e.checked; window.__step(100); const ign = SC.noise(s0, SC.snap());
       e.click(); SC.yes(); window.__step(2500); await SC.sleep(20); window.__step(1500); window.__step(100);
-      const s1 = SC.snap(), p1 = SC.px(16); o.cmp = SC.cmp(s0, s1); o.px = SC.pdiff(p0, p1).frac; o.flipped = e.checked !== st0; o.img = SC.jpg(420);
+      const s1 = SC.snap(), p1 = SC.px(16); o.cmp = SC.cmp(s0, s1, ign); o.px = SC.pdiff(p0, p1).frac; o.flipped = e.checked !== st0; o.img = SC.jpg(420);
       e.click(); SC.yes(); window.__step(2500); window.__step(120); o.restored = e.checked === st0; return o;
     }, b.i).catch((e) => ({ err: String(e.message) }));
     if (res.skip) continue;

@@ -38,7 +38,10 @@
     });
     return { n, tot, ids, names };
   };
-  S.cmp = (a, b) => {
+  // the ids that move or flicker by themselves (flames, smoke, the way to the immersion house...): what two snapshots of the SAME state differ in
+  S.noise = (a, b) => { const z = new Set(); for (const [id, h] of b.ids) { const g = a.ids.get(id); if (g === undefined || g !== h) z.add(id); } for (const [id] of a.ids) if (!b.ids.has(id)) z.add(id); return z; };
+  S.cmp = (a, b, ign) => {
+    if (ign) { const cp = (x) => { const ids = new Map(), names = new Map(); for (const [id, h] of x.ids) if (!ign.has(id)) { ids.set(id, h); names.set(id, x.names.get(id)); } return { n: ids.size, tot: 0, ids, names }; }; a = cp(a); b = cp(b); a.tot = b.tot = 0; }
     let added = 0, removed = 0, changed = 0; const ex = [];
     for (const [id, h] of b.ids) { const g = a.ids.get(id); if (g === undefined) { added++; if (ex.length < 6) ex.push('+' + b.names.get(id)); } else if (g !== h) { changed++; if (ex.length < 6) ex.push('~' + b.names.get(id)); } }
     for (const [id] of a.ids) if (!b.ids.has(id)) { removed++; if (ex.length < 6) ex.push('-' + a.names.get(id)); }
