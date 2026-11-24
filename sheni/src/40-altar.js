@@ -519,14 +519,14 @@
     // Rashi (Zevachim 62b): "והפונה ליסוד יוצא למערבו... ומתחיל לצאת בשיפולו של כבש רחוק מן המזבח כדי שיהא נוח לשפע ולירד ליסוד" - it
     // leaves the lower part of the big ramp, far from the altar, and slopes DOWN gently to the yesod. Now: out of the big ramp's west side where
     // the ramp is 1.7 high (z 36.5; its top flush with the ramp's there), down to the yesod's one amah in the south-west corner (height 1), a
-    // hair short of it ("ומובדלין מן המזבח מלא נימא"). Width 1.8 - model choice.
+    // hair short of it ("ומובדלין מן המזבח מלא נימא"). Width 1.4 - model choice (g13: was 1.8, off the tables).
     // 1.9.1 (the user: "מה זה? איך הוא קשור לכבש ולמה הוא נראה כך?"): a walk, not a wall - its top a lighter paving with a kerb on each
     // side, so that it reads as the path it is; R. Yose's altar has its own path (strip28), to its own corner of the yesod
     // 1.9.2 (the user: "כבש ליסוד — אפשר" - to make it stand out): its paving warm and a little lit, its kerbs dark, its name on a plate
     const pathMat = new MeshStandardMaterial({ color: 0xe3b866, roughness: 0.8, emissive: 0x3a2508, emissiveIntensity: 0.6 });
     const kerbMat = new MeshStandardMaterial({ color: 0x5a4a38, roughness: 0.9 });
     const yesodPath = (x1, z1, h1, x2, z2, h2, grp) => {
-      strip(x1, z1, h1, x2, z2, h2, 1.8, grp);
+      strip(x1, z1, h1, x2, z2, h2, 1.4, grp);
       const L = Math.hypot(x2 - x1, z2 - z1), ang = Math.atan2(z2 - z1, x2 - x1), slope = Math.atan2(h2 - h1, L);
       for (const off of [-0.8, 0, 0.8]) {   // the paving (middle) and the two kerbs
         const w = off ? 0.2 : 1.4, hh = off ? 0.25 : 0.04;
