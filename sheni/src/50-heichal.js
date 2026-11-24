@@ -2133,10 +2133,12 @@
           [0.0, [-15, YE, 1.0], [-4.5, F + 3.0, -0.3]],
           [1.2, [-8.2, YE - 0.2, 3.4], [-5.3, F + 2.2, -0.8]],     // KOHEN_ACTOR_211: the whole priest at the lock (until 2.0.1: a hand and a great key)
           [3.8, [-8.4, YE - 0.2, 3.4], [-5.3, F + 2.4, -0.8]],
-          [4.8, [-11, F + 27, 7], [-5, F + 6, -2]],
-          [8.4, [-11, F + 27, 6.6], [-5, F + 6, -2]],
-          [9.4, [-2.2, F + 25, 2.6], [0.0, F + 8, -3.2]],
-          [13.0, [-2.1, F + 25, 2.4], [0.0, F + 8, -3.2]],
+          // GATE_EYE_G12 (the user, 24.11.2026: "הכהן עדיין נעלם בשיטת חכמים"): from F + 27 the priest, a white figure on the white floor, was a speck - the eye
+          // now stands lower and nearer (he is seen whole, at the doors, as they open round him)
+          [4.8, [-13, F + 12, 8.5], [-6.2, F + 4.5, -1.2]],
+          [8.4, [-13, F + 12, 8.0], [-6.0, F + 4.5, -1.2]],
+          [9.4, [-3.6, F + 10, 4.0], [-0.8, F + 4, -1.2]],
+          [13.0, [-3.6, F + 10, 4.0], [-0.8, F + 4, -1.2]],
           [14.6, [-2.4, YE, 0], [-2.4, F + 4.0, -6]],
           [16.0, [-2.6, YE, 0], [-12, F + 4.0, 0]],
           [17.6, [-2.6, YE, 0], [-14, F + 4.0, 0.5]]
@@ -2145,10 +2147,10 @@
           [0.0, [-3.4, YE, 1.0], [1.0, F + 3.0, -0.3]],
           [1.2, [-2.9, YE - 0.2, 3.1], [0.2, F + 2.2, -0.8]],      // KOHEN_ACTOR_211
           [3.8, [-3.0, YE - 0.2, 3.1], [0.1, F + 2.4, -0.8]],
-          [4.8, [-2.4, F + 25, 2.2], [0.0, F + 8, -3.2]],
-          [8.6, [-2.3, F + 25, 2.0], [0.0, F + 8, -3.2]],
-          [9.4, [-0.8, F + 25, -2.2], [-3.0, F + 8, 3.2]],
-          [13.0, [-0.9, F + 25, -2.0], [-3.0, F + 8, 3.2]],
+          [4.8, [-3.0, F + 11, 4.0], [0.0, F + 4.5, -1.0]],     // GATE_EYE_G12: lower and nearer, the priest seen whole between the doors
+          [8.6, [-3.0, F + 11, 4.0], [0.0, F + 4.5, -1.0]],
+          [9.4, [-0.8, F + 11, 4.0], [-3.0, F + 4.5, -1.0]],
+          [13.0, [-0.9, F + 11, 4.0], [-3.0, F + 4.5, -1.0]],
           [14.8, [-1.5, YE + 0.6, 3.6], [-1.5, F + 4.0, -5.6]],
           [16.4, [-6.0, YE, 0.6], [-24, F + 4.5, 0]],
           [17.6, [-10.5, YE, 0], [-31, F + 4.5, 0]]
@@ -2416,14 +2418,14 @@
     }
     // 1.9.1 (the user: "אתה לא יכול לעשות הדגמה לפשפשים שממש נכנסת לתוך עובי הכותל?"): R. Yehuda's way - "בתוך עביו של כתל היה מהלך, עד שנמצא
     // עומד בין שני השערים" (Middot 4:2) - drawn as a real passage in the wall's thickness: from the north pishpesh (z -20.5..-17.5) south
-    // inside the wall, 1.5 wide and 6 high on the wall's middle line (x -2.25..-0.75), to the great gate's north reveal (z -5), between the
+    // inside the wall, 2 wide and 6 high on the wall's middle line (x -2.5..-0.5), to the great gate's north reveal (z -5), between the
     // places of his two doors (x 1.0 and -4.0). While his way is shown, the north wall beside the gate and the gate's wall are swapped for
     // these pieces, the same walls with the passage in them. Its width, height and line - model choices
     {
       const tunG = new Group();
       tunG.visible = false;
       g.add(tunG);
-      const MW = M2.marble, GD = M2.gold, X0 = -4.475, X1 = 1.475, TW0 = -2.25, TW1 = -0.75, TH = 6;
+      const MW = M2.marble, GD = M2.gold, X0 = -4.475, X1 = 1.475, TW0 = -2.5, TW1 = -0.5, TH = 6;   // PISH_TUNNEL_G12 (the user, 24.11.2026: R. Yehuda's priest "נתקע בקיר בסיבוב"): 2 wide, not 1.5 - his shoulders and the key in his hand touched the jambs as he turned into it
       const bx = (mat, x0, x1, y0, y1, z0, z1) => H2.box(tunG, x1 - x0, y1 - y0, z1 - z0, mat, (x0 + x1) / 2, y0, (z0 + z1) / 2);
       // the wall north of the gate (|z| 10.2..27.3, 42 high): solid north of the pishpesh, over it, and round the passage
       bx(MW, X0, X1, F, F + 42, -27.3, -20.5);
@@ -2802,8 +2804,13 @@
             [0.0, [10, YW, -15.5], [1.6, F + 3, -19]],
             [1.0, [6.8, YW, -18.6], [1.6, F + 2.8, -19]],
             [2.6, [6.8, YW, -18.6], [1.6, F + 2.8, -19]],
-            [3.8, [0.6, YW, -19], [-6, F + 3, -19]],
-            [4.8, [-5.0, YW, -19.2], [-7.6, F + 3, -15.0]],     // KOHEN_ACTOR_211: the eye turns with the priest toward the cell's door (it looked on west along the cell)
+            [3.0, [3.0, YW, -19], [-3.5, F + 3, -19]],
+            // PISH_EYE_G12 (the user, 24.11.2026: "הכהן עדיין נעלם בשיטת חכמים"): the eye stood in the hole of the front wall (3 wide, z -20.5..-17.5) and looked on
+            // at the priest turning south in the cell (x -6.5) - the hole's south jamb stood between them, and for two seconds only a wall was seen. Now the eye passes
+            // beside him (z -20) into the cell's north-west corner and sees him turn at the door's mouth, then goes behind him, down the passage
+            [3.7, [-3.4, YW, -20.0], [-6.3, F + 3, -19.0]],
+            [4.3, [-7.8, YW, -20.0], [-6.4, F + 3, -18.2]],
+            [5.3, [-6.5, YW, -20.1], [-6.5, F + 3, -15]],
             [5.8, [-6.5, YW, -18.4], [-6.5, F + 3, -9]],        // (WALK_SOFT_204: the eye's line as it was - the door stands right by the wall he comes through; the turn itself is slow, by angle)
             [7.8, [-6.5, YW, -12.2], [-6.5, F + 3, -3]],
             [8.3, [-6.5, YW, -9.7], [-8.6, F + 3.2, -1.5]],     // WALK_SOFT_204: out of the door in its middle (the curve cut its jamb)
