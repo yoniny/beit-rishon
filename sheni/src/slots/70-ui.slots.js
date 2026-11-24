@@ -1906,38 +1906,20 @@
             ["o1", "רבי יהודה — עד ״ארמי אבד אבי״, ומניפים בשעת הקריאה", "לשון המשנה (ביכורים ג, ו): ״רבי יהודה אומר עד ארמי אבד אבי. הגיע לארמי אבד אבי, מוריד הסל מעל כתפו ואוחזו בשפתותיו, וכהן מניח ידו תחתיו ומניפו, וקורא מארמי אבד אבי עד שהוא גומר כל הפרשה, ומניחו בצד המזבח״.\nבהדגמה ״הבאת ביכורים״: הוא קורא כשהסל על כתפו עד ״ארמי אבד אבי״, מוריד ומניפים, וממשיך לקרוא עד סוף הפרשה, ואז מניח."]],
           current: "o0",
           onPick: (k) => { const B = ctx.shared.bikkurim; if (B && typeof B.setReading === "function") B.setReading(k === "o1" ? "rj" : "tk"); },
-          // BIK_VIEW_S2 (the user's note 9: "בשתי הקריאות לא רואים כלום" - the row had no view, and the eye stayed where it was): the
-          // demonstration's own picture of the moment of the waving (ctx.shared.bikkurim.at - the bringer holding the basket by its rims,
-          // the priest's hand under it), by the altar's south-western corner, in the reading chosen; it goes as soon as the view's target
-          // leaves the corner (another place or reading, or the viewer's own turn away - 30 amot), unless the demonstration itself runs then.
-          // The moments - in the waving of each reading (57-add208.js mkT: the Tanna Kamma 32-36.8, R. Yehuda 30.4-35.2)
-          fly: (k) => {
-            const B = ctx.shared.bikkurim, tg = ui_altarCam(ctx, [38.6, 17.6, 27], "body");
-            if (B && typeof B.at === "function" && !B.on) {
-              try { B.at(k === "o1" ? 31.6 : 33.2); } catch (_) {}
-              const W = ctx.__bikStill || (ctx.__bikStill = { on: false, tg: null });
-              W.on = true; W.tg = tg; W.t0 = performance.now();
-              if (!W.loop && Array.isArray(ctx.animated)) {
-                W.loop = true;
-                ctx.animated.push(() => {
-                  if (!W.on) return;
-                  const g = ctx.layers && ctx.layers.bikkurimDemo, q = ctx.controls && ctx.controls.target;
-                  if (B.on || !g || !g.visible) { W.on = false; return; }
-                  if (performance.now() - W.t0 > 2500 && q && Math.hypot(q.x - W.tg[0], q.y - W.tg[1], q.z - W.tg[2]) > 30) { g.visible = false; W.on = false; }
-                });
-              }
-            }
-            fly(ui_altarCam(ctx, [32.5, 20.3, 22.5], "body"), tg);   // from their side (north-west): the basket between them
-          }
+          // BIK_FOCUS_G4 (the user 24.11.2026: a click on the switch runs the demonstration of THIS part only, and it changes with the method): a short run of the
+          // demonstration from just before the reading to the putting down, in the reading chosen (57-add208.js: SH.bikkurim.focus); it ends by itself
+          fly: () => { const B = ctx.shared.bikkurim; if (B && typeof B.focus === "function") B.focus("read"); }
         });
         opRow({   // HANDS_K (fix-k, 23.11.2026 - the user's decision 207): THE WAVING - the priest's hand under the basket, or under the bringer's hands
-          id: "sh96", short: "התנופה בביכורים — יד הכהן תחת הסל, או תחת יד הבעלים", cardFly: false,
+          id: "sh96", short: "התנופה בביכורים — יד הכהן תחת הסל, או תחת יד הבעלים", cardFly: true,
           cap: "התנופה בביכורים — יד הכהן תחת הסל, או תחת יד הבעלים",
           refs: [["ביכורים ג, ו", {"book": 50, "index": 31}], ["ברטנורא ביכורים ג, ו", {"book": 617, "index": 143}], ["ר״ש משאנץ ביכורים ג, ו", {"book": 656, "index": 105}], ["מנחות סא:", {"book": 131, "index": 2146}], ["תוספות יום טוב ביכורים ג, ו", {"book": 930, "index": 98}], ["מלאכת שלמה ביכורים ג, ו", {"book": 1183, "index": 120}]],
           options: [["o0", "ברטנורא ור״ש משאנץ — הסל על יד הכהן, והבעלים אוחז בשפתותיו", "לשון המשנה (ביכורים ג, ו): ״מוריד הסל מעל כתפו ואוחזו בשפתותיו, וכהן מניח ידו תחתיו ומניפו״.\n**ברטנורא** (ביכורים ג, ו): ״מכאן משמע שהסל היה על ידו של כהן, אלא שהבעלים אוחזים הסל בשפתותיו למעלה בשעת התנופה, ושלא כדברי האומר כהן מניח ידו תחת יד הבעלים ומניף״.\n**ר״ש משאנץ** (שם): ״משמע שהסל על יד הכהן אלא שהבעלים אוחזין הסל בשפתותיו״.\n**הגמרא** (מנחות סא:): ״כהן מניח ידו תחת ידי בעלים ומניף״.\n**תוספות יום טוב** (ביכורים ג, ו): ״שהרמב״ם בפ״ח מהלכות מעשה הקרבנות כתב מניח ידו תחת יד... ומיהו הביאו הירוש׳ דמוכח שתחת יד ממש... וא״כ יש מחלוקת ביניהם וכדברי הר״ב״.\n**מלאכת שלמה** (שם): ״...תחת יד הבעלים ושניהם בשפתות הסל״."],
             ["o1", "פשט הגמרא — יד הכהן תחת ידי הבעלים", "לשון המשנה (ביכורים ג, ו): ״מוריד הסל מעל כתפו ואוחזו בשפתותיו, וכהן מניח ידו תחתיו ומניפו״.\n**ברטנורא** (ביכורים ג, ו): ״מכאן משמע שהסל היה על ידו של כהן, אלא שהבעלים אוחזים הסל בשפתותיו למעלה בשעת התנופה, ושלא כדברי האומר כהן מניח ידו תחת יד הבעלים ומניף״.\n**ר״ש משאנץ** (שם): ״משמע שהסל על יד הכהן אלא שהבעלים אוחזין הסל בשפתותיו״.\n**הגמרא** (מנחות סא:): ״כהן מניח ידו תחת ידי בעלים ומניף״.\n**תוספות יום טוב** (ביכורים ג, ו): ״שהרמב״ם בפ״ח מהלכות מעשה הקרבנות כתב מניח ידו תחת יד... ומיהו הביאו הירוש׳ דמוכח שתחת יד ממש... וא״כ יש מחלוקת ביניהם וכדברי הר״ב״.\n**מלאכת שלמה** (שם): ״...תחת יד הבעלים ושניהם בשפתות הסל״."]],
           current: "o0",
-          onPick: (k) => { const B = ctx.shared.bikkurim; if (B && typeof B.setWave === "function") B.setWave(k === "o1" ? "b" : "a"); }
+          onPick: (k) => { const B = ctx.shared.bikkurim; if (B && typeof B.setWave === "function") B.setWave(k === "o1" ? "b" : "a");,
+          // BIK_FOCUS_G4: the waving alone, in the method chosen (the priest's hand under the basket, or under the owners' hands)
+          fly: () => { const B = ctx.shared.bikkurim; if (B && typeof B.focus === "function") B.focus("wave"); } }
         });
         // SCALE_FIG_A2 (fix-a2; the user's decision 23): a priest for scale, 3.54 amot (ctx.shared.scaleFigure, 55-payis.js)
         if (ctx.shared.scaleFigure) opRow({

@@ -3661,10 +3661,10 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
         [T.put - 0.2, "״ומניחו בצד המזבח בקרן דרומית מערבית בדרומה של קרן, וישתחוה ויצא״ (רמב״ם ביכורים ג, יב)"],
         [T.bow1 + 0.4, "הדרך, הקצב, השור, הסל ופירותיו והמלווים — בחירת מודל"]
       ];
-      const finish = () => { BK.run = false; BG.visible = false; const sv = BK.saved; if (sv && sv.lg) sv.lg.visible = sv.labels; if (sv && sv.view && SH.viewLimits) SH.viewLimits.set(sv.view); if (BK.camLow0 === undefined) delete SH.camLow; else SH.camLow = BK.camLow0; BK.saved = null; };
+      const finish = () => { BK.run = false; BK.focus = null; BG.visible = false; const sv = BK.saved; if (sv && sv.lg) sv.lg.visible = sv.labels; if (sv && sv.view && SH.viewLimits) SH.viewLimits.set(sv.view); if (BK.camLow0 === undefined) delete SH.camLow; else SH.camLow = BK.camLow0; BK.saved = null; };
       // CHIP_KEEPS_DEMO_T (fix-t, 23.11.2026; the coordinator: "מותר להתחיל מחדש מהשלב הרלוונטי (הקריאה), לא מההתחלה"): the run may begin
       // at a second of its timeline (BK.off) - the walk's keys and captions from there, shifted to its start; setReading uses it below
-      const startFrom = (off0) => {
+      const startFrom = (off0, end0) => {
         const Wk = SH.walk; if (!Wk) return false;
         if (typeof SH.stopDemos === "function") SH.stopDemos("bikkurimDemo");
         build(); prime();
@@ -3674,18 +3674,28 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
         if (SH.viewLimits) SH.viewLimits.include([0, RPb.yf - 2, RPb.zf + 30]);
         BK.camLow0 = SH.camLow; SH.camLow = RPb.yf - 3;
         T = mkT(BK.reading);
-        const off = off0 > 0 ? off0 : 0;
+        const off = off0 > 0 ? off0 : 0, endAt = end0 > 0 ? end0 : 1e9;   // BIK_FOCUS_G4: endAt - a short demonstration of one part only (SH.bikkurim.focus)
         BK.off = off;
         BG.visible = true; BK.run = true; apply(off);
-        if (!off) { Wk.run(keys(), caps(), finish); return true; }
+        if (!off) { Wk.run(keys().filter((k) => k[0] <= endAt), caps().filter((c) => c[0] <= endAt), finish); return true; }
         const K = keys(), C = caps();
         let i0 = 0, c0 = 0;
         for (let i = 0; i < K.length; i++) if (K[i][0] <= off) i0 = i;
         for (let i = 0; i < C.length; i++) if (C[i][0] <= off) c0 = i;
-        Wk.run(K.slice(i0).map(([t, e, l]) => [Math.max(0, t - off), e, l]), C.slice(c0).map(([t, x]) => [Math.max(0, t - off), x]), finish);
+        Wk.run(K.slice(i0).filter((k) => k[0] <= endAt).map(([t, e, l]) => [Math.max(0, t - off), e, l]), C.slice(c0).filter((c) => c[0] <= endAt).map(([t, x]) => [Math.max(0, t - off), x]), finish);
         return true;
       };
       const start = () => startFrom(0);
+      // BIK_FOCUS_G4 (the user 24.11.2026: "לחיצה על המתג תפעיל את ההדגמה בחלק זה בלבד ותשתנה לפי השיטה"): a short demonstration of ONE part, in the
+      // method chosen - "read": from just before the reading to the putting down (the Tanna Kamma reads all and then waves; R. Yehuda waves at "ארמי אבד אבי"
+      // and goes on reading); "wave": the waving alone (the priest's hand under the basket, or under the owners' hands)
+      const focus = (part) => {
+        if (BK.run && BK.focus && BK.focus.part === part && performance.now() - BK.focus.t < 400) return true;   // the chip's own switch just started it
+        if (BK.run) { const Wk0 = SH.walk; if (Wk0 && Wk0.on) Wk0.stop(); else finish(); }
+        T = mkT(BK.reading);
+        const a = part === "wave" ? T.wave0 - 1.8 : T.read0 - 0.8, z = part === "wave" ? T.wave1 + 0.9 : T.put + 0.6;
+        const ok = startFrom(Math.max(0, a), z); if (ok) BK.focus = { part, t: performance.now() }; return ok;
+      };
       const stop = () => { if (!BK.run) return; const Wk = SH.walk; if (Wk && Wk.on) Wk.stop(); else finish(); };
       let sndB = -1;
       if (Array.isArray(ctx2.animated)) ctx2.animated.push(() => {
@@ -3697,7 +3707,7 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
       const wk = () => (SH.demoStops || []).find((q2) => q2.id === "walk");
       (SH.demoStops || (SH.demoStops = [])).push({ id: "bikkurimDemo", running: () => BK.run, stop, pause: () => { const w = wk(); if (w) w.pause(); }, resume: () => { const w = wk(); if (w) w.resume(); }, paused: () => { const w = wk(); return !!(w && w.paused()); }, restart: () => { stop(); start(); } });
       // CHIP_KEEPS_DEMO_T: setReading while it runs - on from the same second, at most from the reading (until now: from the start)
-      SH.bikkurim = { start, stop, at: (t) => { build(); prime(); T = mkT(BK.reading); BG.visible = true; apply(t); }, keys, get reading() { return BK.reading; }, get off() { return BK.run ? BK.off || 0 : 0; }, get _k() { return { D, T, OXW, SW, KH: KF ? kHold() : null, kHoldOf, LIP, wallR }; }, get wave() { return KW.way; }, setWave,   /* HANDS_K: for the checks */ setReading: (r) => { BK.reading = r === "rj" ? "rj" : "tk"; if (BK.run) { const Wk = SH.walk, now = (Wk && typeof Wk.now === "function" ? Math.max(0, Wk.now()) : 0) + (BK.off || 0); stop(); startFrom(Math.min(now, T.read0)); } return BK.reading; }, get on() { return BK.run; } };
+      SH.bikkurim = { start, stop, at: (t) => { build(); prime(); T = mkT(BK.reading); BG.visible = true; apply(t); }, keys, get reading() { return BK.reading; }, get off() { return BK.run ? BK.off || 0 : 0; }, get _k() { return { D, T, OXW, SW, KH: KF ? kHold() : null, kHoldOf, LIP, wallR }; }, get wave() { return KW.way; }, setWave: (m) => { const was = KW.way, r = setWave(m); if (BK.run && BK.focus && was !== r) focus(BK.focus.part); return r; }, focus,   /* HANDS_K: for the checks */ setReading: (r) => { BK.reading = r === "rj" ? "rj" : "tk"; if (BK.run && BK.focus) { focus(BK.focus.part); } else if (BK.run) { const Wk = SH.walk, now = (Wk && typeof Wk.now === "function" ? Math.max(0, Wk.now()) : 0) + (BK.off || 0); stop(); startFrom(Math.min(now, T.read0)); } return BK.reading; }, get on() { return BK.run; } };
     }
     // ---------- AQUEDUCTS_B2 (fix-b2, 22.11.2026 - the user's decisions 170 and 171 a): THE TWO WATER CHANNELS ----------
     // (1) the channel under the court from the shitin to the Kidron - Middot 3:2 (89:20): "ובקרן מערבית דרומית היו שני נקבים, כמין שני
