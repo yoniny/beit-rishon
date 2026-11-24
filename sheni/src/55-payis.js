@@ -126,9 +126,8 @@
     const torch = () => {
       const t = new Group();
       t.add(new Mesh(gStick, M2.cedar));
-      const fl = new Mesh(gFlame, mFlame);
-      fl.position.y = 1.3;
-      t.add(fl);
+      // TORCHES_LIVE_N3 (the user: "כל הלפידים צריכים להיות באש חיה כמו במזבח"): the altar's live fire on the stick's head (40-altar.js, SH.liveFlame)
+      const fl = typeof SH.liveFlame === "function" ? SH.liveFlame(t, 0, 1.15, 0, 0.3, 1.0, 0.95) : (() => { const c = new Mesh(gFlame, mFlame); c.position.y = 1.3; t.add(c); return c; })();
       const L = new PointLight(0xffa040, 0, 46, 1.6);
       L.position.y = 3.3;   // above the heads, so that the faces and the mitznefet are lit
       t.add(L);
@@ -206,6 +205,18 @@
       ctx2.animated.push(() => { if (SF.on) place(); });
     }
     const T1 = torch(), T2 = torch(), T3 = torch(), T4 = torch();
+    // TORCHES_HELD_N3 (fix-n3, 24.11.2026 - the user, of a picture where a priest stood beside a torch and did not carry it; Tamid 1:3, 88:? "ונכנסו אחריו ושתי אבוקות של אור
+    // בידם"; 3:4 "מבקרין אותו לאור האבוקות"): every torch of this demonstration is held in the hand of a priest who walks (or stands) with it - the torch is his hand's child, his arm
+    // out - and no torch walks alone or stands on the floor. A torch's track and its "visible" are the carrier's (see the tracks' loop and syncCar below)
+    const CAR = [T1, T2, T3, T4].map((T, i) => {
+      const f = figure(mRobe, true, i + 5);
+      f.visible = false; g.add(f);
+      f.userData.hand.visible = true;
+      f.add(T); T.scale.setScalar(1); T.position.set(-SH_X, 1.12, 0.62); T.rotation.set(0.12, 0, 0);
+      T.userData.carrier = f;
+      return f;
+    });
+    const syncCar = () => { for (const x of [T1, T2, T3, T4]) x.userData.carrier.visible = x.visible; };
     const MARK = new Mesh(new SphereGeometry(0.14, 10, 8), mMark);
     MARK.visible = false;
     g.add(MARK);
@@ -581,7 +592,7 @@
         t += 4;
       }
       // ===== the Gazit hall: the first two lotteries (the Rambam) or the second alone (the Mishnah's order)
-      ev(0, () => { T1.visible = T2.visible = false; T3.visible = T4.visible = true; T3.userData.light.intensity = T4.userData.light.intensity = 20; T3.position.set(88.2, FYG, -72.4); T4.position.set(88.2, FYG, -60.2); ELDER.visible = true; });
+      ev(0, () => { T1.visible = T2.visible = false; T3.visible = T4.visible = true; T3.userData.light.intensity = T4.userData.light.intensity = 20; CAR[2].position.set(88.2, FYG, -72.4); CAR[3].position.set(88.2, FYG, -60.2); face(CAR[2], 83.5, -66.3); face(CAR[3], 83.5, -66.3); syncCar(); ELDER.visible = true; });
       sky(0, "night", "alot");   // the first light: the Rambam, Temidin 4:1 - "נכנסין ללשכת הגזית אחר שיעלה עמוד השחר"
       sky(6, "alot");
       cam(3, camGazit[0], camGazit[1]);
@@ -705,6 +716,7 @@
       get garmentsOn() { return !!GAR; },
       setReading(m) { this.reading = m === "tamid" ? "tamid" : "rambam"; if (RUN) stop(); return this.reading; },
       get on() { return !!RUN; },
+      get _torches() { return { T: [T1, T2, T3, T4], CAR }; },   // TORCHES_HELD_N3: for the checks
       start() { start(); },
       stop() { stop(); },
       // tests: the state at a second of the script, the clock held there
@@ -722,6 +734,7 @@
       MEM.visible = WATCH.visible = ELDER.visible = false;
       MARK.visible = false;
       for (const x of [T1, T2, T3, T4]) { x.visible = false; x.userData.light.intensity = 0; }
+      syncCar();
       for (const s of tags) s.visible = false;
     };
     let KEEP = false;
@@ -916,12 +929,14 @@
         const a = k[i], b = k[Math.min(k.length - 1, i + 1)];
         const u = b[0] > a[0] ? Math.max(0, Math.min(1, (t - a[0]) / (b[0] - a[0]))) : 1, e = tr.local ? ease(u) : u;
         const x = a[1] + (b[1] - a[1]) * e, y = a[2] + (b[2] - a[2]) * e, z = a[3] + (b[3] - a[3]) * e;
-        tr.o.position.set(x, y, z);
+        const to = tr.o.userData && tr.o.userData.carrier ? tr.o.userData.carrier : tr.o;   // TORCHES_HELD_N3: a torch's track moves its carrier
+        to.position.set(x, y, z);
         if (tr.local) continue;
         const moving = u < 1 && (Math.abs(b[1] - a[1]) + Math.abs(b[3] - a[3]) > 0.05);
-        if (moving) tr.o.rotation.y = Math.atan2(b[1] - a[1], b[3] - a[3]);
-        else if (tr.faceTo && t >= k[k.length - 1][0]) face(tr.o, tr.faceTo[0], tr.faceTo[1]);
+        if (moving) to.rotation.y = Math.atan2(b[1] - a[1], b[3] - a[3]);
+        else if (tr.faceTo && t >= k[k.length - 1][0]) face(to, tr.faceTo[0], tr.faceTo[1]);
       }
+      syncCar();
       // SOUNDS_300 (the user's item 16, 18.11.2026): soft barefoot steps (a "steps" loop at 0.7) while a priest walks - a figure (the
       // ring's priests, the appointed one, the watcher; not the torches, not a mitznefet) between two keys of his track that are apart;
       // none while the clock stands (a pause, a still frame: R.hold). stop() ends the loop. The night's own sounds (SOUND_211) stay
