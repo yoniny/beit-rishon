@@ -1923,6 +1923,11 @@
       else if (k < O.k[1]) { const s = seg(O.k[0], O.k[1]); r = O.r[0] + (O.r[1] - O.r[0]) * s; h = O.h[0] + (O.h[1] - O.h[0]) * s; }
       else { const s = seg(O.k[1], 1); r = O.r[1] + (Math.hypot(P[0], P[2]) - O.r[1]) * s; h = O.h[1] + (P[1] - O.h[1]) * s; }
       const a = a0 + (a1 - a0) * k;
+      // MECH_ULAM_420 (the scan of 4.2.0: the eye inside the ulam doorway's north jamb, x 18.4, once every round): since G15 the wash stop
+      // stands at x 34.5, 16 east of the ulam's face (20.5 when FOLLOW_KID_301 measured its swing), and the swing's first part - the far
+      // view's radius (22) already turned 45 degrees west - reached the face. The rule of FOLLOW_KID_301 kept: the eye 4.8 or more east of
+      // the face (CO.xUlamE) - on the west side the radius is shortened to that line, the azimuth and the height as they were
+      { const xMin = ((ctx.CO && ctx.CO.xUlamE) || 18.5) + 4.8, sa = Math.sin(a); if (sa < -1e-6) { const rMax = (cx - xMin) / -sa; if (r > rMax) r = rMax; } }
       p[0] = cx + r * Math.sin(a); p[1] = F + h; p[2] = cz - r * Math.cos(a);
     };
     // FOLLOW_KID_301: and the follow never writes a pose that OrbitControls' update() would change (that ends the follow, folMoved):
