@@ -1286,6 +1286,11 @@
     camPassHit: cam_passHit,   //   (every building surface but a floor at or under the target)
     camMode: () => cam.mode,
     camDecide: cam_decide,
+    // CAM_FOLLOW_G15 (the user, 24.11.2026: "המכונה מאבדת את המצלמה לאחר הקידוש הראשון"): the floor under the target, taken afresh (cam.floorY is
+    // otherwise decided only at the rare moments listed above, e.g. at the end of a flight). A demonstration that moves the eye and the target by itself
+    // (the laver's base: its follow view, 45-vessels.js) asks for it, and keeps the eye over it - the guard below then never lifts that eye
+    // (the follow took any lift for a hand on the camera and ended)
+    camFloorUnderTarget: () => { cam.floorY = cam_floorY(controls.target); return cam.floorY; },
     camFlying: () => !!flyAnim,      // CAM_219 (2): 70-ui.js's compass turn gives way to a flight
     camFlyStop: () => cam_flyStop(), // CAM_219 (2): the nav buttons and keys end a flight, as a press on the model does
     camInside: { get: () => cam.inside, set: (on) => { cam.inside = !!on; } },   // "סיבוב בתוך הבית בלבד" (70-ui.js)
