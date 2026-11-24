@@ -2787,7 +2787,7 @@
     // slaughter place to the ramp, round the altar and its ramp. In the altar's frame (they move with its place). MODEL CHOICES: the rows'
     // width, height, direction and the area they cover.
     {
-      const BG = grp("highBenches", false);
+      const BG = grp("highBenches", true);   // BENCHES_ON (the user 24.11.2026: the "without" option cancelled - the benches always shown, as Chalamish describes)
       const F = LV.KOH, RW = 1, RH = 0.5, GAP = 0.75;
       const parts = [];
       const Z0 = -32.5, Z1 = 45.5;   // in the altar's frame (world z - 12.5 at the Mishnah's place): from the rings' edge to past the ramp's foot
