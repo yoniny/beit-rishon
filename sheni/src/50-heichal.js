@@ -3783,7 +3783,11 @@
         const ulamGC = mkGC("ulam", "z", 17.75, 0, 20.6, 40, F + 40, 1);
         if (Array.isArray(ctx2.shared.__ulamFrontCut)) ctx2.shared.__ulamFrontCut.push(ulamGC.grp);   // "פתח את האולם" takes it with the front
         ctx2.shared.parochetArt.set(ctx2.shared.parochetArt.mode);   // PAROCHOT_ART_B2: the nine's faces dressed
-        const GP = ctx2.shared.gateParochot = { mode: "down", list: GC, set(k) { this.mode = k === "up" ? "up" : "down"; return this.mode; } };
+        // PAROCHOT_PIN_N18 (the user, 24.11.2026: the row's "פרוסות על הפתחים" did not lower the ulam's parochet - the row's own view looks at
+        // the opening itself, and a parochet is rolled up while the eye looks through its opening, so it stayed rolled): choosing a reading
+        // in the row `pin`s the parochot as chosen - the looking-through rule is suspended until the view has come to the row's target and
+        // left it again (or 25 seconds pass); pin = [x, y, z], the row's target
+        const GP = ctx2.shared.gateParochot = { mode: "down", list: GC, pin: null, arrived: false, pinT: 0, set(k, pin) { this.mode = k === "up" ? "up" : "down"; this.pin = Array.isArray(pin) ? pin.slice() : null; this.arrived = false; this.pinT = 0; return this.mode; } };
         const SEE = new Vector3();
         const sees = (o) => {
           const cam = ctx2.camera && ctx2.camera.position, tg = ctx2.controls && ctx2.controls.target;
@@ -3805,8 +3809,15 @@
           const dt = gcT ? Math.min(0.1, Math.max(0, (t - gcT) / 1000)) : 0;
           gcT = t;
           const up = GP.mode === "up", demo = !up && demoOn();
+          if (GP.pin) {
+            const tg = ctx2.controls && ctx2.controls.target;
+            if (!GP.pinT) GP.pinT = t;
+            const d = tg ? Math.hypot(tg.x - GP.pin[0], tg.y - GP.pin[1], tg.z - GP.pin[2]) : 0;
+            if (d < 1.5) GP.arrived = true;
+            else if (GP.arrived || t - GP.pinT > 25000) GP.pin = null;
+          }
           for (const o of GC) {
-            o.want = up || demo || sees(o) ? 1 : 0;
+            o.want = up || demo || (!GP.pin && sees(o)) ? 1 : 0;
             const d = o.want - o.u;
             if (Math.abs(d) < 1e-4) continue;
             o.u = dt ? o.u + Math.max(-0.9 * dt, Math.min(0.9 * dt, d)) : o.want;
