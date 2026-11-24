@@ -2089,6 +2089,7 @@
     ent_walkStep();   // 1.2.2: the arrows walk
     cam_update();   // 1.2.0: controls.update(), "סיבוב איטי" in place in mode "look"
     guardCamera();
+    try { tm_waterTick(t, scene); } catch (_) {}   // WATER_420
     for (const fn of ctx.animated) {
       try {
         fn(t);

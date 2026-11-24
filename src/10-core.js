@@ -399,6 +399,7 @@
     return std(tex, Object.assign({}, GOLD_OPTS, extra || {}));
   }
   //@@include copper
+  //@@include water
   var M = {
     stone: std(TEX.stone, { roughness: 0.72, envMapIntensity: 0.55, bumpScale: 0.7 }),
     stoneLight: std(TEX.stoneLight, { roughness: 0.66, envMapIntensity: 0.6, bumpScale: 0.6 }),

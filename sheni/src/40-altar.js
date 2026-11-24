@@ -150,7 +150,7 @@
       // SHITIN_OPEN_420 (the user, 24.11.2026, of the amah's mouth: "הצורה המטופשת הזו מיותרת! תעשה שבכל לחיצה על מתג זה תפתח הטבלה ויראו
       // מים!"): the slab and its ring are lifted and laid beside the place, and the water is seen in it (ctx2.shared.shitinSlab.set(open))
       { const sl = H2.box(grp, 1, 0.08, 1, M2.marble, x0 - 0.5, F, z1 + 0.8), rg = H2.ring(grp, 0.18, 0.04, M2.bronze, x0 - 0.5, F + 0.12, z1 + 0.8);
-        const wM = new MeshStandardMaterial({ color: 0x3f86b8, roughness: 0.08, metalness: 0.1, emissive: 0x0e2a40, emissiveIntensity: 0.6 });
+        const wM = tm_water(new MeshStandardMaterial({ color: 0x3f86b8, roughness: 0.08, metalness: 0.1, emissive: 0x0e2a40, emissiveIntensity: 0.6 }), { scale: 0.25 });   // WATER_420
         const wt = new Mesh(new BoxGeometry(0.96, 0.02, 0.96), wM); wt.position.set(x0 - 0.5, F + 0.035, z1 + 0.8); wt.visible = false; wt.userData.noPick = true; grp.add(wt);
         const L = ctx2.shared.shitinSlabs = ctx2.shared.shitinSlabs || [];
         L.push({ sl, rg, wt, x: x0 - 0.5, z: z1 + 0.8, ry: rg && rg.position ? rg.position.y : F + 0.12 });
@@ -1859,7 +1859,7 @@
         H2.box(g, KPIT.w + 0.6, 0.3, 0.3, M2.stoneSmooth, KPIT.x, top, KPIT.z + s2 * (KPIT.d / 2 + 0.15));
         H2.box(g, 0.3, 0.3, KPIT.d, M2.stoneSmooth, KPIT.x + s2 * (KPIT.w / 2 + 0.15), top, KPIT.z);
       }
-      const wm = new MeshStandardMaterial({ color: 0x2f6f86, roughness: 0.12, metalness: 0.1, transparent: true, opacity: 0.62, depthWrite: false });
+      const wm = tm_water(new MeshStandardMaterial({ color: 0x2f6f86, roughness: 0.12, metalness: 0.1, transparent: true, opacity: 0.62, depthWrite: false }), { scale: 0.6 });   // WATER_420
       const surf = new Mesh(new BoxGeometry(iw, 0.04, iw), wm);
       surf.position.set(KPIT.x, top - 0.8, KPIT.z);
       surf.renderOrder = 4;
@@ -1998,7 +1998,7 @@
     {
       const cm = tm_copper(0x8c5a3c, 0.45, { metalness: 0.45 }); cm.side = DoubleSide;   // COPPER_C (fix-c): the Rambam's mochani, a copper vessel - the book's copper (until now 0x8c5a3c)
       H2.lathe(mochR, [[2.72, 3.05], [2.72, 1.85], [3.35, 1.85], [3.35, 3.05], [3.25, 3.05], [3.25, 1.95], [2.82, 1.95], [2.82, 3.05], [2.72, 3.05]], cm, 0, 0, 0, 48);
-      const ring = new Mesh(new RingGeometry(2.82, 3.25, 48), new MeshStandardMaterial({ color: 3104873, roughness: 0.15, metalness: 0.1, side: DoubleSide }));
+      const ring = new Mesh(new RingGeometry(2.82, 3.25, 48), tm_water(new MeshStandardMaterial({ color: 3104873, roughness: 0.15, metalness: 0.1, side: DoubleSide }), { scale: 0.35 }));   // WATER_420
       ring.rotation.x = -Math.PI / 2;
       ring.position.y = 2.8;
       mochR.add(ring);

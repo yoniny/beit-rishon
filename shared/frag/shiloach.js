@@ -126,7 +126,7 @@
     const LK = o.lake === false ? null : Object.assign({ dx: 2.0, dz: -1.9, rx: 3.2, rz: 2.3 }, o.lake || {});
     const inLake = (x, z, k) => !!LK && Math.pow((x - LK.dx * S) / (LK.rx * S * (k || 1)), 2) + Math.pow((z - LK.dz * S) / (LK.rz * S * (k || 1)), 2) < 1;
     if (!LK) { const bed = new Mesh(new CylinderGeometry(BR, BR * 0.8, BY - GY + 0.8, 24, 1, true), new MeshStandardMaterial({ color: 0x5f5a52, roughness: 1, side: DoubleSide })); bed.position.set(0, (BY + GY - 0.8) / 2, BZ); G.add(noPick(bed));
-      const swirlM = new MeshStandardMaterial({ map: swirlTex, roughness: 0.1, metalness: 0.05, emissive: 0x2a5a8a, emissiveIntensity: 0.6 });
+      const swirlM = tm_water(new MeshStandardMaterial({ map: swirlTex, roughness: 0.1, metalness: 0.05, emissive: 0x2a5a8a, emissiveIntensity: 0.4 }), { scale: 0.45 });   // WATER_420
       const wtr = new Mesh(new CircleGeometry(BR + 0.05, 32).rotateX(-Math.PI / 2), swirlM); wtr.position.set(0, BY, BZ); G.add(noPick(wtr));
       for (let i = 0; i < 11; i++) { const a = -Math.PI * 0.2 + (i / 10) * Math.PI * 1.4 + (rr() - 0.5) * 0.15, r = BR + 0.16 * S; boulderL(Math.cos(a) * r, BY - 0.05, BZ + Math.sin(a) * r * 0.9 + 0.1, (0.32 + rr() * 0.22) * S); } }
     // ---- the fall: a narrow white ribbon out of the opening, arching forward and down into the basin; setBottom cuts it (a vessel under it)
@@ -134,7 +134,7 @@
     const fallG = new BufferGeometry(), fpos = new Float32Array((NSEG + 1) * 2 * 3), fuv = new Float32Array((NSEG + 1) * 2 * 2), fidx = [];
     for (let i = 0; i < NSEG; i++) { const k = i * 2; fidx.push(k, k + 1, k + 2, k + 1, k + 3, k + 2); }
     fallG.setAttribute("position", new Float32BufferAttribute(fpos, 3)); fallG.setAttribute("uv", new Float32BufferAttribute(fuv, 2)); fallG.setIndex(fidx);
-    const fallM = new MeshStandardMaterial({ map: fallTex, transparent: true, opacity: 0.96, side: DoubleSide, roughness: 0.2, emissive: 0xb8d6ee, emissiveIntensity: 0.55, depthWrite: false });
+    const fallM = tm_water(new MeshStandardMaterial({ map: fallTex, transparent: true, opacity: 0.96, side: DoubleSide, roughness: 0.2, emissive: 0xb8d6ee, emissiveIntensity: 0.55, depthWrite: false }), { mode: "fall", scale: 0.5 });   // WATER_420
     const fall = new Mesh(fallG, fallM); fall.renderOrder = 3; fall.frustumCulled = false; G.add(noPick(fall));
     let yBot = BY;
     const setBottom = (y) => {
@@ -167,7 +167,7 @@
     // ---- the great pool (optional): four walls of stone and a floor, its water turning, grey boulders on its rim (the way to the basin left
     //      open), ferns along its sides and bushes behind it; a rill from the basin to it
     const EXTRA = [];
-    const swirlMat = () => { const t = swirlTex.clone(); t.needsUpdate = true; t.center.set(0.5, 0.5); const m = new MeshStandardMaterial({ map: t, roughness: 0.12, metalness: 0.08, transparent: true, opacity: 0.92, emissive: 0x24507c, emissiveIntensity: 0.5 }); EXTRA.push(t); return m; };
+    const swirlMat = () => { const t = swirlTex.clone(); t.needsUpdate = true; t.center.set(0.5, 0.5); const m = tm_water(new MeshStandardMaterial({ map: t, roughness: 0.12, metalness: 0.08, transparent: true, opacity: 0.92, emissive: 0x24507c, emissiveIntensity: 0.35 }), { scale: 1.2 }); EXTRA.push(t); return m; };   // WATER_420
     let POOL = null;
     let LAKE = null;
     if (LK) {   // NATURAL_POOL_B2: the pool - an irregular round of water, turning, a bank of wet earth round it, grey boulders on its edge
@@ -205,7 +205,7 @@
       for (let i = 0; i < 14; i++) { const sd = i % 2 ? 1 : -1, x = cx + sd * (W2b + 0.9), z = cz + (rr() - 0.5) * pd; clumpL(x, gL(x, z), z, (0.8 + rr() * 0.5) * S); }
       for (let i = 0; i < 8; i++) { const x = cx + (rr() - 0.5) * pw, z = cz + (cz < 0 ? D2b + 1.2 + rr() * 1.5 : -(D2b + 1.2 + rr() * 1.5)); bushL(x, gL(x, z), z, (0.9 + rr() * 0.5) * S); }
       { const ax = (cx > 0 ? 0.9 : -0.9) * S, az = -0.9 * S, ex = cx + (cx > 0 ? -W2 : W2), ez = Math.min(cz + D2 - 1, az - 1.5), Lr = Math.hypot(ex - ax, ez - az);
-        const rill = new Mesh(new PlaneGeometry(0.45 * S, Lr).rotateX(-Math.PI / 2), new MeshStandardMaterial({ color: 0x8fc3ec, roughness: 0.1, transparent: true, opacity: 0.85 }));
+        const rill = new Mesh(new PlaneGeometry(0.45 * S, Lr).rotateX(-Math.PI / 2), tm_water(new MeshStandardMaterial({ color: 0x8fc3ec, roughness: 0.1, transparent: true, opacity: 0.85 }), { mode: "flow", flow: [0, 1.4], scale: 0.35 })); rill.material.userData.tmWater.obj = rill;   // WATER_420: running from the fall to the pool (the mesh's +z)
         rill.position.set((ax + ex) / 2, Math.max(gL((ax + ex) / 2, (az + ez) / 2), rim - 0.4) + 0.07, (az + ez) / 2); rill.rotation.y = Math.atan2(ex - ax, ez - az); G.add(noPick(rill)); }
       POOL = { y0, rim, wl: wlv, water };
     }

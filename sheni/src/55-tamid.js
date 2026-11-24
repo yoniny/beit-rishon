@@ -2886,7 +2886,7 @@
     KID.water = (list) => {
       const g = new Group();
       g.name = "kiddushWater";
-      const M = new MeshStandardMaterial({ color: 0x7db8ec, emissive: 0x15406a, emissiveIntensity: 0.5, roughness: 0.06, metalness: 0.1, transparent: true, opacity: 0.8, depthWrite: false });
+      const M = tm_water(new MeshStandardMaterial({ color: 0x7db8ec, emissive: 0x15406a, emissiveIntensity: 0.5, roughness: 0.06, metalness: 0.1, transparent: true, opacity: 0.8, depthWrite: false }), { mode: "fall", scale: 0.3 });   // WATER_420
       const cyl = (r0, r1) => { const q = new CylinderGeometry(r1, r0, 1, 7, 1, true); q.translate(0, 0.5, 0); const m = new Mesh(q, M); m.renderOrder = 5; g.add(m); return m; };
       const blob = (sx, sy, sz) => { const m = new Mesh(new SphereGeometry(1, 10, 6), M); m.scale.set(sx, sy, sz); m.renderOrder = 5; g.add(m); return m; };
       g.userData.items = list.map((i) => ({

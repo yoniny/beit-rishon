@@ -24,9 +24,7 @@
     }
     ctx2.root.add(g);
     const lbl = (text, x, y, z, size = 3) => ctx2.labels.push({ text, x, y, z, size });
-    const water = M2.marble.clone();
-    water.color = new Color(4156814);
-    water.roughness = 0.25;
+    const water = tm_water(new MeshStandardMaterial({ color: 0x2c5a78, roughness: 0.1 }), { scale: 0.6 });   // WATER_420: the baths, the pits and the wells (until now the marble's map in a blue colour)
     const clay = M2.plaster.clone();
     clay.color = new Color(11569512);
     const goldDoor = M2.gold.clone();
@@ -2863,7 +2861,7 @@
             root.add(cap);
           }
           // ---- the water, and a ring on it (the demonstration's)
-          const water = new Mesh(new PlaneGeometry(POOL.x1 - POOL.x0, POOL.z1 - POOL.z0).rotateX(-HP), new MeshBasicMaterial({ color: 0x2a4c58, transparent: true, opacity: 0.72, depthWrite: false }));
+          const water = new Mesh(new PlaneGeometry(POOL.x1 - POOL.x0, POOL.z1 - POOL.z0).rotateX(-HP), tm_water(new MeshStandardMaterial({ color: 0x2a4c58, emissive: 0x1d3640, emissiveIntensity: 1, transparent: true, opacity: 0.72, depthWrite: false }), { scale: 0.5, refl: 0.6 }));   // WATER_420 (lit by itself, as the room under the ground)
           water.position.set((POOL.x0 + POOL.x1) / 2, YF - 0.15, (POOL.z0 + POOL.z1) / 2);
           water.renderOrder = 3;
           root.add(water);

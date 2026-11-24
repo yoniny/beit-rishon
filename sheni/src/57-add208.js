@@ -1100,7 +1100,7 @@
         flask.position.set(0, -0.2, 0.02);
         p.R.grip.add(flask);
         holdB2(p.R);   // HAND_SDF_MERGE_B2
-        const fwater = new Mesh(new CylinderGeometry(0.035, 0.05, 1, 8, 1, true), new MeshStandardMaterial({ color: 0x7fc0f0, transparent: true, opacity: 0.8, roughness: 0.1 }));
+        const fwater = new Mesh(new CylinderGeometry(0.035, 0.05, 1, 8, 1, true), tm_water(new MeshStandardMaterial({ color: 0x7fc0f0, transparent: true, opacity: 0.8, roughness: 0.1 }), { mode: "fall", scale: 0.3 }));   // WATER_420
         fwater.visible = false;
         DG.add(fwater);
         // the silver trumpets (Numbers 10:2), one for each of the two, from his mouth forward and up
@@ -3852,7 +3852,7 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
     {
       const AQ = grp("aqueducts", true), XRK = [], XRE = [];
       const stoneM = new MeshStandardMaterial({ color: 0x9a8c74, roughness: 0.95 }), capM = new MeshStandardMaterial({ color: 0x857862, roughness: 0.95 });
-      const waterM = new MeshStandardMaterial({ color: 0x5f9fd6, roughness: 0.12, metalness: 0.05, emissive: 0x16324c, emissiveIntensity: 0.3 });
+      const waterM = tm_water(new MeshStandardMaterial({ color: 0x3f78ab, roughness: 0.12, metalness: 0.05, emissive: 0x16324c, emissiveIntensity: 0.3 }), { scale: 0.4 });   // WATER_420 (a little deeper: the sky is drawn in it now)
       const darkM = new MeshStandardMaterial({ color: 0x140d08, roughness: 1 });
       const gm = new Map(), ghostM = (m) => { let g = gm.get(m); if (!g) { g = m.clone(); g.transparent = true; g.opacity = 0.62; g.depthWrite = false; g.depthTest = true; g.depthFunc = GreaterDepth; gm.set(m, g); } return g; };
       const ghost = (m, list) => { const t = new Mesh(m.geometry, ghostM(m.material)); t.visible = false; t.renderOrder = 30; t.userData.noPick = true; t.raycast = () => {}; m.add(t); list.push(t); };
@@ -3886,7 +3886,17 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
           const low = new Mesh(new PlaneGeometry(2.1, 0.45), darkM); low.rotation.y = Math.PI / 2; low.position.set(ex, yX - 0.27, EXZ); AQ.add(low);
           const arch = new Mesh(new TorusGeometry(1.18, 0.2, 6, 14, Math.PI), stoneM); arch.rotation.y = Math.PI / 2; arch.position.set(ex + 0.05, yX - 0.05, EXZ); arch.castShadow = true; AQ.add(arch);
           piece([ex, yX - 0.5, EXZ], [ex + 1.8, yX - 0.62, EXZ], 2.1, 0.22, stoneM, null);   // the sill
-          for (let i = 1; i < SP.length; i++) { const a = SP[i - 1], b = SP[i]; const w = 0.7 + i * 0.03; piece(a, b, w, 0.06, waterM, null); }
+          // KIDRON_RILL_420 (the user 24.11.2026 23:42: "קצת לא הגיוני שיש פס של מים, זה אמור להיות יותר קולח"): over the sill and down to
+          // the valley as running water - one soft ribbon, winding with the ground, narrow at the opening and wider below, its edges in the
+          // earth, its ripples running east (until now fourteen straight boxes of one colour, a strip)
+          { const sillW = tm_waterRibbon([[ex - 0.1, EXZ], [ex + 1.85, EXZ]], { width: () => 0.3, ground: (x) => yX - 0.39 - (x - ex) / 1.8 * 0.12, lift: 0.02, edge: 0.9, speed: 1.9, scale: 0.3 });
+            AQ.add(sillW);
+            const RP = [];
+            for (let k = 0; k <= 40; k++) { const u = k / 40, x = ex + 1.95 + u * 70; RP.push([x, EXZ + Math.sin(u * 5.3 + 0.4) * 1.6 + Math.sin(u * 14.1 + 1.3) * 0.5 - Math.sin(0.4) * 1.6 * (1 - Math.min(1, u * 8))]); }
+            const rill = tm_waterRibbon(RP, { width: (u) => (0.3 + 0.5 * Math.min(1, u * 4)) * (1 + 0.22 * Math.sin(u * 37) + 0.12 * Math.sin(u * 83 + 2)), ground: (x, z, f) => groundAt(x, z, yX + 6, f == null ? yX - 0.7 : f), lift: 0.04, speed: 1.6, scale: 0.4, alpha: (u) => Math.min(1, (1 - u) / 0.1) });   // (it sinks into the valley's ground at its end, not cut)
+            AQ.add(rill);
+            const fo = new Mesh(new CircleGeometry(0.42, 18).rotateX(-Math.PI / 2), new MeshStandardMaterial({ color: 0xeef6fb, roughness: 0.5, transparent: true, opacity: 0.55, depthWrite: false }));   // a little foam where it comes off the sill
+            fo.position.set(ex + 2.05, groundAt(ex + 2.05, EXZ, yX + 6, yX - 0.7) + 0.06, EXZ); fo.scale.set(1, 1, 0.75); fo.userData.noPick = true; AQ.add(fo); }
           R.exit = [ex, yX, EXZ]; R.streamEnd = SP[SP.length - 1]; }
         // ---- (2) from Ein Eitam: outside the mount on a low embankment, from the drawn part's western end (x -340, within the eye's reach) to the wall
         const OUT = [];
@@ -3896,7 +3906,10 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
         for (let i = 1; i < OUT.length; i++) { const a = OUT[i - 1], b = OUT[i];
           piece([a[0], a[1] - 0.9, a[2]], [b[0], b[1] - 0.9, b[2]], 2.0, 1.4, capM, null);            // the embankment
           piece([a[0], a[1] - 0.05, a[2]], [b[0], b[1] - 0.05, b[2]], 1.3, 0.5, stoneM, null);         // the channel's walls
-          piece([a[0], a[1] + 0.17, a[2]], [b[0], b[1] + 0.17, b[2]], 0.75, 0.06, waterM, null); }     // its water
+        }
+        // its water (KIDRON_RILL_420: running in the channel - one ribbon along it, its ripples carried east to the mount; until now a strip of boxes)
+        { const yAt = (x) => { for (let i = 1; i < OUT.length; i++) { const a = OUT[i - 1], b = OUT[i]; if (x <= b[0] || i === OUT.length - 1) { const k = Math.max(0, Math.min(1, (x - a[0]) / ((b[0] - a[0]) || 1))); return a[1] + (b[1] - a[1]) * k; } } return OUT[0][1]; };
+          AQ.add(tm_waterRibbon(OUT.map((q) => [q[0], q[2]]), { width: () => 0.3, ground: (x) => yAt(x) + 0.2, lift: 0.03, edge: 1, speed: 1.4, scale: 0.35 })); }
         const yW = OUT[OUT.length - 1][1];
         const E2 = [[WALL_W - 2, yW, EZ], [WALL_W + 7, Math.min(yW, -2.5), EZ], [BATH[0] - 3, -2.5, EZ], [BATH[0], -2.5, EZ]];
         line(E2, 1.0, 0.8, stoneM, XRE);

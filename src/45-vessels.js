@@ -481,7 +481,7 @@
     // (the disc's edge lies inside the wall): 1.0.1-L: measured from the real triangles, with the shoulder plate that fills the square's top corners (3.78), 450.0 cubic amot = 2,000 bat. With the amah 48 cm a cubic amah is 110.6 litres: 2,000 bat = 450 cubic
     // amot = 49,766 litres (the user's 44,040 litres is the same 450 at 97.87 litres a cubic amah: the seah 7.34 litres, the amah 46.1 cm). ---
     {
-      const water = new Mesh(new CircleGeometry(5.4, 48), new MeshStandardMaterial({ color: 0x173a66, roughness: 0.15, metalness: 0.1 }));
+      const water = new Mesh(new CircleGeometry(5.4, 48), tm_water(new MeshStandardMaterial({ color: 0x173a66, roughness: 0.15, metalness: 0.1 }), { scale: 0.9 }));   // WATER_420
       water.rotation.x = -Math.PI / 2;
       water.position.set(0, B + 4.935, 0);
       water.receiveShadow = true;
@@ -581,7 +581,7 @@
     H2.lathe(g, pts, BR, KX, Y0, KZ, 32);
     {
       // the water disc sits inside the rim (the profile's inner wall is at r 3.15 * SR at this height)
-      const water = new Mesh(new CircleGeometry(3.0 * SR, 28), new MeshStandardMaterial({ color: 0x1f4a7a, roughness: 0.15, metalness: 0.1 }));
+      const water = new Mesh(new CircleGeometry(3.0 * SR, 28), tm_water(new MeshStandardMaterial({ color: 0x1f4a7a, roughness: 0.15, metalness: 0.1 }), { scale: 0.6 }));   // WATER_420
       water.rotation.x = -Math.PI / 2;
       water.position.set(KX, Y0 + 3.45 * SY, KZ);
       water.receiveShadow = true;
@@ -1115,7 +1115,7 @@
     } catch (e) {
       console.warn("[vessels] relief texture skipped", e);
     }
-    const WAT = new MeshStandardMaterial({ color: 0x1f4a7a, roughness: 0.15, metalness: 0.1 });
+    const WAT = tm_water(new MeshStandardMaterial({ color: 0x1f4a7a, roughness: 0.15, metalness: 0.1 }), { scale: 0.5 });   // WATER_420
     const P = vsl_baseParts();
     const m4 = new Matrix4(), mS = new Matrix4(), mW = new Matrix4(), q = new Quaternion(), q2 = new Quaternion(), e = new Euler();
     const v = new Vector3(), one = new Vector3(1, 1, 1);
@@ -1280,8 +1280,8 @@
     // tap's spout (VSL_TAP_R 2.12 east of the axis, VSL_TAP_Y 4.05 up) to the floor, with a small spreading pool under it; as wide as
     // the nozzle (0.09 across), a strong blue so that it reads against the marble floor from the demonstration's view. In the moving
     // group, so it follows the base; hidden while the laver is raised (the explode). Scaled per frame, no allocation. ---
-    const WATS = new MeshStandardMaterial({ color: 0x7db8ec, emissive: 0x15406a, emissiveIntensity: 0.5, roughness: 0.08, metalness: 0.1, transparent: true, opacity: 0.85, depthWrite: false });
-    const WATP = new MeshStandardMaterial({ color: 0x5f97cc, emissive: 0x0f3050, emissiveIntensity: 0.4, roughness: 0.05, metalness: 0.1, transparent: true, opacity: 0.7, depthWrite: false });
+    const WATS = tm_water(new MeshStandardMaterial({ color: 0x7db8ec, emissive: 0x15406a, emissiveIntensity: 0.5, roughness: 0.08, metalness: 0.1, transparent: true, opacity: 0.85, depthWrite: false }), { mode: "fall", scale: 0.4 });   // WATER_420
+    const WATP = tm_water(new MeshStandardMaterial({ color: 0x5f97cc, emissive: 0x0f3050, emissiveIntensity: 0.4, roughness: 0.05, metalness: 0.1, transparent: true, opacity: 0.7, depthWrite: false }), { scale: 0.3 });   // WATER_420
     const stream = new Mesh(new CylinderGeometry(0.045, 0.04, 1, 12, 1, true).translate(0, -0.5, 0), WATS);   // hangs 1 down from its top
     stream.position.set(VSL_TAP_R, VSL_PIPE_Y, VSL_PIPE_DZ);   // TAP_212_K: from the low nozzle (until now the tap's own, 4.05 up)
     stream.name = "mechona-stream";
@@ -1410,7 +1410,7 @@
       // the water on him: the stream ends at his hands; from each hand to its foot, and the wet on the hands and the feet
       if (!kidWater.made) {
         kidWater.made = true;
-        const M = new MeshStandardMaterial({ color: 0x7db8ec, emissive: 0x15406a, emissiveIntensity: 0.5, roughness: 0.06, metalness: 0.1, transparent: true, opacity: 0.8, depthWrite: false });
+        const M = tm_water(new MeshStandardMaterial({ color: 0x7db8ec, emissive: 0x15406a, emissiveIntensity: 0.5, roughness: 0.06, metalness: 0.1, transparent: true, opacity: 0.8, depthWrite: false }), { mode: "fall", scale: 0.3 });   // WATER_420
         for (let q = 0; q < 3; q++) { const c = new Mesh(q < 2 ? new CylinderGeometry(0.016, 0.02, 1, 7, 1, true).translate(0, 0.5, 0) : new CylinderGeometry(0.04, 0.045, 1, 10, 1, true).translate(0, 0.5, 0), M); c.renderOrder = 5; wash.add(c); kidWater.drip.push(c); }   // [2]: the jet from the tap to his left hand
         kidWater.arc = [];   // KIDDUSH_FLAT_A2: the jet in eight pieces
         for (let q = 0; q < 8; q++) { const c = new Mesh(new CylinderGeometry(0.03, 0.032, 1, 8, 1, true).translate(0, 0.5, 0), M); c.renderOrder = 5; wash.add(c); kidWater.arc.push(c); }

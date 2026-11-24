@@ -1020,11 +1020,11 @@
         const flask = new Mesh(jugGeo(), gold);
         flask.castShadow = true; flask.userData.noPick = true; flask.position.set(0, -0.2, 0.02);
         p.R.grip.add(flask);
-        const fwater = new Mesh(new CylinderGeometry(0.035, 0.05, 1, 8, 1, true), new MeshStandardMaterial({ color: 0x7fc0f0, transparent: true, opacity: 0.8, roughness: 0.1 }));
+        const fwater = new Mesh(new CylinderGeometry(0.035, 0.05, 1, 8, 1, true), tm_water(new MeshStandardMaterial({ color: 0x7fc0f0, transparent: true, opacity: 0.8, roughness: 0.1 }), { mode: "fall", scale: 0.3 }));   // WATER_420
         fwater.visible = false; DG.add(fwater);
         // the water going down from the top to the floor and the pit (NO_BOWLS_168): falls and sheets, rebuilt when the altar changes
         const cascade = new Group(); cascade.visible = false; DG.add(cascade);
-        const cascM = new MeshStandardMaterial({ color: 0x8fcaf2, transparent: true, opacity: 0.75, roughness: 0.08, metalness: 0.0, depthWrite: false });
+        const cascM = tm_water(new MeshStandardMaterial({ color: 0x8fcaf2, transparent: true, opacity: 0.75, roughness: 0.08, metalness: 0.0, depthWrite: false }), { mode: "fall", scale: 0.5 });   // WATER_420
         const silver = new MeshStandardMaterial({ color: 0xe6e6ea, metalness: 0.85, roughness: 0.25, side: DoubleSide });
         for (const f of [t1, t2]) {   // the silver trumpets (Numbers 10:2), from the mouth forward and up
           const tr = new Group();
@@ -1875,7 +1875,7 @@
         }
         instBoxes(CHG, st, ML.chStone || (ML.chStone = new MeshStandardMaterial({ color: 0x8f7e62, roughness: 0.95 })), "shiloachChannelStone");   // a darker stone than the sand round it
         if (!ML.chTex) { const cv = document.createElement("canvas"); cv.width = 64; cv.height = 16; const c2 = cv.getContext("2d"); c2.fillStyle = "#3f86c8"; c2.fillRect(0, 0, 64, 16); for (let k = 0; k < 9; k++) { c2.fillStyle = "rgba(220,240,255," + (0.18 + 0.2 * Math.random()) + ")"; c2.fillRect(Math.random() * 64, Math.random() * 16, 10 + Math.random() * 16, 1.2); } ML.chTex = new CanvasTexture(cv); ML.chTex.wrapS = ML.chTex.wrapT = RepeatWrapping; }
-        const wm = new MeshStandardMaterial({ color: 0xffffff, map: ML.chTex, transparent: true, opacity: 0.82, roughness: 0.08, metalness: 0.05 });
+        const wm = tm_water(new MeshStandardMaterial({ color: 0x9fc4e2, map: ML.chTex, transparent: true, opacity: 0.86, roughness: 0.08, metalness: 0.05 }), { mode: "flow", flow: [P.ux * 0.45, P.uz * 0.45], scale: 0.35 });   // WATER_420: its ripples go with it, slowly
         const wim = instBoxes(CHG, wa, wm, "shiloachChannelWater"); wim.castShadow = false; wim.renderOrder = 2;
         CHG.traverse((o) => { if (o.isMesh) o.userData.noPick = true; });
         ML.channel = P;
@@ -2056,7 +2056,7 @@
           seg(outer, ax - off, az, bx - off, bz - 8, WH - 1, WT, true); seg(outer, cx2 - off, cz2, ax - off, az, WH - 1, WT, true);
           seg(outer, bx - off, bz - 8, bx + 30, bz - 8, WH - 1, WT, true);
           const pz = MILLO_C.z + 14, px = ax + (bx - ax) * (pz - az) / (bz - az) - off / 2;   // midway between the two walls
-          const pool = new Mesh(new BoxGeometry(9, 0.3, 22), new MeshStandardMaterial({ color: 0x3f7fb5, roughness: 0.15, metalness: 0.1 })); const pgy = Math.max(groundAt(px - 5, pz), groundAt(px + 5, pz), groundAt(px, pz)); pool.position.set(px, pgy + 0.25, pz); pool.userData.noPick = true; outer.add(pool);
+          const pool = new Mesh(new BoxGeometry(9, 0.3, 22), tm_water(new MeshStandardMaterial({ color: 0x2f6a9a, roughness: 0.15, metalness: 0.1 }), { scale: 1.4 }));   // WATER_420 (a little deeper: the sky is drawn in it now) const pgy = Math.max(groundAt(px - 5, pz), groundAt(px + 5, pz), groundAt(px, pz)); pool.position.set(px, pgy + 0.25, pz); pool.userData.noPick = true; outer.add(pool);
           for (const [dx, dz, lx, lz] of [[-5, 0, 0.8, 23.6], [5, 0, 0.8, 23.6], [0, -11.4, 10.6, 0.8], [0, 11.4, 10.6, 0.8]]) H2.box(outer, lx, 4.2, lz, M2.stoneLight || M2.stone, px + dx, pgy - 3.6, pz + dz);
           ML.poolAt = [px, pz];
         }
