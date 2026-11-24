@@ -35,7 +35,7 @@
       h = h32(h, o.geometry ? o.geometry.id : 0);
       if (o.isInstancedMesh) { h = h32(h, o.count); const a = o.instanceMatrix.array, st = Math.max(16, Math.floor(a.length / 16 / 40) * 16); for (let i = 0; i < a.length; i += st) h = h32(h, q(a[i + 12]) ^ q(a[i + 13]) ^ q(a[i + 14])); }
       if (m) { h = h32(h, q(m.opacity == null ? 1 : m.opacity * 4)); if (m.color) h = h32(h, m.color.getHex()); }
-      ids.set(o.id, h); names.set(o.id, o.name || (o.parent && o.parent.name) || o.type);
+      ids.set(o.id, h); { let nm = ''; for (let p = o; p && !nm; p = p.parent) nm = p.name || ''; names.set(o.id, nm ? (o.name ? nm : nm + '/' + o.type) : o.type); }   // SCAN_420: the nearest named ancestor - 'Mesh' alone says nothing
       n++; tot = (tot + h) >>> 0;
     });
     return { n, tot, ids, names };
@@ -126,6 +126,16 @@
     }
     return { back, of: [...of.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map((e) => e[0] + '×' + e[1]) };
   };
+  // SCAN_420: is p inside the closed body o? (an odd number of crossings upward and eastward - both faces counted)
+  S.holds = (o, p) => {
+    const bx = new T.Box3().setFromObject(o); if (!bx.expandByScalar(0.5).containsPoint(p)) return false;
+    const mats = Array.isArray(o.material) ? o.material : [o.material], sd = mats.map((m) => m.side); mats.forEach((m) => (m.side = 2));
+    try {
+      const rc = new T.Raycaster(); let odd = 0;
+      for (const d of [new V3(0, 1, 0), new V3(1, 0, 0), new V3(0, 0, 1)]) { rc.set(p, d); rc.near = 0; rc.far = 1e4; const n = rc.intersectObject(o, false).length; if (n % 2 === 1) odd++; }
+      return odd >= 2;
+    } finally { mats.forEach((m, i) => (m.side = sd[i])); }
+  };
   S.occluder = (from, to) => {
     const ray = S.ray(), d = new V3().subVectors(to, from), L = d.length(); if (L < 1e-3) return null;
     d.normalize(); ray.set(from, d); ray.near = 0; ray.far = L;
@@ -133,7 +143,10 @@
       const o = h.object, m = Array.isArray(o.material) ? o.material[0] : o.material;
       if (o.userData && (o.userData.fade || o.userData.tmPass || o.userData.noPick)) continue;
       if (m && (m.opacity < 0.6 || m.visible === false)) continue;
-      if (h.distance < L - 1.5) return { d: r2(h.distance), L: r2(L), name: o.name || (o.parent && o.parent.name) || o.type };
+      // SCAN_420: the subject itself - a body whose box holds the target (the altar, the sea, the ramp, a chamber's walls round its middle) -
+      // is what the view looks at, not something in its way
+      try { if (S.holds(o, to)) return null; } catch (_) {}
+      if (h.distance < L - 1.5) { let nm = ''; for (let q = o; q && !nm; q = q.parent) nm = q.name || ''; return { d: r2(h.distance), L: r2(L), name: nm || o.type }; }
       return null;
     }
     return null;
@@ -348,6 +361,12 @@
     const bar = () => document.getElementById('tm-dpause');
     const btn = (re) => { const e = bar(); return e ? [...e.querySelectorAll('button')].find((b) => re.test(b.textContent)) : null; };
     await sleep(450);
+    // SCAN_420: a demonstration that runs as a presentation (the morning's service: the tour's mode "tamid") is driven by the presentation's
+    // own banner (#tm-tour-box: pause, back, forward, end) - not by the demonstrations' bar
+    try {
+      const T = c.shared.tour, ts = T && typeof T.state === 'function' ? T.state() : null;
+      if (ts && ts.running) { const tb = document.getElementById('tm-tour-box'); const ok = !!tb && getComputedStyle(tb).display !== 'none'; chk('tour-banner', ok, ok ? '' : 'ההדגמה רצה כמצגת, אבל פס המצגת (#tm-tour-box) לא מוצג'); o.bar = ok; return o; }
+    } catch (_) {}
     const e = bar(); const shown = !!e && getComputedStyle(e).display !== 'none';
     chk('bar-visible', shown, shown ? '' : 'פס ההדגמה (#tm-dpause) לא מוצג בזמן שהדגמה רצה');
     o.bar = shown;

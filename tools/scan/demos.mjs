@@ -55,7 +55,10 @@ export async function run(S, out, opt) {
     const shotFor = (kind) => { const s = rep && rep.shots.find((x) => x.kind === kind); return s ? [out.shot('demo-' + d.label + '-' + kind, s.img)].filter(Boolean) : []; };
     if (fin && fin.err) out.add('high', `הדגמה "${name}" — שגיאה בזמן הריצה`, fin.err, { item: d.id });
     const contin = await S.ev(() => (window.__TM_CTX.shared.demoStops || []).some((q) => { try { return q.continuous && q.running(); } catch (_) { return false; } })).catch(() => false);
-    if (fin && !fin.finished && !fin.err && !contin) out.add('medium', `הדגמה "${name}" לא הסתיימה תוך ${Math.round(secs)} שניות`, `עדיין רצות: ${(fin.running || []).join(', ')}.`, { item: d.id });
+    // SCAN_420: the morning's service runs as a presentation of many stages (longer than the scan's limit): checked to the limit, and
+    // its stages one by one by tools/scan probes - not a demonstration that failed to end
+    const tourOn = await S.ev(() => { const T = window.__TM_CTX.shared.tour; try { return !!(T && T.state().running); } catch (_) { return false; } }).catch(() => false);
+    if (fin && !fin.finished && !fin.err && !contin) out.add(tourOn ? 'info' : 'medium', `הדגמה "${name}" לא הסתיימה תוך ${Math.round(secs)} שניות`, tourOn ? 'ההדגמה רצה כמצגת ארוכה; נבדקה עד הגבול.' : `עדיין רצות: ${(fin.running || []).join(', ')}.`, { item: d.id });
     if (errs.length) out.add('high', `שגיאות קונסול בהדגמה "${name}"`, `${errs.length} שגיאות. ${errs.slice(0, 3).map((m) => m.text).join(' | ')}`, { item: d.id });
     if (rep) {
       if (rep.nonfin) out.add('critical', `הדגמה "${name}": מצלמה במצב NaN/אינסוף`, `${rep.nonfin} פריימים.`, { item: d.id });
@@ -67,7 +70,7 @@ export async function run(S, out, opt) {
         if (f.nUnder >= 2) out.add(pct(f.nUnder) > 25 ? 'high' : 'medium', `הדגמה "${name}": דמות "${f.name}" מתחת לרצפה`, `${f.nUnder} מתוך ${f.vis} פריימים גלויים (${pct(f.nUnder)}%); למשל בשנייה ${f.under[0].t}: כפות הרגליים ${f.under[0].dy} אמות מתחת לרצפה ב־${f.under[0].at}.`, { item: d.id, shots: shotFor('feet') });
         if (f.nHover >= 2) out.add(pct(f.nHover) > 25 ? 'high' : 'medium', `הדגמה "${name}": דמות "${f.name}" באוויר`, `${f.nHover} מתוך ${f.vis} פריימים (${pct(f.nHover)}%); למשל בשנייה ${f.hover[0].t}: ${f.hover[0].dy} אמות מעל הרצפה ב־${f.hover[0].at}.`, { item: d.id, shots: shotFor('feet') });
         if (f.nWall >= 2) out.add('medium', `הדגמה "${name}": דמות "${f.name}" בתוך קיר/גוש`, `${f.nWall} דגימות; למשל בשנייה ${f.wall[0].t} ב־${f.wall[0].at} (${f.wall[0].of.join(', ')}).`, { item: d.id, shots: shotFor('wall') });
-        if (f.vanish.length && f.lastVis < secs - 3 && f.vis >= 4) out.add('medium', `הדגמה "${name}": דמות "${f.name}" נעלמת באמצע (בשנייה ${f.vanish[0]} מתוך ${Math.round(secs)})`, `גלויה ${f.vis} פריימים (${f.firstVis}–${f.lastVis} שנ').`, { item: d.id });
+        if (f.vanish.length && f.lastVis < secs - 3 && f.vis >= 4) out.add(tourOn ? 'low' : 'medium', `הדגמה "${name}": דמות "${f.name}" נעלמת באמצע (בשנייה ${f.vanish[0]} מתוך ${Math.round(secs)})`, `גלויה ${f.vis} פריימים (${f.firstVis}–${f.lastVis} שנ').`, { item: d.id });
         if (f.noFloor > 3) out.add('low', `הדגמה "${name}": דמות "${f.name}" ללא רצפה מתחתיה`, `${f.noFloor} פריימים בלי משטח מתחת לרגליים.`, { item: d.id });
       }
     }

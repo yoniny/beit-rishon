@@ -2833,12 +2833,16 @@
           if (f != null && s0 == null) s0 = i;
         }
       }
-      const mergeTo = (list, mat, g) => { if (!list.length) return; const m = new Mesh(mergeGeometries(list), mat); m.castShadow = m.receiveShadow = true; g.add(m); };
-      mergeTo(geo.rStone, M2.stoneLight, XR);
-      mergeTo(geo.rDark, M2.stone, XR);
+      const mergeTo = (list, mat, g) => { if (!list.length) return null; const m = new Mesh(mergeGeometries(list), mat); m.castShadow = m.receiveShadow = true; g.add(m); return m; };
+      // EXEDRA_FADE_420 (the scan of 4.2.0: the views of Pinchas's chamber and of the Chavitin makers' chamber, from above with their roofs
+      // opened, saw the Rambam's overhang over their fronts instead of the rooms): the overhang and its corbels - and the Bartenura's covering
+      // - fade like the walls when they stand between the eye and what it looks at (the walls' fading, 70-ui.js)
+      const occ = (m) => { if (m && typeof H2.occ === "function") H2.occ(m); };
+      occ(mergeTo(geo.rStone, M2.stoneLight, XR));
+      occ(mergeTo(geo.rDark, M2.stone, XR));
       mergeTo(geo.bStone, M2.stoneLight, XB);
       mergeTo(geo.col, M2.stoneLight, XB);
-      mergeTo(geo.cedar, M2.cedar, XB);
+      occ(mergeTo(geo.cedar, M2.cedar, XB));
       SH.__exedraQA = { cands: cands.length, segments: nSeg };
       ctx2.labels.push(
         { text: "אכסדרה — כרמב״ם: גוף בולט בנוי מכתלי העזרה, בלי גג של קורות (פירוש המשניות, תמיד א, ג)", x: -40, y: LV.KOH + 13, z: -60, size: 1.5, layer: "exedraRambam" },
