@@ -3506,6 +3506,7 @@
     parHead.castShadow = parHead.receiveShadow = true;
     parIn.G.add(parHead);
     const parFold = ctx2.shared.parochetFold = {
+      y0: PAR_Y, w: PAR_W,   // PAROCHET_VIEWS_G6: the cloth's foot and breadth, for the cards' eyes (70-ui.slots.js)
       mode: "rashi",
       t: 0,
       set(k) {

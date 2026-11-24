@@ -897,6 +897,7 @@
         for (const im of [menBody, menStone, flames]) { im.instanceMatrix.needsUpdate = true; if (im.computeBoundingSphere) im.computeBoundingSphere(); }
         menorahLight.position.set(MEN.x, FL + 4.6, MEN.z);
         this.ew = !!ew;
+        if (SOL_HOOK.place) SOL_HOOK.place();   // MEN_ALL_G6: Solomon's ten menorahs turn with Moses' (the lamps' row of the morning)
       },
       ew: false,
       // the stone before the menorah (A19: three steps, 8.5 tefachim in all) on the side of its local -z: a point (lx, lz) in the menorah's
@@ -1119,7 +1120,7 @@
       // the places: { tables: [[x, z, rot] x 10], mens: [[x, z, rot] x 10], mt: [x, z] - Moses' table }
       SOL.layout = () => {
         const tNS = ctx2.shared.tableDir && ctx2.shared.tableDir.current === "ns";
-        const mEW = ctx2.shared.menorahDir && ctx2.shared.menorahDir.current === "ew";
+        const mEW = (ctx2.shared.menorahDir && ctx2.shared.menorahDir.current === "ew") || !!(ctx2.shared.menorah && ctx2.shared.menorah.ew);   // MEN_ALL_G6 (the user 24.11.2026): the row "המנורה והנרות בבוקר", Rashi - the menorah turns east-west, and Solomon's ten with it
         const tables = [], mens = [];
         let mt = [SOL.TBL0.x, SOL.TBL0.z];
         if (tNS) {
@@ -1134,7 +1135,7 @@
           mt = [xM, zM];
         }
         {
-          const xM = MEN.x, zM = MEN0.z;
+          const xM = MEN.x, zM = mEW ? MEN.z : MEN0.z;
           // MENOROT_305: north-south - the five of a row from the south wall toward the middle, a little air between them and from the
           // wall (0.05); the east row 2.5 east of Moses' menorah, before the tables' east row (3.5 until 3.0.4 - it stood in the way
           // between the altar and the tables), the west row 3.5 west of it (the golden stands at x -42); between the tables' heads
@@ -1161,7 +1162,7 @@
           if (im.computeBoundingSphere) im.computeBoundingSphere();
           if (im.computeBoundingBox) im.computeBoundingBox();
         }
-        const mEW = ctx2.shared.menorahDir && ctx2.shared.menorahDir.current === "ew";
+        const mEW = (ctx2.shared.menorahDir && ctx2.shared.menorahDir.current === "ew") || !!(ctx2.shared.menorah && ctx2.shared.menorah.ew);   // MEN_ALL_G6 (the user 24.11.2026): the row "המנורה והנרות בבוקר", Rashi - the menorah turns east-west, and Solomon's ten with it
         SOL.mMidNS.visible = SOL.mSideNS.visible = !mEW;
         SOL.mMidEW.visible = SOL.mSideEW.visible = mEW;
         SOL.mBody.visible = !SOL.menOff;   // MEIR_TABLES_305
