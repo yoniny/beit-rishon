@@ -251,7 +251,7 @@
     const chelFlight = (parent, gx, s, dx, o = {}) => {
       const n0 = parent.children.length, keep = chelFlight0(parent, gx, s, dx, o);
       tagNew(parent, n0); if (parent !== g) tagNew(g, gN0);
-      if (parent === g) for (let i = n0; i < parent.children.length; i++) if (parent.children[i] !== keep) ringHide.push(parent.children[i]);
+      if (parent === g) for (let i = n0; i < parent.children.length; i++) ringHide.push(parent.children[i]);   // BEAST_TYT_420 (the user: "בשיטת התפאי לא היה כבש בהמות הכל מדרגות"): the ramp's head goes too
     };
     let gN0 = 0;
     const chelFlight0 = (parent, gx, s, dx, o = {}) => {
@@ -280,6 +280,7 @@
     // night's watchmen of the morning's service stood in it (55-tamid.js). Only the gate of the firstborn's (south) stays.
     const rampG = new Group(); rampG.name = "animalRamps"; g.add(rampG); ctx2.layers.animalRamps = rampG;
     rampG.userData.chelFlight = true;   // RING_MERGE_420
+    (ctx2.shared.ringHide = ctx2.shared.ringHide || []).push(rampG);   // BEAST_TYT_420: no beasts' ramp in Tiferet Yisrael's reading - all steps
     const RAMP_W = 3, RAMP_SLOPE = 4;
     const beastRamp = (gx, s, dx, wL, top, zFace, dp) => {
       const Lr = top * RAMP_SLOPE, xa = gx + dx * wL / 2, z0 = zFace * s + (s > 0 ? dp : -dp);   // the strip's inner edge: the stairs' outer edge
