@@ -3892,11 +3892,12 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
           { const sillW = tm_waterRibbon([[ex - 0.1, EXZ], [ex + 1.85, EXZ]], { width: () => 0.3, ground: (x) => yX - 0.39 - (x - ex) / 1.8 * 0.12, lift: 0.02, edge: 0.9, speed: 1.9, scale: 0.3 });
             AQ.add(sillW);
             const RP = [];
-            for (let k = 0; k <= 40; k++) { const u = k / 40, x = ex + 1.95 + u * 70; RP.push([x, EXZ + Math.sin(u * 5.3 + 0.4) * 1.6 + Math.sin(u * 14.1 + 1.3) * 0.5 - Math.sin(0.4) * 1.6 * (1 - Math.min(1, u * 8))]); }
-            const rill = tm_waterRibbon(RP, { width: (u) => (0.3 + 0.5 * Math.min(1, u * 4)) * (1 + 0.22 * Math.sin(u * 37) + 0.12 * Math.sin(u * 83 + 2)), ground: (x, z, f) => groundAt(x, z, yX + 6, f == null ? yX - 0.7 : f), lift: 0.04, speed: 1.6, scale: 0.4, alpha: (u) => Math.min(1, (1 - u) / 0.1) });   // (it sinks into the valley's ground at its end, not cut)
+            const wz = (u) => Math.sin(u * 5.3 + 0.4) * 1.6 + Math.sin(u * 14.1 + 1.3) * 0.5;
+            for (let k = 0; k <= 40; k++) { const u = k / 40, x = ex + 1.85 + u * 70; RP.push([x, EXZ + wz(u) - wz(0) * (1 - Math.min(1, u * 8))]); }   // (from the sill's lip, in line with it - until now 0.5 aside and 0.2 under it: the water seemed to run away beside the sill)
+            const rill = tm_waterRibbon(RP, { width: (u) => (0.3 + 0.5 * Math.min(1, u * 4)) * (1 + (0.22 * Math.sin(u * 37) + 0.12 * Math.sin(u * 83 + 2)) * Math.min(1, u * 10)), ground: (x, z, f) => { const gy = groundAt(x, z, yX + 6, f == null ? yX - 0.7 : f), k = (x - ex - 1.85) / 0.35; return k < 1 ? yX - 0.53 + (gy - yX + 0.53) * Math.max(0, k) : gy; }, lift: 0.04, speed: 1.6, scale: 0.4, alpha: (u) => Math.min(1, (1 - u) / 0.1) });   // (it sinks into the valley's ground at its end, not cut)
             AQ.add(rill);
             const fo = new Mesh(new CircleGeometry(0.42, 18).rotateX(-Math.PI / 2), new MeshStandardMaterial({ color: 0xeef6fb, roughness: 0.5, transparent: true, opacity: 0.55, depthWrite: false }));   // a little foam where it comes off the sill
-            fo.position.set(ex + 2.05, groundAt(ex + 2.05, EXZ, yX + 6, yX - 0.7) + 0.06, EXZ); fo.scale.set(1, 1, 0.75); fo.userData.noPick = true; AQ.add(fo); }
+            fo.position.set(ex + 2.3, groundAt(ex + 2.3, EXZ, yX + 6, yX - 0.7) + 0.06, EXZ); fo.scale.set(1, 1, 0.75); fo.userData.noPick = true; AQ.add(fo); }
           R.exit = [ex, yX, EXZ]; R.streamEnd = SP[SP.length - 1]; }
         // ---- (2) from Ein Eitam: outside the mount on a low embankment, from the drawn part's western end (x -340, within the eye's reach) to the wall
         const OUT = [];
