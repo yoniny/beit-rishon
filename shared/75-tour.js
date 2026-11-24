@@ -31,7 +31,7 @@
 #tm-tour-box .vs .vn{color:#c9a84c;font:600 12px 'Segoe UI',Arial,sans-serif;margin-left:5px;vertical-align:2px}
 #tm-tour-box .vs .kt{color:#9a8f6c;font-size:.8em}
 //@@slot tour_CSS-2
-#tm-tour-box .txt{line-height:1.65}
+#tm-tour-box .txt{line-height:1.65;direction:rtl;text-align:justify;text-justify:inter-word}
 #tm-tour-box .src{margin-top:8px;font-size:11px;color:#b9ac82;line-height:1.5}
 #tm-tour-box .src a{display:inline-block;color:#f3dc9a;margin:2px 0 2px 5px;padding:2px 7px;border:1px solid rgba(201,168,76,.45);border-radius:6px;
   background:rgba(201,168,76,.12);text-decoration:none;cursor:pointer}
@@ -1067,7 +1067,10 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         elCaps.textContent = "";
         bubW.classList.toggle("on", !!s.bubble);
         elSrc.textContent = "";
-        if (s.refs && s.refs.length && fnc(U.refLinks)) {
+        elSrc.classList.remove("open");
+        if (s.refs && s.refs.length && fnc(U.refsBlock)) {
+          call(U.refsBlock, elSrc, s.refs);   // N15: the sources closed behind "הצג מקורות"
+        } else if (s.refs && s.refs.length && fnc(U.refLinks)) {
           elSrc.appendChild(document.createTextNode("מקורות: "));
           call(U.refLinks, elSrc, s.refs);
         }
@@ -1642,7 +1645,7 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         if (inside(t, box) || inside(t, btn) || inside(t, menu) || inside(t, cfEl())) return;
         // TOUR_SOFT_204 (the user, 12.11.2026 02:14: "סגירת כרטיס צף או קיפול במצגת או בכל הדגמה אינה נחשבת פקודה"): closing a floating
         // card, folding it, folding a group of the panel or the panel itself - not the user taking over
-        if (t && t.closest && t.closest("#tm-xcard .x, #tm-card .x, #tm-burger, summary")) return;
+        if (t && t.closest && t.closest("#tm-xcard .x, #tm-card .x, .tm-rt, #tm-burger, summary")) return;
         downPtrs.add(e.pointerId);   // tour-6: held while it is down
         userInteract();
       }, true);

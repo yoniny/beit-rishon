@@ -649,6 +649,14 @@ body.tm-measuring canvas{cursor:crosshair}
 #tm-xcard .b b,#tm-card .b b{font-weight:700;color:#f3dc9a}
 #tm-xcard .o,#tm-card .o{flex:none;max-height:40vh;overflow-y:auto;overscroll-behavior:contain;margin-top:5px;padding-top:4px;border-top:1px solid rgba(201,168,76,.25);font-size:11px;line-height:1.5;color:#b9ac82}
 #tm-xcard.min .o{display:none}
+/* N15 (the user, a general instruction for every card): the text justified, RTL; the readings' switches first (above the text, a line under them); the sources closed behind a button */
+#tm-xcard .b,#tm-card .b{direction:rtl;text-align:justify;text-justify:inter-word;hyphens:manual}
+#tm-xcard .o.ops-top,#tm-card .o.ops-top{margin:0 0 6px;padding:0 0 5px;border-top:0;border-bottom:1px solid rgba(201,168,76,.25)}
+#tm-xcard .r .rl,#tm-card .r .rl{display:none;margin-top:4px}
+#tm-xcard .r.open .rl,#tm-card .r.open .rl,#tm-tour-box .src.open .rl{display:block}
+#tm-tour-box .src .rl{display:none;margin-top:4px}
+.tm-rt{display:inline-block;box-sizing:border-box;font:inherit;font-size:1em;font-weight:700;color:#f3dc9a;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.45);border-radius:6px;padding:3px 10px;cursor:pointer;user-select:none;-webkit-user-select:none}
+.tm-rt:hover{background:rgba(201,168,76,.3)}
 #tm-card .o{max-height:20vh}
 #tm-xcard .o .g,#tm-card .o .g{display:block}
 #tm-xcard .o .k,#tm-card .o .k{margin-left:3px}
@@ -1373,10 +1381,11 @@ body.tm-measuring canvas{cursor:crosshair}
       const xLinks = document.createElement("div");
       xLinks.className = "o";
       xLinks.style.display = "none";
+      xOps.classList.add("ops-top");   // N15: the readings' switches open the card, above the text
       xcard.appendChild(xHead);
+      xcard.appendChild(xOps);
       xcard.appendChild(xBody);
       xcard.appendChild(xRefs);
-      xcard.appendChild(xOps);
       xcard.appendChild(xLinks);
       document.body.appendChild(xcard);
       const UI_SAME_PAIRS = [
@@ -1618,13 +1627,8 @@ body.tm-measuring canvas{cursor:crosshair}
         ui_fillSrc(xTitle, String(title || ""));   // 1.0.1-L (L.89)
         if (/^\s*</.test(String(text || ""))) { xBody.innerHTML = String(text); xBody.__raw = null; }
         //@@slot xcardOpen
-        xRefs.textContent = "";
         const rs = Array.isArray(refs) ? refs : [];
-        if (rs.length) {
-          xRefs.appendChild(document.createTextNode("למקור: "));
-          refLinks(xRefs, rs);
-        }
-        xRefs.style.display = rs.length ? "" : "none";
+        refsBlock(xRefs, rs, placeXCard);   // N15: the sources closed behind "הצג מקורות"
         xOpsIds = Array.isArray(ops) && ops.length ? ops : null;
         xRow = row || null;
         xDemo = false; xFeat = null;   // CHIP_KEEPS_DEMO_T (the place's button marks it again when its click started a demonstration)
@@ -1841,6 +1845,35 @@ body.tm-measuring canvas{cursor:crosshair}
           a.textContent = label;
           host.appendChild(a);
         }
+      };
+      // N15 (the user, a general instruction): a card's sources are CLOSED by default behind a button "הצג מקורות" / "הסתר מקורות". host = the
+      // card's sources' box (div.r / the banner's div.src); its links stay in div.rl (a closed box is still read by the print: it takes the links
+      // by tag, not by sight); onToggle = the card's re-placing, as its height changes. A button, not a link (the demonstrations' ignore list: .tm-rt).
+      const refsBlock = (host, rs, onToggle) => {
+        host.textContent = "";
+        host.classList.remove("open");
+        const has = Array.isArray(rs) && rs.length > 0;
+        host.style.display = has ? "" : "none";
+        if (!has) return;
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "tm-rt";
+        btn.textContent = "הצג מקורות";
+        btn.setAttribute("aria-expanded", "false");
+        const list = document.createElement("div");
+        list.className = "rl";
+        list.appendChild(document.createTextNode("למקור: "));
+        refLinks(list, rs);
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const on = host.classList.toggle("open");
+          btn.textContent = on ? "הסתר מקורות" : "הצג מקורות";
+          btn.setAttribute("aria-expanded", on ? "true" : "false");
+          if (typeof onToggle === "function") onToggle(on);
+          if (on && typeof list.scrollIntoView === "function") list.scrollIntoView({ block: "nearest" });
+        });
+        host.appendChild(btn);
+        host.appendChild(list);
       };
       // 1.0.2 (A): the linker of a card's text (ui_fillSrc's third argument) for the card's refs rs: each part of a source's bracket that
       // resolves (ui_srcParse above: the label first) becomes a link that opens it exactly as its chip does (openSource: Otzaria, or the
@@ -2788,9 +2821,10 @@ body.tm-measuring canvas{cursor:crosshair}
       cardOps.className = "o";
       cardOps.style.display = "none";
       card.appendChild(cardHead);
+      cardOps.classList.add("ops-top");   // N15: the readings' switches open the card, above the text
+      card.appendChild(cardOps);
       card.appendChild(cardBody);
       card.appendChild(cardRefs);
-      card.appendChild(cardOps);
       document.body.appendChild(card);
       let cardOpsIds = null;
       let cardSpr = null, cardW = 300, cardH = 160, cardShown = false, cardX0 = -1, cardY0 = -1, cardSide = 1;   // side: 1 right of the label, -1 left
@@ -2854,11 +2888,7 @@ body.tm-measuring canvas{cursor:crosshair}
         ui_fillSrc(cardTitle, String((spr.userData.label && spr.userData.label.text) || "") + (t.title ? " — " + t.title : ""));   // a bare measure gets its meaning
         const rs = t.key ? ui_REFS[t.key] || [] : t.refs || [];
         //@@slot openCard
-        cardRefs.textContent = "";
-        if (rs.length) {
-          cardRefs.appendChild(document.createTextNode("למקור: "));
-          refLinks(cardRefs, rs);
-        }
+        refsBlock(cardRefs, rs, () => { cardW = card.offsetWidth || cardW; cardH = card.offsetHeight || cardH; placeCard(true); });   // N15: the sources closed behind "הצג מקורות"
         cardOpsIds = Array.isArray(t.ops) && t.ops.length ? t.ops : null;   // 1.0.2 (item 4)
         renderChips(cardOps, cardOpsIds);
         card.style.display = "flex";   // a column: the title, the text (scrolls), the source links (always seen)
@@ -4687,6 +4717,7 @@ body.tm-measuring canvas{cursor:crosshair}
         chips: { of: (subj) => opsFor(subj || {}), render: (host, ids, onPicked, keep) => renderChips(host, ids, onPicked, keep), hook: (fn) => { if (typeof fn === "function") ui_chipHooks.push(fn); } },
         setInfo,
         refLinks,
+        refsBlock,   // N15: the sources closed behind a button (75-tour.js: the banner's)
         smallSources: ui_smallSources,   // 1.0.1-L (L.89): text -> HTML with the sources' brackets in a smaller font (75-tour.js)
         applyCut,    // 1.0.1-K: no-ops (navigation never opens anything); the removals are ctx.ui.removals / the on-model pills
         applyOpen,
