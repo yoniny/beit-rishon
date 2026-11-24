@@ -804,12 +804,13 @@
           // under the court's floor to the south wall, where it goes down in its foundation: from inside the court, low, west of the altar's
           // south-west corner and north of it, looking south-south-east along it - the shitin near, the wall far (its feature: the channel seen through the floor). The card: the sources of the
           // cards of the shitin and of the channel (the same citations); its way under the floor and its depth - model choices, as there
-          { t: "אמת המים — בעזרה, מן השיתין אל הכותל", feature: (ctx.shared.features || {})["aqueductKidron"] || null,
-            tg: () => { const A = ctx.shared.aqueducts; if (A) A.build(); const s0 = A && A.R.shitin, w = A && A.R.wallIn; return s0 && w ? [s0[0] + (w[0] - s0[0]) * 0.45, s0[1] - 2.4, s0[2] + (w[2] - s0[2]) * 0.45] : [41.3, 13.6, 47.7]; },
-            cam: () => { const A = ctx.shared.aqueducts; if (A) A.build(); const s0 = A && A.R.shitin; return s0 ? [s0[0] - 7, s0[1] + 3.5, s0[2] - 6.5] : [33, 19.5, 18]; },
+          { t: "אמת המים — בעזרה, מן השיתין אל הכותל", hideLabels: true, feature: (ctx.shared.features || {})["aqueductMouth"] || null,   // MOUTH_N12 (the user: only the amah's mouth, very close, nothing else): the mouth's own ghosts, no labels
+
+            tg: () => { const A = ctx.shared.aqueducts; if (A) A.build(); const s0 = A && A.R.shitin; return s0 ? [s0[0], s0[1] - 0.9, s0[2]] : [40, 13, 24.5]; },
+            cam: () => { const A = ctx.shared.aqueducts; if (A) A.build(); const s0 = A && A.R.shitin; return s0 ? [s0[0] - 1.5, s0[1] + 1.5, s0[2] + 1.9] : [38.5, 15, 26.5]; },
             info: "לשון המשנה (מדות ג, ב): ״ובקרן מערבית דרומית היו שני נקבים, כמין שני חטמין דקין, שהדמים הנתנין על יסוד מערבי ועל יסוד דרומי, יורדין בהן ומתערבין באמה, ויוצאין לנחל קדרון״.\n" +
               "**הרמב״ם** (בית הבחירה ב, יא): ״ובקרן מערבית דרומית היו שני נקבים כמין שני חטמין דקין. והן הנקראין שיתין שהדמים יורדין בהן ומתערבין באותה הקרן באמה ויוצאין לנחל קדרון״.\n" +
-              "**במודל:** תעלה מקורה מתחת לרצפת העזרה — מן השיתין שבקרן המערבית־הדרומית של המזבח דרומה אל כותל העזרה, ויורדת ביסודו; משם מתחת להר הבית אל היציאה שבחומה המזרחית (ראו ״אמת המים — היציאה לנחל קדרון״). כשהמקום נבחר, התעלה נראית מבעד לרצפה. מסלול התעלה מתחת לרצפה, עומקה וצורתה — בחירת מודל: המשנה אומרת רק ״ומתערבין באמה, ויוצאין לנחל קדרון״.",
+              "**במודל:** תעלה מקורה מתחת לרצפת העזרה — מן השיתין שבקרן המערבית־הדרומית של המזבח דרומה אל כותל העזרה, ויורדת ביסודו; משם מתחת להר הבית אל היציאה שבחומה המזרחית (ראו ״אמת המים — היציאה לנחל קדרון״). כשהמקום נבחר, מוצג מקרוב רק פתח האמה מתחת לשיתין, נראה מבעד לרצפה (המשך התעלה — בכרטיס ״אמת המים — היציאה לנחל קדרון״). מסלול התעלה מתחת לרצפה, עומקה וצורתה — בחירת מודל: המשנה אומרת רק ״ומתערבין באמה, ויוצאין לנחל קדרון״.",
             refs: [["מדות ג, ב", { book: 89, index: 20 }], ["רמב״ם בית הבחירה ב, יא", "Mishneh_Torah,_The_Chosen_Temple.2.11"]] },
           { t: "אמת המים מעין עיטם", feature: (ctx.shared.features || {})["aqueductEitam"] || null,   // AQUEDUCTS_B2 (the user's decision 171 a)
             tg: () => { const A = ctx.shared.aqueducts; if (A) A.build(); const w = A && A.R.wallW; return w ? [w[0] - 20, w[1], w[2]] : [-170, 0, 67.5]; },
@@ -1005,6 +1006,8 @@
 //@@end buildUI.after-box
 //@@begin buildUI.after-tgt
               // 1.0.1-K: no automatic removal - a place only flies (and, when it is one, shows its own model feature)
+              // MOUTH_N12: a place that shows one small thing hides the labels while it shows; the user's own labels switch comes back after it
+              { const lg = ctx.scene && ctx.scene.getObjectByName("labels"), S = ctx.shared; if (lg) { if (it.hideLabels) { if (S.__lblSaved == null) S.__lblSaved = lg.visible; lg.visible = false; } else if (S.__lblSaved != null) { lg.visible = S.__lblSaved; S.__lblSaved = null; } } }
               if (pos && tgt && !it.noFly) fly(pos, tgt);   // 2.0.9 TAMID_STOP_209: a place whose action brings its own eye
               // PLACE_NOFADE_211 (the user, 15.11.2026, of the place "בר שורא" in בית ראשון: "לא מציג כלום" - the wall it stands by was
               // see-through): a place whose subject is a wall itself holds the fading while it shows (ctx.shared.fadeHold)
