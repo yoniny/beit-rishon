@@ -737,7 +737,7 @@
       (SH.demoStops || (SH.demoStops = [])).push({ id: "simcha-lamps", running: () => SH.simchaDemo.running(), stop: () => SH.simchaDemo.stop(),
         pause: () => SH.simchaDemo.pause(), resume: () => SH.simchaDemo.resume(), paused: () => SH.simchaDemo.paused(), restart: () => SH.simchaDemo.start() });
       SH.features = SH.features || {};
-      SH.features.simchaMenorot = { key: "simchaMenorot", timed: false, isOn: () => MG.visible, on: () => { MG.visible = true; cur(); }, off: () => { MG.visible = false; reset(); } };
+      SH.features.simchaMenorot = { key: "simchaMenorot", timed: false, isOn: () => MG.visible, on: () => { const was = MG.visible; MG.visible = true; cur(); if (!was && D.t0 < 0 && S) resetSet(S); }, off: () => { MG.visible = false; reset(); } };
       if (Array.isArray(ctx2.animated)) ctx2.animated.push(() => {
         if (!MG.visible) return;
         const C = cur();
@@ -2469,7 +2469,7 @@
         if (fnc(SH.sfx) && D.snd < t) {
           const tyt = WALK.mode === "tyt";   // TERUAH_305; the cymbals - in the loop now (MUSICIANS_305)
           for (const s of tyt ? BLASTS : BLASTS.slice(0, 2)) if (D.snd < s && t >= s) SH.sfx("trumpets");
-          if (tyt) { for (const s of LONGS) if (D.snd < s && t >= s) SH.sfx("trumpets", { pattern: "long" }); }
+          if (tyt) { LONGS.forEach((s, i) => { if (D.snd < s && t >= s) SH.sfx("trumpets", { pattern: "long", dur: Math.max(2.6, ((LONGS[i + 1] != null ? LONGS[i + 1] : DRAWN[1]) - s - 0.3) * SLOW()) }); }); }   // LONG_DUR_G1: each long blast lasts until the next, the last to the east gate
           else if (D.snd < DRAWN[0] && t >= DRAWN[0]) SH.sfx("trumpets", { pattern: "drawn", dur: (DRAWN[1] - t) * SLOW() });
         }
         D.snd = t;

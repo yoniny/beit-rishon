@@ -1644,7 +1644,7 @@
         osc(a, "sine", 34, t + 4, 1.4, k, 0.02, 1.2);
       },
       trumpets(a, t, k, o) {
-        if (o.pattern === "long") { brass(a, t, 2.6, k, 466); brass(a, t + 0.03, 2.6, k * 0.8, 470); return; }
+        if (o.pattern === "long") { const ld = Math.max(2.6, +o.dur || 0); brass(a, t, ld, k, 466); brass(a, t + 0.03, ld - 0.03, k * 0.8, 470); return; }   // LONG_DUR_G1: o.dur - the blast lasts until the next (the whole march)
         if (o.pattern === "drawn") {   // TERUAH_305: Rashi's - the tekia, the teruah and the tekia drawn out over o.dur seconds
           const d = Math.max(4.5, +o.dur || 20) / 3;
           brass(a, t, d - 0.25, k);
