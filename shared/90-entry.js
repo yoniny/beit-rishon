@@ -962,7 +962,7 @@
   // CAM_RESET_N8 (the user, 24.11.2026: "בכל כרטיס שנפתח, המודל 'רץ' באוויר הלוך וחזור עד שהוא מתמקם", gone after a refresh - a state that stays from
   // the clicks before): what a place's or a view's click starts from: no flight, no glide of a drag, no pending zoom or lift, no look
   // lock, and no demonstration that still drives the eye (stopDemos) - the flight of the click is then the ONLY writer of the camera
-  ctx.camReset = () => {
+  const camResetImpl = () => {
     let pres = false;
     try { const T = ctx.shared.tour; pres = !!(T && typeof T.state === "function" && T.state().running); } catch (_) {}
     try { if (!pres && typeof ctx.shared.stopDemos === "function") ctx.shared.stopDemos(); } catch (_) {}   // (the presentation drives its own scenes)
@@ -2100,6 +2100,7 @@
     document.documentElement.style.setProperty("--primary", "#c9a84c");
     initModules().catch((e) => console.error(e));
   }
+  ctx.camReset = camResetImpl;   // CAM_RESET_N8: assigned once ctx exists (the arrow itself is defined earlier)
   window.__ctx = ctx;
   window.__ent360 = { cam, decide: cam_decide, roofed: ent_roofed, solids: ent_solids, floorY: cam_floorY, lift: ent_lift, lookEnd: cam_lookEnd };   // 1.2.0: for the headless tests
   window.__renderer = renderer;
