@@ -92,6 +92,7 @@
       duration: (i, o) => { const st = DATA.stages[TM.list(o)[i]]; return st ? st.dur : 0; },
       camAt: (i, sec, o) => { const ck = CAMK[TM.list(o)[i]]; return ck ? camKey(ck(o || TM.order), sec) : null; },   // (tests: the moving eye)
       figAt: (k) => (W && W.figs[k] ? Object.assign({}, W.figs[k].st) : null),   // (tests: where a figure stands)
+      figKeys: () => (W ? Object.keys(W.figs) : []),   // (tests: the figures' names - the path check against the table and the walls)
       figObj: (k) => (W && W.figs[k]) || null,   // HANDS_K (tests: the figure itself - its hands and feet at kiddush)
       qaClear: (e, t) => {   // TAMID_QA_207 (tests: is the line from the target to the eye free of the model's solids?)
         const o = new Vector3(t[0], t[1], t[2]), d = new Vector3(e[0] - t[0], e[1] - t[1], e[2] - t[2]), len = d.length();
