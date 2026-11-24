@@ -3692,7 +3692,7 @@
       // a straight piece from a to b: a box w x h along it (its local z), optionally a strip of water on its top or inside, optionally hidden (its ghost)
       const piece = (a, b, w, h, m, list) => { const A = V(a), B = V(b), L = A.distanceTo(B); if (L < 1e-3) return null; const o = new Mesh(new BoxGeometry(w, h, L), m); o.position.copy(A).add(B).multiplyScalar(0.5); o.lookAt(B); o.castShadow = o.receiveShadow = true; o.userData.noPick = true; AQ.add(o); if (list) ghost(o, list); return o; };
       const line = (P, w, h, m, list) => { for (let i = 1; i < P.length; i++) piece(P[i - 1], P[i], w, h, m, list); };
-      let built = false, t0 = -1, seeK = false, seeE = false;
+      let built = false, t0 = -1, seeK = false, seeE = false, nK1 = 0;
       const SHI = [40, 24.55], F0 = LV.KOH;   // the shitin (40-altar.js SHITIN_LABEL: mv's frame 40, 12.05 + the altar's 12.5)
       const EXZ = 300, WALL_E = 356, WALL_W = -150, EZ = 67.5, BATH = [-30, 40.2, 67.5];
       const R = {};
@@ -3707,6 +3707,8 @@
         const K1 = [[sx, F0 - 0.25, sz], [sx, F0 - 2.6, sz]];   // the shaft under the shitin
         const K2 = [[sx, F0 - 2.6, sz], [sx + 1.5, F0 - 3.2, 66], [sx + 3, -2.6, 76], [150, -3.4, 140], [300, -4.6, 262], [WALL_E - 11, Math.max(-6, yX - 1), EXZ], [WALL_E - 1.0, yX - 0.05, EXZ]];   // KIDRON_VIEW_H: ends inside the wall (it stood out of its face, over the opening - a "pipe" on the wall)
         line(K1, 0.5, 0.5, capM, XRK);
+        { const ring = new Mesh(new TorusGeometry(0.42, 0.07, 6, 18), stoneM); ring.rotation.x = Math.PI / 2; ring.position.set(sx, F0 - 0.08, sz); ring.userData.noPick = true; AQ.add(ring); ghost(ring, XRK); }   // MOUTH_N12: the amah's mouth under the shitin, a ring seen through the floor
+        nK1 = XRK.length;   // the first ghosts (the shaft and the ring) are the mouth's own; the rest of the way is the Kidron card's
         line(K2, 1.1, 0.9, stoneM, XRK);
         R.shitin = [sx, F0, sz]; R.wallIn = K2[2].slice();   // AZARA_AQ_H: for the place "אמת המים — בעזרה" (the shaft under the shitin, and where it goes down in the court wall's foundation)
         for (let i = 1; i < K2.length; i++) { const a = K2[i - 1], b = K2[i]; piece([a[0], a[1] + 0.47, a[2]], [b[0], b[1] + 0.47, b[2]], 0.56, 0.06, waterM, XRK); }   // the water in it, seen with it
@@ -3753,10 +3755,12 @@
         { const lo = Math.min(yX, R.streamEnd[1], ...OUT.map((q) => q[1] - 0.85)) - 3; if (!(typeof SH.camLow === "number" && SH.camLow <= lo)) SH.camLow = lo; }   // the eye may go down to the exit, the stream and the sign
       };
       const setK = (v) => { if (v) build(); seeK = !!v; for (const t of XRK) t.visible = seeK; };
+      const setM = (v) => { if (v) build(); seeK = false; for (let i = 0; i < XRK.length; i++) XRK[i].visible = !!v && i < nK1; };   // MOUTH_N12: only the mouth (the shaft under the shitin), not the long way
       const setE = (v) => { if (v) build(); seeE = !!v; for (const t of XRE) t.visible = seeE; };
       if (Array.isArray(ctx2.animated)) ctx2.animated.push(() => { if (built || typeof SH.floorY !== "function") return; const now = performance.now(); if (t0 < 0) t0 = now; if (now - t0 > 4000) { try { build(); } catch (e) { console.warn("[aqueducts]", e && e.message); built = true; } } });
       SH.features = SH.features || {};
       SH.features.aqueductKidron = { key: "aqueductKidron", timed: false, isOn: () => seeK, on: () => setK(true), off: () => setK(false) };
+      SH.features.aqueductMouth = { key: "aqueductMouth", timed: false, isOn: () => XRK.length > 0 && XRK[0].visible && !seeK, on: () => setM(true), off: () => setM(false) };
       SH.features.aqueductEitam = { key: "aqueductEitam", timed: false, isOn: () => seeE, on: () => setE(true), off: () => setE(false) };
       SH.aqueducts = { build, R, get built() { return built; } };
       const INFO_K = "לשון המשנה (מדות ג, ב): ״ובקרן מערבית דרומית היו שני נקבים, כמין שני חטמין דקין, שהדמים הנתנין על יסוד מערבי ועל יסוד דרומי, יורדין בהן ומתערבין באמה, ויוצאין לנחל קדרון״.\n**ומים מנין לעזרה** — מאמת המים שמעין עיטם (ראו ״אמת המים מעין עיטם״); ״אמר אביי: שמע מיניה עין עיטם גבוה מקרקע עזרה עשרים ושלש אמות״ (יומא לא.).\n**במודל:** תעלה מקורה מתחת לרצפת העזרה — מן השיתין שבקרן המערבית־הדרומית של המזבח דרומה אל כותל העזרה, ויורדת ביסודו; משם בשיפוע מתחת להר הבית אל החומה המזרחית, ובתחתית החומה פתח גלוי, שממנו המים יוצאים בזרם קטן במורד אל נחל קדרון. התעלה שבעזרה נראית מבעד לרצפה במקום ״אמת המים — בעזרה, מן השיתין אל הכותל״. מסלול התעלה, צורתה ומקום היציאה — בחירת מודל: המשנה אומרת רק ״ויוצאין לנחל קדרון״.\n**בבית ראשון לא צוירה** — רש״י (זבחים סא:): ״ובימי שלמה היה כמין בור כרוי אצל המזבח באותה זוית לירד הנסכים בתוכו״.";
