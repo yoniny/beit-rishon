@@ -967,9 +967,10 @@
           stack(2, cx + 14, S0, 0, 6.5, 0.36, 9, 7);  stack(0, cx - 9.5, cz + 7, 0, 3, 0.22, 7, 5);  crib(1, cx + 1.5, cz + 7, 1.7, 0.11, 8);
           stack(2, cx + 10.5, cz + 6.7, 0, 3, 0.22, 7, 5);
           // ...and more, so the chamber is full: the aisle's east end, and the gaps between the rows
-          stack(1, cx + 13, cz, HP, 6.5, 0.36, 9, 7);  stack(0, cx + 5, cz, 0, 4.6, 0.3, 8, 6);  stack(2, cx - 9.5, cz - 8, 0, 3, 0.22, 7, 5);
+          stack(1, cx + 13, cz, HP, 6.5, 0.36, 9, 7);  stack(2, cx - 9.5, cz - 8, 0, 3, 0.22, 7, 5);
           crib(1, cx - 3, cz - 7, 1.7, 0.11, 8);  stack(1, cx - 5, cz + 7, 0, 3, 0.22, 7, 5);  crib(2, cx + 6.3, cz + 7, 1.7, 0.11, 7);
           stack(0, cx + 15.1, cz + 6, HP, 4.6, 0.3, 8, 6);
+          const WP = new Group(); WP.name = "woodPiles"; g.add(WP); ctx2.layers.woodPiles = WP;   // WOOD_ONLY_G10: every pile in a group of its own (the toggle "the priests only" hides it with its label)
           const mm = new Matrix4(), qq = new Quaternion(), vs = new Vector3(), vp = new Vector3(), yAx = new Vector3(0, 1, 0);
           L.forEach((list, w) => {
             if (!list.length) return;
@@ -978,9 +979,10 @@
             im.instanceMatrix.needsUpdate = true;
             im.castShadow = im.receiveShadow = true;
             im.computeBoundingSphere();
-            g.add(im);
+            WP.add(im);
           });
-          lbl("ערמות העצים — תאנה, אגוז ועץ שמן (תמיד ב, ג)", cx, 13, cz + 10, 1.1);
+          ctx2.labels.push({ text: "ערמות העצים — תאנה, אגוז ועץ שמן (תמיד ב, ג)", x: cx, y: 13, z: cz + 10, size: 1.1, layer: "woodPiles" });
+          ctx2.shared.woodPiles = { get on() { return WP.visible; }, set(on) { WP.visible = !!on; return WP.visible; } };
         }
       } else if (c.prop === "mikveh") {
         // 1.9.1 (the user: "לשכת המצורעין אני רוצה לראות בור מים 40 סאה"): the bath is the measure of the Gemara - "אמה על אמה ברום שלש
@@ -3741,10 +3743,10 @@
         const logM = M2.cedar;
         const log = (x, y, z, yaw, len = 1.5, r = 0.13) => { const m = new Mesh(new CylinderGeometry(r, r * 1.08, len, 8), logM); m.rotation.z = HP; m.rotation.y = yaw; m.position.set(x, y, z); m.castShadow = true; m.userData.noPick = true; O.add(m); return m; };
         const ahead = (x, z, yaw, d) => [x + Math.sin(yaw) * d, z + Math.cos(yaw) * d];
-        const HX = 193.4, HZ = -47.6;                                                  // the heap being checked
+        const HX = 208.5, HZ = -47.5;                                                  // the heap being checked (WOOD_CENTRE_G10: the chamber's middle, 24.11.2026 - until now 15 amot west of it, among the piles)
         for (const [dx, dy, dz, a] of [[0, 0.14, 0, 0.3], [0.1, 0.14, 0.32, 0.2], [-0.1, 0.14, -0.32, 0.45], [0.05, 0.4, 0.15, 0.1], [0, 0.4, -0.18, 0.5]]) log(HX + dx, 6 + dy, HZ + dz, a);
         const toHeap = (x, z) => Math.atan2(HX - x, HZ - z);
-        const A = [196.2, -45.3], B = [196.4, -49.9], C = [191.2, -49.2];
+        const A = [211.3, -45.2], B = [211.5, -49.8], C = [206.3, -49.1];
         const ya = toHeap(A[0], A[1]), yb = toHeap(B[0], B[1]), yc = toHeap(C[0], C[1]);
         // MUMIN_W (agent W, the user's decision 214: "אתה חייב לעשות מום, כמו שתום עין, שבור רגל וכד', אחרת איך יבינו שהם בעלי מום?"):
         // each of the three has one blemish of the verse's (Leviticus 21:18-20, 3:639-641) - seen plainly, decent and not frightening:
