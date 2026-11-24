@@ -1875,7 +1875,7 @@
       try {
         await MODULES[i].build(ctx);
       } catch (e) {
-        console.error("[module " + MODULES[i].name + "]", e);
+        console.error("[module " + MODULES[i].name + "]", e, String(e && e.stack || e).slice(0, 400));
         showToast("שגיאה בטעינת " + MODULES[i].name + ": " + e.message, 5e3);
       }
       ent_mark("module " + MODULES[i].name, performance.now() - t);

@@ -136,12 +136,28 @@
     const KDEEP = { x0: 82.5, x1: 102.5, d: 9, z: 24 };
     // SALT_144_D: the shaft of the salt chamber's tunnel (x 70.5..82.5, z 56.5..64.5) - filled in the default reading (SALT_144_D below)
     const SALT_T = { x: 76.5, z: 60.5, w: 12, d: 8 };
-    boxHoles(g, 189.5, LV.AZ - 0.15, 140, M2.stone, (CO.azW - 2.5 + CO.azE) / 2, 0, 0, [KPIT, SALT_T, MPIT].concat([-1, 1].map((sz) => ({ x: (KDEEP.x0 + CO.azE) / 2, z: sz * KDEEP.z, w: CO.azE - KDEEP.x0, d: KDEEP.d }))));   // the court's podium; CHEL_211: to the walls' outer faces (x -96, z ±70)
+    // ONE_FLIGHT_420 (the user, 24.11.2026, of Tiferet Yisrael's reading: "בדעת התפאי, המעלות בחיל הן אותן המעלות שמובילות לשערים -
+    // הכל גרם אחד סביב כל החומה"; of the height: "כן" - the sill at the steps' head, the rest inside the gate): in that reading the
+    // gates of the court have no flights in the chel - the twelve steps round the courts (20-mount.js) lead to them, their head at six
+    // amot; inside each gate twenty steps of half an amah go up from there to the court's floor (16), ten amot deep through the wall and
+    // the floor's edge. The podium, the pave under the walls and the court's floor are cut there; in the Rambam's reading (the default)
+    // the cuts are filled (ringPlugs) and the gates are as they were. The steps inside the gate - a model choice.
+    const RING_GATES = [[-78, -1], [-78, 1], [-48, -1], [30, 1], [44, 1]];   // = the loop of the gates below (DALK_X, BECH_X, WATER_X)
+    const RG_W = 10, RG_D = 10;
+    const ringPlugs = new Group(); ringPlugs.name = "ringPlugs"; g.add(ringPlugs);
+    const ringIn = new Group(); ringIn.name = "ringGateSteps"; ringIn.visible = false; g.add(ringIn);
+    ctx2.shared.ringGates = { plugs: ringPlugs, steps: ringIn };
+    boxHoles(g, 189.5, LV.AZ - 0.15, 140, M2.stone, (CO.azW - 2.5 + CO.azE) / 2, 0, 0, RING_GATES.map(([x, sz]) => ({ x, z: sz * (70 - RG_D / 2), w: RG_W, d: RG_D })).concat([KPIT, SALT_T, MPIT]).concat([-1, 1].map((sz) => ({ x: (KDEEP.x0 + CO.azE) / 2, z: sz * KDEEP.z, w: CO.azE - KDEEP.x0, d: KDEEP.d }))));   // the court's podium; CHEL_211: to the walls' outer faces (x -96, z ±70)
     ctx2.shared.stepsPlace = { mode: "inside", set() {} };
-    stairsR(g, { width: 14, totalRise: 6, steps: 12, dir: "W", x: 237, y: 0, z: 0, tread: 0.5 });   // inside the chel (x 231..237); RAILS_211
+    (ctx2.shared.ringHide = ctx2.shared.ringHide || []).push(stairsR(g, { width: 14, totalRise: 6, steps: 12, dir: "W", x: 237, y: 0, z: 0, tread: 0.5 }));   // inside the chel (x 231..237); RAILS_211; ONE_FLIGHT_420: in the reading of one flight round the walls it is part of that flight
     ctx2.labels.push({ text: "מעקות במדרגות — בחירת מודל", x: 236, y: 4.2, z: -8.6, size: 1.1 });
-    H2.box(g, 189.5, 0.15, 2.5, M2.pave, -1.25, 13.35, -68.75);   // CHEL_211: under the walls only
-    H2.box(g, 189.5, 0.15, 2.5, M2.pave, -1.25, 13.35, 68.75);
+    for (const sz of [-1, 1]) boxHoles(g, 189.5, 0.15, 2.5, M2.pave, -1.25, 13.35, 68.75 * sz, RING_GATES.filter((q) => q[1] === sz).map(([x]) => ({ x, z: 68.75 * sz, w: RG_W, d: 2.5 })));   // CHEL_211: under the walls only; ONE_FLIGHT_420: cut at the gates
+    for (const [x, sz] of RING_GATES) {
+      H2.box(ringPlugs, RG_W, LV.AZ - 0.15, RG_D, M2.stone, x, 0, sz * (70 - RG_D / 2));
+      H2.box(ringPlugs, RG_W, 0.15, 2.5, M2.pave, x, 13.35, 68.75 * sz);
+      H2.box(ringPlugs, RG_W, 2.65, RG_D - 2.5, M2.pave, x, 13.35, sz * (67.5 - (RG_D - 2.5) / 2));
+      H2.stairs(ringIn, { width: RG_W, totalRise: 10, steps: 20, dir: sz < 0 ? "S" : "N", x, y: 6, z: 70 * sz, tread: 0.5 });
+    }
     H2.box(g, 2.5, 0.15, 135, M2.pave, -94.75, 13.35, 0);
     H2.box(g, 135, 0.15, 2.5, M2.paveFine, 161, 5.85, -68.75);
     H2.box(g, 135, 0.15, 2.5, M2.paveFine, 161, 5.85, 68.75);
@@ -161,7 +177,7 @@
     const GZH = { x: 80.25, z: -61.75, w: 4.5, d: 11.5 };   // NORTH_CHAMBERS_N2: the hall now stands x 76..91 (67..91 until now) - its floor, 13.5, shows through the priests' slab only from x 78 to 82.5
     // SALT_144_D: so too under the salt chamber's part in the priests' court (x 79.5..82.5, z 55..65; closed in the tunnel's reading)
     const SALTH = { x: 81, z: 60, w: 3, d: 10 };
-    herodFloor.push(...boxHoles(g, 176, 2.65, 135, M2.pave, -5.5, 13.35, 0, [KPIT, CIH, GZH, SALTH, MPIT]));
+    herodFloor.push(...boxHoles(g, 176, 2.65, 135, M2.pave, -5.5, 13.35, 0, [KPIT, CIH, GZH, SALTH, MPIT].concat(RING_GATES.map(([x, sz]) => ({ x, z: sz * (67.5 - (RG_D - 2.5) / 2), w: RG_W, d: RG_D - 2.5 })))));   // ONE_FLIGHT_420
     const ciPlug = H2.box(g, CIH.w, 2.65, CIH.d, M2.pave, CIH.x, 13.35, CIH.z);
     herodFloor.push(ciPlug);
     for (const m of herodFloor) {
@@ -227,8 +243,16 @@
     ctx2.shared.southGates = { dalk: DALK_X, bech: BECH_X, water: WATER_X };
     // RING_MERGE_420 (the user: "למה לא לאחד, את המעלות לשערים עם המעלות שסביב החומה"): what a gate's flight builds in the chel is tagged
     // (userData.chelFlight) - the steps round the courts (20-mount.js CHEL_RING_420) run on under it instead of being cut round it
-    const tagNew = (parent, n0) => { for (let i = n0; i < parent.children.length; i++) parent.children[i].traverse((o) => { o.userData.chelFlight = true; }); };
-    const chelFlight = (parent, gx, s, dx, o = {}) => { const n0 = parent.children.length; chelFlight0(parent, gx, s, dx, o); tagNew(parent, n0); if (parent !== g) tagNew(g, gN0); };
+    // RING_RAILS_420 (the user: "למה שלא יהי באותו גרם? ... ואם המעקות מפריעות - תעיף"): in the reading of the steps round the courts the
+    // gates' flights are one body with them - their bronze rails (railMat) are hidden then (ctx2.shared.chelRails; 20-mount.js chelSteps)
+    const chelRails = (ctx2.shared.chelRails = ctx2.shared.chelRails || []);
+    const tagNew = (parent, n0) => { for (let i = n0; i < parent.children.length; i++) parent.children[i].traverse((o) => { o.userData.chelFlight = true; if (o.isMesh && o.material === railMat && !chelRails.includes(o)) chelRails.push(o); }); };
+    const ringHide = (ctx2.shared.ringHide = ctx2.shared.ringHide || []);   // ONE_FLIGHT_420: what the reading of one flight hides
+    const chelFlight = (parent, gx, s, dx, o = {}) => {
+      const n0 = parent.children.length, keep = chelFlight0(parent, gx, s, dx, o);
+      tagNew(parent, n0); if (parent !== g) tagNew(g, gN0);
+      if (parent === g) for (let i = n0; i < parent.children.length; i++) if (parent.children[i] !== keep) ringHide.push(parent.children[i]);
+    };
     let gN0 = 0;
     const chelFlight0 = (parent, gx, s, dx, o = {}) => {
       gN0 = g.children.length;
@@ -236,13 +260,14 @@
       const za = zf * s, zb = (zf + dp) * s, z0 = Math.min(za, zb), z1 = Math.max(za, zb), zc = (z0 + z1) / 2;
       const rw = o.rampW || 0;   // RAMPS_N4: the landing runs on under the ramp's strip too (outside the steps)
       H2.box(parent, wL, top, dp, M2.stoneSmooth, gx, 0, zc);
-      if (rw) H2.box(parent, wL, top, rw, M2.stoneSmooth, gx, 0, s > 0 ? z1 + rw / 2 : z0 - rw / 2);
+      const keep = rw ? H2.box(parent, wL, top, rw, M2.stoneSmooth, gx, 0, s > 0 ? z1 + rw / 2 : z0 - rw / 2) : null;   // (the beasts' ramp's head stays in the reading of one flight)
       platRail(parent, gx - wL / 2, gx + wL / 2, rw && s < 0 ? z0 - rw : z0, rw && s > 0 ? z1 + rw : z1, top, [s < 0 ? "n" : "s"].concat(o.endRail === false ? [] : [dx > 0 ? "w" : "e"]));
       // CHEL_STEPS_420 (the user, 24.11.2026, of the gates from the chel: "תרחיב עליהם יש מקור - אם לא כבש"; the sources - Middot 2:3 "ושתים
       // עשרה מעלות היו שם", Tiferet Yisrael, Yachin Middot 2:23 (819:191) "שהמעלות הללו, לא לבד בין השערים שלמטה ושלמעלה היו, רק היו מקיפים
       // כל הר הבית", and his Tzurat Beit HaMikdash, siman 8 (6029:25) "דכל הששה אמות גובה שסביב בכל הד' רוחות לחומה הפנימית, היה עשוי כולו
       // מדריגות מדריגות"): STEPS again, as until 4.2.0 (4.2.0 made them a ramp, an amah in an amah)
       stairsR(parent, { width: dp, totalRise: top, steps: n, dir: dx > 0 ? "W" : "E", x: gx + dx * (wL / 2 + n * 0.5), y: 0, z: zc, tread: 0.5 });
+      return keep;
     };
     // RAMPS_N4 (the user, 24.11.2026: "הכבש לבהמות מיושר ומחובר למדרגות של השער - חלק מדרגות וחלק כבש באותו גרם, עד נחיתת השער"): at the gate of the
     // firstborn (south) and the gate of the offering (north) the flight is two strips side by side, from the gate's landing (13.5): the steps (4 wide, as the
@@ -283,8 +308,8 @@
       // GATE_STEPS_A2 (fix-a2; the user's decision 79, 22.11.2026): the last two and a half amot inside the gate - a step of one amah and
       // three of half an amah, as the Rambam, Beit HaBechirah 6:3 (337:96): "ועולה ממנו לעזרת הכהנים במעלה גבוהה אמה ועליה דוכן יש בו
       // שלש מעלות. רום כל מעלה חצי אמה". Until now five steps of half an amah. The amah step's tread (an amah) - a model choice.
-      H2.stairs(g, { width: 10, totalRise: 1, steps: 1, dir: s < 0 ? "S" : "N", x: gx, y: 13.5, z: 70 * s, tread: 1 });   // (no rail on one step)
-      stairsR(g, { width: 10, totalRise: 1.5, steps: 3, dir: s < 0 ? "S" : "N", x: gx, y: 14.5, z: 69 * s, tread: 0.5 });
+      ringHide.push(H2.stairs(g, { width: 10, totalRise: 1, steps: 1, dir: s < 0 ? "S" : "N", x: gx, y: 13.5, z: 70 * s, tread: 1 }));   // (no rail on one step)
+      ringHide.push(stairsR(g, { width: 10, totalRise: 1.5, steps: 3, dir: s < 0 ? "S" : "N", x: gx, y: 14.5, z: 69 * s, tread: 0.5 }));   // ONE_FLIGHT_420
     }
     // 1.4.0 (the user, the reviewer's note 2): the step of one amah and the duchan's three steps run the WHOLE width of the court (135),
     // as Tiferet Yisrael draws them (the Mishnah, 2:6, gives them no length); until 1.3.0 they were 60 wide
@@ -838,7 +863,7 @@
         }
         for (const zf of [64.9, 70.1]) for (const sd of [-1, 1]) H2.box(eznChIn, 0.5, 9.4, 0.25, M2.stoneSmooth, OILX + sd * 2.5, 6, zf);
         for (const zf of [64.9, 70.1]) H2.box(eznChIn, 5.5, 0.6, 0.25, M2.stoneSmooth, OILX, 15, zf);
-        stairsR(eznChIn, { width: 4.5, totalRise: 6, steps: 12, dir: "N", x: OILX, y: 0, z: 76, tread: 0.5 });
+        stairsR(eznChIn, { width: 4.5, totalRise: 6, steps: 12, dir: "N", x: OILX, y: 0, z: 76, tread: 0.5 }).userData.chelFlight = true;   // RING_MERGE_420: a chamber's steps merge with the chel's
         ctx2.layers.eznChIn = eznChIn;
         ctx2.labels.push({ text: "״שני פתחים זו כנגד זו״ — לשכת בית שמניא (תוספתא יומא א, ג)", x: OILX, y: 17.4, z: 29, size: 1.2, layer: "eznChIn" }, { text: "הפתח השני — אל החיל", x: OILX, y: 17, z: 71.5, size: 1.2, layer: "eznChIn" });
       }
@@ -2119,10 +2144,10 @@
         const z0 = -79.8, z1 = Z - D / 2;
         H2.box(mokedDef, 12, 13.5, z1 - z0, M2.stoneSmooth, X, 0, (z0 + z1) / 2);
         platRail(mokedDef, X - 6, X + 6, z0, z1, 13.5, ["n", "w"]);
-        stairsR(mokedDef, { width: z1 - z0, totalRise: 13.5, steps: 27, dir: "W", x: X + 6 + 13.5, y: 0, z: (z0 + z1) / 2, tread: 0.5 });
+        stairsR(mokedDef, { width: z1 - z0, totalRise: 13.5, steps: 27, dir: "W", x: X + 6 + 13.5, y: 0, z: (z0 + z1) / 2, tread: 0.5 }).userData.chelFlight = true;   // RING_MERGE_420: a chamber's steps merge with the chel's
         H2.box(mokedRosh, 5, 13.5, 5, M2.stoneSmooth, X + W / 2 + 2.5, 0, -73.3);
         platRail(mokedRosh, X + W / 2, X + W / 2 + 5, -75.8, -70.8, 13.5, ["n"]);
-        stairsR(mokedRosh, { width: 5, totalRise: 13.5, steps: 27, dir: "W", x: X + W / 2 + 5 + 13.5, y: 0, z: -73.3, tread: 0.5 });
+        stairsR(mokedRosh, { width: 5, totalRise: 13.5, steps: 27, dir: "W", x: X + W / 2 + 5 + 13.5, y: 0, z: -73.3, tread: 0.5 }).userData.chelFlight = true;   // RING_MERGE_420: a chamber's steps merge with the chel's
       }
       // FLOOR_211: the northern half's floor, level with the court's pave (which is the southern half's) - less the stairwell inside
       // the gate to the chel, the stairwell inside the Rosh's eastern gate (in his reading only) and the mouth of the way down in
@@ -3221,7 +3246,7 @@
       wb(HX0, HX0 + 2, 13.5, 29.5, -74, HZS - 2);
       wb(HX0, HX0 + 2, 13.5, FY, -77, -74);
       wb(HX0, HX0 + 2, 23.5, 29.5, -77, -74);
-      stairsR(g, { width: 3, totalRise: FY, steps: Math.round(FY / 0.5), dir: "E", x: HX0 - FY, y: 0, z: -75.5, tread: 0.5 });   // CHEL_211: down westwards along the wall, to the chel's floor - GAZIT_FLOOR_B2: 27 steps (32 until now) (five steps to the podium's ledge until 2.0.1); the Tosafot Yom Tov: "ובפתחה לחול מעלות"
+      stairsR(g, { width: 3, totalRise: FY, steps: Math.round(FY / 0.5), dir: "E", x: HX0 - FY, y: 0, z: -75.5, tread: 0.5 }).userData.chelFlight = true;   // CHEL_211: down westwards along the wall, to the chel's floor - GAZIT_FLOOR_B2: 27 steps (32 until now) (five steps to the podium's ledge until 2.0.1); the Tosafot Yom Tov: "ובפתחה לחול מעלות"   // RING_MERGE_420: a chamber's steps merge with the chel's
       // south wall with the door to the Azara (between two pillars of the colonnade, in the court of the priests)
       const KD0 = 87.0, KD1 = 89.5;   // GAZIT_MEIRI_195: in the hall's EAST half; GAZIT_FLOOR_B2: over the court of Israel, at the new floor's height (79.75..82.25 - over the priests' podium - until now)
       wb(HX0, KD0, 13.5, 29.5, HZS - 2, HZS);

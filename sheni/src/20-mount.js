@@ -745,7 +745,7 @@
         });
         // the corners: the north and the south sides own them; where a corner's cells (the short side's band) are cut, the short side starts TRIM later
         const cornerCut = (fr, a0, from, to) => { for (let i = Math.floor((from - a0) / C); i < Math.ceil((to - a0) / C); i++) if (fr[i] === false) return true; return false; };
-        for (const si of [2, 3]) {
+        if (false) for (const si of [2, 3]) {   // RING_MERGE_420: no corner trims - the flights merge, the steps run on round the corners
           const fr = frees[si], n = Math.round(TRIM / C), xa = si === 2 ? CR.x0 - CR.W : CR.x1, xb = si === 2 ? CR.x0 : CR.x1 + CR.W;
           if (cornerCut(frees[0], sides[0][3], xa, xb)) for (let i = 0; i < n && i < fr.length; i++) fr[i] = false;
           if (cornerCut(frees[1], sides[1][3], xa, xb)) for (let i = 0; i < n && i < fr.length; i++) fr[fr.length - 1 - i] = false;
@@ -760,9 +760,13 @@
             const b0 = a0 + i * C, b1 = a0 + j * C;
             for (let k = 1; k <= CR.n; k++) {   // layer k: y (k-1)/2..k/2, from the wall out to W - (k-1)/2
               const w = CR.W - (k - 1) * 0.5 + 0.03, y0 = (k - 1) * 0.5 - 0.02;   // RING_MERGE_420: a hair off the flights' faces (no shared planes)
-              const bg = new BoxGeometry(ax === "x" ? b1 - b0 : w, 0.5, ax === "x" ? w : b1 - b0);
-              H2.uvWorldBox(bg, ax === "x" ? b1 - b0 : w, 0.5, ax === "x" ? w : b1 - b0);
-              bg.translate(ax === "x" ? (b0 + b1) / 2 : fx + sg * w / 2, y0 + 0.25, ax === "x" ? fx + sg * w / 2 : (b0 + b1) / 2);
+              // RING_CORNER_420 (the user: "שים לב לשתי הקצוות יש תוספת"): at the corners each step turns round - the north and the south
+              // sides' step k reaches past the corner only as far as its own width (until now the full six amot: a block stood out there)
+              const c0 = ax === "x" ? Math.max(b0, CR.x0 - w) : b0, c1 = ax === "x" ? Math.min(b1, CR.x1 + w) : b1;
+              if (c1 - c0 < 0.05) continue;
+              const bg = new BoxGeometry(ax === "x" ? c1 - c0 : w, 0.5, ax === "x" ? w : c1 - c0);
+              H2.uvWorldBox(bg, ax === "x" ? c1 - c0 : w, 0.5, ax === "x" ? w : c1 - c0);
+              bg.translate(ax === "x" ? (c0 + c1) / 2 : fx + sg * w / 2, y0 + 0.25, ax === "x" ? fx + sg * w / 2 : (c0 + c1) / 2);
               geos.push(bg);
             }
             i = j;
@@ -772,7 +776,13 @@
       };
       ctx2.shared.chelSteps = { mode: "rambam", set(m) {
         this.mode = m === "around" ? "around" : "rambam";
-        if (this.mode === "around") { ringG.visible = false; try { build(); } catch (e) { console.warn("[chel] steps:", e && e.message); } ringG.visible = true; }
+        const RGt = ctx2.shared.ringGates, around = m === "around";   // ONE_FLIGHT_420 (30-courts.js): one flight round the walls - the gates' own flights go
+        for (const o of ctx2.shared.ringHide || []) o.visible = !around;
+        if (RGt) { RGt.plugs.visible = !around; RGt.steps.visible = around; }
+        const rails = (ctx2.shared.chelRails || []).slice();
+        { const root = ctx2.root || g.parent || g; root.traverse((o) => { if (o.userData && o.userData.chelFlight) o.traverse((q) => { if (q.isMesh && q.material === M2.bronze && !rails.includes(q)) rails.push(q); }); }); }   // the chambers' flights' rails too
+        for (const r of rails) r.visible = true;
+        if (this.mode === "around") { ringG.visible = false; try { build(); } catch (e) { console.warn("[chel] steps:", e && e.message); } ringG.visible = true; for (const r of rails) r.visible = false; }
         else ringG.visible = false;
         return this.mode;
       } };
