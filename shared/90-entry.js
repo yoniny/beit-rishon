@@ -946,6 +946,7 @@
     });
   })(renderer.domElement);
   var flyAnim = null;
+  var ent_flyLastT = null;   // DEMO_PAUSE_FLY_420: the frame's time of the flight's last step
   // 1.9.2 / 1.3.4: a flight's eye nearer the zenith of its target than ENT_MIN_POLAR is tilted to it - the same distance, the same side
   // (the small offset that set the picture's up), or from the south when there is none
   function ent_tiltFromZenith(p, q) {
@@ -983,6 +984,7 @@
     cam.lookLock = false;   // a flight decides afresh (cam_decide at its end)
     ent_zoom.pending = 0;   // 1.0.1-K: a fly cancels a smooth zoom that is still running
     ent_viewInclude(target);   // 1.0.1-L (L.87): a flight's target is always inside the limits of the view
+    ent_flyLastT = null;   // DEMO_PAUSE_FLY_420
     flyAnim = {
       t0: performance.now(),
       dur,
@@ -2019,11 +2021,16 @@
   renderer.setAnimationLoop((t) => {
     if (ent_load.loading || !ent_isVisible()) return;   // nothing is drawn behind the loading overlay or by a hidden house/tab
     if (flyAnim) {
+      // DEMO_PAUSE_FLY_420 (the scan of 4.2.0: the doors' demonstration paused while its camera was flying - the flight went on to its end):
+      // while a demonstration is paused, the flight in progress holds where it is, and goes on from there with the demonstration
+      try { if (ent_flyLastT != null && typeof ctx.shared.demoPaused === "function" && ctx.shared.demoPaused()) flyAnim.t0 += t - ent_flyLastT; } catch (_) {}
+      ent_flyLastT = t;
       const k = Math.min(1, (t - flyAnim.t0) / flyAnim.dur), e = ease(k);
       camera.position.lerpVectors(flyAnim.p0, flyAnim.p1, e);
       controls.target.lerpVectors(flyAnim.c0, flyAnim.c1, e);
       if (k >= 1) {
         flyAnim = null;
+        ent_flyLastT = null;
         cam_killInertia();   // CAM_219 (2): nothing of an input in the flight goes on after it
         cam_decide();   // 1.2.0
         // 1.0.4: a thing to orbit round only when the flight ends under a roof (the menorot, the ulam's tables); a view from outside (Yachin and Boaz from the

@@ -337,7 +337,7 @@
       const cap = document.getElementById('tm-walk-cap'); if (cap && cap.style.display !== 'none' && cap.textContent) st.caps.add(cap.textContent.slice(0, 80));
       if (st.ticks % 6 === 0) await sleep(5);
       if (st.idle >= 3) { finished = true; break; }
-      // SCAN_420: a demonstration that goes round and round (the laver's machine: roundLeft()) - done after opts.rounds rounds (default 3)
+      // SCAN_420: a demonstration that goes round and round (the laver's machine: roundLeft()) - done after opts.rounds rounds (default 1)
       for (const d of (c.shared.demoStops || [])) {
         if (typeof d.roundLeft !== 'function') continue;
         let on = false; try { on = !!d.running(); } catch (_) {}
@@ -346,7 +346,7 @@
         if (st[k] != null && rl > st[k] + 1) st.rounds = (st.rounds || 0) + 1;
         st[k] = rl;
       }
-      if ((st.rounds || 0) >= (opts.rounds || 3)) { finished = true; st.looped = true; break; }
+      if ((st.rounds || 0) >= (opts.rounds || 1)) { finished = true; st.looped = true; break; }   // (a frame's step is capped in the model: one round of the machine is about 360 s of the scan's clock)
     }
     return { t: st.t, ticks: st.ticks, finished, looped: !!st.looped, rounds: st.rounds || 0, running: running(), ran: [...st.ran], started: st.started };
   };
