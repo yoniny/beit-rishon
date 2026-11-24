@@ -710,11 +710,18 @@
         show() { const F2 = ctx.shared.features.aravah; if (F2 && !F2.isOn()) F2.on(); }
       };
       ctx.shared.features.aravah = { key: "aravah", timed: false, isOn: () => AG.visible,
-        on: () => { build(); sync(); AR.t0 = performance.now(); AG.visible = true; tefOn(true); pose(); },
-        off: () => { AG.visible = false; tefOn(false); } };
-      // DEMO_STOP_G (the user, 23.11.2026 01:18): any switch, place or view ends the circuit and takes its figures away (as every demonstration)
-      (ctx.shared.demoStops || (ctx.shared.demoStops = [])).push({ id: "aravahDemo1", running: () => AG.visible, stop: () => ctx.shared.features.aravah.off() });
-      ctx.animated.push(() => { if (!AG.visible) return; sync(); pose(); });
+        on: () => { build(); sync(); AR.t0 = performance.now(); AR.pausedAt = null; AG.visible = true; tefOn(true); pose(); },
+        off: () => { AG.visible = false; AR.pausedAt = null; tefOn(false); } };
+      // DEMO_STOP_G (the user, 23.11.2026 01:18): any switch, place or view ends the circuit and takes its figures away (as every demonstration).
+      // DEMO_PAUSE_ARAVAH_420: and the bar of the demonstrations - "השהה" holds the circuit where it is (the figures stay), "המשך" goes on from
+      // there, "מההתחלה" starts it again
+      AR.pausedAt = null;
+      (ctx.shared.demoStops || (ctx.shared.demoStops = [])).push({ id: "aravahDemo1", continuous: true, running: () => AG.visible, stop: () => ctx.shared.features.aravah.off(),
+        pause: () => { if (AG.visible && AR.pausedAt === null) AR.pausedAt = performance.now(); },
+        resume: () => { if (AR.pausedAt !== null) { AR.t0 += performance.now() - AR.pausedAt; AR.pausedAt = null; } },
+        paused: () => AG.visible && AR.pausedAt !== null,
+        restart: () => { const F2 = ctx.shared.features.aravah; F2.off(); F2.on(); } });
+      ctx.animated.push(() => { if (!AG.visible || AR.pausedAt !== null) return; sync(); pose(); });
     }
 
     // ---------- 9. THE WATER'S LIBATION FROM THE SHILOACH - A DEMONSTRATION (SHILOACH_305 / SHILOACH_CHALAMISH_B2 of the Second Temple) ----------

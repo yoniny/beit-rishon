@@ -15,8 +15,10 @@
   // Background motion that runs by itself, whatever the demonstration does (flames and their sprites, the way to the immersion house, the altar, the courts, the
   // curtains' sway, the incense cloud and the altar's smoke puffs): `snap({ still: true })` leaves it out, so that "the scene stands still while paused" looks only
   // at what the demonstration moves.
-  const BG_NAME = /^(tevilaWay|courts|altar|parochet|tm-kk-cloud)/i;
-  const isBg = (o) => { if (o.isSprite || (o.isInstancedMesh && o.geometry && o.geometry.type === 'IcosahedronGeometry')) return true; for (let p = o; p; p = p.parent) if (p.name && BG_NAME.test(p.name)) return true; return false; };
+  const BG_NAME = /^(tevilaWay|courts|altar|parochet|tm-kk-cloud|thronePalm|shiloachSpring)/i;
+  // SCAN_420: an overlay drawn over the walls (depthTest off, transparent - the floating colour's chevrons of the mesibah) is a guide, not the scene
+  const isOverlay = (o) => { const m = o && o.material; const a = Array.isArray(m) ? m[0] : m; return !!(a && a.depthTest === false && a.transparent); };
+  const isBg = (o) => { if (o.isSprite || isOverlay(o) || (o.isInstancedMesh && o.geometry && o.geometry.type === 'IcosahedronGeometry')) return true; for (let p = o; p; p = p.parent) if (p.name && BG_NAME.test(p.name)) return true; return false; };
   S.snap = (opt) => {
     scene.updateMatrixWorld(true);
     const ids = new Map(), names = new Map(), still = !!(opt && opt.still);
@@ -96,23 +98,29 @@
   S.inside = (p, far, skip) => {
     far = far || 2.5;
     const ray = S.ray(), list = [];
-    for (const o of S.solids('all')) { if (skip && skip.has(o.id)) continue; const s = S.sph.get(o.id) || wsph(o); if (!s) continue; if (p.distanceTo(s.c) <= s.r + far) list.push(o); }
+    for (const o of S.solids('all')) { if (skip && skip.has(o.id)) continue; if (isOverlay(o)) continue; const s = S.sph.get(o.id) || wsph(o); if (!s) continue; if (p.distanceTo(s.c) <= s.r + far) list.push(o); }
     const sides = list.map((o) => { const m = o.material; return Array.isArray(m) ? m.map((x) => x.side) : m.side; });
     list.forEach((o) => { const m = o.material; if (Array.isArray(m)) m.forEach((x) => (x.side = 2)); else m.side = 2; });
-    let back = 0; const of = new Map();
+    let back = 0; const of = new Map(), hit = new Array(DIRS.length).fill(null);
     try {
-      for (const d of DIRS) {
+      DIRS.forEach((d, i) => {
         ray.set(p, d); ray.near = 0; ray.far = far;
         const hs = ray.intersectObjects(list, false);
-        if (!hs.length) continue;
-        const h = hs[0], o = h.object; if (!h.face) continue;
+        if (!hs.length) return;
+        const h = hs[0], o = h.object; if (!h.face) return;
         const nrm = h.face.normal.clone();
         if (h.instanceId != null && o.isInstancedMesh) { const mm = new T.Matrix4(); o.getMatrixAt(h.instanceId, mm); nrm.transformDirection(mm); }
         nrm.transformDirection(o.matrixWorld);
         const os = Array.isArray(sides[list.indexOf(o)]) ? sides[list.indexOf(o)][0] : sides[list.indexOf(o)];
-        if (os === 1) continue;   // a BackSide surface (a room modelled inside out) is meant to be seen from inside
-        if (nrm.dot(d) > 0.05) { back++; const nm = o.name || (o.parent && o.parent.name) || o.type; of.set(nm, (of.get(nm) || 0) + 1); }
-      }
+        if (os === 1) return;   // a BackSide surface (a room modelled inside out) is meant to be seen from inside
+        if (nrm.dot(d) > 0.05) hit[i] = o;
+      });
+      // SCAN_420: a back face counts only when the opposite direction also meets one first (DIRS is symmetric: the opposite of i is 25 - i) -
+      // inside a solid both ways are closed; a lone back face is an open shell or a face turned the wrong way, met from the outside
+      DIRS.forEach((d, i) => {
+        const o = hit[i]; if (!o || !hit[DIRS.length - 1 - i]) return;
+        back++; const nm = o.name || (o.parent && o.parent.name) || o.type; of.set(nm, (of.get(nm) || 0) + 1);
+      });
     } finally {
       list.forEach((o, i) => { const m = o.material; if (Array.isArray(m)) m.forEach((x, k) => (x.side = sides[i][k])); else m.side = sides[i]; });
     }
@@ -296,7 +304,7 @@
   S.demoRun = async (maxMs, tickMs, opts) => {
     opts = opts || {}; tickMs = tickMs || 500;
     let st = S.cur; if (!st || opts.fresh) { st = S.cur = { T0: S.figTrack(), t: 0, idle: 0, ran: new Set(), blank: [], inside: [], nonfin: 0, caps: new Set(), shots: [], issues: new Set(), started: false, ticks: 0, fps: [] }; }
-    const t_end = st.t + maxMs;
+    const t_end = st.t + maxMs / 1000;   // SCAN_420: maxMs is in ms, st.t in seconds (until 4.2.0 a call ran until the demonstration ended - a looping one never did)
     let finished = false;
     while (st.t < t_end) {
       const tt0 = performance.now ? Date.now() : 0;
@@ -316,8 +324,18 @@
       const cap = document.getElementById('tm-walk-cap'); if (cap && cap.style.display !== 'none' && cap.textContent) st.caps.add(cap.textContent.slice(0, 80));
       if (st.ticks % 6 === 0) await sleep(5);
       if (st.idle >= 3) { finished = true; break; }
+      // SCAN_420: a demonstration that goes round and round (the laver's machine: roundLeft()) - done after opts.rounds rounds (default 3)
+      for (const d of (c.shared.demoStops || [])) {
+        if (typeof d.roundLeft !== 'function') continue;
+        let on = false; try { on = !!d.running(); } catch (_) {}
+        if (!on) continue;
+        const rl = +d.roundLeft(), k = 'rl:' + d.id;
+        if (st[k] != null && rl > st[k] + 1) st.rounds = (st.rounds || 0) + 1;
+        st[k] = rl;
+      }
+      if ((st.rounds || 0) >= (opts.rounds || 3)) { finished = true; st.looped = true; break; }
     }
-    return { t: st.t, ticks: st.ticks, finished, running: running(), ran: [...st.ran], started: st.started };
+    return { t: st.t, ticks: st.ticks, finished, looped: !!st.looped, rounds: st.rounds || 0, running: running(), ran: [...st.ran], started: st.started };
   };
   S.demoReport = () => {
     const st = S.cur; if (!st) return null;
@@ -356,7 +374,8 @@
     const fw = btn(/קדימה/); if (fw) { const sa = S.snap(), ca = (document.getElementById('tm-walk-cap') || {}).textContent; fw.click(); await sleep(60); window.__step(200); await sleep(20); window.__step(200); const sb = S.snap(), cb = (document.getElementById('tm-walk-cap') || {}).textContent; const cm3 = S.cmp(sa, sb); chk('forward', !cm3.same || ca !== cb, 'קדימה לא שינה את הסצנה או הכיתוב'); }
     await tick(3);
     const bk = btn(/אחורה/); if (bk) { const sa = S.snap(), ca = (document.getElementById('tm-walk-cap') || {}).textContent; bk.click(); await sleep(60); window.__step(200); await sleep(20); window.__step(200); const sb = S.snap(), cb = (document.getElementById('tm-walk-cap') || {}).textContent; const cm4 = S.cmp(sa, sb); chk('back', !cm4.same || ca !== cb, 'אחורה לא שינה את הסצנה או הכיתוב'); }
-    const rs = btn(/מההתחלה/); if (rs && getComputedStyle(rs).display !== 'none') { rs.click(); await sleep(60); await tick(2); chk('restart', running().length > 0, 'אחרי "מההתחלה" ההדגמה אינה רצה'); }
+    const rs = btn(/מההתחלה/); if (rs && getComputedStyle(rs).display !== 'none' && running().length) {   // SCAN_420: a short demonstration may have ended under "קדימה" - then the bar is gone for the user too
+      rs.click(); await sleep(60); await tick(2); chk('restart', running().length > 0, 'אחרי "מההתחלה" ההדגמה אינה רצה'); }
     // stop
     const st = btn(/עצור/); if (st) { st.click(); await sleep(60); window.__step(300); await sleep(20); window.__step(300); await sleep(400); const r = running(); chk('stop', r.length === 0, 'אחרי "עצור" עדיין רצות: ' + r.join(',')); const e2 = bar(); chk('bar-hides', !e2 || getComputedStyle(e2).display === 'none', 'פס ההדגמה נשאר מוצג אחרי עצירה'); }
     return o;

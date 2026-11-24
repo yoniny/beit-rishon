@@ -5,13 +5,20 @@ export async function run(S, out, opt) {
   // the list: the pills that are demonstrations, and the places of the group "הדגמות"
   const list = await S.ev(() => {
     const c = window.__TM_CTX, o = [], ids = new Set((c.shared.demoStops || []).map((d) => d.id));
-    (c.shared.modelButtons || []).forEach((b, i) => { if (ids.has(b.id) || /^הדגמ/.test(b.label || '') || /הדגמ/.test(b.id || '')) o.push({ kind: 'pill', i, id: b.id, label: b.label }); });
+    (c.shared.modelButtons || []).forEach((b, i) => {
+      if (!(ids.has(b.id) || /^הדגמ/.test(b.label || '') || /הדגמ/.test(b.id || ''))) return;
+      // SCAN_420: a pill the model does not show now (its anchor is null - e.g. the throne's, which stand only in the readings that build
+      // the scene they start) is not a button the user can press; its demonstration is checked from its place
+      let a = true; try { if (typeof b.anchor === 'function') a = b.anchor(); } catch (_) { a = true; }
+      if (a === null || a === undefined || a === false) return;
+      o.push({ kind: 'pill', i, id: b.id, label: b.label });
+    });
     for (const p of c.ui.places()) if (/הדגמה|הליכת|הכנסת|פתיחת דלתות|עלייה בלולים|עליית המלך/.test(p.title) || p.group === 'הדגמות') o.push({ kind: 'place', title: p.title, group: p.group, label: p.title, id: p.feature || p.title });
     return o;
   });
   out.stats.demoEntries = list.length;
   const only = opt.only ? String(opt.only).split(',') : null, limit = opt.limit ? +opt.limit : 1e9;
-  const maxS = (opt.maxdemo ? +opt.maxdemo : 200) * 1000;
+  const maxS = (opt.maxdemo ? +opt.maxdemo : 400) * 1000;   // SCAN_420: 400 s of the model's clock (the longest demonstrations run ~5 minutes)
   const doneIds = new Set();
   let k = 0;
   for (const d of list) {
@@ -47,7 +54,8 @@ export async function run(S, out, opt) {
     out.stats['demo:' + name] = { seconds: Math.round(secs), figures: rep ? rep.figs.length : 0, finished: !!(fin && fin.finished), wall: Math.round((Date.now() - t0) / 1000) };
     const shotFor = (kind) => { const s = rep && rep.shots.find((x) => x.kind === kind); return s ? [out.shot('demo-' + d.label + '-' + kind, s.img)].filter(Boolean) : []; };
     if (fin && fin.err) out.add('high', `הדגמה "${name}" — שגיאה בזמן הריצה`, fin.err, { item: d.id });
-    if (fin && !fin.finished) out.add('medium', `הדגמה "${name}" לא הסתיימה תוך ${Math.round(secs)} שניות`, `עדיין רצות: ${(fin.running || []).join(', ')}.`, { item: d.id });
+    const contin = await S.ev(() => (window.__TM_CTX.shared.demoStops || []).some((q) => { try { return q.continuous && q.running(); } catch (_) { return false; } })).catch(() => false);
+    if (fin && !fin.finished && !fin.err && !contin) out.add('medium', `הדגמה "${name}" לא הסתיימה תוך ${Math.round(secs)} שניות`, `עדיין רצות: ${(fin.running || []).join(', ')}.`, { item: d.id });
     if (errs.length) out.add('high', `שגיאות קונסול בהדגמה "${name}"`, `${errs.length} שגיאות. ${errs.slice(0, 3).map((m) => m.text).join(' | ')}`, { item: d.id });
     if (rep) {
       if (rep.nonfin) out.add('critical', `הדגמה "${name}": מצלמה במצב NaN/אינסוף`, `${rep.nonfin} פריימים.`, { item: d.id });

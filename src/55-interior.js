@@ -1461,6 +1461,8 @@
           t0: -1,
           demo(flyToo) {
             this.t0 = performance.now();
+            this.pausedAt = null;
+            this.__fly = !!flyToo;
             apply(0);
             const keyOn = !ctx.shared.potot || ctx.shared.potot.current === "rashi";
             const SL = (ctx.shared && ctx.shared.demoSlow) || 1.5;   // 1.3.4 (the user: "כל ההדגמות יותר איטיות"): the motion, the captions and the sound
@@ -1487,14 +1489,36 @@
               D.__wide = setTimeout(() => { if (D.t0 >= 0) wide(); }, 5000 * SL);
             }
           },
-          at(e) { this.t0 = -1; apply(e); },   // a still frame (checks, the presentation)
+          at(e) { this.t0 = -1; this.pausedAt = null; apply(e); },   // a still frame (checks, the presentation)
+          // DEMO_PAUSE_DOORS_420: the bar's "השהה" holds the moment (the leaves, the key, the priest, the captions and the camera's flights are
+          // held), "המשך" goes on from it with the same flights still ahead; the sound of the door, timed ahead at the start, is cut by the pause
+          pausedAt: null,
+          pause() {
+            if (this.t0 < 0 || this.pausedAt !== null) return;
+            this.pausedAt = performance.now();
+            SFX.stop();
+            clearTimeout(this.__wide); clearTimeout(this.__mid);
+          },
+          resume() {
+            if (this.pausedAt === null) return;
+            this.t0 += performance.now() - this.pausedAt;
+            this.pausedAt = null;
+            if (this.__fly && ctx.ui && typeof ctx.ui.fly === "function") {
+              const SLr = (ctx.shared && ctx.shared.demoSlow) || 1.5;
+              const ms = performance.now() - this.t0;
+              if (ms < 1800 * SLr) this.__mid = setTimeout(() => { if (D.t0 >= 0 && D.pausedAt === null) ctx.ui.fly([11.5, F + 6.5, 4.0], [1.0, F + 4.0, -0.3]); }, 1800 * SLr - ms);
+              if (ms < 5000 * SLr) this.__wide = setTimeout(() => { if (D.t0 >= 0 && D.pausedAt === null) ctx.ui.fly([25, F + 9.5, 2.5], [3.5, F + 9, 0]); }, 5000 * SLr - ms);
+            }
+          },
           stop() {
             SFX.stop();   // SFX_STOP_205
+            this.pausedAt = null; this.__fly = false;
             clearTimeout(this.__wide); clearTimeout(this.__mid); this.t0 = -1; pose(1); if (heiKey && heiKey.userData.turn) heiKey.userData.turn.rotation.z = 0; if (PR.w) PR.w.g.visible = false; capG.forEach((c) => (c.visible = false)); }
         };
-        (ctx.shared.demoStops || (ctx.shared.demoStops = [])).push({ id: "int-doors-demo", running: () => D.t0 >= 0, stop: () => D.stop() });   // 1.3.4: any switch stops it
+        (ctx.shared.demoStops || (ctx.shared.demoStops = [])).push({ id: "int-doors-demo", running: () => D.t0 >= 0, stop: () => D.stop(),
+          pause: () => D.pause(), resume: () => D.resume(), paused: () => D.pausedAt !== null, restart: () => { D.stop(); D.demo(true); } });   // 1.3.4: any switch stops it
         ctx.animated.push(() => {
-          if (D.t0 < 0) return;
+          if (D.t0 < 0 || D.pausedAt !== null) return;
           const e = (performance.now() - D.t0) / 1000 / ((ctx.shared && ctx.shared.demoSlow) || 1.5);
           apply(e);
           if (e > 10) D.stop();
