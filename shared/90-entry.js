@@ -1402,8 +1402,10 @@
       b.type = "button";
       b.textContent = txt;
       b.title = title;
-      Object.assign(b.style, { background: "rgba(201,168,76,0.16)", color: "#f4ead0", border: "1px solid rgba(201,168,76,0.55)", borderRadius: "8px",
-        padding: "3px 12px", font: "0.875rem/1.4 var(--font-main, inherit)", cursor: "pointer" });
+      // DEMO_BAR_SMALL_N9 (the user, 24.11.2026: "תקטין מאוד" - the demonstration's buttons): a small bar - the letters, the padding and the gaps in rem / em
+      // (clamp by the window's width: smaller in a small window), no px; a touch still has its 1.5 rem of height (24 px at the browser's size)
+      Object.assign(b.style, { background: "rgba(201,168,76,0.16)", color: "#f4ead0", border: "0.07em solid rgba(201,168,76,0.55)", borderRadius: "0.45em",
+        padding: "0.1em 0.55em", minHeight: "1.5rem", font: "clamp(0.6rem, 0.48rem + 0.45vw, 0.74rem)/1.2 var(--font-main, inherit)", cursor: "pointer", whiteSpace: "nowrap" });
       b.addEventListener("click", press(fn));
       return b;
     };
@@ -1414,10 +1416,10 @@
       // DPAUSE_LEFT_300 (the user, 18.11.2026: "הכפתור הזה לא במרכז, הוא מסתיר ראות, שים אותו בצד שמאל מעל המצפן"): no longer in the
       // middle of the picture - at the left, over the compass and the nav row (place(), below)
       // DEMO_BAR_N1: two rows - the pause, the start again and the stop; below them the stages and the speed
-      Object.assign(el.style, { position: "fixed", left: "12px", bottom: "110px", display: "none", flexDirection: "column", gap: "6px",
-        background: "rgba(14,17,28,0.82)", padding: "6px 10px", borderRadius: "10px", zIndex: "41", boxShadow: "0 2px 10px rgba(0,0,0,0.35)" });
+      Object.assign(el.style, { position: "fixed", left: "0.5rem", bottom: "6rem", display: "none", flexDirection: "column", gap: "0.2rem", maxWidth: "calc(100vw - 1rem)", boxSizing: "border-box",
+        background: "rgba(14,17,28,0.78)", padding: "0.2rem 0.3rem", borderRadius: "0.45rem", zIndex: "41", boxShadow: "0 0.1rem 0.5rem rgba(0,0,0,0.35)" });
       const row1 = document.createElement("div"), row2 = document.createElement("div");
-      for (const r of [row1, row2]) Object.assign(r.style, { display: "flex", gap: "8px", alignItems: "center", justifyContent: "center", flexWrap: "wrap" });
+      for (const r of [row1, row2]) Object.assign(r.style, { display: "flex", gap: "0.2rem", alignItems: "center", justifyContent: "center", flexWrap: "wrap" });
       bP = mk("⏸ השהה", "השהיית ההדגמה. אפשר להסתובב ולהסתכל, ואחר כך להמשיך מאותו רגע.", () => (live().some((d) => !isPaused(d)) ? ctx.shared.demoPause() : ctx.shared.demoResume()));
       bR = mk("⟲ מההתחלה", "מתחיל את ההדגמה מההתחלה.", () => { for (const d of live()) if (fnc(d.restart)) { d.restart(); return; } });
       bS = mk("■ עצור", "עוצר את ההדגמה.", () => ctx.shared.stopDemos());
@@ -1429,7 +1431,7 @@
       bSl = mk("לאט יותר", "מאט את ההדגמה. הקולות שנקבעו מראש נפסקים.", () => speed(-1));
       bFa = mk("מהר יותר", "מאיץ את ההדגמה. הקולות שנקבעו מראש נפסקים.", () => speed(1));
       lR = document.createElement("span");
-      Object.assign(lR.style, { color: "#f4ead0", font: "0.8125rem/1.4 var(--font-main, inherit)", minWidth: "4.5em", textAlign: "center" });
+      Object.assign(lR.style, { color: "#f4ead0", font: "clamp(0.58rem, 0.46rem + 0.42vw, 0.7rem)/1.2 var(--font-main, inherit)", minWidth: "4em", textAlign: "center", whiteSpace: "nowrap" });
       row2.appendChild(bBk); row2.appendChild(bFw); row2.appendChild(bSl); row2.appendChild(lR); row2.appendChild(bFa);
       el.appendChild(row1); el.appendChild(row2);
       document.body.appendChild(el);
@@ -1477,8 +1479,9 @@
             if (q.width > 0 && q.left < left + w && left < q.right && q.top < bt && t < q.bottom) bottom = Math.round(window.innerHeight - q.top + 8);
           }
         }
-        el.style.left = left + "px";
-        el.style.bottom = bottom + "px";
+        const R0 = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;   // DEMO_BAR_SMALL_N9: the measured places in rem
+        el.style.left = (left / R0).toFixed(3) + "rem";
+        el.style.bottom = (bottom / R0).toFixed(3) + "rem";
       } catch (_) {}
     };
     // DEMO_BAR_N1: a stage forward or back. With a walk (most of the demonstrations: its captions are its stages) - to the start of the next
