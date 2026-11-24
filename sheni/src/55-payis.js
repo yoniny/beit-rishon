@@ -453,7 +453,7 @@
       const camOpen = [[30, 62, -150], [-14, 14, -80]];                     // the north side by night: the court's wall, Beit HaMoked and its stairs from the chel
       const camMokedN = [[-18, 37, -110], [-18, 17, -79]];                  // before its gate to the chel
       const camMokedIn = [[-18, 52, -80], [-18, 16.6, -62.8]], camMokedNear = [[-18, 41, -74], [-18, 17, -62.8]];   // into its holy half (the roofs are off)
-      const camMokedS = [[-18, 50, -43.5], [-18, 16, -61.5]];               // before its gate to the court
+      const camMokedS = [[-7, 34, -45], [-15.5, 18, -56]];                   // before its gate to the court (PAYIS_EYE_G12: from the side and lower - from straight above the front step hid the torch-bearers as they came out of the wicket)
       const camCourt = [[30, 230, 170], [30, 16, 35]], fovCourt = 38;       // the court from high in the south: the way behind the house and by the south, and the way by the north-east and the east
       const camMeet = [[62, 52, -20], [81, 17, 18]];
       const camGazit = [[86.6, 53, -57.5], [86.3, 16.6, -67.6]], camGazitNear = [[88.8, 37.5, -60.6], [86, 16.2, -65.6]], camGazit13 = [[88.6, 46, -56.6], [86.1, 15.8, -64.8]];   // the ring and the winners' tags above the caption
