@@ -1267,7 +1267,7 @@
       }
       return out;
     };
-    const st = { running: false, homing: false, tau: 0, last: null, ex: 0, exTarget: 0, dirty: true };
+    const st = { running: false, homing: false, tau: 0, last: null, ex: 0, exTarget: 0, dirty: true, paused: false, jseen: 0 };   // G15: paused - the bar's pause (90-entry.js demoPause); jseen - the clock's jumps already taken into tau
     const pose = { x: HX, z: HZ, alpha: REST_ALPHA, flow: 0 }, np = { x: HX, z: HZ, alpha: REST_ALPHA, flow: 0 };
     const phi = [0.2, 0.9, 0.5, 1.4];
 
@@ -1490,6 +1490,11 @@
       if (purpose.visible !== pOn) purpose.visible = pOn;
       if (wash.visible !== wOn) wash.visible = wOn;
       if (wOn && kidd.w) kiddAt(st.tau - TL.wash[0]);   // KIDDUSH_FOOT_213
+      // G15 (the scan of 4.2.0: the washing priest "in the wall" - mechona-frame / mechona-relief - at his stop in the seconds of the base's arrival): the layers
+      // open 1.5 s before the stop (their labels), but a figure standing in the base's way is not shown before the base stands: the base used to drive
+      // through him (his place is fixed at its stop). Each priest shows from the second the base has arrived (the water opens 0.35 s later).
+      if (kidd.w) kidd.w.g.visible = st.tau >= TL.wash[0] - 0.05;
+      if (kidd.p) kidd.p.g.visible = st.tau >= TL.pour[0] - 0.05;
       if (!sprites && spriteTries < 40) { spriteTries++; sprites = findSprites(); }
       for (let i = 0; i < PL.length; i++) {          // (a plain loop: no allocation per frame while the base moves)
         const p = PL[i], l = partLabels[i];
@@ -1508,8 +1513,13 @@
       const dt = st.last == null ? 0 : Math.min(0.1, Math.max(0, (now - st.last) / 1000));
       st.last = now;
       let changed = st.dirty, spd = 0;
-      if (st.running || st.homing) {
+      // G15: the bar's "קדימה" / "אחורה" jump the demonstration clock (tm_clock.jump): the base keeps its time by steps (dt), so the jump is taken here
+      // as written seconds (the ms over demoSlow); a jump back stops at the start of the round
+      const jmp = tm_clock.jumped - st.jseen;
+      st.jseen = tm_clock.jumped;
+      if ((st.running || st.homing) && !st.paused) {
         st.tau += dt * (st.homing ? 3 : 1 / ((ctx.shared && ctx.shared.demoSlow) || 1.5));   // 1.3.4 (the user: "כל ההדגמות יותר איטיות"); homing stays quick
+        if (jmp && st.running) st.tau = Math.max(0, st.tau + jmp / 1000 / ((ctx.shared && ctx.shared.demoSlow) || 1.5));
         if (st.tau >= TL.total) {
           if (st.homing) { st.tau = 0; st.homing = false; } else st.tau -= TL.total;
         }
@@ -1539,7 +1549,7 @@
         if (SH && typeof SH.sfxLoop === "function") {
           if (!snd.wheels && spd > 0.05) snd.wheels = SH.sfxLoop("wheels");
           if (snd.wheels) snd.wheels.set(Math.min(1, spd / 2.5));
-          const fl = pose.flow > 0.001 && st.ex < 0.01 && (st.running || st.homing);
+          const fl = pose.flow > 0.001 && st.ex < 0.01 && (st.running || st.homing) && !st.paused;   // G15: a pause is silent
           if (fl && !snd.flow && typeof SH.sfx === "function") {
             const w = st.tau >= TL.wash[0] - 0.6 && st.tau <= TL.wash[1] + 0.6 ? TL.wash : st.tau >= TL.pour[0] - 0.6 && st.tau <= TL.pour[1] + 0.6 ? TL.pour : null;
             const slow = st.homing ? 1 / 3 : (SH.demoSlow || 1.5);
@@ -1553,10 +1563,29 @@
       start() {
         st.running = true;
         st.homing = false;
+        st.paused = false;
+      },
+      // G15 (the bar of the demonstrations, 90-entry.js, shows only for an entry with pause()): pause holds the base and its water where they
+      // are, resume goes on from the same second, restart begins the round again
+      pause() { if (st.running || st.homing) st.paused = true; },
+      resume() { st.paused = false; },
+      get paused() { return st.paused; },
+      restart() {
+        st.paused = false;
+        st.homing = false;
+        st.running = true;
+        st.tau = 0;
+        poseAt(0, np);
+        pose.x = np.x;
+        pose.z = np.z;
+        pose.alpha = np.alpha;
+        pose.flow = np.flow;
+        st.dirty = true;
       },
       // stop: the base finishes its round at three times the speed and stands in its place again (never left in the court)
       stop() {
         if (!st.running) return;
+        st.paused = false;
         st.running = false;
         st.homing = st.tau > PAUSE0;
         if (!st.homing) st.tau = 0;
@@ -1564,6 +1593,7 @@
       // reset: at once back in its place (for the presentation)
       reset() {
         st.running = st.homing = false;
+        st.paused = false;
         st.tau = 0;
         poseAt(0, np);
         pose.x = np.x;
@@ -1610,6 +1640,7 @@
       get washAt() { return TL.wash.slice(); }
     };
     (ctx.shared.demoStops || (ctx.shared.demoStops = [])).push({ id: "mechonaDemo", running: () => st.running || st.homing, stop: () => demo.reset(),
+      pause: () => demo.pause(), resume: () => demo.resume(), paused: () => st.paused, restart: () => demo.restart(),   // G15: the bar of the demonstrations
       roundLeft: () => Math.max(0, TL.total - st.tau) });   // TOUR_DEMO_HOLD_206: it goes round and round - a slide of the presentation shows one round   // 1.3.4: any switch parks it at once
     const explode = {
       // set(on[, instant]): animate (1.1 s) the laver and the כן up out of the base or back; instant = jump to the end state
