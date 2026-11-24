@@ -162,8 +162,13 @@
         (rows[0] - 2 < 35.6 && cols[4] + 2 > rampW - 2.5 - VSL_BLOCK_MARGIN))
       console.warn("[vessels] the block of the bases meets the wing, the ramp or the court wall, or its rows each other:", cols.join(", "), "/", rows.join(", "));
     // the moving base: in the north row, the easternmost column with a free way north, 2 amot clear of the ulam's steps (their east end
-    // CO.xUlamE + 6, 12 steps x tread 0.5, 50-heichal.js) and of the altar's west face: x 34.5, z 33
-    const freeCols = cols.filter((x) => x - 4 >= CO2.xUlamE + 6 && x + 4 <= CO2.xAltarW);
+    // CO.xUlamE + 6, 12 steps x tread 0.5, 50-heichal.js) and of the altar's west face (and, G15, of the tables west of the ramp, below): x 34.5, z 33
+    // G15 (the user, 24.11.2026: "תעביר את ההדגמה למכונה הסמוכה"): and clear of the two tables west of the ramp (59-parallels.js rampTables: x ACX - 15.4,
+    // 1.2 wide - 39.6 in the altar's place, 37.6 in R. Yose's reading, 2 further west; their west edge 37.0): with the altar at x 45 the easternmost column
+    // (x 39) left the way north free of the altar's own wall, but its way south to the wash stop (z 22) and the stop itself ran through the tables
+    // (the marble one at z 22.8 .. 24.4 with the altar in the south) - the base's body (4 x 4) now stays west of them in every place of the altar
+    const tablesW = (CO2.xAltarW + CO2.xAltarE) / 2 - 15.4 - 0.6 - 2;
+    const freeCols = cols.filter((x) => x - 4 >= CO2.xUlamE + 6 && x + 4 <= CO2.xAltarW && x + 2 <= tablesW);
     const home = [freeCols.length ? freeCols[freeCols.length - 1] : cols[4], rows[0]];
     const D = VSL_SEA_FROM_WALL;
     const R = CO2.SEA_D / 2 + VSL_TEFACH + VSL_OX_PROTRUDE;                      // 7.17: the muzzles from the Sea's axis (vsl_oxGeometry)
@@ -1367,18 +1372,20 @@
     const YW82 = 3 * Math.PI / 4, JET_DX = 2.0;
     const kidWater = { made: false, drip: [], film: [] };
     const handW = (w, A2, out) => { const KG = ark_kitArms(); return A2.wr ? A2.wr.localToWorld(out.set(0, -0.064 * ark_kit().FS, 0)) : A2.el.localToWorld(out.set(0, -(KG.P.fo + 0.064 * ark_kit().FS), 0.01)); };
+    const kidInit = (w) => {   // where he stands: his hands (fully bowed) under the stream - found once (G15: also for the place his walk ends at, kidSpot below)
+      ark_kiddush(w, 1);
+      w.g.position.set(0, F, 0); w.g.rotation.y = YW82; w.g.updateMatrixWorld(true);
+      const b = handW(w, w.L, new Vector3()).add(handW(w, w.R, new Vector3())).multiplyScalar(0.5);
+      w.off82 = [-b.x, JET_DX - b.z];   // TAP_212_K: his hands' middle JET_DX south of the low mouth, on its line (KIDDUSH_FLAT_A2: JET_DX east of the tap's)
+      ark_kiddush(w, 0);
+    };
     const kiddAt = (lt) => {
       const w = kidd.w;
       if (!w) return;
       const sx = WASH[0] + VSL_TAP_R, sz = WASH[1] + VSL_PIPE_DZ;   // TAP_212_K: the low nozzle's mouth
       const sm = (u) => (u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u)), cl = (v, a, b) => (v < a ? a : v > b ? b : v);
       const k = sm(cl((lt - 0.35) / 0.8, 0, 1)) * sm(cl((6.8 - lt) / 0.6, 0, 1));
-      if (!w.off82) {   // where he stands: his hands (fully bowed) under the stream - found once
-        ark_kiddush(w, 1);
-        w.g.position.set(0, F, 0); w.g.rotation.y = YW82; w.g.updateMatrixWorld(true);
-        const b = handW(w, w.L, new Vector3()).add(handW(w, w.R, new Vector3())).multiplyScalar(0.5);
-        w.off82 = [-b.x, JET_DX - b.z];   // TAP_212_K: his hands' middle JET_DX south of the low mouth, on its line (KIDDUSH_FLAT_A2: JET_DX east of the tap's)
-      }
+      if (!w.off82) kidInit(w);
       w.g.position.set(sx + w.off82[0], F, sz + w.off82[1]);
       w.g.rotation.y = YW82;
       // KIDDUSH_RYOSE_A2 (the user's decision 82 c): in Rabbi Yose b. R. Yehuda's reading (the row "קידוש ידיים ורגליים") he stands on his
@@ -1387,7 +1394,7 @@
       const md = ctx.shared.kidReading === "ryose" ? "ryose" : "tk";
       ark_kiddush(w, k, md);
       if (kidd.h) {
-        const on = md === "ryose" && k > 0.02;
+        const on = md === "ryose";   // G15: with him all the time he is there (he walks in with him, below)
         kidd.h.g.visible = on;
         if (on) {
           const rx = -Math.cos(YW82), rz = Math.sin(YW82), fx = Math.sin(YW82), fz = Math.cos(YW82);   // TAP_212_K: at his right, as he now stands
@@ -1450,6 +1457,180 @@
       og.position.set(STOP[0] + VSL_TAP_R, F + 1.15, STOP[1] + VSL_PIPE_DZ);   // TAP_212_K: under the low nozzle (until now F + 1.5, under the tap at 4.05)
       purpose.add(og); kidd.organs = og;
     } catch (_) {}
+    // --- G15 (the user, 24.11.2026: "הכהן המקדש והכהן המדיח - במקום להופיע ולהיעלם בתחנה, שיכנסו ויצאו בהליכה"): THE TWO PRIESTS WALK. Until now each stood from the
+    // second the base stopped and vanished with its water. Now both are in the court as long as the demonstration runs: each waits at his place
+    // of waiting (the washing priest north of the wash stop, on the free strip between the base's way and the altar's wall; the rinsing one
+    // south of the tables, over the rings), walks to his stop along a clear way (a grid search round the parked base, the base's way north, the two tables
+    // west of the ramp, the other bases, the altar's wall; the slaughter place's tables) so as to stand there when the base does, and walks
+    // back when the water has stopped. The times are the timeline's (written seconds), so a jump, a pause, a "from the start" and the follow's view see him
+    // where he is. His places of waiting, his pace and his way are model choices, no source; a walking figure's stride: the feet and the arms swing.
+    const WK = { v: 4.0, stride: 0.9, pad: 0.45, cell: 0.3 };
+    const wkYawLerp = (a, b, k) => { let d = (b - a) % (2 * Math.PI); if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI; return a + d * k; };
+    const wkIn = (x, z, R) => { for (let i = 0; i < R.length; i++) { const r = R[i]; if (x > r[0] && x < r[2] && z > r[1] && z < r[3]) return true; } return false; };
+    const wkPlan = (a, b, R) => {   // the way from a to b round the rectangles R ([x0, z0, x1, z1], already as wide as the walker): a grid search, then pulled straight
+      const C = WK.cell, pad = 6, x0 = Math.min(a[0], b[0]) - pad, z0 = Math.min(a[1], b[1]) - pad;
+      const nx = Math.ceil((Math.abs(a[0] - b[0]) + 2 * pad) / C) + 1, nz = Math.ceil((Math.abs(a[1] - b[1]) + 2 * pad) / C) + 1;
+      const X = (i) => x0 + i * C, Z = (j) => z0 + j * C;
+      const near = (x, z, p) => Math.hypot(x - p[0], z - p[1]) < 0.9;
+      const free = new Uint8Array(nx * nz);
+      for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) free[j * nx + i] = near(X(i), Z(j), a) || near(X(i), Z(j), b) || !wkIn(X(i), Z(j), R) ? 1 : 0;
+      const cell = (p) => [Math.round((p[0] - x0) / C), Math.round((p[1] - z0) / C)];
+      const [si, sj] = cell(a), [gi, gj] = cell(b);
+      const gs = new Float32Array(nx * nz).fill(1e9), from = new Int32Array(nx * nz).fill(-1), closed = new Uint8Array(nx * nz);
+      const h = (i, j) => Math.hypot(i - gi, j - gj) * C;
+      let open = [[h(si, sj), si, sj]];
+      gs[sj * nx + si] = 0;
+      let found = false;
+      while (open.length) {
+        let bi = 0;
+        for (let q = 1; q < open.length; q++) if (open[q][0] < open[bi][0]) bi = q;
+        const [, ci, cj] = open.splice(bi, 1)[0], ck = cj * nx + ci;
+        if (closed[ck]) continue;
+        closed[ck] = 1;
+        if (ci === gi && cj === gj) { found = true; break; }
+        for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) {
+          if (!di && !dj) continue;
+          const ni = ci + di, nj = cj + dj;
+          if (ni < 0 || nj < 0 || ni >= nx || nj >= nz || !free[nj * nx + ni] || closed[nj * nx + ni]) continue;
+          if (di && dj && (!free[cj * nx + ni] || !free[nj * nx + ci])) continue;   // no cutting a corner
+          const ng = gs[ck] + (di && dj ? 1.4142 : 1) * C;
+          if (ng < gs[nj * nx + ni]) { gs[nj * nx + ni] = ng; from[nj * nx + ni] = ck; open.push([ng + h(ni, nj), ni, nj]); }
+        }
+      }
+      if (!found) return [a.slice(), b.slice()];
+      const pts = [];
+      for (let k = gj * nx + gi; k >= 0; k = from[k]) pts.push([X(k % nx), Z(Math.floor(k / nx))]);
+      pts.reverse();
+      pts[0] = a.slice(); pts[pts.length - 1] = b.slice();
+      const clear = (p, q) => { const n = Math.max(1, Math.ceil(Math.hypot(q[0] - p[0], q[1] - p[1]) / 0.1)); for (let t = 1; t < n; t++) { const u = t / n, x = p[0] + (q[0] - p[0]) * u, z = p[1] + (q[1] - p[1]) * u; if (!near(x, z, a) && !near(x, z, b) && wkIn(x, z, R)) return false; } return true; };
+      const out = [pts[0]];
+      for (let i = 0; i < pts.length - 1;) { let j = pts.length - 1; while (j > i + 1 && !clear(pts[i], pts[j])) j--; out.push(pts[j]); i = j; }
+      return out;
+    };
+    const wkPath = (pts) => { const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1])); return { pts, cum, len: cum[cum.length - 1] }; };
+    const wkAt = (P, s, o) => {   // the place at distance s along the way (o: x, z, and the way he faces there, looking 0.7 ahead)
+      const q = Math.max(0, Math.min(P.len, s)), pts = P.pts;
+      let i = 1;
+      while (i < pts.length - 1 && P.cum[i] < q) i++;
+      const seg = P.cum[i] - P.cum[i - 1] || 1, u = (q - P.cum[i - 1]) / seg;
+      o.x = pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * u;
+      o.z = pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * u;
+      const q2 = Math.min(P.len, q + 0.7), q1 = Math.max(0, q2 - 0.7);
+      let j = 1;
+      while (j < pts.length - 1 && P.cum[j] < q2) j++;
+      let k = 1;
+      while (k < pts.length - 1 && P.cum[k] < q1) k++;
+      const sg = (m, v) => { const sd = P.cum[m] - P.cum[m - 1] || 1, w = (v - P.cum[m - 1]) / sd; return [pts[m - 1][0] + (pts[m][0] - pts[m - 1][0]) * w, pts[m - 1][1] + (pts[m][1] - pts[m - 1][1]) * w]; };
+      const A = sg(k, q1), B = sg(j, q2);
+      o.yaw = Math.hypot(B[0] - A[0], B[1] - A[1]) > 1e-6 ? Math.atan2(B[0] - A[0], B[1] - A[1]) : 0;
+      return o;
+    };
+    // the walking pose: s - how far he has walked (the stride's phase), amt 0..1 - how much of a walk (0 standing); on a figure of the kit (fl, fr: the feet; L, R:
+    // the arms); hold / bow: the arms he holds at the stop, mixed in by bow 0..1
+    const wkPose = (f, s, amt, hold, bow) => {
+      const FS = ark_kit().FS, ph = Math.PI * s / WK.stride, sw = Math.sin(ph) * amt, st0 = ARK_POSE.stand;
+      f.fl.position.set(0.1 * FS, 0.09 * FS * Math.max(0, Math.cos(ph)) * amt, 0.26 * FS * sw);
+      f.fr.position.set(-0.1 * FS, 0.09 * FS * Math.max(0, -Math.cos(ph)) * amt, -0.26 * FS * sw);
+      f.fl.rotation.set(0, 0, 0);
+      f.fr.rotation.set(0, 0, 0);
+      f.fl.visible = f.fr.visible = true;
+      const aL = [st0[0] + 0.5 * sw, st0[1], st0[2]], aR = [st0[0] - 0.5 * sw, st0[1], st0[2]];
+      if (hold && bow > 0) for (let i = 0; i < 3; i++) { aL[i] += (hold[i] - aL[i]) * bow; aR[i] += (hold[i] - aR[i]) * bow; }
+      ark_setArm(f.L, aL, 1);
+      ark_setArm(f.R, aR, -1);
+    };
+    const WAIT_W = [39.0, 9.0];                      // the washing priest's place of waiting: 2 east of the base's way (x 32.3 .. 37.1), 2 west of the altar's wall (R. Yose's reading: x 41), north of the stop
+    const kidSpot = () => { const w = kidd.w; if (!w.off82) kidInit(w); return [WASH[0] + VSL_TAP_R + w.off82[0], WASH[1] + VSL_PIPE_DZ + w.off82[1]]; };
+    const pourSpot = () => [STOP[0] + VSL_TAP_R + 0.42, STOP[1] + VSL_PIPE_DZ - 0.91];
+    const waitP = () => { const q = pourSpot(); return [q[0], q[1] + 15]; };   // the rinsing priest's: 15 south of his stop, over the line of the rings (a low row on the floor)
+    const wkRects = (list) => list.map((r) => [r[0] - WK.pad, r[1] - WK.pad, r[2] + WK.pad, r[3] + WK.pad]);
+    const wkBase = (x, z) => [x - 2.0, z - 2.0, x + 2.25, z + 2.0];   // a base's body and its tap
+    const wk = { w: null, p: null, fail: false };    // the two ways, made at the start of a round and again when the altar moves (wkDrop)
+    const wkDrop = () => { wk.w = wk.p = null; wk.fail = false; };
+    const wkMake = () => {
+      try {
+        const rt = ctx.shared.rampTables, tabs = [];
+        if (rt) for (const t of [rt.marble, rt.silver]) tabs.push([t[0] - 0.6, t[1] - 0.8, t[0] + 0.6, t[1] + 0.8]);
+        const yose = !!(ctx.shared.altarYose && ctx.shared.altarYose.current === "yose");
+        const wallX = ctx.CO.xAltarW - 2 - (yose ? 2 : 0) - 0.3;            // the yesod's west face (x 43, R. Yose's reading 41), and a little before it
+        const lane = [WASH[0] - 2.0, WASH[1] - 70, WASH[0] + 2.25, WASH[1]];   // all the way the base drives north from the wash stop
+        const R = wkRects(tabs.concat([wkBase(WASH[0], WASH[1]), lane]));
+        R.push([wallX - WK.pad, -200, 400, 200]);
+        for (const c of centres) if (!(c[0] === HX && c[1] === HZ)) R.push(...wkRects([wkBase(c[0], c[1])]));
+        wk.w = wkPath(wkPlan(WAIT_W, kidSpot(), R));
+        const sp = SP && SP.tables, T2 = [];
+        if (sp && sp.cols && sp.rows && sp.size) for (const cx of sp.cols) for (const cz of sp.rows) T2.push([cx - sp.size[0] / 2, cz - sp.size[1] / 2, cx + sp.size[0] / 2, cz + sp.size[1] / 2]);
+        wk.p = wkPath(wkPlan(waitP(), pourSpot(), wkRects(T2.concat([wkBase(STOP[0], STOP[1])]))));
+      } catch (e) {
+        console.warn("[vessels] the priests' ways", e);
+        wk.w = wk.p = null;
+        wk.fail = true;
+      }
+    };
+    const kg = new Group();                          // the priests, out of the stops' layers (those show only while the water runs): in the court all the round
+    kg.name = "mechona-priests";
+    g.add(kg);
+    for (const f of [kidd.w, kidd.h, kidd.p]) if (f) kg.add(f.g);
+    const wkO = { x: 0, z: 0, yaw: 0, s: 0, mode: 0 };
+    // where one priest is at the time tau: o.mode 0 waiting, 1 walking to the stop, 2 at the stop, 3 walking back; o gets his place and the way he faces
+    const wkState = (P, tArr, tDep, tau, spot, yawStop, o) => {
+      const dur = P.len / WK.v;
+      let s = 0, mode = 0;
+      if (tau >= tArr - dur && tau < tArr) { s = (tau - (tArr - dur)) * WK.v; mode = 1; }
+      else if (tau >= tArr && tau <= tDep) { s = P.len; mode = 2; }
+      else if (tau > tDep && tau < tDep + dur) { s = P.len - (tau - tDep) * WK.v; mode = 3; }
+      wkAt(P, s, o);
+      if (mode === 3 || (mode === 0 && tau > tDep)) o.yaw += Math.PI;   // walking back, and waiting again, he has his back to the stop
+      if (mode === 1 || mode === 3) { const d = (P.len - s) / 1.0; o.yaw = wkYawLerp(o.yaw, yawStop, d >= 1 ? 0 : 1 - d); }   // the last amah: he turns to his stop's way
+      if (mode === 2) { o.x = spot[0]; o.z = spot[1]; o.yaw = yawStop; }
+      o.s = s;
+      o.mode = mode;
+      return o;
+    };
+    const POUR_HOLD = [-0.35, -0.08, -0.1];
+    const walkStep = (act, wOn) => {
+      const w = kidd.w, h = kidd.h, q = kidd.p;
+      if (!w || !q) return;
+      if (!act) { w.g.visible = q.g.visible = false; if (h) h.g.visible = false; return; }
+      if (!wk.w && !wk.fail) wkMake();
+      const tau = st.tau;
+      if (!wk.w) {   // (no way could be made: they stand from the second the base has arrived, as they did)
+        w.g.visible = tau >= TL.wash[0] - 0.05;
+        q.g.visible = tau >= TL.pour[0] - 0.05;
+        if (wOn && w.g.visible) kiddAt(tau - TL.wash[0]);
+        return;
+      }
+      // --- the washing priest (and, in R. Yose's reading, his fellow at his right)
+      const md = ctx.shared.kidReading === "ryose" ? "ryose" : "tk";
+      let o = wkState(wk.w, TL.wash[0], TL.wash[1] - 0.05, tau, kidSpot(), YW82, wkO);
+      w.g.visible = true;
+      if (o.mode === 2) {
+        w.walk = false;
+        kiddAt(tau - TL.wash[0]);
+      } else {
+        if (!w.walk) { ark_kiddush(w, 0); w.walk = true; }   // (once: it rebuilds the robe)
+        w.g.position.set(o.x, F, o.z);
+        w.g.rotation.y = o.yaw;
+        wkPose(w, o.s, o.mode === 0 ? 0 : 1);
+        if (h) {
+          h.g.visible = md === "ryose";
+          if (h.g.visible) {
+            h.g.position.set(o.x - Math.cos(o.yaw) * 0.78, F, o.z + Math.sin(o.yaw) * 0.78);
+            h.g.rotation.y = o.yaw;
+            h.lean.rotation.x = 0;
+            wkPose(h, o.s, o.mode === 0 ? 0 : 1);
+          }
+        }
+      }
+      // --- the rinsing priest: bowed over the innards at the stop, upright as he walks (the bow eases in the last amot and a fifth)
+      o = wkState(wk.p, TL.pour[0], TL.pour[1] - 0.05, tau, pourSpot(), Math.atan2(-0.42, 0.91), wkO);
+      q.g.visible = true;
+      q.g.position.set(o.x, F, o.z);
+      q.g.rotation.y = o.yaw;
+      const bow = o.mode === 2 ? 1 : o.mode === 0 ? 0 : Math.max(0, Math.min(1, 1 - (wk.p.len - o.s) / 1.2));
+      q.lean.rotation.x = 0.45 * bow;
+      wkPose(q, o.s, o.mode === 2 || o.mode === 0 ? 0 : 1 - bow, POUR_HOLD, bow);
+    };
     let sprites = null, spriteTries = 0;           // the UI's sprites of the part labels (sprite.userData.label), looked up a few times
     const findSprites = () => {
       try {
@@ -1489,12 +1670,10 @@
       const wOn = act && st.tau > TL.wash[0] - 1.5 && st.tau < TL.wash[1] + 0.6;
       if (purpose.visible !== pOn) purpose.visible = pOn;
       if (wash.visible !== wOn) wash.visible = wOn;
-      if (wOn && kidd.w) kiddAt(st.tau - TL.wash[0]);   // KIDDUSH_FOOT_213
-      // G15 (the scan of 4.2.0: the washing priest "in the wall" - mechona-frame / mechona-relief - at his stop in the seconds of the base's arrival): the layers
-      // open 1.5 s before the stop (their labels), but a figure standing in the base's way is not shown before the base stands: the base used to drive
-      // through him (his place is fixed at its stop). Each priest shows from the second the base has arrived (the water opens 0.35 s later).
-      if (kidd.w) kidd.w.g.visible = st.tau >= TL.wash[0] - 0.05;
-      if (kidd.p) kidd.p.g.visible = st.tau >= TL.pour[0] - 0.05;
+      // KIDDUSH_FOOT_213 (kiddAt, while he stands at his stop) and G15 (walkStep): the priests are in the court all the round, walk to their stops and back. The
+      // scan of 4.2.0 had found the washing priest "in the wall" (mechona-frame / mechona-relief) when the layer's 1.5 s head start showed him before the base had
+      // stopped: a priest never stands where the base still drives - he walks round the parked base and reaches his place as it stands
+      walkStep(act, wOn);
       if (!sprites && spriteTries < 40) { spriteTries++; sprites = findSprites(); }
       for (let i = 0; i < PL.length; i++) {          // (a plain loop: no allocation per frame while the base moves)
         const p = PL[i], l = partLabels[i];
@@ -1564,6 +1743,7 @@
         st.running = true;
         st.homing = false;
         st.paused = false;
+        wkDrop();   // G15: the priests' ways, made afresh (the altar's place, the tables)
       },
       // G15 (the bar of the demonstrations, 90-entry.js, shows only for an entry with pause()): pause holds the base and its water where they
       // are, resume goes on from the same second, restart begins the round again
@@ -1571,6 +1751,7 @@
       resume() { st.paused = false; },
       get paused() { return st.paused; },
       restart() {
+        wkDrop();
         st.paused = false;
         st.homing = false;
         st.running = true;
@@ -1604,6 +1785,7 @@
       },
       // seek: put the base at a moment of its round (seconds from the start; for the presentation and the pictures)
       seek(sec) {
+        wkDrop();
         st.tau = ((+sec || 0) % TL.total + TL.total) % TL.total;
         poseAt(st.tau, np);
         pose.x = np.x;
@@ -1618,6 +1800,7 @@
       get duration() { return TL.total; },
       rebuild() {   // 1.2.2: after the altar moved (40-altar.js altarPlace.set): the wash stop beside the ramp again; the demo parks first
         try { if (this.running) this.reset(); } catch (_) {}
+        wkDrop();
         WASH = [HX, washZ()];
         ROUTE = [[HX, HZ], WASH, "wash", [HX, STOP[1]], STOP, "pour", [HX, STOP[1]], [HX, HZ]];
         WP = ROUTE.filter((p) => typeof p !== "string");
@@ -1744,6 +1927,24 @@
     };
     // FOLLOW_KID_301: and the follow never writes a pose that OrbitControls' update() would change (that ends the follow, folMoved):
     // an eye nearer the zenith than minPolarAngle (and a hair) is laid back to it, round the aim, at the same distance
+    // CAM_TABLES_G15: the wash stop now stands beside the two tables west of the ramp (the base's column x 34.5: the tables x 39 .. 40.2, and in R. Yose's and R. Tam's
+    // readings and the altar's other places elsewhere along the same strip), and the close view's eye, 1.5 over the floor, stood against their sides (the second of
+    // them filled a quarter of the picture, and in R. Tam's reading the eye stood in the first). The eye is kept 1.9 amot (horizontally) from both - pushed straight away from
+    // the nearer one, continuously - the same side, a little further out. Model choice of the view.
+    const folTab = (p) => {
+      const rt = ctx.shared.rampTables;
+      if (!rt) return;
+      const R = 1.9;
+      for (let it = 0; it < 2; it++) for (const t of [rt.marble, rt.silver]) {
+        const ex = Math.max(Math.abs(p[0] - t[0]) - 0.6, 0), ez = Math.max(Math.abs(p[2] - t[1]) - 0.8, 0), d = Math.hypot(ex, ez);
+        if (d >= R) continue;
+        let ux, uz;
+        if (d > 1e-6) { ux = (p[0] < t[0] ? -1 : 1) * ex / d; uz = (p[2] < t[1] ? -1 : 1) * ez / d; }
+        else { const a = Math.hypot(p[0] - t[0], p[2] - t[1]); ux = a > 1e-6 ? (p[0] - t[0]) / a : 1; uz = a > 1e-6 ? (p[2] - t[1]) / a : 0; }
+        p[0] += ux * (R - d);
+        p[2] += uz * (R - d);
+      }
+    };
     const folKeep = (p, t) => {
       const lo = ((ctx.controls && ctx.controls.minPolarAngle) || 0) + 0.02;
       const dx = p[0] - t[0], dy = p[1] - t[1], dz = p[2] - t[2], hz = Math.hypot(dx, dz), d = Math.hypot(hz, dy);
@@ -1789,15 +1990,32 @@
     const fo = { on: false, wait: 0, cur: { tx: 0, ty: 0, tz: 0, az: 0, r: 0, h: 0, kc: 0 }, want: { tx: 0, ty: 0, tz: 0, az: 0, r: 0, h: 0, kc: 0 },
       p: [0, 0, 0], t: [0, 0, 0], set: [0, 0, 0, 0, 0, 0], last: null, el: null, downs: new Map() };
     const folCam = () => (ctx.camera && ctx.controls && ctx.controls.target ? ctx.camera : null);
+    // CAM_FOLLOW_G15 (the user, 24.11.2026: "המכונה מאבדת את המצלמה לאחר הקידוש הראשון"): the entry's guard (90-entry.js guardCamera) lifts the eye to
+    // 0.35 over the floor under the TARGET, and that floor (cam.floorY) is decided only at the end of a flight - here at the base's home, where the
+    // target stood over the base's own top (F + 3). At the washing priest the eye stands 1.5 over the floor (KIDDUSH_VIEW_K): the guard lifted it
+    // by 0.7 in the first frame, folMoved() took that for a hand on the camera, and the follow ended there - over the washing stop, the base driving
+    // on without it (4.2.0; before, the close view stood 4.2 high). Now the follow asks the entry for the floor under its own target (every 0.15 s)
+    // and keeps the eye 0.36 over it - a pose the guard leaves as it is
+    const folFlAt = { t: -1e9 };
+    const folFloor = (p) => {
+      if (typeof ctx.camFloorUnderTarget !== "function") return;
+      const now = performance.now();
+      if (Math.abs(now - folFlAt.t) > 150) { folFlAt.t = now; folFlAt.v = ctx.camFloorUnderTarget(); }
+      const need = folFlAt.v + 0.36;
+      if (isFinite(need) && p[1] < need) p[1] = need;
+    };
     const folPut = () => {                          // the camera at fo.cur, and what was set, to see whether anyone else moves it
       const cam = folCam();
       if (!cam) return;
       folPos(fo.cur, fo.p);
       fo.t[0] = fo.cur.tx; fo.t[1] = fo.cur.ty; fo.t[2] = fo.cur.tz;
       kidMix(fo.cur, fo.p, fo.t);                   // KIDDUSH_VIEW_214
+      folTab(fo.p);                                 // CAM_TABLES_G15
       folKeep(fo.p, fo.t);                          // FOLLOW_KID_301
       cam.position.set(fo.p[0], fo.p[1], fo.p[2]);
       ctx.controls.target.set(fo.t[0], fo.t[1], fo.t[2]);
+      folFloor(fo.p);                               // CAM_FOLLOW_G15
+      cam.position.y = fo.p[1];
       cam.lookAt(ctx.controls.target);              // as OrbitControls' update does: this frame is drawn already aimed
       const s = fo.set;
       s[0] = fo.p[0]; s[1] = fo.p[1]; s[2] = fo.p[2]; s[3] = fo.t[0]; s[4] = fo.t[1]; s[5] = fo.t[2];
@@ -1836,6 +2054,7 @@
         folPos(fo.cur, fo.p);
         fo.t[0] = fo.cur.tx; fo.t[1] = fo.cur.ty; fo.t[2] = fo.cur.tz;
         kidMix(fo.cur, fo.p, fo.t);                 // KIDDUSH_VIEW_214
+        folTab(fo.p);                               // CAM_TABLES_G15
         folKeep(fo.p, fo.t);                        // FOLLOW_KID_301
         const fly = ctx.ui && typeof ctx.ui.fly === "function" ? ctx.ui.fly : typeof ctx.flyTo === "function" ? ctx.flyTo : null;
         if (fly) {
@@ -1845,6 +2064,7 @@
         fo.downs.clear();
         fo.on = true;
         fo.last = null;
+        folFlAt.t = -1e9;                           // CAM_FOLLOW_G15
         return true;
       },
       stop() { fo.on = false; fo.wait = 0; kidLab(false); },
@@ -1852,6 +2072,7 @@
       snap() {
         if (!folCam()) return false;
         folListen();
+        folFlAt.t = -1e9;                           // CAM_FOLLOW_G15
         folView(st.tau, pose.x, pose.z, fo.cur);
         folPut();
         fo.on = true;
@@ -1866,6 +2087,7 @@
         const v = folView(((+tau || 0) % TL.total + TL.total) % TL.total, P.x, P.z, {});
         const p = folPos(v, [0, 0, 0]), t = [v.tx, v.ty, v.tz];
         kidMix(v, p, t);                             // KIDDUSH_VIEW_214
+        folTab(p);                                   // CAM_TABLES_G15
         folKeep(p, t);                               // FOLLOW_KID_301
         return { pos: p, target: t, kc: v.kc };
       }
@@ -1877,7 +2099,9 @@
       if (!fo.on) return;
       if (!st.running || !folCam()) { fo.on = false; kidLab(false); return; }   // the demonstration ended: the camera stays where it is
       if (fo.wait) {
-        if (now < fo.wait) return;                 // the flight is still on (the frame's own time: the flight ended in this frame's first step)
+        // CAM_FOLLOW_G15: a far flight takes up to 3.6 s (90-entry.js flyTo: 1000 + 9 per amah, 1.6 s at the least) - the follow waits for the flight itself
+        // (at most 3 s past the 1.7), else it saw the eye on its way and took that for a hand on the camera: no follow from the start
+        if (now < fo.wait || (typeof ctx.camFlying === "function" && ctx.camFlying() && now < fo.wait + 3000)) return;   // the flight is still on (the frame's own time: the flight ended in this frame's first step)
         fo.wait = 0;
         // the flight did not end in the view (a flight elsewhere took over): no follow
         const s = fo.set;
