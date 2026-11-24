@@ -145,7 +145,7 @@
     const RING_GATES = [[-78, -1], [-78, 1], [-48, -1], [30, 1], [44, 1]];   // = the loop of the gates below (DALK_X, BECH_X, WATER_X)
     const RG_W = 10, RG_D = 10;
     const ringPlugs = new Group(); ringPlugs.name = "ringPlugs"; g.add(ringPlugs);
-    const ringIn = new Group(); ringIn.name = "ringGateSteps"; ringIn.visible = false; g.add(ringIn);
+    const ringIn = new Group(); ringIn.name = "ringGateSteps"; ringIn.visible = false; ringIn.userData.homeParent = g;   // (in the scene only in that reading - 20-mount.js chelSteps)
     ctx2.shared.ringGates = { plugs: ringPlugs, steps: ringIn };
     boxHoles(g, 189.5, LV.AZ - 0.15, 140, M2.stone, (CO.azW - 2.5 + CO.azE) / 2, 0, 0, RING_GATES.map(([x, sz]) => ({ x, z: sz * (70 - RG_D / 2), w: RG_W, d: RG_D })).concat([KPIT, SALT_T, MPIT]).concat([-1, 1].map((sz) => ({ x: (KDEEP.x0 + CO.azE) / 2, z: sz * KDEEP.z, w: CO.azE - KDEEP.x0, d: KDEEP.d }))));   // the court's podium; CHEL_211: to the walls' outer faces (x -96, z ±70)
     ctx2.shared.stepsPlace = { mode: "inside", set() {} };

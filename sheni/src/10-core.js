@@ -511,12 +511,18 @@
   }
   function wall(parent, { axis = "x", length, height, thickness = 4, mat = M.stone, cx = 0, cz = 0, y = 0, openings = [], occlude = true }) {
     const shape = new Shape();
+    // WALL_NOTCH_420: a plain opening is a notch in the outline, not a hole whose bottom lies on the wall's bottom - such a hole left a face of
+    // no thickness across the opening at the wall's foot (seen from below as a sheet, and found by the walkers' rays as a floor: in Tiferet
+    // Yisrael's reading of the chel the steps go up under the court's gates)
+    const notch = openings.filter((o) => !o.gable && !o.arched && o.width > 0).sort((p, q) => (p.center || 0) - (q.center || 0));
     shape.moveTo(-length / 2, 0);
+    for (const o of notch) { const c0 = (o.center || 0) - o.width / 2, c1 = (o.center || 0) + o.width / 2; shape.lineTo(c0, 0); shape.lineTo(c0, o.height); shape.lineTo(c1, o.height); shape.lineTo(c1, 0); }
     shape.lineTo(length / 2, 0);
     shape.lineTo(length / 2, height);
     shape.lineTo(-length / 2, height);
     shape.closePath();
     for (const o of openings) {
+      if (notch.includes(o)) continue;
       const w2 = o.width / 2, hc = o.center || 0, hh = o.height;
       const p = new Path();
       if (o.gable) {

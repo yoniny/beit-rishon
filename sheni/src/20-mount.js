@@ -711,7 +711,7 @@
     // { mode: "rambam" | "around", set(m) }. Its stone and the cut round what stands - model choices.
     {
       const CR = { x0: -96, x1: 231, z0: -70, z1: 70, W: 6, n: 12 };
-      const ringG = new Group(); ringG.name = "chelStepsRing"; ringG.visible = false; g.add(ringG); ctx2.layers.chelStepsRing = ringG;
+      const ringG = new Group(); ringG.name = "chelStepsRing"; ringG.visible = false; ringG.userData.homeParent = g; ctx2.layers.chelStepsRing = ringG;   // (in the scene only while shown)
       const build = () => {
         while (ringG.children.length) { const o = ringG.children.pop(); if (o.geometry) o.geometry.dispose(); }
         const root = ctx2.root || g.parent || g;
@@ -722,7 +722,7 @@
         const cand = [], bb = new Box3();
         root.traverse((o) => {
           if (!o.isMesh || o.isSprite || !o.geometry || !visOK(o)) return;
-          for (let p = o; p; p = p.parent) if (p === ringG || p.userData.chelFlight) return;   // RING_MERGE_420: the gates' flights merge with the steps
+          for (let p = o; p; p = p.parent) if (p === ringG || p.userData.chelFlight || /demo|Demo|Ox$|[Pp]riest|[Ww]alker|[Ff]ig|crowd|Crowd/.test(p.name || "")) return;   // RING_MERGE_420: the gates' flights merge with the steps; the figures of a demonstration running now are not what stands there
           if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
           bb.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld);
           if (bb.max.y < 0.35 || bb.min.y > 6 || bb.max.x < CR.x0 - CR.W - 1 || bb.min.x > CR.x1 + CR.W + 1 || bb.max.z < CR.z0 - CR.W - 1 || bb.min.z > CR.z1 + CR.W + 1) return;
@@ -775,15 +775,20 @@
         if (geos.length) { const m = new Mesh(mergeGeometries(geos), M2.stoneSmooth); m.castShadow = m.receiveShadow = true; m.name = "chelSteps"; ringG.add(m); }
       };
       ctx2.shared.chelSteps = { mode: "rambam", set(m) {
-        this.mode = m === "around" ? "around" : "rambam";
+        const want = m === "around" ? "around" : "rambam";
+        if (want === this.mode && (want === "rambam" || ringG.parent)) return this.mode;   // (already so: not built again)
+        this.mode = want;
         const RGt = ctx2.shared.ringGates, around = m === "around";   // ONE_FLIGHT_420 (30-courts.js): one flight round the walls - the gates' own flights go
-        for (const o of ctx2.shared.ringHide || []) o.visible = !around;
-        if (RGt) { RGt.plugs.visible = !around; RGt.steps.visible = around; }
+        // (out of the scene, not only hidden: the walkers' and the figures' floors are found by rays, and a ray meets a hidden mesh too)
+        const show = (o, on) => { if (!o) return; o.userData.homeParent = o.userData.homeParent || o.parent; const P = o.userData.homeParent; o.visible = on; if (on && P && o.parent !== P) P.add(o); else if (!on && o.parent) o.parent.remove(o); };
+        for (const o of ctx2.shared.ringHide || []) show(o, !around);
+        if (RGt) { show(RGt.plugs, !around); show(RGt.steps, around); }
         const rails = (ctx2.shared.chelRails || []).slice();
         { const root = ctx2.root || g.parent || g; root.traverse((o) => { if (o.userData && o.userData.chelFlight) o.traverse((q) => { if (q.isMesh && q.material === M2.bronze && !rails.includes(q)) rails.push(q); }); }); }   // the chambers' flights' rails too
         for (const r of rails) r.visible = true;
-        if (this.mode === "around") { ringG.visible = false; try { build(); } catch (e) { console.warn("[chel] steps:", e && e.message); } ringG.visible = true; for (const r of rails) r.visible = false; }
-        else ringG.visible = false;
+        if (this.mode === "around") { show(ringG, false); try { build(); } catch (e) { console.warn("[chel] steps:", e && e.message); } show(ringG, true); for (const r of rails) r.visible = false; }
+        else show(ringG, false);
+        if (typeof ctx2.shared.solidsChanged === "function") ctx2.shared.solidsChanged();
         return this.mode;
       } };
     }

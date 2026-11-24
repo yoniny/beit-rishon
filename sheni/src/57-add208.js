@@ -3085,14 +3085,22 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
           [[[0, 333.5], [g + 0.8, 98]], T.take + 0.2, T.ezn0, "hide"],
           [[[g + 0.8, 98], [g + 0.8, 88], [g + 0.8, 83], [g + 1.5, 79.9]], T.ezn0, T.ezn0 + 1.5, "floor", 0],
           // the ramp - his lane the inner one (z 77.9 on the lower run, 76.3 on the upper), the ox's the outer (79.0, 75.2): 1.1 apart; round the turn (centre xb, z 77.1) at radius 0.8
-          [[[g + 1.5, 79.9], [g + 3.8, 77.9], [g + 8, 77.9], [xb - 3, 77.9], [xb, 77.9], [xb + 0.7, 77.6], [xb + 0.8, 77.1], [xb + 0.7, 76.6], [xb, 76.3], [xb - 10, 76.3], [g + 5, 76.3], [g + 1.8, 75.5], [g + 1.3, 71.5]], T.ezn0 + 1.5, T.ezn1, "floor", Math.PI],
-          [[[g + 1.3, 71.5], [g + 1.3, 69.5], [g + 1.3, 64]], T.ezn1, T.nik, "floor", Math.PI],
+          tyt() ? [[[g + 1.5, 79.9], [g + 1.3, 77], [g + 1.3, 71.5]], T.ezn0 + 1.5, T.ezn1, "floor", Math.PI]   // STEPS_TYT_420: up the twelve steps
+          : [[[g + 1.5, 79.9], [g + 3.8, 77.9], [g + 8, 77.9], [xb - 3, 77.9], [xb, 77.9], [xb + 0.7, 77.6], [xb + 0.8, 77.1], [xb + 0.7, 76.6], [xb, 76.3], [xb - 10, 76.3], [g + 5, 76.3], [g + 1.8, 75.5], [g + 1.3, 71.5]], T.ezn0 + 1.5, T.ezn1, "floor", Math.PI],
+          tyt() ? [[[g + 1.3, 71.5], [g + 1.3, 64], [g + 1.3, 59.2]], T.ezn1, T.nik, "floor", Math.PI]   // and the twenty inside the gate, to the court's floor (z 60)
+          : [[[g + 1.3, 71.5], [g + 1.3, 69.5], [g + 1.3, 64]], T.ezn1, T.nik, "floor", Math.PI],
           // the south lane (z 61.5) between the priests' court's south wall and the ulam's south side (its end the Parvah, the washers and the salt - the
           // rooms of the east, z 55-65 from x 49.5), east to x 38, then north along x 38 - west of the ramp and of its two tables - to the corner
-          [[[g + 1.3, 64], [g + 9.3, 61.5], [30, 61.5], [38, 57.5], [38, 52], A(38, 16.2), A(38.3, 15.0 + WZ)], T.nik, T.corner, "floor", 2.62],
+          [(tyt() ? [[g + 1.3, 59.2], [38, 57.5]] : [[g + 1.3, 64], [g + 9.3, 61.5], [30, 61.5], [38, 57.5]]).concat([[38, 52], A(38, 16.2), A(38.3, 15.0 + WZ)]), T.nik, T.corner, "floor", 2.62],
           [[A(38.3, 15.0 + WZ), A(37.8, 17), A(38, 39.5), [38, 57.5], [34, 61.5]], T.bow1 + 0.2, T.end, "floor"]
         ]; };
       const hCache = new Map();
+      // STEPS_TYT_420 (the user: "את הדגמת הביכורים בשיטת התפאי - שיעלו על המדרגות, מה הבעיה?"): in Tiferet Yisrael's reading of the chel's twelve
+      // steps (20-mount.js chelSteps "around") there is no beasts' ramp: the bringer and the ox go straight up the steps round the courts and the
+      // twenty inside the gate. The ways, the floor's heights and the ox's tables are made again when the reading changes
+      const tyt = () => !!(SH.chelSteps && SH.chelSteps.mode === "around");
+      let wayKey = null;
+      const wayCheck = () => { const k = tyt() ? "tyt" : "rambam"; if (k !== wayKey) { wayKey = k; hCache.clear(); OXC._p = null; OXC.tab = null; } };
       // OX_K: the ray from 21 amot at most (over every floor of the way: 16 in the priests' court), not from 30 - from 30 the walkers in the
       // Nikanor gate stood on the gate's roof (23.6)
       // BIKKURIM_N1: a flat slab lying on the floor (the cover at the altar's south-west corner: 8 cm, over a black frame of 3 cm) is not a floor to walk on - the
@@ -3103,7 +3111,7 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
       // the altar, to beside the rings (40-altar.js: the label at x 52, z -27); peace offerings are slaughtered anywhere in the court - the spot
       // a model choice
       const OXW = () => { const g = BKW.geo().gx; return [[[g, 66], [g + 4, 59.5], [g + 40, 57], [Math.max(24, g + 20), 55.5]], T.nik - 0.6, T.nik + 3.8, "floor"]; };
-      const prime = () => { const was = BG.visible; BG.visible = false; for (const [P, , , kind] of SW().concat([OXW()])) if (kind === "floor") { const L = plen2(P); for (let d = 0; d <= L; d += 0.5) { const q = at2(P, d / Math.max(L, 1e-3)); hAt(q[0], q[1], 30); } } BG.visible = was; };
+      const prime = () => { wayCheck(); const was = BG.visible; BG.visible = false; for (const [P, , , kind] of SW().concat([OXW()])) if (kind === "floor") { const L = plen2(P); for (let d = 0; d <= L; d += 0.5) { const q = at2(P, d / Math.max(L, 1e-3)); hAt(q[0], q[1], 30); } } BG.visible = was; };
       // ===== OX_K (fix-k, 23.11.2026 - the user, via the coordinator: "שור עם ראש מורם" - "שילך עם ראש ישר או מעט מושפל"; "קפיצות של השור
       // בעזרה" - "הליכה רציפה במסלול חלק, בלי קפיצה בין פריים לפריים ובלי חדירה לקירות או לאנשים"): THE OX, BUILT AGAIN, AND ITS WAY.
       // Bikkurim 3:3 (50:28): "והשור הולך לפניהם, וקרניו מצופות זהב, ועטרת של זית בראשו". Its body one soft shape (the back's line and the
@@ -3211,6 +3219,7 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
       const OXC = { t0: 9.2, get pts() {
         if (this._p) return this._p;
         const { gx: g, xb } = BKW.geo(), xe = Math.max(24, g + 20);
+        if (tyt()) return (this._p = [[g - 0.6, 98], [g - 0.6, 88], [g - 0.5, 83], [g - 0.3, 78], [g - 0.2, 70], [g, 62], [g + 4, 58.5], [g + 14, 57], [(g + 14 + xe) / 2, 57], [xe, 55.5]]);   // STEPS_TYT_420
         return (this._p = [[g - 0.6, 98], [g - 0.6, 88], [g - 0.5, 83], [g + 0.2, 80.6], [g + 3, 79.1], [g + 8, 79], [xb - 10, 79], [xb - 3, 78.9], [xb, 79], [xb + 1.3, 78.4], [xb + 1.9, 77.1], [xb + 1.3, 75.8], [xb, 75.2], [xb - 10, 75.2], [g + 5, 75.2], [g + 1.4, 74.6], [g + 0.4, 73], [g - 0.2, 70], [g, 66], [g + 4, 59.5], [g + 14, 57], [(g + 14 + xe) / 2, 57], [xe, 55.5]]);
       } };
       const oxGround = (x, z) => { const y = fnc2(SH.floorY) ? SH.floorY(x, 20.5, z) : -Infinity; return isFinite(y) ? y : hAt(x, z, 21); };
@@ -3272,6 +3281,18 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
         for (let i = n - 1; i >= 0; i--) V[i] = Math.min(V[i], Math.sqrt(V[i + 1] * V[i + 1] + A2));
         for (let i = 0; i <= n; i++) V[i] = Math.max(V[i], 0.25);
         const tA = (OXA.z0 - OXA.zh) / OXA.v, Tm = new Float64Array(n + 1); Tm[0] = Math.max(tA + 0.08, OXC.t0 || 0); for (let i = 1; i <= n; i++) Tm[i] = Tm[i - 1] + ds * 2 / (V[i] + V[i - 1]);
+        // STEPS_TYT_420 (the user: "השור עולה איתו?"): in Tiferet Yisrael's reading the way has no ramp and is short - the ox would be in the
+        // court long before the bringer. It keeps with him: at the foot of the twelve steps a moment before him, up the steps and through the
+        // gate beside him (the time between stretched to his), into the court a little before him
+        if (tyt()) {
+          let iA = -1, iB = -1; for (let i = 0; i <= n; i++) { if (iA < 0 && Z[i] < 80) iA = i; if (iB < 0 && Z[i] < 60) iB = i; }
+          if (iA > 0 && iB > iA) {
+            const d0 = (T.ezn0 + 1.0) - Tm[iA]; for (let i = 0; i <= n; i++) Tm[i] += d0;
+            const k = ((T.nik - 0.6) - Tm[iA]) / (Tm[iB] - Tm[iA]), tB = Tm[iB];
+            for (let i = iA + 1; i <= iB; i++) { Tm[i] = Tm[iA] + (Tm[i] - Tm[iA]) * k; V[i] /= k; }
+            const d1 = Tm[iB] - tB; for (let i = iB + 1; i <= n; i++) Tm[i] += d1;
+          }
+        }
         // the step's phase through the whole demonstration (dφ/dt - the pace over the stride, at most FMAX) and its breadth (eased)
         const PH = [], AMP = [], STRd = [], dt = 1 / 120;
         let ph = 0, amp = 1;   // (it is walking already at the start)
@@ -3818,7 +3839,8 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
         const SP = [];   // the stream down the slope
         for (let k = 0; k <= 14; k++) { const x = WALL_E + 0.6 + k * 5, z = EXZ + Math.sin(k * 0.7) * 1.6, y = k ? groundAt(x, z, yX + 6, yX - k) : yX - 0.35; SP.push([x, y + 0.07, z]); }
         const K1 = [[sx, F0 - 0.25, sz], [sx, F0 - 2.6, sz]];   // the shaft under the shitin
-        const K2 = [[sx, F0 - 2.6, sz], [sx + 1.5, F0 - 3.2, 66], [sx + 3, -2.6, 76], [150, -3.4, 140], [300, -4.6, 262], [WALL_E - 11, Math.max(-6, yX - 1), EXZ], [WALL_E - 1.0, yX - 0.05, EXZ]];   // KIDRON_VIEW_H: ends inside the wall (it stood out of its face, over the opening - a "pipe" on the wall)
+        const K2 = [[sx, F0 - 2.6, sz], [sx + 1.5, F0 - 3.2, 57], [sx + 2, -2.6, 58.5], [sx + 3, -2.6, 76],   // AQ_BURIED_420 (the user: "זה לא מוסתר!"): down INSIDE the court (z 57..58.5), then out under the chel's floor - until now it went down slanting through the Water Gate's passage (z 66..76), seen where Tiferet Yisrael's reading opens it for the steps inside the gate
+           [150, -3.4, 140], [300, -4.6, 262], [WALL_E - 11, Math.max(-6, yX - 1), EXZ], [WALL_E - 1.0, yX - 0.05, EXZ]];   // KIDRON_VIEW_H: ends inside the wall (it stood out of its face, over the opening - a "pipe" on the wall)
         line(K1, 0.5, 0.5, capM, XRK);
         { const ring = new Mesh(new TorusGeometry(0.42, 0.07, 6, 18), stoneM); ring.rotation.x = Math.PI / 2; ring.position.set(sx, F0 - 0.08, sz); ring.userData.noPick = true; AQ.add(ring); ghost(ring, XRK); }   // MOUTH_N12: the amah's mouth under the shitin, a ring seen through the floor
         nK1 = XRK.length;   // the first ghosts (the shaft and the ring) are the mouth's own; the rest of the way is the Kidron card's
