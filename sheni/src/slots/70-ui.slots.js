@@ -1625,7 +1625,7 @@
           // BEITEVEN_VIEW_G5 (the user, 24.11.2026: "לשכת בית האבן - מבט לא תקין"): the card's view aimed at the court's floor (y 17), but in the
           // Rashi/Rambam reading the chamber is an upper storey on the three chambers' roof (y 30..40); it now aims at the chamber itself, by its
           // live height (ctx.shared.beitEvenUpper / beitEvenOut, 57-add208.js), the same way as the place's own view
-          fly: (k) => { const U = ctx.shared.beitEvenUpper, O = ctx.shared.beitEvenOut, c = k === "o1" ? (O ? [[56, O.y + 13, -121], [86, O.y + 4.5, -96]] : [[43.5, 15.8, -121.7], [78.4, 15.2, -87.9]]) : (U ? [[64, U.y + 17, -39], [86, U.y + 4.5, -62.5]] : [[64, 47, -39], [86, 34, -62.5]]); if (c && c[0] && c[1]) fly(c[0], c[1]); }
+          fly: (k) => { const U = ctx.shared.beitEvenUpper, O = ctx.shared.beitEvenOut, c = k === "o1" ? (O ? [[62, O.y + 10, -80], [86, O.y + 4.5, -96]] : [[43.5, 15.8, -121.7], [78.4, 15.2, -87.9]]) : (U ? [[64, U.y + 17, -39], [86, U.y + 4.5, -62.5]] : [[64, 47, -39], [86, 34, -62.5]]); if (c && c[0] && c[1]) fly(c[0], c[1]); }
         });
         opRow({   // SALT_144_D (fix-d, 22.11.2026 - the user's decision 144 א): לשכת המלח - ctx.shared.saltChamber (30-courts.js)
           id: "sh93", short: "לשכת המלח — חדר או מחילה", cardFly: true,
@@ -2182,8 +2182,8 @@
           onPick: (k) => { const B = ctx.shared.breadShape; if (B && typeof B.set === "function") B.set(k === "o1" ? "box" : "boat"); },
           // SHOWBREAD_VIEW_G5 (the user, 24.11.2026: "מבט לא נכון לחם הפנים - שתי השיטות"): the camera stood a few amot from the table's east end, low,
           // the table cut by the picture's edge; now it follows the table's LIVE place (it moves in Solomon's vessels and turns in R. Elazar b. R.
-          // Shimon's reading): 9 amot from its long side (south of it; east of it when it is turned), a little above its top, both stacks in the frame
-          fly: (k) => { const F = (ctx.shared.flyPoints || {}).shulchan, D = ctx.shared.tableDir; if (!F || !F.target) return; const t = F.target, ns = !!(D && D.current === "ns"); fly(ns ? [t[0] + 9, t[1] + 2.4, t[2]] : [t[0], t[1] + 2.4, t[2] + 9], [t[0], t[1] + 0.3, t[2]]); }
+          // Shimon's reading): 4 amot from its long side (south of it; east of it when it is turned) and 4 above its top, looking down at both stacks, whose tops show the loaf's shape
+          fly: (k) => { const F = (ctx.shared.flyPoints || {}).shulchan, D = ctx.shared.tableDir; if (!F || !F.target) return; const t = F.target, ns = !!(D && D.current === "ns"); fly(ns ? [t[0] + 4.2, t[1] + 4.2, t[2]] : [t[0], t[1] + 4.2, t[2] + 4.2], [t[0], t[1] + 0.8, t[2]]); }
         });
         opRow({
           id: "sh47", short: "הפרוכות ודרך הכהן הגדול", cardFly: true,
