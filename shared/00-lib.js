@@ -6,10 +6,11 @@ var OtzariaPlugin = (() => {
   // demonstration runs - the presentation and everything else keep the real time.
   var tm_clock = (() => {
     const P = window.performance;
-    let V0 = 0, R0 = 0, r = 1;
+    let V0 = 0, R0 = 0, r = 1, J = 0;
     return { now: () => V0 + (P.now() - R0) * r, get rate() { return r; },
       setRate(k) { const R = P.now(); V0 = V0 + (R - R0) * r; R0 = R; r = k; },
-      jump(ms) { V0 += ms; } };
+      jump(ms) { V0 += ms; J += ms; },
+      get jumped() { return J; } };   // G15: the sum of the jumps so far - a demonstration that keeps its own time by steps (the laver's base) reads it to follow "קדימה" / "אחורה"
   })();
   var performance = new Proxy(window.performance, { get(t, k) { if (k === "now") return tm_clock.now; const v = t[k]; return typeof v === "function" ? v.bind(t) : v; } });
   var __defProp = Object.defineProperty;
