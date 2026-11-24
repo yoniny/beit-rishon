@@ -938,7 +938,7 @@
       const sleepers = new Group(), piles = [];
       group.add(sleepers);
       {
-        const body = new CapsuleGeometry(0.42, 2.0, 4, 10).rotateX(HP), bodyS = new CapsuleGeometry(0.4, 0.75, 4, 10).rotateX(HP);
+        const body = new CapsuleGeometry(0.42, 2.0, 4, 10).rotateX(HP), bodyS = new CapsuleGeometry(0.4, 0.95, 4, 10).rotateX(HP);
         const head = new SphereGeometry(0.2, 10, 8), capG = new SphereGeometry(0.21, 10, 6, 0, Math.PI * 2, 0, HP);
         // SLEEPERS_N3 (fix-n3, 24.11.2026 - the user: "לא רואים כהנים ישנים על הרובדים"): the four elders of the house of the father - Middot 1:8 "וזקני
         // בית אב ישנים שם" (on the rovdin) - lie where the chosen reading of "רובדין של אבן" puts them (30-courts.js ROVDIN_A2, SH.rovdin.mode): the Rosh's, the
@@ -955,7 +955,7 @@
           b.scale.set(1, 0.62, 1);
           b.position.y = 0.26;
           s.add(b);
-          const hz = compact ? 0.95 : 1.45;
+          const hz = compact ? 1.05 : 1.45;
           const h = new Mesh(head, MAT.skin);
           h.position.set(0, 0.32, hz);
           s.add(h);
