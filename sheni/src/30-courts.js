@@ -225,7 +225,13 @@
     // "שבדרום ראשונה לצד המערב שער הדלק, שניה לה שער הקרבן, שלישית לה שער המים". Until now -78, -48, -18, thirty amot apart.
     const DALK_X = -78, BECH_X = 30, WATER_X = 44;
     ctx2.shared.southGates = { dalk: DALK_X, bech: BECH_X, water: WATER_X };
-    const chelFlight = (parent, gx, s, dx, o = {}) => {
+    // RING_MERGE_420 (the user: "למה לא לאחד, את המעלות לשערים עם המעלות שסביב החומה"): what a gate's flight builds in the chel is tagged
+    // (userData.chelFlight) - the steps round the courts (20-mount.js CHEL_RING_420) run on under it instead of being cut round it
+    const tagNew = (parent, n0) => { for (let i = n0; i < parent.children.length; i++) parent.children[i].traverse((o) => { o.userData.chelFlight = true; }); };
+    const chelFlight = (parent, gx, s, dx, o = {}) => { const n0 = parent.children.length; chelFlight0(parent, gx, s, dx, o); tagNew(parent, n0); if (parent !== g) tagNew(g, gN0); };
+    let gN0 = 0;
+    const chelFlight0 = (parent, gx, s, dx, o = {}) => {
+      gN0 = g.children.length;
       const wL = o.landW || 12, dp = o.depth || 4, top = o.top || 13.5, zf = o.zFace || 70, n = Math.round(top / 0.5);
       const za = zf * s, zb = (zf + dp) * s, z0 = Math.min(za, zb), z1 = Math.max(za, zb), zc = (z0 + z1) / 2;
       const rw = o.rampW || 0;   // RAMPS_N4: the landing runs on under the ramp's strip too (outside the steps)
@@ -248,6 +254,7 @@
     // ramp is gone - 54 amot long, it ran before the landing of the Nitzotz gate, out through the soreg at the north-west corner, and the
     // night's watchmen of the morning's service stood in it (55-tamid.js). Only the gate of the firstborn's (south) stays.
     const rampG = new Group(); rampG.name = "animalRamps"; g.add(rampG); ctx2.layers.animalRamps = rampG;
+    rampG.userData.chelFlight = true;   // RING_MERGE_420
     const RAMP_W = 3, RAMP_SLOPE = 4;
     const beastRamp = (gx, s, dx, wL, top, zFace, dp) => {
       const Lr = top * RAMP_SLOPE, xa = gx + dx * wL / 2, z0 = zFace * s + (s > 0 ? dp : -dp);   // the strip's inner edge: the stairs' outer edge
@@ -1330,16 +1337,17 @@
     platRail(g7, -54, -42, -74, -70, 13.5, ["e"]);
     platRail(g13r, -54, -42, -74, -70, 13.5, ["e"]);
     for (const grp of [g13, g13r]) {
-      H2.box(grp, 7, 13.5, 4, M2.stoneSmooth, -87.5, 0, 72);
+      H2.box(grp, 7, 13.5, 4, M2.stoneSmooth, -87.5, 0, 72).userData.chelFlight = true;
       platRail(grp, -91, -84, 70, 74, 13.5, ["s", "w"]);
       for (const z of SMALL_Z) {
-        const sg = Math.sign(z), wt = WEST_T.get(grp);   // WEST2_D: the TYT's west gates' landings and flights
+        const sg = Math.sign(z), wt = WEST_T.get(grp), wN0 = wt.children.length;   // WEST2_D: the TYT's west gates' landings and flights
         H2.box(wt, 4, 13.5, 6, M2.stoneSmooth, -98, 0, z);
         platRail(wt, -100, -96, z - 3, z + 3, 13.5, ["w", sg > 0 ? "n" : "s"]);
         stairsR(wt, { width: 4, totalRise: 13.5, steps: 27, dir: sg > 0 ? "N" : "S", x: -98, y: 0, z: z + sg * 16.5, tread: 0.5 });   // CHEL_STEPS_420: steps again
+        tagNew(wt, wN0);
       }
     }
-    H2.box(g13, 8.5, 13.5, 4, M2.stoneSmooth, -37.75, 0, -72);
+    H2.box(g13, 8.5, 13.5, 4, M2.stoneSmooth, -37.75, 0, -72).userData.chelFlight = true;
     platRail(g13, -42, -33.5, -74, -70, 13.5, ["n", "e"]);
     chelFlight(g13r, SHIR_R_X, -1, 1, { landW: 6 });
     for (const [grp, nx] of [[g13, NASHIM_X], [g13r, SHIR_R_X]]) {

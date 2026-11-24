@@ -722,7 +722,7 @@
         const cand = [], bb = new Box3();
         root.traverse((o) => {
           if (!o.isMesh || o.isSprite || !o.geometry || !visOK(o)) return;
-          for (let p = o; p; p = p.parent) if (p === ringG) return;
+          for (let p = o; p; p = p.parent) if (p === ringG || p.userData.chelFlight) return;   // RING_MERGE_420: the gates' flights merge with the steps
           if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
           bb.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld);
           if (bb.max.y < 0.35 || bb.min.y > 6 || bb.max.x < CR.x0 - CR.W - 1 || bb.min.x > CR.x1 + CR.W + 1 || bb.max.z < CR.z0 - CR.W - 1 || bb.min.z > CR.z1 + CR.W + 1) return;
@@ -759,7 +759,7 @@
             if ((j - i) * C < MIN) { i = j; continue; }
             const b0 = a0 + i * C, b1 = a0 + j * C;
             for (let k = 1; k <= CR.n; k++) {   // layer k: y (k-1)/2..k/2, from the wall out to W - (k-1)/2
-              const w = CR.W - (k - 1) * 0.5, y0 = (k - 1) * 0.5;
+              const w = CR.W - (k - 1) * 0.5 + 0.03, y0 = (k - 1) * 0.5 - 0.02;   // RING_MERGE_420: a hair off the flights' faces (no shared planes)
               const bg = new BoxGeometry(ax === "x" ? b1 - b0 : w, 0.5, ax === "x" ? w : b1 - b0);
               H2.uvWorldBox(bg, ax === "x" ? b1 - b0 : w, 0.5, ax === "x" ? w : b1 - b0);
               bg.translate(ax === "x" ? (b0 + b1) / 2 : fx + sg * w / 2, y0 + 0.25, ax === "x" ? fx + sg * w / 2 : (b0 + b1) / 2);
