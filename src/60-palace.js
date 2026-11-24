@@ -1454,7 +1454,7 @@
     const STEPS_N = 20, RISE_N = LV.HAR - Y, NW = 16, LIP = 0.06;   // 20 steps x 0.5 = 10
     H.box(g, NW, 20, TZ0 - NZ, M.stone, X, -30, (TZ0 + NZ) / 2);                       // causeway y -30..-10
     // ASCENT2_D (fix-d, 22.11.2026 - the user's decision 142 א): TWO READINGS of the ascent, the row "העלייה מבית המלך אל בית ה׳"
-    // (ctx.shared.palaceAscent.set("stairs" | "almug")). "stairs" (the default, as until now) - Rashi on II Chr 9:11 (book 3662 line 335)
+    // (ctx.shared.palaceAscent.set("stairs" | "almug")). "stairs" (the Rashi reading; was the default until 4.1.0, the almug became the default in 4.2.0 at the user's request - the Malbim on I Kings 10:5 (3394 line 601) "ועולתו הוא המעלה שעשה מעצי אלמוגים שהיה עולה בה מביתו לבית ה'") - Rashi on II Chr 9:11 (book 3662 line 335)
     // "מסלות. מדרגות; ובמלכים (מלכים א י:יב) כתיב ״מסעד״, כדרך שעושין לעולין בדרך מעלות ומדרגות", and 9:4 (3662 line 328) "מסלות עליותיו אשר יעלה
     // עליהם מביתו לבית ה'": the stone stair and the landing. "almug" - the Ralbag on I Kings 10:12 (3645 line 443) "שבעליה אשר יעלה בה בית
     // ה' מבית המלך עשה כדמות מעקה מעצי האלמוגים שיסמך האדם בהם במסלתו בזאת העליה... כי לא היו בהם מעלות", the Malbim on 10:11 (3394
@@ -1462,7 +1462,7 @@
     // sloped ascent with no steps, all of almug wood, with a railing on both sides, from the palace's terrace to a short landing at the
     // gate. The almug's colour (a reddish wood), the slope and the railing - model choices.
     const stairsG = new Group(), almugG = new Group();
-    stairsG.name = "ascentStairs"; almugG.name = "ascentAlmug"; almugG.visible = false;
+    stairsG.name = "ascentStairs"; almugG.name = "ascentAlmug"; stairsG.visible = false;   // the default is the almug reading (the Malbim on I Kings 10:5)
     g.add(stairsG, almugG);
     H.stairs(stairsG, { width: NW, totalRise: RISE_N, steps: STEPS_N, dir: "N", x: X, y: Y, z: TZ0, tread: 0.5 }); // z 352.5 -> 342.5
     const landZ0 = NZ, landZ1 = TZ0 - STEPS_N * 0.5;   // 335..342.5
@@ -1505,7 +1505,7 @@
     }
     ctx.layers.ascentStairs = stairsG; ctx.layers.ascentAlmug = almugG;
     ctx.shared.palaceAscent = {
-      current: "stairs", keys: ["stairs", "almug"],
+      current: "almug", keys: ["almug", "stairs"],
       set(k) {
         this.current = k === "almug" ? "almug" : "stairs";
         stairsG.visible = this.current === "stairs";
@@ -3528,7 +3528,7 @@
     // (I Kings 10:5 with II Chr 9:4, II Kings 11:19, Jer 26:10, Jer 22:1, I Kings 8:1); the 20 amot and the 10-amah drop are model choices.
     // 1.0.1-L: II Kings 11:19 spelled as the library prints it ("וירידו... ויבואו"; it read "ויורידו... ויבאו"); L.33: the stair now
     // starts at the north gate of the king's own court (Rashi on 10:5)
-    ctx.shared.palaceBasis = "מקום הארמון: מקום בית שלמה אינו נמסר בפסוקים, אך מן הכתובים עולה **שבית המלך עמד למטה מבית ה׳ ועלו ממנו אל הבית**: ״ועלתו אשר יעלה בית ה׳״ (מלכים א י, ה; ובמקבילה בדברי הימים ב ט, ד: ״ועליתו״ — העלייה), ״וירידו את המלך מבית ה׳ ויבואו דרך שער הרצים בית המלך״ (מלכים ב יא, יט), ״ויעלו מבית המלך בית ה׳״ (ירמיה כו, י), ״רד בית מלך יהודה״ (ירמיה כב, א). והעיר, עיר דוד, שכנה מדרום למקדש ולמטה ממנו: את הארון העלו ״מעיר דוד היא ציון״ אל הבית (מלכים א ח, א).\nבמודל: הארמון צמוד לחצר הגדולה של המקדש מדרומה, על מדרגה נמוכה ממנה, ומעלות עולות מן השער הצפוני של חצר בית המלך אל השער הדרומי של הר הבית — ״דרך מבוא שהכין מביתו לבית המקדש, שהיה עולה בו לבית ה׳״ (רש״י מלכים א י, ה). המרחק המדויק (20 אמה בין החומות) והפרש הגובה (10 אמות, 20 מעלות) — בחירת מודל.";
+    ctx.shared.palaceBasis = "מקום הארמון: מקום בית שלמה אינו נמסר בפסוקים, אך מן הכתובים עולה **שבית המלך עמד למטה מבית ה׳ ועלו ממנו אל הבית**: ״ועלתו אשר יעלה בית ה׳״ (מלכים א י, ה; ובמקבילה בדברי הימים ב ט, ד: ״ועליתו״ — העלייה), ״וירידו את המלך מבית ה׳ ויבואו דרך שער הרצים בית המלך״ (מלכים ב יא, יט), ״ויעלו מבית המלך בית ה׳״ (ירמיה כו, י), ״רד בית מלך יהודה״ (ירמיה כב, א). והעיר, עיר דוד, שכנה מדרום למקדש ולמטה ממנו: את הארון העלו ״מעיר דוד היא ציון״ אל הבית (מלכים א ח, א).\nבמודל: הארמון צמוד לחצר הגדולה של המקדש מדרומה, על מדרגה נמוכה ממנה, ועלייה משופעת מעצי אלמוגים עולה מן השער הצפוני של חצר בית המלך אל השער הדרומי של הר הבית — ״ועולתו הוא המעלה שעשה מעצי אלמוגים שהיה עולה בה מביתו לבית ה׳״ (מלבי״ם מלכים א י, ה); ולפי רש״י (שם) — ״דרך מבוא שהכין מביתו לבית המקדש״, ובמודל גם אפשרות של עשרים מעלות אבן (בכרטיס ״העלייה מבית המלך״). המרחק המדויק (20 אמה בין החומות) והפרש הגובה (10 אמות) — בחירת מודל.";
 
     // fly points (1.0.1-K): every interior one is a camera INSIDE the closed building with a clear line to its target
     // inside אולם הכסא, from its south door, a little higher, framing the whole throne (1.0.1-L, L.57: the old target now lies inside the
