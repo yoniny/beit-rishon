@@ -12,13 +12,19 @@
   S.ray = () => { if (!E.cam.ray) E.floorY({ x: 0, y: 0, z: 0 }); return E.cam.ray; };
 
   // ---- the scene's visible geometry: a hash per mesh (matrix, count, material), a map id -> hash, and the sums
-  S.snap = () => {
+  // Background motion that runs by itself, whatever the demonstration does (flames and their sprites, the way to the immersion house, the altar, the courts, the
+  // curtains' sway, the incense cloud and the altar's smoke puffs): `snap({ still: true })` leaves it out, so that "the scene stands still while paused" looks only
+  // at what the demonstration moves.
+  const BG_NAME = /^(tevilaWay|courts|altar|parochet|tm-kk-cloud)/i;
+  const isBg = (o) => { if (o.isSprite || (o.isInstancedMesh && o.geometry && o.geometry.type === 'IcosahedronGeometry')) return true; for (let p = o; p; p = p.parent) if (p.name && BG_NAME.test(p.name)) return true; return false; };
+  S.snap = (opt) => {
     scene.updateMatrixWorld(true);
-    const ids = new Map(), names = new Map();
+    const ids = new Map(), names = new Map(), still = !!(opt && opt.still);
     let n = 0, tot = 0;
     scene.traverse((o) => {
       if (!(o.isMesh || o.isLine || o.isPoints || o.isSprite)) return;
       if (!vis(o)) return;
+      if (still && isBg(o)) return;
       const m = Array.isArray(o.material) ? o.material[0] : o.material;
       if (m && m.visible === false) return;
       let h = 2166136261;
@@ -239,9 +245,15 @@
     };
     walk(scene, 0);
     const has = (o) => { for (let p = o; p; p = p.parent) if (T0.figs.has(p.id)) return true; return false; };
+    // The laver and the laver-machine are tall moving groups of human size, but they are not people: the group that holds the laver's parts (the unnamed bowl group
+    // and the group that lifts, swings and lowers it together: the parent and the grandparent of a mesh named kiyor.../mechona...) and the named machine groups, with all
+    // that is under them, are left out - so the laver is not reported "in the air" or "under the floor". A priest standing at the laver is another group and is still checked.
+    const notFig = new Set();
+    scene.traverse((o) => { if (o.name && /^(kiyor|mechona)/i.test(o.name)) { notFig.add(o.id); if (o.parent && o.parent !== scene) { notFig.add(o.parent.id); if (o.parent.parent && o.parent.parent !== scene) notFig.add(o.parent.parent.id); } } });
+    const inLaver = (o) => { for (let p = o; p; p = p.parent) if (notFig.has(p.id)) return true; return false; };
     movers.sort((a, b) => a[1] - b[1]);
     for (const [o] of movers) {
-      if (has(o) || T0.figs.size > 60) continue;
+      if (has(o) || T0.figs.size > 60 || inLaver(o)) continue;
       const bx = boxOf(o); if (!bx || bx.meshes < 3) continue;
       const sz = bx.b.getSize(new V3()), named = FIGRE.test(o.name || '');
       if ((sz.y >= 2.2 && sz.y <= 6.5 && Math.max(sz.x, sz.z) <= 4.6) || (named && sz.y >= 1.5 && sz.y <= 8 && Math.max(sz.x, sz.z) <= 6))
@@ -327,7 +339,7 @@
     const bp = btn(/השהה|המשך/);
     if (bp) {
       bp.click(); await sleep(60); const paused = c.shared.demoPaused(); chk('pause', paused, 'demoPaused() אחרי לחיצה על השהה: ' + paused);
-      window.__step(100); const s0 = S.snap(); await tick(3); const s1 = S.snap(); const cm = S.cmp(s0, s1); chk('paused-still', cm.same, 'בזמן השהיה הסצנה השתנתה: +' + cm.added + ' −' + cm.removed + ' ~' + cm.changed + ' ' + cm.ex.join(','));
+      window.__step(100); const s0 = S.snap({ still: true }); await tick(3); const s1 = S.snap({ still: true }); const cm = S.cmp(s0, s1); chk('paused-still', cm.same, 'בזמן השהיה הסצנה השתנתה: +' + cm.added + ' −' + cm.removed + ' ~' + cm.changed + ' ' + cm.ex.join(','));
       await sleep(350); const bp2 = btn(/השהה|המשך/); chk('pause-label', bp2 && /המשך/.test(bp2.textContent), 'תווית הכפתור בהשהיה: ' + (bp2 && bp2.textContent));
       if (bp2) { bp2.click(); await sleep(60); const p2 = c.shared.demoPaused(); chk('resume', !p2 && running().length > 0, 'אחרי המשך: demoPaused=' + p2 + ', רצות=' + running().join(',')); }
       const s2 = S.snap(); await tick(3); const s3 = S.snap(); const cm2 = S.cmp(s2, s3); chk('resumed-moves', !cm2.same, 'אחרי המשך הסצנה לא זזה');
