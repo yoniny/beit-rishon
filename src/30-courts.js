@@ -757,13 +757,9 @@
       // floating colour, lit by the button "האונקליות" (below) for 15 s
       // ONK_MARK_211 (the user, 15.11.2026, of the Second Temple plugin's hooks: "צבע האונקליות לא השתנה" - the marking painted them
       // gold-yellow): the marking in the iron's own tones - a slow glint between dark iron and bright steel - in both plugins
-      const glowM = new MeshBasicMaterial({ color: 0xdfe6ee, transparent: true, opacity: 0.97, depthTest: false, depthWrite: false });
+      const glowM = new MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.97, depthTest: false, depthWrite: false });
       const glows = [], m4g = new Matrix4();
-      ctx.animated.push(() => {
-        if (!glows.length || !glows.some((tw) => tw.visible)) return;
-        const v = 0.14 + 0.76 * (0.5 + 0.5 * Math.sin(performance.now() * 0.0055));
-        glowM.color.setRGB(v * 0.92, v * 0.96, v);
-      });
+      // ONK_BLACK_242 (24.11.2026): no blinking, the marking always black
       const twin = (im) => {
         const tw = new InstancedMesh(im.geometry, glowM, im.count);
         for (let i = 0; i < im.count; i++) { im.getMatrixAt(i, m4g); tw.setMatrixAt(i, m4g); }

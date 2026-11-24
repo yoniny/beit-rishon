@@ -2313,7 +2313,7 @@
       // gold-yellow for its 15 seconds, and that is what he saw): the iron itself darker and more of a metal, and the marking in the
       // iron's own tones - a slow glint between dark iron and bright steel (the hook below), no gold
       const iron = new MeshStandardMaterial({ color: 0x4f545c, roughness: 0.45, metalness: 0.55 });
-      const glowM = new MeshBasicMaterial({ color: 0xdfe6ee, transparent: true, opacity: 0.97, depthTest: false, depthWrite: false });
+      const glowM = new MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.97, depthTest: false, depthWrite: false });
       const lay = {};
       for (const k of ["bartenura", "meiri", "raavyah", "gra"]) {
         lay[k] = new Group();
@@ -2454,11 +2454,7 @@
         { text: "אונקליות — ווים של ברזל", x: 51.75, y: F + 4.9, z: -52.5, size: 0.8, layers: ["onkGlow"] });
       const ON = { on: false, timer: null };
       const glowSet = (on) => { ON.on = !!on; for (const t of glows) t.visible = ON.on; lg.visible = ON.on; nameL.visible = !ON.on; };
-      ctx2.animated.push(() => {   // ONK_MARK_211: the glint
-        if (!ON.on) return;
-        const v = 0.14 + 0.76 * (0.5 + 0.5 * Math.sin(performance.now() * 0.0055));
-        glowM.color.setRGB(v * 0.92, v * 0.96, v);
-      });
+      // ONK_BLACK_242 (the user, 24.11.2026: no blinking of the hooks in any layout; the marking always black): the glint removed, the material fixed black
       ctx2.shared.onkliot = (on) => {
         clearTimeout(ON.timer);
         glowSet(on !== false);
