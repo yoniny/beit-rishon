@@ -628,6 +628,104 @@
       };
       const setArm = (A2, v, side) => { A2.sh.rotation.set(v[0], 0, side * v[1]); A2.el.rotation.set(v[2], 0, 0); };
       const ARM = { rest: [0.05, 0.08, -0.15], carry: [-0.25, 0.1, -0.85], fill: [-1.05, 0.12, -0.35], pour: [-1.2, 0.1, -0.55], tR: [-1.42, 0.05, -0.2], tL: [-1.28, -0.06, -0.38] };
+      // TRUMPET_HANDS_N11: the First Temple's priest-kit figure has its hand fixed on the forearm (no wrist), so the two who blow are given a wrist
+      // with the kit's hand (K.handWr), as the Second Temple's mkPriest has: the hand closes round the trumpet and the wrist turns the ring along it
+      const KGP = () => ark_kitArms().P;
+      const wristOn = (f) => {
+        const KG = ark_kitArms(), HWk = (K.handWr && K.handAt) ? true : false;
+        for (const A2 of [f.L, f.R]) {
+          if (!HWk || A2.wr) continue;
+          if (A2.hand) A2.hand.visible = false;
+          const wr = new Group(); wr.position.y = -KG.P.fo; A2.el.add(wr);
+          A2.hand2 = new Mesh(K.handWr(A2.side, "rest"), K.mHand); A2.hand2.castShadow = true; A2.hand2.userData.noPick = true; wr.add(A2.hand2);
+          A2.wr = wr;
+          const G = K.handAt(A2.side, "grip");
+          A2.grip.position.set(G.x, -KG.P.fo + G.y, G.z);
+        }
+      };
+      const holdB2 = (A2) => { if (A2.hand2) A2.hand2.geometry = K.handWr(A2.side, "grip"); };
+      const _gq = new Quaternion(), _gv = new Vector3();
+      const gripAlign = (A2, qt) => {
+        if (!A2.wr) return;
+        A2.el.updateWorldMatrix(true, false);
+        A2.el.getWorldQuaternion(_gq).invert();
+        _gv.set(0, 1, 0).applyQuaternion(qt).applyQuaternion(_gq);
+        const AX = K.handAt(A2.side, "gripAx"), G = K.handAt(A2.side, "grip");
+        A2.wr.quaternion.setFromUnitVectors(AX, _gv);
+        A2.grip.position.copy(G).applyQuaternion(A2.wr.quaternion);
+        A2.grip.position.y -= KGP().fo;
+        A2.grip.updateMatrixWorld(true);
+      };
+      // ---- TRUMPET_HANDS_N11 (the user: "בהדגמות כהנים עם חצוצרות - הכהנים לא אוחזים את החצוצרה בידיים"): the trumpet is in BOTH hands in
+      // every frame - the right by the mouthpiece, the left along the tube - whether he blows (at the mouth), walks or stands (before the
+      // chest, its bell up and forward). `up` 0..1 - from the carrying pose to the mouth. The trumpet is placed in the figure's lean frame
+      // (f.tr), and each arm is solved to it (the shoulder's two turns and the elbow's, damped Gauss-Newton on the hand's ring); the
+      // wrist then turns the ring to the tube's way (gripAlign) and the arm is solved again. The poses and the places on the tube - model choices
+      const TRUH = (() => {
+        const eul = new Euler(), qS = new Quaternion(), qE = new Quaternion(), vq = new Vector3(), vp = new Vector3(), vt = new Vector3(), qW = new Quaternion();
+        const P0 = new Vector3(), P1 = new Vector3(), P2 = new Vector3(), P3 = new Vector3();
+        // the hand ring's place in the lean frame, for the arm's angles a (shoulder x), b (its turn out), c (elbow x)
+        const fk = (A2, a, b, c, out) => {
+          eul.set(a, 0, A2.side * b, "XYZ"); qS.setFromEuler(eul);
+          eul.set(c, 0, 0, "XYZ"); qE.setFromEuler(eul);
+          out.copy(A2.grip.position).applyQuaternion(qE).add(vq.set(0, -KGP().up, 0)).applyQuaternion(qS).add(vp.set(A2.side * KGP().sx, KGP().sy, 0));
+          return out;
+        };
+        const solve = (A2, T, iters) => {
+          let [a, b, c] = A2.ik || [-1.2, 0.05, -0.8];
+          for (let it = 0; it < iters; it++) {
+            fk(A2, a, b, c, P0);
+            const r0 = vt.copy(T).sub(P0);
+            if (r0.lengthSq() < 1e-8) break;
+            const e = 1e-3, J = [];
+            fk(A2, a + e, b, c, P1); J.push(P1.clone().sub(P0).multiplyScalar(1 / e));
+            fk(A2, a, b + e, c, P2); J.push(P2.clone().sub(P0).multiplyScalar(1 / e));
+            fk(A2, a, b, c + e, P3); J.push(P3.clone().sub(P0).multiplyScalar(1 / e));
+            // damped least squares: d = J^T (J J^T + l I)^-1 r
+            const l = 0.02, M = [[0, 0, 0], [0, 0, 0], [0, 0, 0]], rr = [r0.x, r0.y, r0.z], g = (v, i) => (i === 0 ? v.x : i === 1 ? v.y : v.z);
+            for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) { let q = i === j ? l : 0; for (let k = 0; k < 3; k++) q += g(J[k], i) * g(J[k], j); M[i][j] = q; }
+            const det = M[0][0] * (M[1][1] * M[2][2] - M[1][2] * M[2][1]) - M[0][1] * (M[1][0] * M[2][2] - M[1][2] * M[2][0]) + M[0][2] * (M[1][0] * M[2][1] - M[1][1] * M[2][0]);
+            if (Math.abs(det) < 1e-12) break;
+            const inv = (i, j) => { const i1 = (i + 1) % 3, i2 = (i + 2) % 3, j1 = (j + 1) % 3, j2 = (j + 2) % 3; return (M[j1][i1] * M[j2][i2] - M[j1][i2] * M[j2][i1]) / det; };
+            const y = [0, 1, 2].map((i) => inv(i, 0) * rr[0] + inv(i, 1) * rr[1] + inv(i, 2) * rr[2]);
+            a += J[0].x * y[0] + J[0].y * y[1] + J[0].z * y[2];
+            b += J[1].x * y[0] + J[1].y * y[1] + J[1].z * y[2];
+            c += J[2].x * y[0] + J[2].y * y[1] + J[2].z * y[2];
+            a = Math.max(-2.9, Math.min(1.0, a)); b = Math.max(-1.1, Math.min(1.2, b)); c = Math.max(-2.75, Math.min(0.05, c));
+          }
+          A2.ik = [a, b, c];
+          setArm(A2, [a, b, c], A2.side);
+          return fk(A2, a, b, c, P0).distanceTo(T);
+        };
+        const SR = 0.16, SL = 0.56;   // where on the tube (from the mouthpiece) the right and the left hand hold it
+        // the whole hold; returns the larger miss of the two hands (in amot)
+        const hold = (f, up) => {
+          const tr = f.tr, k = Math.max(0, Math.min(1, up));
+          const my = K.HEAD_Y * K.FS - 0.17;
+          tr.position.set(0, KGP().sy - 0.5 + (my - (KGP().sy - 0.5)) * k, 0.3 + (0.14 - 0.3) * k);
+          tr.rotation.set(0.85 + (1.25 - 0.85) * k, 0, 0);
+          tr.visible = true;
+          tr.updateMatrix();
+          let miss = 0;
+          for (const [A2, s] of [[f.R, SR], [f.L, SL]]) {
+            P0.set(0, s, 0).applyMatrix4(tr.matrix);
+            const T = P0.clone();
+            holdB2(A2);
+            miss = Math.max(miss, solve(A2, T, 6));
+            // the wrist turns the ring along the tube, then the arm is solved again to the ring's new place
+            f.g.updateWorldMatrix(true, false);
+            f.lean.updateWorldMatrix(true, false);
+            A2.sh.updateMatrixWorld(true);
+            tr.updateWorldMatrix(true, false);
+            tr.getWorldQuaternion(qW);
+            gripAlign(A2, qW);
+            miss = Math.max(miss, solve(A2, T, 4));
+            A2.sh.updateMatrixWorld(true);
+          }
+          return miss;
+        };
+        return { hold };
+      })();
       // ---- the night (the Second Temple's 55-payis.js NIGHT, carried over: the sky's sun under the horizon, the lights low; the dawn)
       const NIGHT = ctx.shared.nightKit || (ctx.shared.nightKit = (() => {
         let sky = null, sun = null, hemi = null, saved = null, envOff = false;
@@ -787,6 +885,7 @@
           tr.traverse((m) => { if (m.isMesh) { m.castShadow = true; m.userData.noPick = true; } });
           f.lean.add(tr);
           f.tr = tr;
+          wristOn(f);   // TRUMPET_HANDS_N11
         }
         const D2 = SHL.D = { DG, p, t1, t2, flask, fwater, cascade, cascM, ys: new Map() };
         // the rest of the people (the Second Temple's buildExtra): the wine's priest, the deputy with the sudar, the streams, the watchers,
@@ -1097,8 +1196,7 @@
             placeOn(D2, f, wy, Math.min(t, wy.t[1]), false);
             const blowK = t < T.walk0 ? smooth(clamp((t - 0.6) / 0.5, 0, 1)) * (1 - smooth(clamp((t - 3.4) / 0.4, 0, 1)))
               : t < T.out1 ? 1 - smooth(clamp((t - T.out1 + 0.4) / 0.4, 0, 1)) : 0;
-            if (blowK > 0) { setArm(f.R, ARM.rest.map((v, i) => lerp(v, ARM.tR[i], blowK)), -1); setArm(f.L, ARM.rest.map((v, i) => lerp(v, ARM.tL[i], blowK)), 1); }
-            f.tr.visible = blowK > 0.3 || t < T.out1;
+            TRUH.hold(f, blowK);   // TRUMPET_HANDS_N11: both hands on the trumpet, walking too
           }
         }
         // at the altar the same two stand ON THE TABLE OF THE FATS (Tamid 7:3; the user's decision 102) - the marble table (ctx.shared.rampTables)
@@ -1110,9 +1208,7 @@
             f.g.visible = true;
             f.g.position.set(MB[0], AZ + (RT ? RT.top : 1.5) + 0.01, MB[1] + dz2);
             f.g.rotation.y = Math.atan2(B[0] - MB[0], B[1] - (MB[1] + dz2));
-            setArm(f.R, ARM.rest.map((v, i) => lerp(v, ARM.tR[i], blowA)), -1);
-            setArm(f.L, ARM.rest.map((v, i) => lerp(v, ARM.tL[i], blowA)), 1);
-            f.tr.visible = blowA > 0.3;
+            TRUH.hold(f, blowA);   // TRUMPET_HANDS_N11
           }
         }
         // the two at the gate that stands for the Water Gate: on its steps' head, either side of the way in
@@ -1123,9 +1219,7 @@
           f.g.position.set(x, AZ, 73.4);
           f.g.rotation.y = x < 40 ? 0.35 : -0.35;   // their faces out, to the south, a little toward the way in
           const up = smooth(clamp((t - T.blow0 + 0.6) / 0.5, 0, 1)) * (1 - smooth(clamp((t - T.blow1) / 0.5, 0, 1)));
-          setArm(f.R, ARM.rest.map((v, i) => lerp(v, ARM.tR[i], up)), -1);
-          setArm(f.L, ARM.rest.map((v, i) => lerp(v, ARM.tL[i], up)), 1);
-          f.tr.visible = up > 0.3;
+          TRUH.hold(f, up);   // TRUMPET_HANDS_N11
         }
         try { extraApply(D2, WS, t); } catch (e) { if (!SHL.warned) { SHL.warned = true; console.warn("[parallels] shiloach extra", e && e.message); } }
       };
@@ -1316,7 +1410,7 @@
       (ctx.shared.demoStops || (ctx.shared.demoStops = [])).push({ id: "shiloachDemo1", running: () => SHL.run, stop,
         pause: () => { const w = walkEntry(); if (w && w.pause) w.pause(); }, resume: () => { const w = walkEntry(); if (w && w.resume) w.resume(); },
         paused: () => { const w = walkEntry(); return !!(w && w.paused && w.paused()); }, restart: () => { stop(); start(); } });
-      ctx.shared.shiloachDemo1 = { start, stop, T, get on() { return SHL.run; }, at: (t) => { buildSpring(); const D2 = buildDemo(); D2.DG.visible = true; apply(t); }, ways: () => WAYS(), spring: () => buildSpring(), keys: () => keys(), stats: () => ({ route: SHL.D && SHL.D.route ? SHL.D.route.userData.count : 0, routeMs: SHL.routeMs, walkers: SHL.D && SHL.D.fol ? SHL.D.fol.length : 0, startMs: SHL.startMs }) };
+      ctx.shared.shiloachDemo1 = { start, stop, T, get on() { return SHL.run; }, at: (t) => { buildSpring(); const D2 = buildDemo(); D2.DG.visible = true; apply(t); }, D: () => SHL.D, ways: () => WAYS(), spring: () => buildSpring(), keys: () => keys(), stats: () => ({ route: SHL.D && SHL.D.route ? SHL.D.route.userData.count : 0, routeMs: SHL.routeMs, walkers: SHL.D && SHL.D.fol ? SHL.D.fol.length : 0, startMs: SHL.startMs }) };
     }
 
     // ---------- 11. THE THIRTEEN SHOFAROT (item 22; the user's decision 112 ג, 22.11.2026 12:09: a switch of its own, off) ----------
