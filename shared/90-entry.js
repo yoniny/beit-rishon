@@ -277,6 +277,14 @@
           if (!cut.has(o)) return;
           off = true;   // removed by its button: a roof / a wall all the same, for the roofed test only
         }
+        // WALK_CITY_N7 (fix-n7, 24.11.2026; the user: walk mode in the City of David does not work, and the eye does not rise on the stairs
+        // from the Shiloah): the ground, the steps and the stairs of the City of David are noPick (no click, no hover, no camera wall), and so
+        // were left out of the walk's floor too - the eye found no floor there and walked level over the slope. A mesh that says
+        // userData.walkFloor stays out of every list but the walk's floor (ent_solids("floor")).
+        if (o.isMesh && o.userData.noPick && o.userData.walkFloor && !off) {
+          const m = Array.isArray(o.material) ? o.material[0] : o.material;
+          if (m && m.visible !== false) floor.push(o);
+        }
         if (o.isMesh && !o.userData.noPick && !(o.geometry && o.geometry.type === "BoxGeometry" && o.scale.x > 1000)) {
           const m = Array.isArray(o.material) ? o.material[0] : o.material;
           const thin = !!(m && m.transparent && m.opacity < 0.5);
