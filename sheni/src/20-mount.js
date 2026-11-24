@@ -689,8 +689,8 @@
     // gates of 1.3.0 (west part of the walls; -18 = Beit HaMoked / the Water Gate) and Josephus' side gates (x 161)
     const B4 = (c) => [c, GAP_W];
     soregSide("x", sz1, sx1, sx2, [-78, -48, 3.5], [161], [B4(-78), B4(-48), B4(-38.5), B4(-18)]);
-    // WATER_GATE_N4: the south openings follow the gates - the Delek -78, the Bechorot 4, the Water Gate 44 (opposite the altar; 30-courts.js)
-    soregSide("x", sz2, sx1, sx2, [-78, 4, 44], [161], [B4(-88), B4(-78), B4(4), B4(44)]);
+    // WATER_GATE_N4: the south openings follow the gates - the Delek -78, the Bechorot 30, the Water Gate 44 (opposite the altar; 30-courts.js)
+    soregSide("x", sz2, sx1, sx2, [-78, 30, 44], [161], [B4(-88), B4(-78), B4(30), B4(44)]);
     soregSide("z", sx2, sz1, sz2, [0], [], [[0, 8], B4(-12), B4(12)]);
     soregSide("z", sx1, sz1, sz2, [0], [], [B4(-20), B4(20)]);
     // ===== ROOF_ALL_211 (the user, 15.11.2026 00:53: a row of opinions for THE ROOFING OF THE TEMPLE MOUNT). The Rambam (Beit HaBechirah
@@ -879,7 +879,7 @@
     };
     plainHouse("harSynagogue", 161, 112, 24, 16, 13, "בית הכנסת שבהר הבית — ״היה סמוך לעזרה בהר הבית״ (רש״י יומא סח:)");
     plainHouse("harMidrash", 40, 112, 20, 14, 11, "בית המדרש שבהר הבית (תוספתא חגיגה ב, ד)");
-    ctx2.labels.push({ text: "שלוש עשרה פרצות כנגד שלשה עשר שערים — הראבי״ה (תוספות יום טוב מידות ב, ג)", x: 4, y: 4.5, z: sz2 + 1, size: 2.2, layer: "soregBreach" });   // BREACH13_D: by the south breaches (was x 70)
+    ctx2.labels.push({ text: "שלוש עשרה פרצות כנגד שלשה עשר שערים — הראבי״ה (תוספות יום טוב מידות ב, ג)", x: 30, y: 4.5, z: sz2 + 1, size: 2.2, layer: "soregBreach" });   // BREACH13_D: by the south breaches (was x 70)
     ctx2.layers = ctx2.layers || {};
     ctx2.layers.soregBreach = breachG;
     ctx2.layers.soregRepair = repairG;

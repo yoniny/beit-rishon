@@ -214,18 +214,49 @@
     // את המים לנסך על המזבח בחג הסוכות"; Tiferet Yisrael, Tzurat Beit HaMikdash 33 (6029 line 77): "במרחק מעט מלשכת המדיחין לצד מערב היה בחומת
     // העזרה שער המים מול המזבח"; the gate of the firstborn "במרחק מעט לצד מערב משער המים" (line 81); the Meiri, Middot 1:4 (4110022 line 12):
     // "שבדרום ראשונה לצד המערב שער הדלק, שניה לה שער הקרבן, שלישית לה שער המים". Until now -78, -48, -18, thirty amot apart.
-    const DALK_X = -78, BECH_X = 4, WATER_X = 44;
+    const DALK_X = -78, BECH_X = 30, WATER_X = 44;
     ctx2.shared.southGates = { dalk: DALK_X, bech: BECH_X, water: WATER_X };
     const chelFlight = (parent, gx, s, dx, o = {}) => {
       const wL = o.landW || 12, dp = o.depth || 4, top = o.top || 13.5, zf = o.zFace || 70, n = Math.round(top / 0.5);
       const za = zf * s, zb = (zf + dp) * s, z0 = Math.min(za, zb), z1 = Math.max(za, zb), zc = (z0 + z1) / 2;
+      const rw = o.rampW || 0;   // RAMPS_N4: the landing runs on under the ramp's strip too (outside the steps)
       H2.box(parent, wL, top, dp, M2.stoneSmooth, gx, 0, zc);
-      platRail(parent, gx - wL / 2, gx + wL / 2, z0, z1, top, [s < 0 ? "n" : "s"].concat(o.endRail === false ? [] : [dx > 0 ? "w" : "e"]));
+      if (rw) H2.box(parent, wL, top, rw, M2.stoneSmooth, gx, 0, s > 0 ? z1 + rw / 2 : z0 - rw / 2);
+      platRail(parent, gx - wL / 2, gx + wL / 2, rw && s < 0 ? z0 - rw : z0, rw && s > 0 ? z1 + rw : z1, top, [s < 0 ? "n" : "s"].concat(o.endRail === false ? [] : [dx > 0 ? "w" : "e"]));
       stairsR(parent, { width: dp, totalRise: top, steps: n, dir: dx > 0 ? "W" : "E", x: gx + dx * (wL / 2 + n * 0.5), y: 0, z: zc, tread: 0.5 });
+    };
+    // RAMPS_N4 (the user, 24.11.2026: "הכבש לבהמות מיושר ומחובר למדרגות של השער - חלק מדרגות וחלק כבש באותו גרם, עד נחיתת השער"): at the gate of the
+    // firstborn (south) and the gate of the offering (north) the flight is two strips side by side, from the gate's landing (13.5): the steps (4 wide, as the
+    // other gates') and, outside them, a ramp three amot wide, straight, solid, the same level at the landing and sloping down to the chel's floor (1 in 4, 54
+    // long); one rail round the landing and along the ramp's outer edge. The beast and the one who brings the firstborn go up it together. Until 3.1.0 a winding
+    // ramp on piers (from Rav Chaim Kanievsky, as brought in the Chalamish) beside the flight - the user's decision 41, now replaced. The ramp's width, slope and
+    // rail - model choices. The south flight and its ramp run WEST (the east is the Water Gate's flight), the north's west, as it was.
+    const rampG = new Group(); rampG.name = "animalRamps"; g.add(rampG); ctx2.layers.animalRamps = rampG;
+    const RAMP_W = 3, RAMP_SLOPE = 4;
+    const beastRamp = (gx, s, dx, wL, top, zFace, dp) => {
+      const Lr = top * RAMP_SLOPE, xa = gx + dx * wL / 2, z0 = zFace * s + (s > 0 ? dp : -dp);   // the strip's inner edge: the stairs' outer edge
+      const zlo = s > 0 ? z0 : z0 - RAMP_W, zc = zlo + RAMP_W / 2;
+      const sh = new Shape();
+      sh.moveTo(xa, 0); sh.lineTo(xa + dx * Lr, 0); sh.lineTo(xa, top); sh.closePath();
+      const geo = new ExtrudeGeometry(sh, { depth: RAMP_W, bevelEnabled: false });
+      geo.translate(0, 0, zlo);
+      const m = new Mesh(geo, M2.stoneSmooth); m.castShadow = m.receiveShadow = true; rampG.add(m);
+      const zr = s > 0 ? zlo + RAMP_W - 0.12 : zlo + 0.12, HH = 1.35;   // the outer edge's rail
+      for (let i = 0, n = Math.round(Lr / 3); i <= n; i++) {
+        const x = xa + dx * (0.12 + (Lr - 0.24) * i / n), y = top * (1 - Math.abs(x - xa) / Lr);
+        const post = new Mesh(new BoxGeometry(0.1, HH, 0.1), railMat); post.position.set(x, y + HH / 2, zr); rampG.add(post);
+      }
+      const ya = top + HH, yb = HH, len = Math.hypot(Lr, top);
+      const rail = new Mesh(new BoxGeometry(len, 0.11, 0.13), railMat);
+      rail.position.set(xa + dx * Lr / 2, (ya + yb) / 2, zr); rail.rotation.z = Math.atan2(ya - yb, Lr) * (dx > 0 ? -1 : 1);
+      rampG.add(rail);
+      ctx2.labels.push({ text: "כבש לבהמות — חלק מגרם המדרגות של השער (הגר״ח קניבסקי, כפי שהובא בחלמיש)", x: xa + dx * Lr * 0.45, y: top * 0.55 + 2.5, z: zc + 0.5 * s, size: 1.3, layer: "animalRamps" });
     };
     for (const [gx, s] of [[-78, -1], [-78, 1], [-48, -1], [BECH_X, 1], [WATER_X, 1]]) {   // 1.3.0: the approaches follow the gates (Rambam 5:4, the western part); 1.8.0: Beit HaMoked's own gate to the chel (north, -18) - by the house, below
       const joined = (gx === -78 && s > 0) || (gx === -48 && s < 0);   // a small gate's landing joins this one's free end in the readings of thirteen gates
-      chelFlight(g, gx, s, s > 0 ? 1 : -1, { endRail: !joined });
+      const beast = gx === BECH_X || (gx === -48 && s < 0), fdx = gx === BECH_X ? -1 : s > 0 ? 1 : -1;   // RAMPS_N4
+      chelFlight(g, gx, s, fdx, { endRail: !joined, rampW: beast ? RAMP_W : 0 });
+      if (beast) beastRamp(gx, s, fdx, 12, 13.5, 70, 4);
       // GATE_STEPS_A2 (fix-a2; the user's decision 79, 22.11.2026): the last two and a half amot inside the gate - a step of one amah and
       // three of half an amah, as the Rambam, Beit HaBechirah 6:3 (337:96): "ועולה ממנו לעזרת הכהנים במעלה גבוהה אמה ועליה דוכן יש בו
       // שלש מעלות. רום כל מעלה חצי אמה". Until now five steps of half an amah. The amah step's tread (an amah) - a model choice.
@@ -3669,46 +3700,8 @@
         ctx2.labels.push({ text: "״וְאֶל־אַיִל תִּמֹרִים״ (יחזקאל מ, טז) — תמרים בפתחי השערים", x: BECH_X, y: 36.5, z: 72.5, size: 1.4, layer: "gatePalms" });
         ctx2.labels.push({ text: "תמרים — ״וְאֶל־אַיִל תִּמֹרִים״ (יחזקאל מ, טז)", x: 233, y: 29.5, z: -9, size: 1.3, layer: "gatePalms" });
       }
-      // ---- RAMPS_B2 (the user's decision 41: "לכאורה מחויב המציאות"): A RAMP FOR THE BEASTS at the gate of the firstborn (the south) and
-      // at the gate of the offering (the north) - "בשער הבכורות בדרום ובשער הקרבן בצפון היו כבשים, כדי להעלות את הבהמות" (the booklet
-      // "אלחנן וחיים עולים לירושלים", its list of sources, D113 - from Rav Chaim Kanievsky; drawn there as a winding ramp beside the
-      // stairs). Here: beside each gate's flight, on the chel's outer strip, a ramp in two runs with a round turn between them - from the
-      // chel's floor up to the gate's landing (13.5) - on piers, so that one may pass under it to the flight's foot; a low parapet.
-      // Its form, its slope (1 in 4), its width, the piers and where it stands - model choices (to be shown to the user).
-      const rampG = new Group(); rampG.name = "animalRamps"; g.add(rampG); ctx2.layers.animalRamps = rampG;
-      {
-        const tmp = new Group(), RISE = 13.5, RUN = 27, W1 = 2.8;
-        const deck = (x0, y0, x1, y1, z0, z1) => {   // a sloping deck along x, from (x0, y0) to (x1, y1), between z0 and z1
-          const L = Math.hypot(x1 - x0, y1 - y0), m = new Mesh(new BoxGeometry(L, 0.5, Math.abs(z1 - z0)), M2.stoneSmooth);
-          m.position.set((x0 + x1) / 2, (y0 + y1) / 2 - 0.25, (z0 + z1) / 2); m.rotation.z = Math.atan2(y1 - y0, x1 - x0); tmp.add(m);
-          const par = (z) => { const p = new Mesh(new BoxGeometry(L, 0.8, 0.22), M2.stoneLight); p.position.set((x0 + x1) / 2, (y0 + y1) / 2 + 0.4, z); p.rotation.z = m.rotation.z; tmp.add(p); };
-          return par;
-        };
-        const pier = (x, yTop, z) => { if (yTop < 0.6) return; const p = new Mesh(new BoxGeometry(0.8, yTop, 0.8), M2.stone); p.position.set(x, yTop / 2, z); tmp.add(p); };
-        for (const s of [1, -1]) {   // s: +1 the south (the Bechorot), -1 the north (the Korban); the flight runs dx (the south: east, the north: west)
-          const gx = s > 0 ? BECH_X : -48, dx = s > 0 ? 1 : -1, xa = gx + dx * 1, xb = xa + dx * RUN;
-          const z1a = 74.2 * s, z1b = 77.0 * s, z2a = 77.2 * s, z2b = 80.0 * s;
-          const y = (x, top, bot) => top + (bot - top) * Math.abs(x - xa) / RUN;
-          const p1 = deck(xa, RISE, xb, RISE / 2, z1a, z1b);   // the upper run: from the landing, along the flight
-          p1(z1b + 0.11 * s);
-          const p2 = deck(xb, RISE / 2, xa, 0, z2a, z2b);      // the lower run: back to the chel's floor
-          p2(z2b - 0.11 * s);
-          // the turn: a flat landing, half round, at the runs' far end
-          const tz = (z1a + z2b) / 2, tr = Math.abs(z2b - z1a) / 2;
-          const tb = new Mesh(new CylinderGeometry(tr, tr, 0.5, 24, 1, false, dx > 0 ? 0 : Math.PI, Math.PI), M2.stoneSmooth);
-          tb.position.set(xb, RISE / 2 - 0.25, tz); tmp.add(tb);
-          const tw = new Mesh(new CylinderGeometry(tr + 0.05, tr + 0.05, 0.8, 24, 1, true, dx > 0 ? 0 : Math.PI, Math.PI), M2.stoneLight);
-          tw.position.set(xb, RISE / 2 + 0.4, tz); tmp.add(tw);
-          pier(xb + dx * tr * 0.55, RISE / 2 - 0.5, tz);
-          for (let k = 1; k * 4.5 < RUN; k++) {
-            const x = xa + dx * k * 4.5;
-            pier(x, y(x, RISE, RISE / 2) - 0.5, (z1a + z1b) / 2);
-            pier(x, y(x, 0, RISE / 2) - 0.5, (z2a + z2b) / 2);
-          }
-        }
-        bakeTo(tmp, rampG);
-        for (const s of [1, -1]) ctx2.labels.push({ text: "כבש לבהמות — מפי הגר״ח קניבסקי, כפי שהובא בחלמיש", x: (s > 0 ? BECH_X : -48) + (s > 0 ? 1 : -1) * 22, y: 16, z: 77 * s, size: 1.3, layer: "animalRamps" });
-      }
+      // RAMPS_N4 (the user, 24.11.2026): the beasts' winding ramp is gone - at the gate of the firstborn and the gate of the offering the flight is part
+      // stairs and part ramp (see chelFlight's rampW, near the top of this file); the ramp's rampG group (layer animalRamps) is made there
       // (OIL_DOORS_B2 - the oil chamber's second door, the user's decision 81: held - question 78 to the user, 22.11.2026 02:3x)
       // ---- WOODWORMS_B2 (the user's decision 85): "מזרחית צפונית, היא היתה לשכת העצים, ששם הכהנים בעלי מומין מתליעין העצים. וכל עץ שנמצא
       // בו תולעת, פסול מעל גבי המזבח" (Middot 2:5, 89:16); the Bartenura (643:91): "מסירין העצים שנמצא בהן תולעת"; the Yachin (819:235):
