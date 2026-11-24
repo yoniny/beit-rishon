@@ -580,8 +580,8 @@
     ctx2.shared.ramps = { tosafot: false, set(on) { this.tosafot = !!on; ramp3.visible = !!on; path32D.visible = path28D.visible = !on; path32T.visible = path28T.visible = !!on; rubD.visible = !on; rubT.visible = !!on; } };   // SMALL_RAMPS3_211: with the third ramp the window is south of it (rubT)
     // the labels: each by its own piece, one set for each altar (the layers of the bodies)
     ctx2.labels.push({ text: "כבש לסובב", x: 66.9, y: F + 6.8, z: 21.8, size: 1.5, layer: "altarBody32" },   // SMALL_RAMPS3_211: over the ramp's middle
-      { text: "כבש לסובב — לתוספות", x: 44.1, y: F + 6.8, z: 21.8, size: 1.5, layers: ["altarBody32", "altarRamp3"], moveWithAltar: true }, { text: "כבש לסובב — לתוספות", x: 47.1, y: F + 6.8, z: 17.8, size: 1.5, layers: ["altarBody28", "altarRamp3"], moveWithAltar: true }, { text: "כבש ליסוד — יוצא מן הכבש הגדול ויורד אל היסוד (רש״י זבחים סב:)", x: 42.8, y: F + 3.6, z: 19, size: 1.5, layer: "altarBody32", box: true },
-      { text: "כבש לסובב", x: 67.9, y: F + 6.8, z: 17.8, size: 1.5, layer: "altarBody28" }, { text: "כבש ליסוד — יוצא מן הכבש הגדול ויורד אל היסוד (רש״י זבחים סב:)", x: 46.2, y: F + 3.6, z: 15, size: 1.5, layer: "altarBody28", box: true });
+      { text: "כבש לסובב — לתוספות", x: 44.1, y: F + 6.8, z: 21.8, size: 1.5, layers: ["altarBody32", "altarRamp3"], moveWithAltar: true }, { text: "כבש לסובב — לתוספות", x: 47.1, y: F + 6.8, z: 17.8, size: 1.5, layers: ["altarBody28", "altarRamp3"], moveWithAltar: true }, { text: "כבש ליסוד — לרש״י (זבחים סב:)", x: 42.8, y: F + 3.6, z: 19, size: 1.5, layer: "altarBody32", box: true },
+      { text: "כבש לסובב", x: 67.9, y: F + 6.8, z: 17.8, size: 1.5, layer: "altarBody28" }, { text: "כבש ליסוד — לרש״י (זבחים סב:)", x: 46.2, y: F + 3.6, z: 15, size: 1.5, layer: "altarBody28", box: true });
     // 1.8.0 (the user: "טבלא מרובעת לא משתנה כלום באיור"): the Ra'avad's tapuach (below) is a square table one amah high in the middle of the
     // top, and the pyres stand on it - so everything that sits on the top (the logs, the gezirin, the flames, the lights, the smoke, the glow,
     // the coals and the round heap) is built into topG, which ctx2.shared.tapuach lifted by one amah (until 1.9.4; see 1.9.5 below).
@@ -2549,7 +2549,7 @@
     // and "כוליה מזבח בדרום" (Zevachim 58b-59a; Yoma 16a ties the Mishnah's measures to R. Eliezer b. Yaakov). Each reading moves `mv`
     // (the altar, its ramps, fire and tables), the labels of those pieces and the fly point; the laver, rings and slaughter place stay.
     {
-      const MOVE_TEXTS = new Set(["המזבח", "הכבש", "כבש לסובב", "כבש ליסוד", "טבלא של שיש וטבעת — יורדין לשית", "כבש ליסוד — יוצא מן הכבש הגדול ויורד אל היסוד (רש״י זבחים סב:)", "התפוח", "רבובה", "32 הבסיס · 30 מעל היסוד · 28 מעל הסובב · 26 בין הקרנות · 24 מקום המערכה (מידות ג, א)", "המזבח הקודם — 28 על 28; בני הגולה הוסיפו 4 בדרום ו־4 במערב (רבי יוסי)", "ספלי הניסוך — מים (מערבי) ויין (מזרחי)", "התפוח לראב״ד — טבלה כ״ב על כ״ב, גבוהה אמה"]);
+      const MOVE_TEXTS = new Set(["המזבח", "הכבש", "כבש לסובב", "כבש ליסוד", "טבלא של שיש וטבעת — יורדין לשית", "כבש ליסוד — לרש״י (זבחים סב:)", "התפוח", "רבובה", "32 הבסיס · 30 מעל היסוד · 28 מעל הסובב · 26 בין הקרנות · 24 מקום המערכה (מידות ג, א)", "המזבח הקודם — 28 על 28; בני הגולה הוסיפו 4 בדרום ו־4 במערב (רבי יוסי)", "ספלי הניסוך — מים (מערבי) ויין (מזרחי)", "התפוח לראב״ד — טבלה כ״ב על כ״ב, גבוהה אמה"]);
       const mine = ctx2.labels.filter((l) => MOVE_TEXTS.has(l.text) || l.moveWithAltar);   // 1.8.1: the measures' numbers too
       const base = mine.map((l) => l.z);
       const fp0 = { pos: ctx2.shared.flyPoints.mizbeach.pos.slice(), target: ctx2.shared.flyPoints.mizbeach.target.slice() };
