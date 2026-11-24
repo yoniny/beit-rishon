@@ -18,6 +18,9 @@
 #tm-tour-box .hd{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px 2px;font-size:11px;color:#b9ac82;flex:none}
 #tm-tour-box .hd .part{color:#c9a84c;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 #tm-tour-box .hd .num{direction:ltr;unicode-bidi:isolate;white-space:nowrap;font-variant-numeric:tabular-nums}
+#tm-tour-box .hd .fold{flex:none;margin-right:auto;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.45);color:#f3dc9a;border-radius:50%;width:22px;height:22px;padding:0;font:11px 'Segoe UI',Arial,sans-serif;cursor:pointer;line-height:20px}
+#tm-tour-box.min{bottom:auto}
+#tm-tour-box.min .sub,#tm-tour-box.min .wait,#tm-tour-box.min .o,#tm-tour-box.min .opts,#tm-tour-box.min .body,#tm-tour-box.min .bubw{display:none !important}
 #tm-tour-box .ttl{padding:3px 12px 0;font-size:16px;font-weight:700;color:#f3dc9a;line-height:1.35;flex:none}
 #tm-tour-box .sub{padding:1px 12px 0;font-size:11.5px;color:#c9b98a;flex:none}
 //@@slot tour_CSS
@@ -844,6 +847,10 @@ body.tm-measuring #tm-tour-box{bottom:96px}
       box.id = "tm-tour-box";
       const hd = mk("div", "hd", null, box);
       const elPart = mk("span", "part", "", hd), elNum = mk("span", "num", "", hd);
+      // TOUR_FOLD_420 (the user 24.11.2026: "למה אין קיפול בכרטיס של עבודת הבוקר?"): a fold, as the cards' - the text and the readings fold
+      // away, the title, the numbers and the buttons stay
+      { const fb = mk("button", "fold", "▴", hd); fb.type = "button"; fb.title = "קיפול"; fb.setAttribute("aria-label", "קיפול");
+        fb.addEventListener("click", (e) => { e.stopPropagation(); const on = !box.classList.contains("min"); box.classList.toggle("min", on); fb.textContent = on ? "▾" : "▴"; fb.title = on ? "פתיחה" : "קיפול"; fb.setAttribute("aria-label", fb.title); }); }
       const elTtl = mk("div", "ttl", "", box), elSub = mk("div", "sub", "", box), elWait = mk("div", "wait", "", box);
       //@@slot buildTour.elOpts
       const body = mk("div", "body", null, box);

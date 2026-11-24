@@ -3537,6 +3537,52 @@
       CG.o.children[0].rotation.y = lerp(CG.r0[0], -a * inw, k);
       CG.o.children[1].rotation.y = lerp(CG.r0[1], Math.PI + a * inw, k);
     };
+    // FOLLOW_420 (the user 24.11.2026: "צבר את הגחלים המצלמה לא עוקבת - כך כל חלק המזבח, גחלים, גזרי עצים וכו'"; "אברים לכבש - מצלמה
+    // לא עוקבת"; "כל עבודת הבוקר צריך בדיקת מעקב מצלמה"): a stage without a moving eye of its own (CAMK) - until now its slide's one view
+    // the whole stage - follows the one who works: the figure that moved last (it stays with him while he stands and works, and passes
+    // to another only when that one moves on), seen from the side of the stage's own view, at its height, nearer (7-15 amot), the eye
+    // gliding after him. A line from the eye to him through a wall raises the eye. A jump of the clock (a seek) puts it there at once
+    const FOL = { key: "", last: {}, actor: null, still: 0, cam: new Vector3(), tg: new Vector3(), sec: 0, el: 0, chk: 0 };
+    const fv = new Vector3(), fw = new Vector3(), fq = new Vector3();
+    const followCam = (id, o, sec) => {
+      const key = id + "|" + o;
+      let jump = Math.abs(sec - FOL.sec) > 0.9;
+      if (FOL.key !== key) { FOL.key = key; FOL.last = {}; FOL.actor = null; FOL.still = 0; FOL.cam.copy(ctx2.camera.position); FOL.tg.copy(ctx2.controls.target); FOL.el = 0; jump = false; }
+      FOL.sec = sec;
+      let best = null, bd = 0.012;
+      for (const k in W.figs) {
+        const f = W.figs[k], st = f.st;
+        if (!st || !st.vis || !f.g) { delete FOL.last[k]; continue; }
+        const L = FOL.last[k], q = f.g.getWorldPosition(fq);   // (world: the figures' group moves with the altar's place)
+        if (L && !jump) { const d = Math.hypot(q.x - L[0], q.z - L[2]) + Math.abs(q.y - L[1]) * 0.5; if (d > bd) { bd = d; best = k; } }
+        FOL.last[k] = [q.x, q.y, q.z];
+      }
+      const cur = FOL.actor && W.figs[FOL.actor] && W.figs[FOL.actor].st.vis ? FOL.actor : null;
+      if (best === cur) FOL.still = 0; else if (cur) FOL.still++;
+      if (!cur || (best && FOL.still > 20)) { if (best) { FOL.actor = best; FOL.still = 0; } }
+      if (!FOL.actor || !W.figs[FOL.actor] || !W.figs[FOL.actor].st.vis) return;
+      const v = VIEW[id] ? VIEW[id](o) : null;
+      if (!v || !v[0] || !v[1]) return;
+      const g = W.figs[FOL.actor].g.getWorldPosition(fq);
+      let hx = v[0][0] - v[1][0], hz = v[0][2] - v[1][2], hl = Math.hypot(hx, hz);
+      if (hl < 1e-3) { hx = 0; hz = 1; hl = 1; }
+      hx /= hl; hz /= hl;
+      const full = Math.hypot(hl, v[0][1] - v[1][1]);
+      const D = Math.max(7, Math.min(15, full * 0.55));
+      let el = Math.min(1.35, Math.max(0.35, Math.min(0.95, Math.atan2(v[0][1] - v[1][1], hl))) + FOL.el);
+      fw.set(g.x, g.y + 1.6, g.z);
+      fv.set(fw.x + hx * Math.cos(el) * D, fw.y + Math.sin(el) * D, fw.z + hz * Math.cos(el) * D);
+      if (--FOL.chk <= 0 && fnc(TM.qaClear)) {   // every half second or so: a wall between - higher; free - back down by steps
+        FOL.chk = 8;
+        let ok = true; try { ok = !TM.qaClear(fv.toArray(), fw.toArray()); } catch (_) { ok = true; }   // (qaClear: null when the line is free)
+        if (!ok && FOL.el < 0.9) FOL.el += 0.25; else if (ok && FOL.el > 0) FOL.el = Math.max(0, FOL.el - 0.04);
+      }
+      const k = jump ? 1 : 0.07;
+      FOL.tg.lerp(fw, k); FOL.cam.lerp(fv, k);
+      ctx2.camera.position.copy(FOL.cam);
+      ctx2.controls.target.copy(FOL.tg);
+      ctx2.camera.lookAt(FOL.tg);
+    };
     // ---------------------------------------------------------------- the clock
     let lastI = -1, lastSec = 0, lastO = "";
     const play = (o, i, sec) => {
@@ -3568,7 +3614,7 @@
         // CAM_219 (the audit): aimed in this very frame - it is written after controls.update(), and a key past the polar limit (the
         // patrol's, 0.11 rad from straight above) was drawn aimed from the clamped pose, about 5 degrees off its target
         ctx2.camera.lookAt(t[0], t[1], t[2]);
-      }
+      } else if (!ck && sec > 0.6 && !tourHeld() && ctx2.camera && ctx2.controls) followCam(list[i], o, sec);
       // the sounds of the current stage whose second the clock has just passed (forward, in the same stage, not by a jump)
       if (i === lastI && o === lastO && sec > lastSec && sec - lastSec < 0.75) {
         const cur = list[i];
