@@ -138,13 +138,13 @@
     // the Abarbanel (3569:1112): "שהיו חלונות רחבות מפנים צרות מבחוץ או שהיו אטומות מזכוכית"; and of the Second Temple - Rabbenu Shemaya
     // (Middot 3:8, 645:120): "...בימי חגי זכריה ומלאכי בחלונות עליות האולם לנוי וליופי". In the ulam's WALL, not on the opening's shoulders -
     // "שבאולם בית שני לא היו כתפות לפתח לצפון ולדרום" (Rashi, Ezekiel 40:48; 3684:2148). Drawn: on the facade, at the height of the upper
-    // storey, two rows of four on each side of the opening, each shut with a light, clear pane in a frame. Their number, size and places -
+    // storey, two rows of six on each side of the opening, along the whole width of the facade (decision: "חלונות לכל האורך"), each shut with a light, clear pane in a frame. Their number, size and places -
     // model choices. (They go with the facade when "פתח את האולם" opens it.)
     {
       const paneM = new MeshStandardMaterial({ color: 0xf3efe2, roughness: 0.22, metalness: 0, transparent: true, opacity: 0.92, emissive: 0x24221b });
       const UWG = new Group(); UWG.name = "ulamWindows"; g.add(UWG); ctx2.layers.ulamWindows = UWG;
-      const WW = 3.2, WH = 6, X = 17.5;
-      for (const yb of [77, 91]) for (const sd of [-1, 1]) for (const zc of [20, 28, 36, 44]) {
+      const WW = 4, WH = 6, X = 17.5;
+      for (const yb of [77, 91]) for (const sd of [-1, 1]) for (const zc of [14.2, 20.4, 26.6, 32.8, 39, 45.2]) {
         const z = sd * zc, yc = yb + WH / 2;
         const pane = new Mesh(new BoxGeometry(0.12, WH, WW), paneM); pane.position.set(X + 0.08, yc, z); pane.userData.noPick = true; UWG.add(pane); ulamFrontCut.push(pane);
         for (const [dy, dz, h, w] of [[WH / 2 + 0.2, 0, 0.4, WW + 0.8], [-WH / 2 - 0.2, 0, 0.4, WW + 0.8], [0, WW / 2 + 0.2, WH, 0.4], [0, -WW / 2 - 0.2, WH, 0.4]]) {
