@@ -273,7 +273,10 @@
     // and the group that lifts, swings and lowers it together: the parent and the grandparent of a mesh named kiyor.../mechona...) and the named machine groups, with all
     // that is under them, are left out - so the laver is not reported "in the air" or "under the floor". A priest standing at the laver is another group and is still checked.
     const notFig = new Set();
-    scene.traverse((o) => { if (o.name && /^(kiyor|mechona)/i.test(o.name)) { notFig.add(o.id); if (o.parent && o.parent !== scene) { notFig.add(o.parent.id); if (o.parent.parent && o.parent.parent !== scene) notFig.add(o.parent.parent.id); } } });
+    // SCAN_420: only a SMALL parent / grandparent (the laver's own groups, under 25 amot across) - in the First House a laver's mesh hangs
+    // straight under the interior's group, and the whole interior (the doors' priest with it) was left out: no figures were found at all
+    const small = (o) => { try { const b = new T.Box3().setFromObject(o), z = b.getSize(new V3()); return Math.max(z.x, z.y, z.z) < 25; } catch (_) { return false; } };
+    scene.traverse((o) => { if (o.name && /^(kiyor|mechona)/i.test(o.name)) { notFig.add(o.id); if (o.parent && o.parent !== scene && small(o.parent)) { notFig.add(o.parent.id); if (o.parent.parent && o.parent.parent !== scene && small(o.parent.parent)) notFig.add(o.parent.parent.id); } } });
     const inLaver = (o) => { for (let p = o; p; p = p.parent) if (notFig.has(p.id)) return true; return false; };
     movers.sort((a, b) => a[1] - b[1]);
     for (const [o] of movers) {
@@ -359,7 +362,7 @@
   S.demoControls = async () => {
     const o = { steps: [] }, chk = (name, ok, detail) => o.steps.push({ name, ok: !!ok, detail });
     const bar = () => document.getElementById('tm-dpause');
-    const btn = (re) => { const e = bar(); return e ? [...e.querySelectorAll('button')].find((b) => re.test(b.textContent)) : null; };
+    const btn = (re) => { const e = bar(); return e ? [...e.querySelectorAll('button')].find((b) => re.test(b.textContent + ' ' + (b.getAttribute('aria-label') || ''))) : null; };
     await sleep(450);
     // SCAN_420: a demonstration that runs as a presentation (the morning's service: the tour's mode "tamid") is driven by the presentation's
     // own banner (#tm-tour-box: pause, back, forward, end) - not by the demonstrations' bar
@@ -372,7 +375,7 @@
     o.bar = shown;
     if (!shown) return o;
     const names = ['השהה', 'מההתחלה', 'עצור', 'אחורה', 'קדימה', 'לאט יותר', 'מהר יותר'];
-    for (const n of names) { const b = [...e.querySelectorAll('button')].find((x) => x.textContent.includes(n)); if (!b) chk('btn-' + n, false, 'הכפתור "' + n + '" חסר בפס'); else if (n !== 'מההתחלה') { const r = b.getBoundingClientRect(); chk('btn-' + n, r.width > 4 && r.height > 4, 'גודל ' + Math.round(r.width) + '×' + Math.round(r.height)); } }
+    for (const n of names) { const b = [...e.querySelectorAll('button')].find((x) => (x.textContent + ' ' + (x.getAttribute('aria-label') || '')).includes(n)); if (!b) chk('btn-' + n, false, 'הכפתור "' + n + '" חסר בפס'); else if (n !== 'מההתחלה') { const r = b.getBoundingClientRect(); chk('btn-' + n, r.width > 4 && r.height > 4, 'גודל ' + Math.round(r.width) + '×' + Math.round(r.height)); } }
     const tick = async (n) => { for (let i = 0; i < n; i++) { window.__step(500); if (i % 3 === 2) await sleep(5); } await sleep(40); };
     await tick(4);
     // pause
@@ -380,7 +383,7 @@
     if (bp) {
       bp.click(); await sleep(60); const paused = c.shared.demoPaused(); chk('pause', paused, 'demoPaused() אחרי לחיצה על השהה: ' + paused);
       window.__step(100); const s0 = S.snap({ still: true }); await tick(3); const s1 = S.snap({ still: true }); const cm = S.cmp(s0, s1); chk('paused-still', cm.same, 'בזמן השהיה הסצנה השתנתה: +' + cm.added + ' −' + cm.removed + ' ~' + cm.changed + ' ' + cm.ex.join(','));
-      await sleep(350); const bp2 = btn(/השהה|המשך/); chk('pause-label', bp2 && /המשך/.test(bp2.textContent), 'תווית הכפתור בהשהיה: ' + (bp2 && bp2.textContent));
+      await sleep(350); const bp2 = btn(/השהה|המשך/); chk('pause-label', bp2 && /המשך|▶/.test(bp2.textContent + ' ' + (bp2.getAttribute('aria-label') || '')), 'תווית הכפתור בהשהיה: ' + (bp2 && bp2.textContent));
       if (bp2) { bp2.click(); await sleep(60); const p2 = c.shared.demoPaused(); chk('resume', !p2 && running().length > 0, 'אחרי המשך: demoPaused=' + p2 + ', רצות=' + running().join(',')); }
       const s2 = S.snap(); await tick(3); const s3 = S.snap(); const cm2 = S.cmp(s2, s3); chk('resumed-moves', !cm2.same, 'אחרי המשך הסצנה לא זזה');
     } else chk('pause', false, 'כפתור ההשהיה חסר');

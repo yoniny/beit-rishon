@@ -38,7 +38,7 @@ export async function openHouse(plugin, house, opts = {}) {
   await sleep(500);
   const tShell = Date.now() - t0;
   if (house === 'shell') return { browser, ctxB, page, msgs, W, H, tShell, VERS, CFG, close: async () => { await ctxB.close(); await browser.close(); } };
-  await page.click('#pick-' + house);
+  await page.evaluate((h) => { const d = document.getElementById('news-dlg') || document.querySelector('dialog[open]'); try { if (d && d.close) d.close(); } catch (_) {} document.getElementById('pick-' + h).click(); }, house);   // (the news may stand over the choice screen)
   const t1 = Date.now();
   const fr = await waitFrameReady(page, house, 200000);
   const tReady = Date.now() - t1;

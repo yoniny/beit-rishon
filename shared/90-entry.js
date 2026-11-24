@@ -1436,6 +1436,7 @@
       b.type = "button";
       b.textContent = txt;
       b.title = title;
+      b.setAttribute("aria-label", txt.replace(/^[^\u0590-\u05FF]+/, ""));   // BAR_TOP_420: the word (the docked bar shows a sign only)
       // DEMO_BAR_SMALL_N9 (the user, 24.11.2026: "תקטין מאוד" - the demonstration's buttons): a small bar - the letters, the padding and the gaps in rem / em
       // (clamp by the window's width: smaller in a small window), no px; a touch still has its 1.5 rem of height (24 px at the browser's size)
       Object.assign(b.style, { background: "rgba(201,168,76,0.16)", color: "#f4ead0", border: "0.07em solid rgba(201,168,76,0.55)", borderRadius: "0.45em",
@@ -1465,13 +1466,44 @@
       bSl = mk("לאט יותר", "מאט את ההדגמה. הקולות שנקבעו מראש נפסקים.", () => speed(-1));
       bFa = mk("מהר יותר", "מאיץ את ההדגמה. הקולות שנקבעו מראש נפסקים.", () => speed(1));
       lR = document.createElement("span");
-      Object.assign(lR.style, { color: "#f4ead0", font: "clamp(0.58rem, 0.46rem + 0.42vw, 0.7rem)/1.2 var(--font-main, inherit)", minWidth: "4em", textAlign: "center", whiteSpace: "nowrap" });
+      Object.assign(lR.style, { color: "#f4ead0", font: "clamp(0.58rem, 0.46rem + 0.42vw, 0.7rem)/1.2 var(--font-main, inherit)", minWidth: "2.2em", textAlign: "center", whiteSpace: "nowrap" });
       row2.appendChild(bBk); row2.appendChild(bFw); row2.appendChild(bSl); row2.appendChild(lR); row2.appendChild(bFa);
       el.appendChild(row1); el.appendChild(row2);
+      for (const b of [bR, bS, bBk, bFw, bSl, bFa]) if (b) b.setAttribute("data-full", b.textContent);
+      el.style.zIndex = "60";   // BAR_TOP_420: over the top bar
       document.body.appendChild(el);
     };
     // DPAUSE_LEFT_300: over whichever is higher, the compass or the nav row, 8 px above it; its left edge with the compass's
+    // BAR_TOP_420 (the user, 24.11.2026: "את הבאנר הזה תגדיר בכל ההדגמות שיהיה בסרגל הקשיח, במיקום שמעל הכרטיס"; of the ways: "א" - in the
+    // top bar itself, one row, at the left over the card): the bar lies in the top bar's free left part, its buttons a sign each (the word in
+    // their tooltip and aria-label). Where the free part is too narrow (a narrow window) - as before (DPAUSE_LEFT_300 below)
+    const SIGNS = () => [[bP, null], [bR, "⟲"], [bS, "■"], [bBk, "⏮"], [bFw, "⏭"], [bSl, "−"], [bFa, "+"]];
+    let docked = false;
+    const dock = (on) => {
+      if (on === docked) return;
+      docked = on;
+      el.style.flexDirection = on ? "row" : "column";
+      for (const [b, sg] of SIGNS()) if (b && sg) b.textContent = on ? sg : b.getAttribute("data-full") || b.textContent;
+      for (const r of el.children) r.style.flexWrap = on ? "nowrap" : "wrap";
+      for (const r of el.children) r.style.gap = on ? "0.12rem" : "0.2rem";
+      el.style.gap = on ? "0.12rem" : "0.2rem"; el.style.padding = on ? "0" : "0.2rem 0.3rem";
+      for (const b of el.querySelectorAll("button")) b.style.padding = on ? "0.1em 0.42em" : "0.1em 0.55em";
+      el.style.background = on ? "transparent" : "rgba(14,17,28,0.78)"; el.style.boxShadow = on ? "none" : "0 0.1rem 0.5rem rgba(0,0,0,0.35)";
+    };
+    const placeTop = () => {
+      const tb = document.getElementById("tm-topbar"), tbn = document.getElementById("tm-topbtns");
+      if (!tb) return false;
+      const r = tb.getBoundingClientRect(), rb = tbn ? tbn.getBoundingClientRect() : null;
+      if (!(r.width > 0 && r.height > 0)) return false;
+      dock(true);
+      const w = el.offsetWidth || 240, h = el.offsetHeight || 28;
+      const x0 = r.left + 50, x1 = rb && rb.width > 0 ? rb.left - 6 : r.left + r.width * 0.3;   // (the version's number at the very left)
+      if (x1 - x0 < w) { dock(false); return false; }
+      el.style.left = Math.round(x0) + "px"; el.style.top = Math.round(r.top + (r.height - h) / 2) + "px"; el.style.bottom = "auto";
+      return true;
+    };
     const place = () => {
+      try { if (placeTop()) return; el.style.top = "auto"; } catch (_) {}
       try {
         const c = document.getElementById("tm-compass"), n = document.getElementById("tm-nav");
         let top = window.innerHeight - 102, left = 12;
@@ -1553,12 +1585,13 @@
       const any = L.some((d) => !isPaused(d));
       // DEMO_BAR_N1: the speed's label, the buttons at the ends of the speeds
       const rt = tm_clock.rate, ri = RATES.indexOf(rt);
-      const rl = "מהירות ×" + (rt === 0.75 ? "¾" : rt === 0.5 ? "½" : String(rt));
+      const rl = (docked ? "×" : "מהירות ×") + (rt === 0.75 ? "¾" : rt === 0.5 ? "½" : String(rt));
       if (lR && lR.textContent !== rl) lR.textContent = rl;
       if (bSl) bSl.disabled = ri === 0;
       if (bFa) bFa.disabled = ri === RATES.length - 1;
       { const nw = tm_clock.now(); if (any && E.last) E.v += Math.max(0, nw - E.last); E.last = nw; }
-      const t = any ? "⏸ השהה" : "▶ המשך";
+      const t = docked ? (any ? "⏸" : "▶") : any ? "⏸ השהה" : "▶ המשך";
+      bP.setAttribute("aria-label", any ? "השהה" : "המשך");
       if (bP.textContent !== t) bP.textContent = t;
       bP.title = any ? "השהיית ההדגמה. אפשר להסתובב ולהסתכל, ואחר כך להמשיך מאותו רגע." : "ממשיך את ההדגמה מהרגע שבו נעצרה.";
       const rs = L.some((d) => fnc(d.restart));

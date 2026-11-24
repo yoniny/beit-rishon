@@ -147,8 +147,14 @@
       // south-west corner, west of the end of the path to the yesod (between the path and the ramp it stood in the ramp's shadow). The
       // exact spot by the corner - a model choice.
       H2.box(grp, 1.12, 0.03, 1.12, holeMat, x0 - 0.5, F, z1 + 0.8);
-      H2.box(grp, 1, 0.08, 1, M2.marble, x0 - 0.5, F, z1 + 0.8);
-      H2.ring(grp, 0.18, 0.04, M2.bronze, x0 - 0.5, F + 0.12, z1 + 0.8);
+      // SHITIN_OPEN_420 (the user, 24.11.2026, of the amah's mouth: "הצורה המטופשת הזו מיותרת! תעשה שבכל לחיצה על מתג זה תפתח הטבלה ויראו
+      // מים!"): the slab and its ring are lifted and laid beside the place, and the water is seen in it (ctx2.shared.shitinSlab.set(open))
+      { const sl = H2.box(grp, 1, 0.08, 1, M2.marble, x0 - 0.5, F, z1 + 0.8), rg = H2.ring(grp, 0.18, 0.04, M2.bronze, x0 - 0.5, F + 0.12, z1 + 0.8);
+        const wM = new MeshStandardMaterial({ color: 0x3f86b8, roughness: 0.08, metalness: 0.1, emissive: 0x0e2a40, emissiveIntensity: 0.6 });
+        const wt = new Mesh(new BoxGeometry(0.96, 0.02, 0.96), wM); wt.position.set(x0 - 0.5, F + 0.035, z1 + 0.8); wt.visible = false; wt.userData.noPick = true; grp.add(wt);
+        const L = ctx2.shared.shitinSlabs = ctx2.shared.shitinSlabs || [];
+        L.push({ sl, rg, wt, x: x0 - 0.5, z: z1 + 0.8, ry: rg && rg.position ? rg.position.y : F + 0.12 });
+        ctx2.shared.shitinSlab = { open: false, set(v) { this.open = !!v; for (const q of ctx2.shared.shitinSlabs) { const dx = this.open ? -1.35 : 0; if (q.sl) q.sl.position.x = q.x + dx; if (q.rg) q.rg.position.x = q.x + dx; q.wt.visible = this.open; } } }; }
       // 1.9.3 (the user, of the kuntres' author's note 8: "להוסיף כשיטה אחרי שיש מקור"): LEVI'S READING - Zevachim 54a "מאי לא היה לה
       // יסוד? רב אמר: בבנין, לוי אמר: בדמים" (130, line 1872); Rashi "לוי אומר בדמים - יסוד היה על פני כל המזרח אבל לא נותנין דמים בחלקו
       // של יהודה" (2191, line 2599). The yesod runs on along the east and the south as well (the south - under the ramp's head, which

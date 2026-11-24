@@ -3908,12 +3908,15 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
         { const lo = Math.min(yX, R.streamEnd[1], ...OUT.map((q) => q[1] - 0.85)) - 3; if (!(typeof SH.camLow === "number" && SH.camLow <= lo)) SH.camLow = lo; }   // the eye may go down to the exit, the stream and the sign
       };
       const setK = (v) => { if (v) build(); seeK = !!v; for (const t of XRK) t.visible = seeK; };
-      const setM = (v) => { if (v) build(); seeK = false; for (let i = 0; i < XRK.length; i++) XRK[i].visible = !!v && i < nK1; };   // MOUTH_N12: only the mouth (the shaft under the shitin), not the long way
+      // SHITIN_OPEN_420 (the user: "הצורה המטופשת הזו מיותרת! תעשה שבכל לחיצה על מתג זה תפתח הטבלה ויראו מים!"): no ghost of the shaft and its ring -
+      // the marble slab is lifted aside and the water is seen (40-altar.js ctx2.shared.shitinSlab)
+      let seeM = false;
+      const setM = (v) => { seeM = !!v; seeK = false; for (let i = 0; i < XRK.length; i++) XRK[i].visible = false; if (SH.shitinSlab) SH.shitinSlab.set(seeM); };
       const setE = (v) => { if (v) build(); seeE = !!v; for (const t of XRE) t.visible = seeE; };
       if (Array.isArray(ctx2.animated)) ctx2.animated.push(() => { if (built || typeof SH.floorY !== "function") return; const now = performance.now(); if (t0 < 0) t0 = now; if (now - t0 > 4000) { try { build(); } catch (e) { console.warn("[aqueducts]", e && e.message); built = true; } } });
       SH.features = SH.features || {};
       SH.features.aqueductKidron = { key: "aqueductKidron", timed: false, isOn: () => seeK, on: () => setK(true), off: () => setK(false) };
-      SH.features.aqueductMouth = { key: "aqueductMouth", timed: false, isOn: () => XRK.length > 0 && XRK[0].visible && !seeK, on: () => setM(true), off: () => setM(false) };
+      SH.features.aqueductMouth = { key: "aqueductMouth", timed: false, isOn: () => seeM, on: () => setM(true), off: () => setM(false) };
       SH.features.aqueductEitam = { key: "aqueductEitam", timed: false, isOn: () => seeE, on: () => setE(true), off: () => setE(false) };
       SH.aqueducts = { build, R, get built() { return built; } };
       const INFO_K = "לשון המשנה (מדות ג, ב): ״ובקרן מערבית דרומית היו שני נקבים, כמין שני חטמין דקין, שהדמים הנתנין על יסוד מערבי ועל יסוד דרומי, יורדין בהן ומתערבין באמה, ויוצאין לנחל קדרון״.\n**ומים מנין לעזרה** — מאמת המים שמעין עיטם (ראו ״אמת המים מעין עיטם״); ״אמר אביי: שמע מיניה עין עיטם גבוה מקרקע עזרה עשרים ושלש אמות״ (יומא לא.).\n**במודל:** תעלה מקורה מתחת לרצפת העזרה — מן השיתין שבקרן המערבית־הדרומית של המזבח דרומה אל כותל העזרה, ויורדת ביסודו; משם בשיפוע מתחת להר הבית אל החומה המזרחית, ובתחתית החומה פתח גלוי, שממנו המים יוצאים בזרם קטן במורד אל נחל קדרון. התעלה שבעזרה נראית מבעד לרצפה במקום ״אמת המים — בעזרה, מן השיתין אל הכותל״. מסלול התעלה, צורתה ומקום היציאה — בחירת מודל: המשנה אומרת רק ״ויוצאין לנחל קדרון״.\n**בבית ראשון לא צוירה** — רש״י (זבחים סא:): ״ובימי שלמה היה כמין בור כרוי אצל המזבח באותה זוית לירד הנסכים בתוכו״.";
