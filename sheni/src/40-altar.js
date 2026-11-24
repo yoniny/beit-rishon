@@ -2178,12 +2178,17 @@
     ctx2.labels.push({ text: "המוכני לרמב״ם — כלי סביב הכיור, ובו המים (בית הבחירה ג, יח)", x: KX - 1, y: F + 6.2, z: KZK, size: 1.0, layer: "mochaniRambam" });
     const T_DOWN = 7000, T_NIGHT = 2500, T_UP = 7000, T_PRE = 1500;
     const M = ctx2.shared.mukhni = {
-      t0: -1, drop: 0,
-      demo() { this.t0 = performance.now(); },
-      stop() { this.t0 = -1; setDrop(0); this.drop = 0; for (const k of Object.keys(capG)) capG[k].visible = false; },
-      pose(d, ph) { this.t0 = -1; setDrop(d); this.drop = d; for (const k of Object.keys(capG)) capG[k].visible = k === ph; }   // a still frame (checks, the tour)
+      t0: -1, drop: 0, held: -1,
+      demo() { this.held = -1; this.t0 = performance.now(); },
+      // MUKHNI_PAUSE_G16: the demonstration pauses, resumes from the same second and restarts (the pause bar, shared/90-entry.js, shows only for an entry that has pause())
+      pause() { if (this.t0 >= 0 && this.held < 0) this.held = performance.now(); },
+      resume() { if (this.t0 >= 0 && this.held >= 0) { this.t0 += performance.now() - this.held; this.held = -1; } },
+      paused() { return this.held >= 0; },
+      stop() { this.held = -1; this.t0 = -1; setDrop(0); this.drop = 0; for (const k of Object.keys(capG)) capG[k].visible = false; },
+      pose(d, ph) { this.held = -1; this.t0 = -1; setDrop(d); this.drop = d; for (const k of Object.keys(capG)) capG[k].visible = k === ph; }   // a still frame (checks, the tour)
     };
-    (ctx2.shared.demoStops || (ctx2.shared.demoStops = [])).push({ id: "alt-mukhni-demo", running: () => M.t0 >= 0, stop: () => M.stop() });   // 1.9.2
+    (ctx2.shared.demoStops || (ctx2.shared.demoStops = [])).push({ id: "alt-mukhni-demo", running: () => M.t0 >= 0, stop: () => M.stop(),
+      pause: () => M.pause(), resume: () => M.resume(), paused: () => M.paused(), restart: () => M.demo() });   // 1.9.2; MUKHNI_PAUSE_G16
     ctx2.shared.flyPoints = ctx2.shared.flyPoints || {};
     // KIYOR_VIEW_S2 (the user: "מבט לא נכון. לדעתי צריך מהכיוון השני, לראות גם את הכיור וגם את המוכני"): from the south-west - the toothed
     // wheel (on the windlass's south side), the well and the laver all seen; until now from the north-east, the wheel behind the laver
@@ -2207,7 +2212,7 @@
       });
     }
     ctx2.animated.push(() => {
-      if (M.t0 < 0) return;
+      if (M.t0 < 0 || M.held >= 0) return;
       const e = (performance.now() - M.t0) / (ctx2.shared.demoSlow || 1.5);
       let d = 0, ph = "eve";
       if (e < T_PRE) { d = 0; ph = "eve"; }
