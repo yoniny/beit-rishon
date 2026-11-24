@@ -1650,7 +1650,7 @@
           GRIDH = { x0, z0, nx, nz, dx: (x1 - x0) / nx, dz: (z1 - z0) / nz, a: Float32Array.from({ length: ps.count }, (_, i) => ps.getY(i)), b: Float32Array.from({ length: ps.count }, (_, i) => psS.getY(i)) }; ML.gridh = GRIDH;
           geo.computeVertexNormals(); geoS.computeVertexNormals();
           const sm2 = new Mesh(geoS, new MeshStandardMaterial({ color: 0x8c7653, roughness: 1 })); sm2.position.set((x0 + x1) / 2, 0, (z0 + z1) / 2); sm2.receiveShadow = true; sm2.userData.noPick = true; sm2.name = "irDavidSlopes"; CG.add(sm2);
-          const rm = new Mesh(geo, new MeshStandardMaterial({ color: 0xcdb88f, roughness: 1 })); rm.position.set((x0 + x1) / 2, 0, (z0 + z1) / 2); rm.receiveShadow = true; rm.userData.noPick = true; CG.add(rm);
+          const rm = new Mesh(geo, new MeshStandardMaterial({ color: 0xcdb88f, roughness: 1 })); rm.position.set((x0 + x1) / 2, 0, (z0 + z1) / 2); rm.receiveShadow = true; rm.userData.noPick = true; rm.name = "irDavidGround"; CG.add(rm);
         }
         const meshH = (x, z) => {   // the drawn ground at (x, z): the triangles of the grid (PlaneGeometry: a b d / b c d), the higher of the two meshes
           const G3 = GRIDH, fx = (x - G3.x0) / G3.dx, fz = (z - G3.z0) / G3.dz, ix = Math.max(0, Math.min(G3.nx - 1, Math.floor(fx))), iy = Math.max(0, Math.min(G3.nz - 1, Math.floor(fz))), u = fx - ix, v = fz - iy, W1 = G3.nx + 1;
@@ -1874,6 +1874,9 @@
         { const [dx2, dz2] = ML.davidAt, [dg0, dg1] = footMin(dx2, dz2, 22, 14, 0, 6), dy = dg0 - 0.5; H2.box(davidG, 22, dg1 + 9 - dy, 14, M2.stoneLight || M2.stone, dx2, dy, dz2); H2.box(davidG, 23, 0.6, 15, roofM, dx2, dg1 + 9, dz2); check(dx2, dz2, 22, 14, 0, dy);
           const tx2 = dx2 + 24, tz2 = dz2 + 2, ty2 = footMin(tx2, tz2, 11, 8, 0, 4)[0] - 0.2; const tm2 = new Mesh(new ConeGeometry(4.2, 5.5, 4, 1, true).rotateY(Math.PI / 4).translate(0, 2.75, 0), tentMs[0]); tm2.position.set(tx2, ty2, tz2); tm2.scale.set(1.4, 1, 1); tm2.castShadow = true; arkTent.add(tm2); ML.arkAt = [tx2, ty2, tz2]; }
         CG.traverse((o) => { if (o.isMesh) o.userData.noPick = true; });
+        // WALK_CITY_N7 (fix-n7, 24.11.2026): what one stands on in walk mode - the city's ground, the slopes outside the wall, the steps, the
+        // courts and the stairs down to the pool of the Shiloach (shared/90-entry.js ent_solids: userData.walkFloor). The houses, walls and towers are not.
+        CG.traverse((o) => { if (o.isMesh && /^irDavid(Ground|Slopes|Steps|Courts|Stairs)$/.test(o.name)) o.userData.walkFloor = true; });
         ML.cityParts = { wallG, breachFill, outer, towers, fortG, towerG, stairG, davidG, arkTent };
         try { buildChannel(); } catch (e) { console.warn("[parallels] channel", e && e.message); }
         applyMillo();
@@ -1888,6 +1891,23 @@
           try { const D1 = ctx.shared.shiloachDemo1; if (D1 && fnc(D1.spring)) D1.spring(); } catch (e) { console.warn("[parallels] ir david spring", e && e.message); }
           ensure();
         }
+        // WALK_CITY_N7 (fix-n7, 24.11.2026; the user: from the City of David one could not walk on to the Shiloach, and back): the view's limits
+        // (90-entry.js ent_view: a band 230 amot round the axis of the site, and the target no lower than -15) end at z ~740 and at -15 - the
+        // city reaches z 1010 and the spring lies in the valley under it - so a walk was pushed back at every step. With the layer on, the
+        // limits take in the city's outline and the spring (each point's own height: the spring's low); off - they are given back.
+        try {
+          const VL = ctx.shared.viewLimits;
+          if (VL) {
+            if (on) {
+              if (!ML.vlSaved) ML.vlSaved = VL.get();
+              const low = typeof ctx.shared.camLow === "number" ? ctx.shared.camLow : -45, SP = ctx.shared.shiloachSpring1;
+              for (const [px, pz] of POLY) VL.include([px, low, pz]);
+              VL.include([IR_C.tip[0], -12, IR_C.tip[1]]);
+              if (SP && SP.spout) VL.include([SP.spout[0], low, SP.spout[2]]);
+              if (SP && SP.approach) VL.include([SP.approach[0], low, SP.approach[1]]);
+            } else if (ML.vlSaved) { VL.set(ML.vlSaved); ML.vlSaved = null; }
+          }
+        } catch (e) { console.warn("[parallels] ir david view limits", e && e.message); }
         return IR.visible;
       };
       ctx.shared.irDavid = { get on() { return IR.visible; }, set: setLayer, millo: MILLO_C, ground: (x, z) => ridgeH(x, z), buildChannel: () => buildChannel(), channel: () => ML.channel || null, drawnH: (x, z) => drawnH(x, z), poly: () => IR_C.poly, stats: () => ({ houses: ML.cityCount || 0, terraces: ML.terraceCount || 0, courts: ML.courtCount || 0, flights: ML.stepFlights || 0, check: ML.chk || null, milloCheck: ML.milloChk || null, millo: !!ML.parts, err: ML.err, errC: ML.errC, buildMs: ML.buildMs }) };
