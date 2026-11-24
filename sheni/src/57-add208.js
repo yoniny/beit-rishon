@@ -217,6 +217,7 @@
       SH.beitEvenUpper = { y: yU, at: [86, yU, -62.5] };
       const yo = groundAt(86, -96, 60, LV.HAR);
       chamber(beOut, 81, 91, -101, -91, yo, "s", "לשכת בית האבן — לתוספות, חוץ לעזרה");
+      SH.beitEvenOut = { y: yo, at: [86, yo, -96] };
     }
     SH.beitEven = {
       mode: "rashi",

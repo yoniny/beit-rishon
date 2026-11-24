@@ -490,7 +490,7 @@
       // Levite of the gates) - they go back to "not said" (blue plate, plain dress); the sources stay in the card as a hint only.
       const OFF = [
         ["1 · יוחנן בן פנחס — החותמות", "יוחנן בן פנחס — על החותמות", "p", -11.0, -68.4, 16, 0, 1, [0, 0, -10]],
-        ["2 · אחיה — הנסכים", "אחיה — על הנסכים", "p", 120, 47.5, 6, HPI, 2, [0, 0, 0]],
+        ["2 · אחיה — הנסכים", "אחיה — על הנסכים", "p", 120, 47.5, 6, HPI, -1, [0, 0, 0]],   // ACHIYA_SHEMANIM_G5: his figure stands in the chamber of the oils always (above, in the chamber's own build); here only the plate and the disc
         ["3 · מתתיה בן שמואל — הפייסות", "מתתיה בן שמואל — על הפיסות", "p", 84, -60.2, 16, Math.PI, 0, [0, 0, 0]],   // the hall's east half, by its door ("פייס במזרחה", Yoma 25a)
         ["4 · פתחיה — הקינין", "פתחיה (הוא מרדכי) — על הקינין", "i", 84.2, -7.2, 13.5, Math.PI, 0, [-14, 0, -10]],
         ["5 · בן אחיה — חולי מעיים", "בן אחיה — על חולי מעיים", "k", -13, -53.6, 16, 0, 1, [6, 0, 10]],
@@ -1175,6 +1175,13 @@
         lbl("חביות קטנות של יין — ״ואינו ממלא את החביות עד פיהם״", cx - 3.3, 8.8, cz + 6.5, 1.0);
         lbl("מדפים מלאים כדי שמן", cx, 13.2, cz - 10.2, 1.2);
         lbl("שבע מדות של לח — הין עד רביעית לג", cx + 0.5, 8.7, cz + 2.6, 1.0);   // OIL_DOORS_B2: over the table's new place
+        // ACHIYA_SHEMANIM_G5 (the user, 24.11.2026 05:13, replacing his "אחיה - בטל"): ACHIYA, the one appointed over the libations, stands in the
+        // chamber of the oils: "אחיה על הנסכים" (Shekalim 5:1), the one who gives the libations against the seal (5:4), and the chamber is where
+        // "היו נותנין יין ושמן" (Middot 2:5, Abba Shaul). The sources do not bind him to THIS chamber: the user's decision and a MODEL CHOICE (the card
+        // says so). A man in the plain robe of "an appointee" (his tribe is not said), in the aisle between the two doors, facing the table of the
+        // measures; his place, face and dress - model choices. (The fifteen appointees' layer keeps his plate and disc, without a second figure.)
+        try { tm_people(ctx2).crowd(g, [[OILX, cz, -Math.PI / 2]], { y: 6, s: 1.5, pose: "stand", kind: "worker", robe: 0x56606e, tone: () => 2, exact: true, name: "achiyaShemanim" }); } catch (_) {}
+        lbl("אחיה — הממונה על הנסכים", OILX, 11.4, cz, 1.2);
       }
       eznLbl[c.name] = ctx2.labels.slice(l0);
     }
