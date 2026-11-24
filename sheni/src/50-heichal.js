@@ -791,6 +791,15 @@
         const D = s > 0 ? doorsS : doors, BM = s > 0 ? beamsS : beams;
         for (let k = 0; k < 3; k++) {
           const y0 = yb(k), y1 = yt(k);
+          // PISH_DOORS_420 (the user 24.11.2026: "בשיטת חכמים בכל הקריאות הכהן נבלע פעמיים בקיר!"; Middot 4:2-3 "ונכנס להתא, ומהתא להיכל"):
+          // the north-east cell's two doors made real openings in the storey of the pishpesh (the floor F) - in the cell's east end wall in
+          // line with the pishpesh (z 17.5..20.5), and in the house's wall at x -7.6..-5.4 (his way at -6.5); 6.2 high. Until now only the
+          // pishpesh went through, and he walked through two solid walls. Their width and height - model choices
+          const pishK = s < 0 && y0 <= F + 0.01 && F + 6.2 <= y1;
+          if (pishK) {
+            boxXZ(s, xW(k), -7.6, y0, y1, ...Z(10, A(k))); boxXZ(s, -5.4, -4.5, y0, y1, ...Z(10, A(k)));
+            boxXZ(s, -7.6, -5.4, y0, F, ...Z(10, A(k))); boxXZ(s, -7.6, -5.4, F + 6.2, y1, ...Z(10, A(k)));
+          } else
           boxXZ(s, xW(k), -4.5, y0, y1, ...Z(10, A(k)));                                       // the house's wall
           if (R.pil && k === 0) boxXZ(s, xW(0), -4.5, ST[0], ST[1] - 1, ...Z(A(0), A(0) + 1));   // RID: the wall of one amah
           if (R.shift && k < 2) {
@@ -803,6 +812,12 @@
           for (let i = 0; i < 4; i++) pieces.push([cells[i + 1][1], cells[i][0]]);
           pieces.push([xW(k), cells[4][0]]);
           pieces.forEach(([p0, p1], i) => {
+            if (pishK && i === 0) {   // PISH_DOORS_420: the end wall's door, in line with the pishpesh
+              const za = Math.max(A(k), 17.5), zb = Math.min(B(k), 20.5);
+              boxXZ(s, p0, p1, y0, y1, ...Z(A(k), za), PART); boxXZ(s, p0, p1, y0, y1, ...Z(zb, B(k)), PART);
+              boxXZ(s, p0, p1, y0, F, ...Z(za, zb), PART); boxXZ(s, p0, p1, F + 6.2, y1, ...Z(za, zb), PART);
+              return;
+            }
             boxXZ(s, p0, p1, y0, y1, ...Z(A(k), B(k)), PART);
             if (i > 0 && i < 5) inst(D, (p0 + p1) / 2, ST[k] + 1.5, s * (A(k) + cw[k] / 2), p1 - p0 + 0.1, 3, 1.6);
           });
@@ -950,13 +965,13 @@
         // the eye stands over the cell's inner wall and looks down at the shelves: at 62 degrees, or steeper where the cell is deep
         // (the line from the bottom shelf's front must clear the top of the cell's inner wall), 15.5 amot from the shelves - the
         // rack fills the middle of the picture, and little of the cut wall shows under it
-        const g = geo(), ty = g.y0 + 1.2, tz = g.zOut + 0.9;
-        const need = Math.atan2(g.yCut + 0.3 - (g.y0 + 1), g.zIn - 0.1 - (g.zOut + SH_D[0]));
-        const th = Math.max(62 * Math.PI / 180, need + 0.035), d = 15.5;
-        return { cam: [CX2, ty + d * Math.sin(th), tz + d * Math.cos(th)], tg: [CX2, ty, tz] };
+        // KELIM_FRONT_420 (the user 24.11.2026: "לשכת הכלים לא תוקן המבט!" - from above the vessels were seen as a strip): from the front,
+        // at the shelves' height - the cell cut along its inner wall (a section across z, below), the eye in the house before it
+        const g = geo();
+        return { cam: [CX2, g.y0 + 2.6, g.zOut + 8.6], tg: [CX2, g.y0 + 1.5, g.zOut + 0.6] };
       };
       ctx2.shared.features = ctx2.shared.features || {};
-      const apply = () => { const g = place(), S = ctx2.shared.section; if (S && typeof S.set === "function") S.set(true, "y", g.yCut); };
+      const apply = () => { const g = place(), S = ctx2.shared.section; if (S && typeof S.set === "function") S.set(true, "z", g.zIn - 0.05); };   // KELIM_FRONT_420 (across y at the cell's top until now)
       ctx2.shared.features.kelim = { key: "kelim", timed: false, isOn: () => KG.visible,
         on: () => {
           const S = ctx2.shared.section;
@@ -1413,7 +1428,8 @@
     // First Temple plugin's canvas carving (45-vessels.js int_carvedMat); plain gold if that fails
     let lineMat = M2.gold;
     try { lineMat = int_carvedMat(5, 10); ctx2.labels.push({ text: "כרובים דצורתא — פיתוחי הקירות (יומא נד.)", x: -25, y: 50, z: -9.3, size: 1.3 }); } catch (e) { console.warn("[heichal] carvings skipped:", e && e.message); }
-    H2.box(g, 61, 40, 0.6, lineMat, -35, F, -9.68);
+    // PISH_DOORS_420: the north liner with the cell's door at x -7.6..-5.4 (the way from the cell into the house)
+    H2.box(g, 57.9, 40, 0.6, lineMat, -36.55, F, -9.68); H2.box(g, 0.9, 40, 0.6, lineMat, -4.95, F, -9.68); H2.box(g, 2.2, 33.8, 0.6, lineMat, -6.5, F + 6.2, -9.68);
     const lineS = H2.box(g, 61, 40, 0.6, lineMat, -35, F, 9.68);
     H2.box(g, 0.6, 40, 18.76, lineMat, -65.18, F, 0);
     cut.push(lineS);
@@ -4055,7 +4071,7 @@
         ctx2.layers.kanim = KN;
         ctx2.layers.kanimTwo = second;
         ctx2.layers.kanimOne = oneG;
-        const KX = -42, KZ = [-2.3, -3.9], KH = 1.5, ky = FY(KX);   // KANIM_NORTH_D: z -2.3 / -3.9 (were +2.3 / +3.9)
+        const KX = -43.3, KZ = [-2.3, -3.9], KH = 1.5, ky = FY(KX);   // KAN_CLEAR_420 (the user 24.11.2026: "אם השלחנות בקריאת שמוע, הכן נכנס בתוכם"): x -43.3, in the 2.5 amot before the parochet - Solomon's west column of tables (north-south) stands at -42..-41 (-42 until now)   // KANIM_NORTH_D: z -2.3 / -3.9 (were +2.3 / +3.9)
         const stand = (parent, z) => {
           // MIZRAK_A2: its top a narrow ring with a hollow under it, the mizrak's point down in it, held by its sides at the ring ("שוליהן
           // חדין" - it cannot stand on a flat top), most of it seen above; until now a broad flat top and the bowl on it. The ring and the

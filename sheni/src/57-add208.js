@@ -2864,10 +2864,10 @@
     // width, height, direction and the area they cover.
     {
       const BG = grp("highBenches", true);   // BENCHES_ON (the user 24.11.2026: the "without" option cancelled - the benches always shown, as Chalamish describes)
-      const F = LV.KOH, RW = 1, RH = 0.5, GAP = 0.75;
+      const F = LV.KOH, RW = 0.7, RH = 0.5, GAP = 0.75;   // BENCH_THIN_420 (the user 24.11.2026: "תדקק קצת את האיצטבאות בעובי שלהן"): 0.7 (1 until now)
       const parts = [];
-      const Z0 = -32.5, Z1 = 45.5;   // in the altar's frame (world z - 12.5 at the Mishnah's place): from the rings' edge to past the ramp's foot
-      for (let x = 30 + RW / 2; x <= 80; x += RW + GAP) {
+      const Z0 = -14.4, Z1 = 45.5;   // BENCH_RINGS_420 (the user 24.11.2026, "3. ג"): they end before the rings (z -15 .. -39) - the rings' ground smooth (-32.5 until now, the front rings stood on the rows)   // in the altar's frame (world z - 12.5 at the Mishnah's place): from the rings' edge to past the ramp's foot
+      for (let x = 30 + RW / 2; x <= 75.5; x += RW + GAP) {   // BENCH_DUCHAN_420 (the user 24.11.2026: "לא יתכן שבקריאת החזו״א יהיו אצטבאות על הדוכן"): to x 75.5 - the Chazon Ish's chamber of the duchan opens at 76.5 (80 until now)
         const cut = [];
         if (x > 38.6 && x < 72.4) cut.push([-20.4, 12.6]);   // the altar's base (and its yesod)
         if (x > 45.6 && x < 65.4) cut.push([12.4, 43.6]);    // the ramp and its little ramps

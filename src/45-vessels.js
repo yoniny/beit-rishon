@@ -1398,10 +1398,13 @@
         kidd.h.g.visible = on;
         if (on) {
           const rx = -Math.cos(YW82), rz = Math.sin(YW82), fx = Math.sin(YW82), fz = Math.cos(YW82);   // TAP_212_K: at his right, as he now stands
-          kidd.h.g.position.set(w.g.position.x + rx * 0.72 + fx * 0.12, F, w.g.position.z + rz * 0.72 + fz * 0.12);
-          kidd.h.g.rotation.y = YW82 + Math.PI / 2;
-          kidd.h.lean.rotation.x = 0.2 * k;
-          ark_setArm(kidd.h.L, [-0.95 * k + 0.05 * (1 - k), -0.16, -0.5 * k - 0.15 * (1 - k)], 1); ark_setArm(kidd.h.R, [-0.95 * k + 0.05 * (1 - k), -0.16, -0.5 * k - 0.15 * (1 - k)], -1);
+          // HELPER_HOLD_420 (the user 24.11.2026: "במה כהן מסייעו? לא ברור" - he stood upright, his hands in the air at the height the
+          // other's back had before he bowed): nearer (0.62) and a little behind him, bowed with him (0.5), his hands down and forward on
+          // the bowed one's side and back
+          kidd.h.g.position.set(w.g.position.x + rx * 0.62 - fx * 0.1, F, w.g.position.z + rz * 0.62 - fz * 0.1);
+          kidd.h.g.rotation.y = YW82 - Math.PI / 2;   // HELPER_HOLD_420: his face to the one he holds (+PI/2 until now - he leaned away from him)
+          kidd.h.lean.rotation.x = -0.45 * k;   // (this rig leans forward on -x)
+          ark_setArm(kidd.h.L, [-0.5 * k + 0.05 * (1 - k), -0.1, -0.3 * k - 0.15 * (1 - k)], 1); ark_setArm(kidd.h.R, [-0.42 * k + 0.05 * (1 - k), -0.2, -0.2 * k - 0.15 * (1 - k)], -1);
         }
       }
       // the water on him: the stream ends at his hands; from each hand to its foot, and the wet on the hands and the feet

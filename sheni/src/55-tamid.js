@@ -1215,7 +1215,7 @@
         const ltG = new Group();
         ltG.add(mesh(new CylinderGeometry(0.03, 0.025, 0.7, 6), MAT.wood, 0, 0.2, 0));
         if (fnc(SH.liveFlame)) SH.liveFlame(ltG, 0, 0.55, 0, 0.14, 0.62, 0.95); else { const f = new Mesh(new ConeGeometry(0.075, 0.26, 8), mFlame); f.position.y = 0.66; ltG.add(f); }   // TORCHES_LIVE_N3
-        prop("ltorch", ltG, { p: [0, -0.08, 0.08], r: [-0.3, 0, 0] }, false);
+        prop("ltorch", ltG, { p: [0, -0.08, 0.08], r: [-1.55, 0, 0] }, false);   // TORCH_FWD_420 (the user 24.11.2026: "הלפיד שוב לכיוון הכהן ולא הלוי" - bent over, the flame pointed back at the officer): held forward, the flame ahead - lowered, to the hem
         // none of these is a floor or a wall: the figures' floor ray (floorAt) and the camera pass through them
         for (const o of [grp, cloakG, stickG, pakG, ltG]) o.traverse((m) => { m.userData.noPick = true; });
         return {

@@ -1097,7 +1097,7 @@
           H2.wall(g, { axis: "z", length: HS * 2 - T * 2, height: HH, thickness: T, mat: M2.stoneLight, cx: px - (HS - T / 2), cz: pz, y: Y0 });
           H2.wall(g, { axis: "z", length: HS * 2 - T * 2, height: HH, thickness: T, mat: M2.stoneLight, cx: px + (HS - T / 2), cz: pz, y: Y0, openings: [{ center: 0, width: 1.8, height: 5 }] });
           const lf = H2.box(g, 0.14, 4.9, 1.7, M2.cedar, 0, Y0, 0), hx = px + HS - T - 0.08, hz = pz - 0.9, a = 1.0;   // the leaf, hinged at the north jamb
-          lf.position.x = hx - Math.sin(a) * 0.85; lf.position.z = hz + Math.cos(a) * 0.85; lf.rotation.y = -a;
+          lf.position.x = hx - Math.sin(a) * 0.85; lf.position.z = hz + Math.cos(a) * 0.85; lf.rotation.y = -a;   ctx2.lishkotCut.push(lf);   // LEAF_CUT_420: with the roofs open the leaf is lifted too (seen from above it hid the floor)
           const rf = H2.box(g, HS * 2 + 0.6, 0.45, HS * 2 + 0.6, M2.stoneSmooth, px, Y0 + HH, pz);   // the roof
           ctx2.lishkotCut.push(rf);
           H2.box(g, 0.9, 0.8, 2.6, M2.stoneSmooth, px - HS + T + 0.45, Y0, pz);                        // the bench
@@ -1713,7 +1713,7 @@
           leaf.position.set(wx - nx * (T / 2 + 0.15) - (nx ? 0 : DW / 2) + (nx ? 0 : dof), y0 + 0.3, wz - nz * (T / 2 + 0.15) - (nx ? DW / 2 : 0) + (nx ? dof : 0));
           leaf.rotation.y = (nx ? -nx : nz) * 0.6;   // ajar, into the room
           leaf.castShadow = leaf.receiveShadow = true;
-          g.add(leaf);
+          g.add(leaf); ctx2.lishkotCut.push(leaf);   // LEAF_CUT_420: the user (24.11.2026, the views from above): the leaf ajar covered the room
         } else {
           H2.box(g, nx ? T : along, h, nx ? along : T, M2.stoneLight, wx, y0, wz);
         }
@@ -2149,15 +2149,39 @@
       // flight down eastwards along the court's wall. Model choices, as the other gates' steps.
       // MESIBAH_303: the mouth of the way down to the bath (the north-west chamber) goes through the base as well - the base in pieces
       // round it, its stone's texture as one
-      { const [hx, hz] = chC(-1, -1); for (const m of boxHoles(g, W, 13.5, 7.5, M2.stone, X, 0, -73.75, [{ x: hx, z: hz, w: 3.5, d: 3.5 }])) uvLike(m, X - W / 2, X + W / 2, 0, 13.5, -77.5, -70); }
+      // MOKED_TYT_420 (the user 24.11.2026, "בקריאת שערי בית המוקד בשתי השיטות משום מה לא בוטלו המדרגות - קריאת תפא״י הכללית"; his choice "א"):
+      // in the Tiferet Yisrael's one flight round the walls (20-mount.js chelSteps "around") the house's gate to the chel has no flight and
+      // no landing - its sill at the head of the steps round (six amot), and twenty steps of half an amah go up from it inside, to the
+      // hall's floor (16), as the courts' gates (RING_GATES): in the default reading through the north doorway (x X-5..X+5, z -77.5..-67.5),
+      // in the Rosh's through his gate in the east wall, westward (x X+6..X+16, z -75.8..-70.8). So the base is cut at both places (filled
+      // under six amot always) and the cuts are plugged in the other readings. The steps inside - a model choice
+      const MT = { D: { x: X, z: -73.75, w: 10, d: 7.5 }, R: { x: X + 11, z: -73.3, w: 10, d: 5 } };
+      { const [hx, hz] = chC(-1, -1); for (const m of boxHoles(g, W, 13.5, 7.5, M2.stone, X, 0, -73.75, [{ x: hx, z: hz, w: 3.5, d: 3.5 }, MT.D, MT.R])) uvLike(m, X - W / 2, X + W / 2, 0, 13.5, -77.5, -70); }
+      for (const q of [MT.D, MT.R]) H2.box(g, q.w, 6, q.d, M2.stone, q.x, 0, q.z);   // under the sill: whole
+      const mtShow = (o, on) => { if (!o) return; o.userData.homeParent = o.userData.homeParent || o.parent; const P = o.userData.homeParent; o.visible = on; if (on && P && o.parent !== P) P.add(o); else if (!on && o.parent) o.parent.remove(o); };
+      const mtG = { plugD: new Group(), plugR: new Group(), inD: new Group(), inR: new Group() };
+      for (const k of Object.keys(mtG)) { g.add(mtG[k]); mtG[k].userData.homeParent = g; }
+      H2.box(mtG.plugD, MT.D.w, 7.5, MT.D.d, M2.stone, MT.D.x, 6, MT.D.z);
+      H2.box(mtG.plugR, MT.R.w, 7.5, MT.R.d, M2.stone, MT.R.x, 6, MT.R.z);
+      H2.stairs(mtG.inD, { width: 10, totalRise: 10, steps: 20, dir: "S", x: X, y: 6, z: -77.5, tread: 0.5 });
+      H2.stairs(mtG.inR, { width: 5, totalRise: 10, steps: 20, dir: "W", x: X + W / 2, y: 6, z: -73.3, tread: 0.5 });
+      const mtUpd = () => {
+        const tyt = !!(ctx2.shared.chelSteps && ctx2.shared.chelSteps.mode === "around"), rosh = !!(ctx2.shared.mokedGates && ctx2.shared.mokedGates.mode === "adjacent");
+        mtShow(mtG.plugD, !(tyt && !rosh)); mtShow(mtG.inD, tyt && !rosh);
+        mtShow(mtG.plugR, !(tyt && rosh)); mtShow(mtG.inR, tyt && rosh); if (mtG.roshIn5) mtShow(mtG.roshIn5, !(tyt && rosh));
+        if (typeof ctx2.shared.solidsChanged === "function") ctx2.shared.solidsChanged();
+      };
+      ctx2.shared.__mokedTyt = mtG; ctx2.shared.__mokedTytUpd = mtUpd;
       {
         const z0 = -79.8, z1 = Z - D / 2;
-        H2.box(mokedDef, 12, 13.5, z1 - z0, M2.stoneSmooth, X, 0, (z0 + z1) / 2);
-        platRail(mokedDef, X - 6, X + 6, z0, z1, 13.5, ["n", "w"]);
-        stairsR(mokedDef, { width: z1 - z0, totalRise: 13.5, steps: 27, dir: "W", x: X + 6 + 13.5, y: 0, z: (z0 + z1) / 2, tread: 0.5 }).userData.chelFlight = true;   // RING_MERGE_420: a chamber's steps merge with the chel's
-        H2.box(mokedRosh, 5, 13.5, 5, M2.stoneSmooth, X + W / 2 + 2.5, 0, -73.3);
-        platRail(mokedRosh, X + W / 2, X + W / 2 + 5, -75.8, -70.8, 13.5, ["n"]);
-        stairsR(mokedRosh, { width: 5, totalRise: 13.5, steps: 27, dir: "W", x: X + W / 2 + 5 + 13.5, y: 0, z: -73.3, tread: 0.5 }).userData.chelFlight = true;   // RING_MERGE_420: a chamber's steps merge with the chel's
+        const landD = new Group(), landR = new Group(); mokedDef.add(landD); mokedRosh.add(landR);   // MOKED_TYT_420: gone in the one flight round
+        (ctx2.shared.ringHide = ctx2.shared.ringHide || []).push(landD, landR);
+        H2.box(landD, 12, 13.5, z1 - z0, M2.stoneSmooth, X, 0, (z0 + z1) / 2);
+        platRail(landD, X - 6, X + 6, z0, z1, 13.5, ["n", "w"]);
+        stairsR(landD, { width: z1 - z0, totalRise: 13.5, steps: 27, dir: "W", x: X + 6 + 13.5, y: 0, z: (z0 + z1) / 2, tread: 0.5 });
+        H2.box(landR, 5, 13.5, 5, M2.stoneSmooth, X + W / 2 + 2.5, 0, -73.3);
+        platRail(landR, X + W / 2, X + W / 2 + 5, -75.8, -70.8, 13.5, ["n"]);
+        stairsR(landR, { width: 5, totalRise: 13.5, steps: 27, dir: "W", x: X + W / 2 + 5 + 13.5, y: 0, z: -73.3, tread: 0.5 });
       }
       // FLOOR_211: the northern half's floor, level with the court's pave (which is the southern half's) - less the stairwell inside
       // the gate to the chel, the stairwell inside the Rosh's eastern gate (in his reading only) and the mouth of the way down in
@@ -2165,12 +2189,24 @@
       {
         const [nwx, nwz] = chC(-1, -1);
         const RG = { x: X + W / 2 - 1 - 1.25, z: -73.3, w: 2.5, d: 5 };   // inside the Rosh's gate (z -75.8..-70.8)
-        boxHoles(g, W - 2, FL - 13.5, D / 2 - 1, M2.pave, X, 13.5, Z - (D / 2 - 1) / 2, [{ x: X, z: Z - D / 2 + 1 + 1.25, w: 10, d: 2.5 }, { x: nwx, z: nwz, w: 3.5, d: 3.5 }, RG]);
+        // MOKED_TYT_420: the floor cut along the twenty steps' way (north half, x X-5..X+5; and x X+6..X+15 at the Rosh's gate); the
+        // floor and the five steps of the stairwell (as until now) in the plugs - shown in every reading but the one flight round
+        const FD = { x: X, z: Z - (D / 2 - 1) / 2, w: 10, d: D / 2 - 1 }, FR = { x: X + 10.5, z: RG.z, w: 9, d: RG.d };
+        boxHoles(g, W - 2, FL - 13.5, D / 2 - 1, M2.pave, X, 13.5, Z - (D / 2 - 1) / 2, [FD, { x: nwx, z: nwz, w: 3.5, d: 3.5 }, FR]);
+        const mtG = ctx2.shared.__mokedTyt;
+        boxHoles(mtG.plugD, 10, FL - 13.5, D / 2 - 1, M2.pave, X, 13.5, FD.z, [{ x: X, z: Z - D / 2 + 1 + 1.25, w: 10, d: 2.5 }]);
+        H2.box(mtG.plugR, FR.w - RG.w, FL - 13.5, RG.d, M2.pave, X + 6 + (FR.w - RG.w) / 2, 13.5, RG.z);   // x X+6..X+12.5
+        const roshIn5 = new Group(); mokedRosh.add(roshIn5);
         H2.box(mokedDef, RG.w, FL - 13.5, RG.d, M2.pave, RG.x, 13.5, RG.z);   // the default reading: no gate there - the floor is whole
         for (let k = 0; k < 5; k++) {
-          H2.box(g, 10, 0.5 * (k + 1), 0.5, M2.stoneSmooth, X, 13.5, Z - D / 2 + 1 + 0.25 + 0.5 * k);
-          H2.box(mokedRosh, 0.5, 0.5 * (k + 1), RG.d, M2.stoneSmooth, X + W / 2 - 1 - 0.25 - 0.5 * k, 13.5, RG.z);
+          H2.box(mtG.plugD, 10, 0.5 * (k + 1), 0.5, M2.stoneSmooth, X, 13.5, Z - D / 2 + 1 + 0.25 + 0.5 * k);
+          H2.box(roshIn5, 0.5, 0.5 * (k + 1), RG.d, M2.stoneSmooth, X + W / 2 - 1 - 0.25 - 0.5 * k, 13.5, RG.z);
         }
+        mtG.roshIn5 = roshIn5;
+        { const CS = ctx2.shared.chelSteps, MG = ctx2.shared.mokedGates;   // MOKED_TYT_420: both rows move them
+          if (CS && !CS.__mt) { const s0 = CS.set; CS.set = function(m) { const r = s0.call(this, m); try { ctx2.shared.__mokedTytUpd(); } catch (_) {} return r; }; CS.__mt = true; }
+          if (MG && !MG.__mt) { const s1 = MG.set; MG.set = function(m) { const r = s1.call(this, m); try { ctx2.shared.__mokedTytUpd(); } catch (_) {} return r; }; MG.__mt = true; }
+          ctx2.shared.__mokedTytUpd(); }
       }
       // ROVDIN_NICHES_N2 (the user's decision, 23.11.2026, on the Mefaresh): the bed-niches are CUT INTO the end walls (0.7 deep in the wall's one
       // amah), in the northern half of the hall only (the half built in the chel: z -70..-67.5 - "אותו בית המוקד שבנוי בחול היה מוקף רובדין",
@@ -2299,7 +2335,7 @@
         for (const sx of [-1, 1]) {
           const bx = X + sx * (W / 2 - 1.8), rx = X + sx * 10;
           arrow(aB, [bx, 24.2, -57], [bx, 24.2, -63.6]); arrow(aB, [bx, 24.2, -73.4], [bx, 24.2, -66.8]);   // the beam-ends, from the holy side and from the profane
-          arrow(aR, [rx, FL + 2.2, -57], [rx, FL + 0.9, -63.6]); arrow(aR, [rx, FL + 2.2, -73.4], [rx, FL + 0.9, -66.8]);   // the lattice
+          { const gx = X + sx * 3; arrow(aR, [gx, FL + 3.2, -59.5], [gx, FL + 0.45, -64.4]); arrow(aR, [gx, FL + 3.2, -70.9], [gx, FL + 0.45, -66.0]); }   // the floor grating in the aisle - GRATE_ARROWS_420 (the user 24.11.2026: "חצים ממוקדים לשבכה"; until now at x ±10, at the lattice hidden in the chambers' walls)
         }
         for (const zz of [-52, 63]) { arrow(iaB, [77, 24, zz], [83.6, 24, zz]); arrow(iaB, [93, 24, zz], [86.4, 24, zz]); }   // the beam-ends between the courts
         arrow(iaR, [77, 15.4, 10], [83.6, 14.6, 10]); arrow(iaR, [93, 15.4, 10], [86.4, 14.6, 10]);
@@ -3359,7 +3395,7 @@
         const geo = H2.uvWorldBox(new BoxGeometry(w, DH - 0.2, 0.25), w, DH - 0.2, 0.25);
         geo.translate(w / 2, (DH - 0.2) / 2, 0);
         const m = new Mesh(geo, cedarDark);
-        m.position.set(x, y, z); m.rotation.y = rot; m.castShadow = m.receiveShadow = true; g.add(m);
+        m.position.set(x, y, z); m.rotation.y = rot; m.castShadow = m.receiveShadow = true; g.add(m); ctx2.lishkotCut.push(m);   // LEAF_CUT_420
       };
       // the two rooms are four amot wide and 13.5 high: with the roofs open (ctx2.lishkotCut - the chambers' pill and the places' views)
       // their walls are open too, above the doors' height, so that the floor is seen from above (the eye cannot stand at the zenith)

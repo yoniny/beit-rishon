@@ -179,8 +179,16 @@
         { const ex = x - cam.position.x, ez = z - cam.position.z, d0 = Math.hypot(ex, ez), MIN = 3.5;
           if (d0 < MIN) { const k = Math.sqrt(Math.max(0, MIN * MIN - off * off)) - (ex * dx + ez * dz) / L; x += (dx / L) * Math.max(0, k); z += (dz / L) * Math.max(0, k); } }
         // (and the floor under him not higher than the target's own level: a ledge or a cornice over the target is no floor for him)
-        let fy = typeof SH.floorY === "function" ? SH.floorY(x, oc.target.y + 2.5, z) : -Infinity;
-        if (isFinite(fy) && fy > oc.target.y + 0.5 && typeof SH.floorY === "function") fy = SH.floorY(x, oc.target.y + 0.5, z);
+        const fAt = (px, pz) => { let f = typeof SH.floorY === "function" ? SH.floorY(px, oc.target.y + 2.5, pz) : -Infinity; if (isFinite(f) && f > oc.target.y + 0.5 && typeof SH.floorY === "function") f = SH.floorY(px, oc.target.y + 0.5, pz); return f; };
+        // SCALE_FLAT_420 (the user 24.11.2026: "כהן בקנה מידה אם מסתובבים קצת - רואים שהוא עומד באוויר"): his whole footprint on one floor -
+        // the floor found under his two feet and before and behind them (0.45 round his centre) must agree within 0.2; if not (a step's
+        // edge, a ledge, the void), he moves along the view's right and left, half an amah at a time, to the nearest flat place
+        const flatAt = (px, pz) => { const c = fAt(px, pz); if (!isFinite(c)) return null; for (const [ax, az] of [[0.45, 0], [-0.45, 0], [0, 0.45], [0, -0.45]]) { const q = fAt(px + ax, pz + az); if (!isFinite(q) || Math.abs(q - c) > 0.2) return null; } return c; };
+        let fy = flatAt(x, z);
+        if (fy === null) {
+          for (let k = 1; k <= 12 && fy === null; k++) for (const sg of [1, -1]) { const tx = x + vR.x * 0.5 * k * sg, tz = z + vR.z * 0.5 * k * sg, f = flatAt(tx, tz); if (f !== null) { x = tx; z = tz; fy = f; break; } }
+        }
+        if (fy === null) fy = fAt(x, z);
         SF.f.position.set(x, isFinite(fy) ? fy : oc.target.y, z);
         SF.f.rotation.y = Math.atan2(cam.position.x - x, cam.position.z - z);
       };

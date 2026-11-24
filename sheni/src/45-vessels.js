@@ -1140,8 +1140,13 @@
           // wall (0.05); the east row 2.5 east of Moses' menorah, before the tables' east row (3.5 until 3.0.4 - it stood in the way
           // between the altar and the tables), the west row 3.5 west of it (the golden stands at x -42); between the tables' heads
           // (z 0) and the menorahs' (z 1.4) R. Meir's way - "בין שלחן למנורה" (the Ritva, Yoma 51b). Until 3.0.4: two amot apart from z 1
-          if (!mEW) { const h = 3 * LAMP_R + 0.115, gp = 0.05; for (const x of [xM - 3.5, xM + 2.5]) for (let i = 0; i < 5; i++) mens.push([x, 10 - gp - h - i * (2 * h + gp), Math.PI / 2]); }
-          else { const zN = zM - 1.75, zS = zM + 1.75, x0 = xM + 2.5; for (const z of [zN, zS]) for (let i = 0; i < 5; i++) mens.push([x0 + 2 * i, z, 0]); }
+          // MEN_AS_TABLES_420 (the user 24.11.2026: "לא יכול להיות דבר כזה שהמנורות והשלחנות לא לאותו הצד - עיין בבית ראשון"): the menorahs'
+          // rows follow the TABLES' reading, as in the First Temple (its 55-interior.js: "Menorot mirror the tables in the south") - two columns
+          // north-south when the tables stand north-south, two rows along the house when they stand east-west; each menorah's own turn (its
+          // branches) still follows the row of the menorah's direction. Until now the rows followed the menorah's direction alone
+          const rr = mEW ? 0 : Math.PI / 2;
+          if (tNS) { const h = 3 * LAMP_R + 0.115, gp = 0.05; for (const x of [xM - 3.5, xM + 2.5]) for (let i = 0; i < 5; i++) mens.push([x, 10 - gp - h - i * (2 * h + gp), rr]); }
+          else { const zN = zM - 1.75, zS = zM + 1.75, x0 = xM + 2.5; for (const z of [zN, zS]) for (let i = 0; i < 5; i++) mens.push([x0 + 2 * i, z, rr]); }
         }
         return { tables, mens, mt };
       };

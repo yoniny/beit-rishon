@@ -2200,7 +2200,7 @@
     // wheel (on the windlass's south side), the well and the laver all seen; until now from the north-east, the wheel behind the laver
     // MUKHNI_TOP_N4 (the user, 24.11.2026: "מבט יותר מלמעלה, שיראו את כל הכיור ואת כל המוכני - גלגל, גלגלת, עמודים, חבל"): from the north-west and high above, the whole
     // laver at its base and in the well, and the wheel, its posts and the rope in one frame
-    ctx2.shared.flyPoints.mukhniDemo = { pos: [KX - 11, F + 25, KZK - 4], target: [KX - 1.5, F + 2.5, 58.2] };
+    ctx2.shared.flyPoints.mukhniDemo = { pos: [KX + 14, F + 10.5, KZK - 7.2], target: [KX - 1.5, F + 4, KZK + 0.8] };   // KIYOR_SIDE_420 (the user 24.11.2026: "כיור לא מלמעלה - לא יראו את הכיור!"): from the south-east, a little above - the laver whole, the windlass and the well's cover
     {
       const MB = Array.isArray(ctx2.shared.modelButtons) ? ctx2.shared.modelButtons : (ctx2.shared.modelButtons = []);
       const anc = [PSX, AY + 2.4, PSZ];
