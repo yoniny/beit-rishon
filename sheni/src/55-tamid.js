@@ -169,6 +169,11 @@
     };
     // a stage whose eye moves with it: keyframes [sec, pos, target] (smoothed between them), from the slide's own view at 0
     const CAMK = {
+      // MACHTA_VIEW_420 (the user 24.11.2026: "מחתה במזבח לא לוקח מהמערכה הולך קדימה יותר"): the one with the fire-pan - at the second pyre
+      // (its coals, 40-altar.js addPyre(46, 5)), from the south-east over the altar's top; then at the silver table west of the ramp
+      machta: () => { const P = A(46, 5), S = A(40, 18.2);
+        return [[0, [80, 44, 50], [52, 22, 20]], [7.4, [80, 44, 50], [52, 22, 20]], [9.6, [P[0] + 8, TOP + 6.5, P[1] + 8.5], [P[0] + 0.8, TOP + 0.6, P[1] + 0.6]], [14.6, [P[0] + 8, TOP + 6.5, P[1] + 8.5], [P[0] + 0.8, TOP + 0.6, P[1] + 0.6]],
+          [17.0, [S[0] - 7.5, F + 7, S[1] + 7], [S[0] + 0.6, F + 1.4, S[1]]], [22, [S[0] - 7.5, F + 7, S[1] + 7], [S[0] + 0.6, F + 1.4, S[1]]]]; },
       // NIGHT_WATCH_305: with Ish Har HaBayit along the north chel, then with Ben Bavi by the west
       // (NIGHT_SIT_305: the sleepers seen beside the one who comes to them - from the west of the gate of the spark, from the south-west
       // behind the house of the kaporet; until the second draft the eye looked over the officer's back)
@@ -189,22 +194,25 @@
         [7.4, [-15.0, 16.4, -88.6], [-15.5, 15.8, -79.0]], [14, [-15.0, 16.4, -88.6], [-15.5, 15.8, -79.0]]],
       // NIGHT_WATCH_305 (the user, 19.11.2026 21:24: "4. הממונה"): the officer across the chel and up the flight, then into the house
       moked: () => [[0, [16, 8.5, -94], [7, 2.4, -79]], [1.0, [16, 8.5, -94], [7, 2.4, -79]], [5.6, [5, 13, -94.5], [-6.5, 8.5, -79.2]],
-        [9.2, [-8, 20.5, -93], [-18, 14.6, -79.4]], [10.6, [-8, 20.5, -93], [-18, 14.6, -79.4]], [12.6, [-18, 50.5, -58.6], [-18, 14, -69]], [22, [-18, 50.5, -58.6], [-18, 14, -69]]],
+        [9.2, [-8, 20.5, -93], [-18, 14.6, -79.4]], [10.6, [-8, 20.5, -93], [-18, 14.6, -79.4]], [11.6, [-10, 48, -88], [-18, 14, -72]], [12.6, [-18, 50.5, -58.6], [-18, 14, -69]], [22, [-18, 50.5, -58.6], [-18, 14, -69]]],
       // NESACHIM_BOW_209: the libation from above, then - at the bows of the song ("והשתחוו העם", Tamid 7:3) - the priests on the
       // ulam's steps bowing toward the house, from the court
-      nesachim: () => [[0, [64, 64, 48], [60, 18, 8]], [19.4, [64, 64, 48], [60, 18, 8]], [21.2, [36, 27, 26], [20, 18.5, -3]], [30, [35, 26.5, 24], [20, 18.5, -3]]],
+      // NESECH_CLOSE_420 (the user 24.11.2026: "ניסוך מקרוב יותר שיראו את המנסך"): from 6 s - near the south-west horn, the one who pours and
+      // the bowls (until now the whole stage from [64, 64, 48])
+      nesachim: () => { const p = A(SFALIM_POUR[0], SFALIM_POUR[1]), E = [p[0] + 6.5, TOP + 6, p[1] + 9], T = [p[0] - 0.3, TOP + 1.4, p[1] + 0.6];
+        return [[0, [64, 64, 48], [60, 18, 8]], [3.5, [64, 64, 48], [60, 18, 8]], [6.5, E, T], [19.4, E, T], [21.2, [36, 27, 26], [20, 18.5, -3]], [30, [35, 26.5, 24], [20, 18.5, -3]]]; },
       // NIGHT_VIEWS_209: the lamb - first from above the hall (as the hall's own eye), the slaughterer going in to the lambs' room
       // (its south-west room) and out with the lamb; when they reach the gate, a cut to the court, south-east of the gate, where it is
       // given to drink from the gold cup and examined by the torch's light (12-22.5). A cut, not a flight: every way from above the
       // hall down to the court passes through the gate's open leaves (gold, twenty amot high)
       lamb: () => [[0, [-19, 46, -58], [-21.5, 16, -66]], [9.4, [-19, 46, -58], [-21.5, 16, -66]],
-        [9.5, [-3, 29, -37], [-17.5, 15.5, -51]], [24, [-3, 29, -37], [-17.5, 15.5, -51]]],
+        [9.5, [-12.8, 19.0, -44.8], [-17.4, 15.4, -50.0]], [24, [-12.8, 19.0, -44.8], [-17.4, 15.4, -50.0]]],   // CUP_CLOSE_420 (the user 24.11.2026: "לא רואים את ספל הזהב"): near - the lamb, the cup and the torch (until now from [-3, 29, -37])
       patrol: () => [[0, [-18, 50.5, -58.6], [-18, 15, -68]], [9, [-18, 50.5, -58.6], [-18, 15, -68]],   // NIGHT_VIEWS_209 (the first nine seconds)
         // (NIGHT_VIEWS_209: up above the hall first - straight on to the high eye, the way passed ten amot over the house's roof)
         [12, [-18, 150, -60], [-18, 15, -45]],
         [15, [10, 210, 150], [0, 16, 0]], [23, [10, 210, 150], [0, 16, 0]],
-        [27, [114, 58, 54], [88, 15, 21]], [34, [114, 58, 54], [88, 15, 21]]],
-      dam: () => [[0, V3(52, 30, -40), V3(56, 17, -10)], [4, V3(86, 26, -36), V3(70, 18, -18)], [8, V3(86, 26, -36), V3(70, 18, -18)],
+        [27, [87, 21.6, 27.4], [87, 15.4, 17.2]], [34, [87, 21.6, 27.4], [87, 15.4, 17.2]]],   // CHAV_IN_420 (the user 24.11.2026: "מבט מבפנים ולא מבחוץ - לא רואים כלום"): from inside the chavitin makers' chamber (its roof open), out through its door to the meeting; until now from above the chambers' roofs
+      dam: () => [[0, V3(52, 30, -40), V3(56, 17, -10)], [4, V3(77, 27, -41), V3(68, 18, -17)], [8, V3(77, 27, -41), V3(68, 18, -17)],   // DAM_CLEAR_420: x 86 stood in Pinchas' chamber (in the court of Israel since CHAMBERS_EAST_N2)
         [10.5, V3(30, 36, -32), V3(42, 18, 0)], [13, V3(26, 26, 30), V3(40, 18, 12)], [20, V3(26, 26, 30), V3(40, 18, 12)]]
     };
     // KIDDUSH_VIEW_K (fix-k, 23.11.2026 - the user: "הזווית לא נכונה. אני רוצה שיראו איך הוא מקדש ממש"; the coordinator: from the side - the
@@ -1944,6 +1952,7 @@
       // SHALOM_211 (stage ב, point 20; the user: "מוחשי יותר"): "הגיעו אלו ואלו, אמרו שלום, הכל שלום" (Tamid 1:3) - the words as captions
       a.tag("b1", "״שלום״", 28.6, 35);
       a.tag("b3", "״הכל שלום״", 29.6, 36.5);
+      a.roofs(26, 1e9);   // CHAV_IN_420: the chambers' roofs open for the eye inside
       a.at("cv", 87, 20.5, Math.PI, 31);   // "העמידו עושי חבתים לעשות חבתים" (CHAMBERS_EAST_N2: in the door of the chamber, in the court of Israel - the door in its north wall, x 87, z 19.5; his face north, to those who come; KLI_SHIR_211: x 96.7, z 24 until now)
       a.tag("cv", "עושי חביתין", 31);
       a.set("torches", [0, 0], 33.6);
@@ -2351,11 +2360,11 @@
       // SHULCHAN_210: the golden machta lies on the silver table, by the altar's south-west corner (40-altar.js) - he comes down the ramp,
       // round the foot of the path to the yesod, and stands east of the table, his face to the west
       const sv = tableLocal("silver");
-      const up = A(60.4, 41.4), coal = A(47.8, 6.6), stand = A(sv[0] + 1.25, sv[1] + 0.1);
+      const up = A(60.4, 41.4), coal = A(47.7, 5.0), stand = A(sv[0] + 1.25, sv[1] + 0.1);
       a.go("mc", A(66, 35.4), 0.5, 7.8, { yaw: -HP });
       a.hold("mc", "machtaS", "R", 8);
       a.walk("mc", [A(66, 35.4), A(64.6, 42.2), up, A(60.6, 12.2), A(52, 8.6), coal], 8.2, 12.8, { hold: true, yaw: -HP });
-      a.pose("mc", "scoop", 13, 14.6);
+      a.pose("mc", "scoop", 13, 14.6);   // MACHTA_VIEW_420: he stands at the second pyre's east end, his face to it (z 5.0 - its line; 6.6 until now, an amah and a half south of it), and takes from its coals
       a.fx("coals", 13.2);   // SOUND_211
       a.set("coalsS", 1, 14);
       a.walk("mc", [coal, A(50.6, 12.2), A(50.4, 41.2), A(46.8, 42), A(44.2, 38.8), A(42.2, 30), A(41.6, 22.5), stand], 14.8, 17.8, { hold: true, yaw: -HP });
@@ -2469,10 +2478,10 @@
       // "עמדו הראשונים לדרום אחיהם הכהנים, וחמשה כלים בידם: הטני ביד אחד, והכוז ביד אחד, והמחתה ביד אחד, והבזך ביד אחד, וכף וכסויה ביד אחד"
       [["s3", "teni"], ["s4", "kuz"], ["mc", "machtaG"], ["f", "bazach"], ["k", "kaf"]].forEach(([k, p], i) => {
         a.hold(k, p, "R", 0);
-        a.go(k, [21.6, 9.4 + i * 1.6], 0, 6, { yaw: HP, hold: true });
+        a.go(k, [20.9, 9.4 + i * 1.6], 0, 6, { yaw: HP, hold: true });   // STEP_EDGE_420 (the user 24.11.2026: the blessing priests stood in the air - x 21.6 was the top step's very edge, 21.62..21.75): 0.75 in
       });
       const others = [...REST, "b4", "e", "s11", "s12", "s13"];
-      others.forEach((k, i) => a.go(k, [21.6, 7.6 - i * 1.6], 0.3 + i * 0.08, 6.5 + i * 0.08, { yaw: HP }));
+      others.forEach((k, i) => a.go(k, [20.9, 7.6 - i * 1.6], 0.3 + i * 0.08, 6.5 + i * 0.08, { yaw: HP }));
       // BIRKAT_VESSELS_A2 (the user's decision 98: "הכלים לידם על המעלות, כבחלמיש; הידיים מורמות ופנויות"): the five set their vessels
       // down on the step beside them (at their left, between them and the next), raise their hands empty, and take them up again after
       [["s3", "teni"], ["s4", "kuz"], ["mc", "machtaG"], ["f", "bazach"], ["k", "kaf"]].forEach(([k, p], i) => {
@@ -2491,8 +2500,8 @@
         a.walk("hp", IN, 0, 5.2, { yaw: -HP });
         [["b1", 1.0, 0], ["b2", -1.0, 0], ["b3", 0, -0.75]].forEach(([k, dz, dx]) => a.walk(k, IN.map(([x, z]) => [x + dx, z + dz]), 0, 5.2, { yaw: -HP }));
         a.pose("hp", "prostrate", 5.4, 7.2);
-        a.walk("hp", [[-12, 0], [-6.2, 0], [2.6, 0], [8, 0], [15, 0], [21.6, 0]], 7.4, 10, { yaw: HP });
-        [["b1", 7.6, 1.6], ["b2", 7.6, -1.6], ["b3", 7.6, 3.2]].forEach(([k, t, z]) => a.walk(k, [[-12, z * 0.6], [2.6, z * 0.6], [15, z], [21.6, z * 6]], t, 10.2, { yaw: HP }));
+        a.walk("hp", [[-12, 0], [-6.2, 0], [2.6, 0], [8, 0], [15, 0], [20.9, 0]], 7.4, 10, { yaw: HP });
+        [["b1", 7.6, 1.6], ["b2", 7.6, -1.6], ["b3", 7.6, 3.2]].forEach(([k, t, z]) => a.walk(k, [[-12, z * 0.6], [2.6, z * 0.6], [15, z], [20.9, z * 6]], t, 10.2, { yaw: HP }));
         a.pose("hp", "raiseHP", 10.4, 18.5);   // BIRKAT_V_A2: blessing, his hands not over the tzitz (until now "offer" - held before him)
         a.tag("hp", "״בזמן שכהן גדול נכנס להשתחוות, שלשה אוחזין בו״ (תמיד ז, א)", 0.5, 7.2);
         a.tag("hp", "״חוץ מכהן גדול שאינו מגביה את ידיו למעלה מן הציץ״ (תמיד ז, ב)", 10.4, 18.5);
@@ -2999,6 +3008,7 @@
       f.g.position.set(s.x, s.y, s.z);
       f.g.rotation.y = s.yaw;
       const p = s.pose;
+      let pitch = 0;   // PROSTRATE_FLAT_420
       let R = POSES.stand[0], Lv = POSES.stand[1], lean = 0, bob = 0, fz0 = 0, fz1 = 0, bendA = 0, bendZ = 0, legR = 0, legL = 0, headA = 0, sitU = 0, sitZ = 0, kidU = 0, kidH = null;   // NIGHT_SIT_305: headA, sitU, sitZ   // KIDDUSH_FLAT_A2: kidU, kidH
       if (p === "walk" || p === "walkCarry" || p === "walkHold") {
         const sw = Math.sin(s.ph);
@@ -3020,7 +3030,7 @@
           bendZ = w[0]; bendA = w[1];
         }
         else if (p === "fingers") R = [R[0] + 0.06 * Math.sin(t * 2), R[1], R[2]];
-        else if (p === "prostrate") { const u = clamp(t / 1.2, 0, 1), d = t > 2.2 ? clamp((t - 2.2) / 0.8, 0, 1) : 0, k = smooth(u) * (1 - smooth(d)); lean = 1.48 * k; R = Lv = [lerp(0.05, -2.9, k), 0.4 * k, 0]; }
+        else if (p === "prostrate") { const u = clamp(t / 1.2, 0, 1), d = t > 2.2 ? clamp((t - 2.2) / 0.8, 0, 1) : 0, k = smooth(u) * (1 - smooth(d)); lean = 0; pitch = 1.5 * k; R = Lv = [lerp(0.05, -2.9, k), 0.4 * k, 0]; }   // PROSTRATE_FLAT_420 (the user 24.11.2026, a picture of the bowing priests lying in the air: the body bent at the hips over straight legs, the trunk level at the waist's height): "השתחוויה זו פישוט ידים ורגלים" (Megillah 22b) - the whole body down on the ground, the arms out before him; it was lean 1.48 at the hips
         else if (p === "knock") R = [-1.4 + 0.2 * Math.sin(t * 9), 0.05, -1.3];
         else if (p === "strike") {   // NIGHT_WATCH_305: raised high and brought down, twice in 1.4 seconds
           const ph = (t / 0.7) % 1, k = ph < 0.55 ? smooth(ph / 0.55) : 1 - smooth(Math.min(1, (ph - 0.55) / 0.2));
@@ -3064,6 +3074,7 @@
           R = mix(POSES.stand[0], H[-1]); Lv = mix(POSES.stand[1], H[1]); lean = 0.03 * u; bendA = KB * u;
         }
       }
+      f.g.rotation.order = "YXZ"; f.g.rotation.x = pitch; if (pitch) f.g.position.y += 0.18 * (pitch / 1.5);   // PROSTRATE_FLAT_420: the whole figure forward onto the ground, about its feet
       if (f.kBowed && !kidH && SH.priestKit && SH.priestKit.kidBody) { SH.priestKit.kidBody(f, null, 0); f.kBowed = false; }   // HANDS_K: up again after kiddush
       setArm(f.R, R, -1);
       setArm(f.L, Lv, 1);
@@ -3442,8 +3453,8 @@
       const sk = clamp((el + 2) / 24, 0, 1);
       K.sun.intensity = K.sunInt * lerp(0.28, 1, Math.max(sk, 1 - dark));
       K.sun.color.setRGB(lerp(0.55, 1, sk), lerp(0.66, 0.93, sk), lerp(1, 0.8, sk));
-      K.hemi.intensity = K.hemiInt * lerp(1, 0.5, dark);
-      ctx2.renderer.toneMappingExposure = K.exposure * lerp(1, 0.6, dark);
+      K.hemi.intensity = K.hemiInt * lerp(1.15, 0.72, dark);   // LIGHT_UP_420 (the user 24.11.2026: "צריך קצת יותר תאורה"): 1 .. 0.5 until now
+      ctx2.renderer.toneMappingExposure = K.exposure * lerp(1.1, 0.78, dark);   // LIGHT_UP_420: 1 .. 0.6 until now
       ctx2.scene.environment = K.env;
       if (ctx2.scene.fog) ctx2.scene.fog.color.copy(SKYC.fogN).lerp(SKYC.fog.setHex(K.fogColor), day);
     };
@@ -3472,6 +3483,7 @@
       // tables south of them) - the Ra'avyah's row and the Gra's (40-altar.js, SLAUGHTER_SPLIT_211) stand across those ways. While
       // the demonstration runs the usual layout is shown; the viewer's choice comes back at its end
       { const SL = SH.slaughterLayout; saved.slaughter = SL && (SL.current === "raavyah" || SL.current === "gra") ? SL.current : null; if (saved.slaughter) SL.set("bartenura"); }
+      { const AL = ctx2.layers && ctx2.layers.altar28; saved.altar28 = !!(AL && AL.visible); if (AL) AL.visible = false; }   // MEAS_OFF_420 (the user 24.11.2026: "לכבות את הצבע הצף על המזבח המראה את המידות שלו")
       applyLampRot();
       floorCache.clear();
       W.paths.clear();
@@ -3483,6 +3495,7 @@
       if (SH.tefOff) SH.tefOff.delete("tamid");   // TEFILLIN_A2
       stopSounds();
       if (saved && saved.slaughter && SH.slaughterLayout) { SH.slaughterLayout.set(saved.slaughter); saved.slaughter = null; }   // SLAUGHTER_HOLD_211
+      if (saved && saved.altar28) { const AL = ctx2.layers && ctx2.layers.altar28; if (AL) AL.visible = true; saved.altar28 = false; }   // MEAS_OFF_420
       if (saved && saved.night && SH.nightKit) SH.nightKit.end();   // TAMID_NIGHT_207 (the lines below give the day back as well)
       const K = SH.sky;
       if (K) {
@@ -3547,14 +3560,17 @@
     // FOLLOW_420 (the user 24.11.2026: "צבר את הגחלים המצלמה לא עוקבת - כך כל חלק המזבח, גחלים, גזרי עצים וכו'"; "אברים לכבש - מצלמה
     // לא עוקבת"; "כל עבודת הבוקר צריך בדיקת מעקב מצלמה"): a stage without a moving eye of its own (CAMK) - until now its slide's one view
     // the whole stage - follows the one who works: the figure that moved last (it stays with him while he stands and works, and passes
-    // to another only when that one moves on), seen from the side of the stage's own view, at its height, nearer (7-15 amot), the eye
+    // to another only when that one moves on), seen from the side of the stage's own view, at its height, nearer (10-18 amot), the eye
     // gliding after him. A line from the eye to him through a wall raises the eye. A jump of the clock (a seek) puts it there at once
-    const FOL = { key: "", last: {}, actor: null, still: 0, cam: new Vector3(), tg: new Vector3(), sec: 0, el: 0, chk: 0 };
+    // (the stages on the altar and the ramp and about them; indoors - the hearth, the hewn stone's hall, the heichal - the stage's own view stays:
+    // there a following eye stands in the walls)
+    const FOLLOW_ON = new Set(["terumah", "tapuach", "maarachah", "maarachah2", "gezirin", "evarim", "melach", "haalaah", "mincha", "magrefa"]);
+    const FOL = { key: "", last: {}, actor: null, still: 0, cam: new Vector3(), tg: new Vector3(), sec: 0, el: 0, chk: 0, blocked: false };
     const fv = new Vector3(), fw = new Vector3(), fq = new Vector3();
     const followCam = (id, o, sec) => {
       const key = id + "|" + o;
       let jump = Math.abs(sec - FOL.sec) > 0.9;
-      if (FOL.key !== key) { FOL.key = key; FOL.last = {}; FOL.actor = null; FOL.still = 0; FOL.cam.copy(ctx2.camera.position); FOL.tg.copy(ctx2.controls.target); FOL.el = 0; jump = false; }
+      if (FOL.key !== key) { FOL.key = key; FOL.last = {}; FOL.actor = null; FOL.still = 0; FOL.cam.copy(ctx2.camera.position); FOL.tg.copy(ctx2.controls.target); FOL.el = 0; FOL.chk = 0; FOL.blocked = false; jump = false; }
       FOL.sec = sec;
       let best = null, bd = 0.012;
       for (const k in W.figs) {
@@ -3575,15 +3591,22 @@
       if (hl < 1e-3) { hx = 0; hz = 1; hl = 1; }
       hx /= hl; hz /= hl;
       const full = Math.hypot(hl, v[0][1] - v[1][1]);
-      const D = Math.max(7, Math.min(15, full * 0.55));
-      let el = Math.min(1.35, Math.max(0.35, Math.min(0.95, Math.atan2(v[0][1] - v[1][1], hl))) + FOL.el);
+      const D = Math.max(10, Math.min(18, full * 0.7));
+      const el0 = Math.max(0.35, Math.min(0.95, Math.atan2(v[0][1] - v[1][1], hl)));
       fw.set(g.x, g.y + 1.6, g.z);
-      fv.set(fw.x + hx * Math.cos(el) * D, fw.y + Math.sin(el) * D, fw.z + hz * Math.cos(el) * D);
-      if (--FOL.chk <= 0 && fnc(TM.qaClear)) {   // every half second or so: a wall between - higher; free - back down by steps
-        FOL.chk = 8;
-        let ok = true; try { ok = !TM.qaClear(fv.toArray(), fw.toArray()); } catch (_) { ok = true; }   // (qaClear: null when the line is free)
-        if (!ok && FOL.el < 0.9) FOL.el += 0.25; else if (ok && FOL.el > 0) FOL.el = Math.max(0, FOL.el - 0.04);
+      const put = (e) => fv.set(fw.x + hx * Math.cos(e) * D, fw.y + Math.sin(e) * D, fw.z + hz * Math.cos(e) * D);
+      put(Math.min(1.25, el0 + FOL.el));
+      if (--FOL.chk <= 0 && fnc(TM.qaClear)) {   // every few frames: a wall between - higher at once (up to nearly over him); nothing free - the stage's own view
+        FOL.chk = 6;
+        const free = () => { try { return !TM.qaClear(fv.toArray(), fw.toArray()); } catch (_) { return true; } };   // (qaClear: null when the line is free)
+        if (free()) { if (FOL.el > 0) { const e2 = Math.max(0, FOL.el - 0.05); put(Math.min(1.25, el0 + e2)); if (free()) FOL.el = e2; else put(Math.min(1.25, el0 + FOL.el)); } FOL.blocked = false; }
+        else {
+          let found = false;
+          for (let e = FOL.el + 0.25; e <= 1.2 && !found; e += 0.25) { put(Math.min(1.25, el0 + e)); if (free()) { FOL.el = e; found = true; } }
+          FOL.blocked = !found;
+        }
       }
+      if (FOL.blocked) { fv.set(v[0][0], v[0][1], v[0][2]); fw.set(v[1][0], v[1][1], v[1][2]); }
       const k = jump ? 1 : 0.07;
       FOL.tg.lerp(fw, k); FOL.cam.lerp(fv, k);
       ctx2.camera.position.copy(FOL.cam);
@@ -3621,7 +3644,7 @@
         // CAM_219 (the audit): aimed in this very frame - it is written after controls.update(), and a key past the polar limit (the
         // patrol's, 0.11 rad from straight above) was drawn aimed from the clamped pose, about 5 degrees off its target
         ctx2.camera.lookAt(t[0], t[1], t[2]);
-      } else if (!ck && sec > 0.6 && !tourHeld() && ctx2.camera && ctx2.controls) followCam(list[i], o, sec);
+      } else if (!ck && FOLLOW_ON.has(list[i]) && sec > 0.6 && !tourHeld() && ctx2.camera && ctx2.controls) followCam(list[i], o, sec);
       // the sounds of the current stage whose second the clock has just passed (forward, in the same stage, not by a jump)
       if (i === lastI && o === lastO && sec > lastSec && sec - lastSec < 0.75) {
         const cur = list[i];

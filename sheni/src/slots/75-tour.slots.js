@@ -371,6 +371,27 @@
               if (row) setRow(row, row.options.some((o) => o[0] === v) ? v : "o" + j);   // CHIP_KEEPS_DEMO_T: a row keyed by the reading's own name (the mitre, the ephod)
               else call(T[g.set], v);
               renderOpts(slides[idx] || s);
+              // SEG_ONLY_420 (the user 24.11.2026: "שיטות עבודת הבוקר מראות רק את מה ששונה ולא את כל המצגת - חוץ מהרמב״ם - אא״כ גם אצלו יש קטע
+              // ברור ששונה בסדר העבודה ואז אפשר לקצר את הקריאה שלו לחלק זה"): a reading chosen goes to the part where it differs, plays it and
+              // holds at its end (the buttons go on from there). The order of Abaye and the Rambam's - from the first stage where the two
+              // orders part to the last; the High Priest's garments - with him offering
+              setTimeout(() => { try {
+                const TT = ctx.shared.tour, SL = (TT && TT.slides) || slides;
+                let ids = { lamps: ["lamps5", "lamps2"], belt: ["kiyor12"], hp: ["birkat", "haalaah"], kidd: ["kiyor", "kiyor12"], mitz: ["birkat", "haalaah"], ephod: ["birkat", "haalaah"] }[g.k] || null;
+                if (g.k === "order" && fnc(T.list)) {
+                  const la = call(T.list, "abba") || [], lr = call(T.list, "rambam") || [];
+                  let f = 0; while (f < la.length && f < lr.length && la[f] === lr[f]) f++;
+                  let e1 = la.length - 1, e2 = lr.length - 1; while (e1 > f && e2 > f && la[e1] === lr[e2]) { e1--; e2--; }
+                  const cur = v === "rambam" ? lr : la, e = v === "rambam" ? e2 : e1;
+                  ids = f <= e ? cur.slice(f, e + 1) : null;
+                }
+                if ((g.k === "mitz" || g.k === "ephod") && fnc(T.setHp) && (call(T.readings) || {}).hp !== "on") call(T.setHp, "on");
+                if (!ids || !TT || !fnc(TT.only) || !fnc(TT.goto)) return;
+                const ix = []; SL.forEach((x, i) => { if (x && x.kind === "tamid" && ids.indexOf(x.id) >= 0) ix.push(i); });
+                if (!ix.length) return;
+                TT.only(ix); TT.goto(ix[0]); if (fnc(TT.pause)) TT.pause(false);
+                renderOpts(SL[ix[0]]);
+              } catch (_) {} }, 60);
             });
           });
         }

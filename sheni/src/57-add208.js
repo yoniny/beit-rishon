@@ -2877,6 +2877,7 @@
         if (x > 38.6 && x < 72.4) cut.push([-20.4, 12.6]);   // the altar's base (and its yesod)
         if (x > 45.6 && x < 65.4) cut.push([12.4, 43.6]);    // the ramp and its little ramps
         if (x > 38.5 && x < 45.6) cut.push([12.4, 20.5]);    // the shitin's corner and the tables west of the ramp
+        if (x > 33 && x < 38.6) cut.push([5.5, 21]);       // BENCH_CORNER_420 (the user 24.11.2026: "כהן באוויר - הנפה בשתי הקריאות" - the bikkurim's priest and bringer stood half on a row at the south-west corner): the corner's ground free, where the first fruits are waved and set down
         cut.sort((a, b) => a[0] - b[0]);
         let z = Z0;
         for (const [c0, c1] of cut.concat([[Z1, Z1]])) {

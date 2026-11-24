@@ -915,6 +915,7 @@ body.tm-measuring #tm-tour-box{bottom:96px}
       for (const b of [btn, bPrev, bPause, bNext, bStop]) b.addEventListener("mousedown", (e) => e.preventDefault());
       // ---- the state ----
       let mode = tour_MODES[0], slides = [], idx = -1, running = false, paused = false, ended = false, round = 1;
+      let onlyIx = null;   // SEG_ONLY_420: the slides of one reading's part (tour.only) - the presentation plays them and holds at the last
       let elapsed = 0, total = 1, lastT = 0, idleUntil = 0, cfSeenAt = -1e9, progAt = 0, waitTxt = "", menuOpen = false, orbitSide = 1;
       let holdDemo = false;   // CAM_219: the continuous mode's hold paused the slide's demonstration
       let cur = null, saved = null;
@@ -1447,6 +1448,7 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         const M = tour_MODES.find((m) => m.key === key) || tour_MODES[typeof key === "number" ? key : 0] || tour_MODES[0];
         mode = M;
         speed = opts && opts.speed > 0 ? opts.speed : userSpeed;
+        onlyIx = null;
         //@@slot start
         openMenu(false);
         if (!slides.length) return false;
@@ -1598,11 +1600,13 @@ body.tm-measuring #tm-tour-box{bottom:96px}
       });
       bPrev.addEventListener("click", () => {
         if (confirmOpen()) return;
+        onlyIx = null;
         setPaused(false);
         prev();
       });
       bNext.addEventListener("click", () => {
         if (confirmOpen()) return;
+        onlyIx = null;
         setPaused(false);
         next();
       });
@@ -1792,6 +1796,7 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         if (elapsed >= total) {
           // 1.3.5 / 1.9.3: a demonstration that the slide started runs to its end first (two minutes more at most)
           if (rt && elapsed < total + 120000 * speed && demoHolds(rt)) return;   // TOUR_DEMO_HOLD_206: any demonstration, not only a place's action
+          if (onlyIx) { const n = onlyIx.find((q) => q > idx); if (n != null) go(n, 1); else { onlyIx = null; setPaused(true); } return; }   // SEG_ONLY_420
           next();
         }
       });
@@ -1826,6 +1831,7 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         prev,
         // 1.0.1-L: to a slide by its index, and to a moment of its timeline in seconds (tests, the integrator's pictures)
         goto: (i) => (running && i >= 0 && i < slides.length ? go(i, 1) : false),
+        only: (list) => { onlyIx = Array.isArray(list) && list.length ? list.slice().sort((x, y) => x - y) : null; return !!onlyIx; },   // SEG_ONLY_420
         //@@slot retamid
         seek: (sec) => {
           if (!running || !cur || !cur.anim || !(sec >= 0)) return false;
