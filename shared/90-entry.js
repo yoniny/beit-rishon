@@ -287,6 +287,14 @@
           if (!cut.has(o)) return;
           off = true;   // removed by its button: a roof / a wall all the same, for the roofed test only
         }
+        // WALK_CITY_N7 (fix-n7, 24.11.2026; the user: walk mode in the City of David does not work, and the eye does not rise on the stairs
+        // from the Shiloah): the ground, the steps and the stairs of the City of David are noPick (no click, no hover, no camera wall), and so
+        // were left out of the walk's floor too - the eye found no floor there and walked level over the slope. A mesh that says
+        // userData.walkFloor stays out of every list but the walk's floor (ent_solids("floor")).
+        if (o.isMesh && o.userData.noPick && o.userData.walkFloor && !off) {
+          const m = Array.isArray(o.material) ? o.material[0] : o.material;
+          if (m && m.visible !== false) floor.push(o);
+        }
         if (o.isMesh && !o.userData.noPick && !(o.geometry && o.geometry.type === "BoxGeometry" && o.scale.x > 1000)) {
           const m = Array.isArray(o.material) ? o.material[0] : o.material;
           const thin = !!(m && m.transparent && m.opacity < 0.5);
@@ -951,7 +959,25 @@
     const nh = r * Math.sin(lim), ny = r * Math.cos(lim);
     return new Vector3(q.x + ux * nh, q.y + ny, q.z + uz * nh);
   }
-  function flyTo(pos, target, dur = 1600) {
+  // CAM_RESET_N8 (the user, 24.11.2026: "בכל כרטיס שנפתח, המודל 'רץ' באוויר הלוך וחזור עד שהוא מתמקם", gone after a refresh - a state that stays from
+  // the clicks before): what a place's or a view's click starts from: no flight, no glide of a drag, no pending zoom or lift, no look
+  // lock, and no demonstration that still drives the eye (stopDemos) - the flight of the click is then the ONLY writer of the camera
+  ctx.camReset = () => {
+    let pres = false;
+    try { const T = ctx.shared.tour; pres = !!(T && typeof T.state === "function" && T.state().running); } catch (_) {}
+    try { if (!pres && typeof ctx.shared.stopDemos === "function") ctx.shared.stopDemos(); } catch (_) {}   // (the presentation drives its own scenes)
+    flyAnim = null;
+    ent_lift.pending = 0; ent_lift.v = 0;
+    cam_killInertia();
+    ent_zoom.pending = 0;
+    cam_lookEnd();
+    cam.lookLock = false;
+    cam.decideAt = 0;
+    cam_drag = null;
+  };
+  function flyTo(pos, target, dur) {
+    // CAM_RESET_N8: a far flight (the Shiloach spring, 600 amot) takes longer than a near one, not 1.6 s for any distance
+    if (dur == null) { const far = camera.position.distanceTo(new Vector3(...pos)); dur = Math.max(1600, Math.min(3600, 1000 + 9 * far)); }
     cam_killInertia();   // CAM_219 (2): the glide of a drag just before is spent where it stands
     cam_lookEnd();   // 1.2.0
     cam.lookLock = false;   // a flight decides afresh (cam_decide at its end)
