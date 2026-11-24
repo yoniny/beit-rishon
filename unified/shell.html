@@ -703,6 +703,9 @@ __BACKGROUND_SVG__
   // storage (storage.get / storage.set) and in localStorage (the only store outside Otzaria) - either one saying "seen" is enough.
   (function () {
     var KEY = "tm.unified.note", note = document.getElementById("uni-note"), okBtn = document.getElementById("uni-note-ok");
+    // NOTE_OFF_420 (the user, 24.11.2026: "זה מיותר, בגרסה הסופית להסיר"): the note is no longer shown
+    if (note) note.hidden = true;
+    if (true) return;
     if (!note || !okBtn) return;
     if (!OTZ) Array.prototype.forEach.call(note.querySelectorAll("li.otz"), function (li) { li.style.display = "none"; });
     var ls = function () { try { return localStorage.getItem(KEY); } catch (_) { return null; } };
