@@ -3803,7 +3803,11 @@
           return o;
         };
         for (const x of [-78, -48]) mkGC("north" + x, "x", -70.7, x, 10.6, 20, 33.5, -1);
-        for (const x of [-78, -48, -18]) mkGC("south" + x, "x", 70.7, x, 10.6, 20, 33.5, 1);
+        // GATE_CURTAINS_S_420 (found in the scan of 24.11.2026): the south gates stand where 30-courts.js puts them (ctx2.shared.southGates -
+        // WATER_GATE_N4 moved the gate of the firstborn and the Water Gate to x 30 and 44); until now their curtains hung at the old -48 and
+        // -18, on the bare wall, and the two gates had none
+        { const SG = ctx2.shared.southGates || { dalk: -78, bech: 30, water: 44 };
+          for (const x of [SG.dalk, SG.bech, SG.water]) mkGC("south" + x, "x", 70.7, x, 10.6, 20, 33.5, 1); }
         mkGC("moked", "x", -58.65, -18, 10.4, 20, 36, -1);
         mkGC("nikanor", "z", 98.0, 0, 11.2, 20.7, 34.2, 1);
         mkGC("heichal", "z", 1.65, 0, 10.6, 20, F + 20, 1);

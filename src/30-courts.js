@@ -289,12 +289,12 @@
     mnt_gatePortal(g, Object.assign({ axis: "z", gx: CO2.azE, gz: 0, inward: 1, fadeWith: wallE.stone }, portal)); // doors swing west, into the court
 
     // ---------- steps ----------
-    // 12 steps (6 rise) outside each north / south gate, from the great court (LV.HAR = 0) up to the podium edge (LV.AZ = 6): model choice
+    // 12 steps (6 rise) outside each north / south gate, from the great court (LV.HAR = 0) up to the podium edge (LV.AZ = 6): model choice.
+    // 4.2.0: a ramp in their place (z 72.5 -> 78.5); RAMP13_420 (the user: an amah in three, of almug with its railing): 18 amot out, to z 90.5
     const SW = 12; // model choice: flight width 12, a little wider than the 10-wide gate opening
-    for (const gx of CRT_NS_GATES) {
-      H2.stairs(g, { width: SW, totalRise: AZ - LV2.HAR, steps: 12, dir: "S", x: gx, y: LV2.HAR, z: -podW / 2 - 12 * STEP, tread: STEP, ramp: true }); // z -78.5 -> -72.5
-      H2.stairs(g, { width: SW, totalRise: AZ - LV2.HAR, steps: 12, dir: "N", x: gx, y: LV2.HAR, z: podW / 2 + 12 * STEP, tread: STEP, ramp: true });  // z 78.5 -> 72.5
-    }
+    for (const gx of CRT_NS_GATES) for (const s of [-1, 1])
+      H2.ramp(g, { x: gx, y: AZ, z: s * podW / 2, dir: s < 0 ? "N" : "S", width: SW, rise: AZ - LV2.HAR, slope: 3, mat: M2.almug || M2.cedar, base: 0.3, name: "innerGateRamp" });
+    ctx.shared.innerGateRamps = { xs: CRT_NS_GATES.slice(), zTop: podW / 2, run: 3 * (AZ - LV2.HAR), rise: AZ - LV2.HAR, width: SW };
     // the east gate: 6 steps (3 rise) from the outer court (החצר החיצונה) floor (level 3, 20-mount.js) up to the podium edge at x 98.5: model choice
     const wcY = ctx.shared && ctx.shared.newCourt && typeof ctx.shared.newCourt.y === "number" ? ctx.shared.newCourt.y : 3;
     const eSteps = Math.max(1, Math.round((AZ - wcY) / STEP));

@@ -37,13 +37,20 @@
       if (x < CO.harW) v += 24 * Math.exp(-((((CO.harW - x) - 110) / 70) ** 2));
       return v;
     };
+    // RAMP13_420: the ramp before the west gate goes out 84 amot (an amah in three, from the platform down to GROUND_Y) and the ground falls
+    // away into the valley 35 amot from the wall's foot: before that gate it stays level as far as the ramp and a little beyond - a strip along
+    // the gate's axis (level to 100 amot out and 16 to each side, faded out over the next 30 and 26). Its measures - model choices
+    const gateFlat = (x, z) => {
+      const a = (CO.harW - 2.5) - x, b = Math.abs(z);
+      return a > -2 && a < 130 && b < 42 ? (1 - sm(100, 130, a)) * (1 - sm(16, 42, b)) : 0;
+    };
     const terrainH0 = (x, z) => {
       const d = rectDist(x, z);
       const ramp = sm(70, 380, d);
       let h = bump(x, z, 1100, 30, 460, 950, 190) + bump(x, z, -700, 620, 420, 330, 130) + bump(x, z, -560, -760, 460, 380, 100) + bump(x, z, 220, 1350, 560, 320, 130) + bump(x, z, 380, -1380, 620, 360, 120);
       h += (fbm(x * 3e-3, z * 3e-3) - 0.5) * 120 + (fbm(x * 0.012, z * 0.012) - 0.5) * 22;
       const rim = sm(1500, 2500, Math.hypot(x - CX, z - CZ)) * 260;
-      return GROUND_Y + ramp * Math.max(h * 0.2, -5) + rim * 0.15 * ramp - sm(35, 100, d) * valley(x, z);
+      return GROUND_Y + ramp * Math.max(h * 0.2, -5) + rim * 0.15 * ramp - sm(35, 100, d) * valley(x, z) * (1 - gateFlat(x, z));
     };
     // OLIVES_B2 (fix-b2, 22.11.2026 - the user's decision 17: "הר המשחה וקו הראייה — רק בבית שני"): THE MOUNT OF OLIVES east of the Kidron.
     // Middot 2:4 (89:15): "כל הכתלים שהיו שם היו גבוהים, חוץ מכותל המזרחי, שהכהן השורף את הפרה עומד בראש הר המשחה, ומתכוון ורואה בפתחו
@@ -304,16 +311,16 @@
     gateTrim({ axis: "x", gx: 0, gz: CO.harS, inward: -1, wl: wallS, leaves: false, sillCut: 1 });
     gateTrim({ axis: "x", gx: 110, gz: CO.harS, inward: -1, wl: wallS, leaves: false, sillCut: 1 });
     gateTrim({ axis: "z", gx: CO.harW, gz: 0, inward: -1, wl: wallW });
-    const RUN = 36 * 0.8;
     // CHULDA_RAMPS_B2 (fix-b2, 22.11.2026 - the user's decision 103: "שערי חולדה — כבש משופע תמיד, במקום מדרגות"; Chalamish, "אלחנן וחיים
     // שמחים בירושלים" pp. 12, 14: "התהלוכה יורדת בכבש הדרומי של הר הבית"): before each gate of Chulda a sloping ramp, 16 wide, from the
     // gate's sill (y 0, the wall's outer face) down at one in two to where it meets the ground (found on the terrain; the ground falls
     // away toward the valley); a solid body of stone under it and a low parapet on both its sides. Until 22.11.2026: 36 steps with
     // railings. The slope, the width and the parapet - model choices. ctx2.shared.chuldaRamp = { xs, z0, zf, yf, w, yAt(z) }
     {
-      const Z0 = CO.harS + T / 2, SL = 0.5, RW = 16;
-      let zf = Z0 + 40;
-      for (let z = Z0 + 10; z < Z0 + 160; z += 0.5) { const yr = -(z - Z0) * SL; if (yr <= Math.max(terrainH(0, z), terrainH(110, z)) + 0.05) { zf = z; break; } }
+      // RAMP13_420 (the user, 24.11.2026: "4. כן" - the gates of Chulda too, an amah in three; of stone): until now one in two (decision 103)
+      const Z0 = CO.harS + T / 2, SL = 1 / 3, RW = 16;
+      let zf = Z0 + 60;
+      for (let z = Z0 + 10; z < Z0 + 260; z += 0.5) { const yr = -(z - Z0) * SL; if (yr <= Math.max(terrainH(0, z), terrainH(110, z)) + 0.05) { zf = z; break; } }
       const yf = -(zf - Z0) * SL, L = zf - Z0;
       const M = new Matrix4();
       const body = (x0, prof, w, xc) => {   // a profile in (along, y) extruded across x, w wide, centred on xc
@@ -335,34 +342,15 @@
       ctx2.shared.chuldaRamp = { xs: [0, 110], z0: Z0, zf, yf, w: RW, yAt: (z) => -(Math.min(zf, Math.max(Z0, z)) - Z0) * SL };
     }
     // (1.9.5: no steps at the Shushan gate - the ramp of the Parah, below)
-    H2.stairs(g, { width: 12, totalRise: 28, steps: 36, dir: "S", x: 55, y: GROUND_Y, z: CO.harN - T / 2 - RUN, tread: 0.8, ramp: true });
-    H2.stairs(g, { width: 12, totalRise: 28, steps: 36, dir: "E", x: CO.harW - T / 2 - RUN, y: GROUND_Y, z: 0, tread: 0.8, ramp: true });
-    // 1.9.1 (the user: "מדרגות — להשאיר, להוסיף מעקה"): a railing on both sides of each of the five outer stairs - posts on every fourth
-    // step and a sloped handrail two amot over the steps. The stairs and their railings are a model choice (the Mishnah gives the gates of
-    // the Mount, not the way up to them); the cards say so
-    {
-      const railMat = M2.stoneSmooth || M2.marble;
-      const rise = 28 / 36, tread = 0.8;
-      const rail = (width, dir, x, z) => {
-        const grp = new Group();
-        for (const sz of [-1, 1]) {
-          const lz = sz * (width / 2 - 0.25);
-          for (let i = 0; i <= 36; i += 4) { const k = Math.min(i, 35); H2.box(grp, 0.3, 2, 0.3, railMat, k * tread + tread / 2, (k + 1) * rise, lz); }
-          const x0 = tread / 2, x1 = 35 * tread + tread / 2, y0 = rise + 2, y1 = 36 * rise + 2;
-          const bar = new Mesh(new BoxGeometry(Math.hypot(x1 - x0, y1 - y0), 0.25, 0.35), railMat);
-          bar.position.set((x0 + x1) / 2, (y0 + y1) / 2, lz);
-          bar.rotation.z = Math.atan2(y1 - y0, x1 - x0);
-          bar.castShadow = true;
-          grp.add(bar);
-        }
-        grp.rotation.y = { W: Math.PI, E: 0, N: Math.PI / 2, S: -Math.PI / 2 }[dir];
-        grp.position.set(x, GROUND_Y, z);
-        g.add(grp);
-        H2.instancify(grp);   // 1.9.2: the posts - one draw per railing (they were 110 pieces)
-      };
-      rail(12, "S", 55, CO.harN - T / 2 - RUN);
-      rail(12, "E", CO.harW - T / 2 - RUN, 0);
-    }
+    // The north (Tadi) and the west (Kiponus) gates: 36 steps of 0.8 with a railing (1.9.1, the user: "מדרגות — להשאיר, להוסיף מעקה");
+    // 4.2.0 (the user: "כל המדרגות בכל השערים צריכים לעוף ובמקומם כבשים") a ramp in their place, as long as they were - an amah in an amah.
+    // RAMP13_420 (the user, 24.11.2026: "ב" - an amah in three, with a railing; "11. כבש מאבן" - of stone in this house, the almug was
+    // Solomon's): each ramp goes out 84 amot from the wall's face down to the ground (before the west gate the ground stays level as far -
+    // gateFlat, above), 12 wide, with a stone railing on both its sides (H2.ramp, 10-core.js). Its width and the railing - model choices
+    const RAMP_RISE = -GROUND_Y;   // 28
+    for (const [x, z, dir] of [[55, CO.harN - T / 2, "N"], [CO.harW - T / 2, 0, "W"]])
+      H2.ramp(g, { x, y: 0, z, dir, width: 12, rise: RAMP_RISE, slope: 3, mat: M2.stoneSmooth, railMat: M2.stoneSmooth, base: 12, name: "mountRamp" });
+    ctx2.shared.mountRamps = { run: 3 * RAMP_RISE, rise: RAMP_RISE, width: 12, N: { x: 55, z: CO.harN - T / 2 }, W: { x: CO.harW - T / 2, z: 0 } };
     // 1.9.5 (a remark sent on to the user, 11.11.2026: "בשער שושן לא הי' מדרגות אלא כבש להר הזיתים לשחיטת פרה ולשעיר המשתלח"; the user:
     // "אפשרות א" - a ramp instead of the steps): THE RAMP OF THE PARAH. Parah 3:6 (book 94, line 18): "וכבש היו עושים מהר הבית להר
     // המשחה, כפין על גבי כפין, וכפה כנגד האטם, מפני קבר התהום"; Middot 1:3: "שער המזרחי... שבו כהן גדול השורף את הפרה ופרה וכל
@@ -710,6 +698,84 @@
       im.castShadow = im.receiveShadow = true;
       im.computeBoundingSphere();
       breachG.add(im);
+    }
+    // ===== CHEL_RING_420 (the user, 24.11.2026: "תעשה כך ומתג לרמבם ברירת מחדל רמבם") - THE TWELVE STEPS OF THE CHEL, two readings:
+    // the Rambam (Beit HaBechirah 6:1, 337:94; the default): "כשאדם נכנס משער מזרחי של הר הבית מהלך עד סוף החיל בשוה. ועולה מן החיל
+    // לעזרת הנשים בשתים עשרה מעלות" - the steps on the way in, before the women's court's gate (30-courts.js, x 231..237), and a flight
+    // before each gate of the court (CHEL_STEPS_420). Rashi (Yoma 16a, 2157:501): "ואורכה בכל רוחב ההר לצפון ולדרום", and Tiferet Yisrael
+    // (Yachin, Middot 2:23, 819:191): "שהמעלות הללו, לא לבד בין השערים שלמטה ושלמעלה היו, רק היו מקיפים כל הר הבית"; "היה ד' אמות הראשונים
+    // קרקע שוה, וששה אמות הנותרים היו מגביהים א"ע בשפוע, ובו' אמות אלה עשו הי"ב מעלות": twelve steps of half an amah ALL ROUND the
+    // courts, in the chel's six amot by the walls (the four by the soreg level) - built when first shown, round what stands there in the
+    // reading of that moment (the gates' flights and landings, the ramp of the firstborn, the chambers' parts in the chel): a cell is left
+    // out where a ray down from 5.9 meets anything over 0.35. The courts' outline: x -96..231, z -70..70. ctx2.shared.chelSteps =
+    // { mode: "rambam" | "around", set(m) }. Its stone and the cut round what stands - model choices.
+    {
+      const CR = { x0: -96, x1: 231, z0: -70, z1: 70, W: 6, n: 12 };
+      const ringG = new Group(); ringG.name = "chelStepsRing"; ringG.visible = false; g.add(ringG); ctx2.layers.chelStepsRing = ringG;
+      const build = () => {
+        while (ringG.children.length) { const o = ringG.children.pop(); if (o.geometry) o.geometry.dispose(); }
+        const root = ctx2.root || g.parent || g;
+        root.updateMatrixWorld(true);
+        const rc = new Raycaster(), dn = new Vector3(0, -1, 0), o3 = new Vector3();
+        const visOK = (o) => { for (let p = o; p; p = p.parent) if (p.visible === false) return false; return true; };
+        // the meshes that may stand in the chel (visible now, not sprites, their box over the band round the courts)
+        const cand = [], bb = new Box3();
+        root.traverse((o) => {
+          if (!o.isMesh || o.isSprite || !o.geometry || !visOK(o)) return;
+          for (let p = o; p; p = p.parent) if (p === ringG) return;
+          if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+          bb.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld);
+          if (bb.max.y < 0.35 || bb.min.y > 6 || bb.max.x < CR.x0 - CR.W - 1 || bb.min.x > CR.x1 + CR.W + 1 || bb.max.z < CR.z0 - CR.W - 1 || bb.min.z > CR.z1 + CR.W + 1) return;
+          if (bb.max.x - bb.min.x > 600 && bb.max.z - bb.min.z > 600) return;   // the ground
+          cand.push(o);
+        });
+        const busy = (x, z) => { rc.set(o3.set(x, 5.9, z), dn); rc.far = 6; const h = rc.intersectObjects(cand, false); return h.length > 0 && h[0].point.y > 0.35; };
+        // the sides: [axis along, fixed edge (the wall's face), outward sign, from, to]; the corners belong to the north and the south
+        const sides = [["x", CR.z0, -1, CR.x0 - CR.W, CR.x1 + CR.W], ["x", CR.z1, 1, CR.x0 - CR.W, CR.x1 + CR.W], ["z", CR.x0, -1, CR.z0, CR.z1], ["z", CR.x1, 1, CR.z0, CR.z1]];
+        const geos = [], C = 0.5, GAP = 2, MIN = 8, TRIM = 6;   // RING_TIDY_420 (the user: "מה זה? תקוע סתם"): clear 2 amot round what stands; no run under 8 amot; a corner cut on its long side cuts 6 amot of the short side too
+        const frees = sides.map(([ax, fx, sg, a0, a1]) => {
+          const free = [];
+          for (let a = a0; a < a1 - 1e-6; a += C) {
+            let ok = true;
+            for (const off of [0.4, 1.6, 2.9, 4.2, 5.5]) { const f = fx + sg * off, c = a + C / 2; if (ax === "x" ? busy(c, f) : busy(f, c)) { ok = false; break; } }
+            free.push(ok);
+          }
+          const k = Math.round(GAP / C);
+          return free.map((v, i) => { if (!v) return false; for (let d = 1; d <= k; d++) if (free[i - d] === false || free[i + d] === false) return false; return true; });
+        });
+        // the corners: the north and the south sides own them; where a corner's cells (the short side's band) are cut, the short side starts TRIM later
+        const cornerCut = (fr, a0, from, to) => { for (let i = Math.floor((from - a0) / C); i < Math.ceil((to - a0) / C); i++) if (fr[i] === false) return true; return false; };
+        for (const si of [2, 3]) {
+          const fr = frees[si], n = Math.round(TRIM / C), xa = si === 2 ? CR.x0 - CR.W : CR.x1, xb = si === 2 ? CR.x0 : CR.x1 + CR.W;
+          if (cornerCut(frees[0], sides[0][3], xa, xb)) for (let i = 0; i < n && i < fr.length; i++) fr[i] = false;
+          if (cornerCut(frees[1], sides[1][3], xa, xb)) for (let i = 0; i < n && i < fr.length; i++) fr[fr.length - 1 - i] = false;
+        }
+        sides.forEach(([ax, fx, sg, a0, a1], si) => {
+          const fr = frees[si];
+          let i = 0;
+          while (i < fr.length) {
+            if (!fr[i]) { i++; continue; }
+            let j = i; while (j < fr.length && fr[j]) j++;
+            if ((j - i) * C < MIN) { i = j; continue; }
+            const b0 = a0 + i * C, b1 = a0 + j * C;
+            for (let k = 1; k <= CR.n; k++) {   // layer k: y (k-1)/2..k/2, from the wall out to W - (k-1)/2
+              const w = CR.W - (k - 1) * 0.5, y0 = (k - 1) * 0.5;
+              const bg = new BoxGeometry(ax === "x" ? b1 - b0 : w, 0.5, ax === "x" ? w : b1 - b0);
+              H2.uvWorldBox(bg, ax === "x" ? b1 - b0 : w, 0.5, ax === "x" ? w : b1 - b0);
+              bg.translate(ax === "x" ? (b0 + b1) / 2 : fx + sg * w / 2, y0 + 0.25, ax === "x" ? fx + sg * w / 2 : (b0 + b1) / 2);
+              geos.push(bg);
+            }
+            i = j;
+          }
+        });
+        if (geos.length) { const m = new Mesh(mergeGeometries(geos), M2.stoneSmooth); m.castShadow = m.receiveShadow = true; m.name = "chelSteps"; ringG.add(m); }
+      };
+      ctx2.shared.chelSteps = { mode: "rambam", set(m) {
+        this.mode = m === "around" ? "around" : "rambam";
+        if (this.mode === "around") { ringG.visible = false; try { build(); } catch (e) { console.warn("[chel] steps:", e && e.message); } ringG.visible = true; }
+        else ringG.visible = false;
+        return this.mode;
+      } };
     }
     // ===== ROOF_ALL_211 (the user, 15.11.2026 00:53: a row of opinions for THE ROOFING OF THE TEMPLE MOUNT). The Rambam (Beit HaBechirah
     // 5:1, book 337 line 76): "הר הבית... וכלו היה מקרה סטיו לפנים מסטיו" (Pesachim 13b, 106 line 388: "הר הבית סטיו כפול היה... סטיו

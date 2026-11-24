@@ -418,6 +418,9 @@
     plaster: std(TEX.plaster, { roughness: 0.9 }),
     lattice: std(TEX.lattice, { roughness: 0.9 })
   };
+  // RAMP13_420: the almug of the gates' ramps and their railings - the colour of the king's ascent (60-palace.js), a reddish wood (a model choice)
+  M.almug = M.cedar.clone();
+  M.almug.color.set(0x9a4a32);
   function uvWorldBox(geo, w, h, d) {
     const uv = geo.attributes.uv, pos = geo.attributes.position;
     const nrm = geo.attributes.normal;
@@ -559,6 +562,48 @@
     parent.add(g);
     return g;
   }
+  // RAMP13_420 (the user, 24.11.2026, of the ramps that took the steps' place - an amah in an amah: "ב" - "להאריך ולהוסיף מעקה - אבל זה לא
+  // היה מאבן! היה מאלמוגים! גם המעקות"; "כל המעקות והכבשים היו מאלמוגים!"): a ramp (כבש) before a gate, from its head at the sill down at
+  // one amah in `slope` (three), on a solid body, with a railing on both its sides - posts every two amot and a sloped handrail, as the
+  // king's ascent of almug (60-palace.js; the Ralbag on I Kings 10:12 "כדמות מעקה מעצי האלמוגים שיסמך האדם בהם"). (x, y, z) - the middle of
+  // its head; dir - the way DOWN ("N" -z, "S" +z, "E" +x, "W" -x); rise - how far down; base - how far its body goes on under its foot
+  // (where the ground dips). Returns { g, run, body, rail }. The slope's measure, the railing's measures - model choices.
+  function ramp(parent, { x = 0, y = 0, z = 0, dir = "E", width, rise, slope = 3, mat = M.stoneSmooth, railMat = null, base = 0.3, rail = true, railH = 1.6, name = "gateRamp" }) {
+    const run = rise * slope, g = new Group();
+    g.name = name;
+    const sh = new Shape();
+    sh.moveTo(0, 0); sh.lineTo(run, -rise); sh.lineTo(run, -rise - base); sh.lineTo(0, -rise - base); sh.closePath();
+    const geo = new ExtrudeGeometry(sh, { depth: width, bevelEnabled: false });
+    geo.translate(0, 0, -width / 2);
+    const body = new Mesh(geo, mat);
+    body.castShadow = body.receiveShadow = true;
+    g.add(body);
+    let rm = null;
+    if (rail) {
+      const parts = [], P = 0.2, ang = Math.atan2(rise, run), len = Math.hypot(run, rise);
+      for (const s of [-1, 1]) {
+        const zz = s * (width / 2 - 0.2);
+        const n = Math.max(1, Math.round((run - 0.4) / 2));
+        for (let i = 0; i <= n; i++) {
+          const d = 0.2 + (run - 0.4) * i / n, b = new BoxGeometry(P, railH, P);
+          b.translate(d, -rise * d / run + railH / 2, zz);
+          parts.push(b);
+        }
+        const hr = new BoxGeometry(len, 0.18, 0.22);
+        hr.rotateZ(-ang);
+        hr.translate(run / 2, -rise / 2 + railH, zz);
+        parts.push(hr);
+      }
+      rm = new Mesh(mergeGeometries(parts), railMat || mat);
+      rm.castShadow = true;
+      rm.name = name + "Rail";
+      g.add(rm);
+    }
+    g.rotation.y = { E: 0, W: Math.PI, N: Math.PI / 2, S: -Math.PI / 2 }[dir];
+    g.position.set(x, y, z);
+    parent.add(g);
+    return { g, run, body, rail: rm };
+  }
   function columnGeo({ height = 25, rShaft = 1, style = "doric" } = {}) {
     const parts = [];
     const baseH = rShaft * 0.55;
@@ -630,6 +675,6 @@
     occ(inst);
     return inst;
   }
-  var H = { occ, OCC, box, cyl, wall, stairs, columnGeo, colonnade, crenellate, ring, lathe, uvWorld, uvWorldBox };
+  var H = { occ, OCC, box, cyl, wall, stairs, ramp, columnGeo, colonnade, crenellate, ring, lathe, uvWorld, uvWorldBox };
   //@@include terrain-raycast
 

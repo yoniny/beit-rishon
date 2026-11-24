@@ -487,7 +487,10 @@
     {
       const EY = 3.2, Y = LV2.HAR + EY;
       const KEYS = [
-        [0, [103, Y, 349], [103, Y, 320]], [4, [103, Y, 336], [103, Y, 300]], [7, [103, Y, 320], [126, Y, 314]],
+        // RAMP13_420 (the user's "ג"): up the king's winding ascent (60-palace.js) - from the king's court's gate west along its lower run, round
+        // its landing, east along its upper run to the landing at the gate, and in
+        [0, [104, -10 + EY, 351], [84, -5 + EY, 348]], [1.6, [89, -6.97 + EY, 348], [77, -4.97 + EY, 343]], [3.0, [79, -4.97 + EY, 344], [92, -2 + EY, 339.5]],
+        [4.6, [93, -1.63 + EY, 339.5], [103, Y, 337]], [5.8, [103, Y, 338], [103, Y, 316]], [7, [103, Y, 320], [126, Y, 314]],
         [10, [128, Y, 313], [200, Y, 311]], [18, [252, Y, 311], [318, Y, 292]], [24, [314, Y, 272], [318, Y, 200]],
         [31, [318, Y, 140], [318, Y, 60]], [37, [318, Y, 22], [348, Y, 0]], [41, [318, Y, -18], [318, Y, -100]],
         [47, [314, Y, -128], [250, Y, -140]], [55, [190, Y, -141], [120, Y, -145]], [61, [116, Y, -148], [103, Y + 2, -170]],
@@ -1178,29 +1181,34 @@
       // frame - the load time)
       if (SPRING_C) { const VS = new Vector3(SPRING_C.x, -50, SPRING_C.z); ctx.animated.push(() => { if (SHL.spring === undefined && fnc(ctx.shared.floorY) && ctx.camera && ctx.camera.position.distanceTo(VS) < 300) buildSpring(); }); }
       // ---- the ways (each [x, z] in the world). Out: the inner court's east gate (x 93.5, its round steps to the outer court's floor),
-      // the outer court's east gate (x 228.5) and its steps, the great court to its east gate (x 353) and down its 56 stairs (to x 383.5,
-      // y -28); then to the spring. Back: up the stairs, across the great court south of the outer court, to the inner court's south-eastern
-      // gate (x 40), up its twelve steps (z 78.5 -> 72.5), in, to the ramp's foot, up its east half, on the top to the left, to the bowl.
+      // the outer court's east gate (x 228.5) and its ramp, round the courts to the great court's west gate (x -147) and down its ramp (to
+      // x -233.5, y -28; RAMP13_420: 84 amot at an amah in three); then to the spring. Back: up that ramp, across the great court south of
+      // the inner court, to its south-eastern gate (x 40), up its ramp (z 90.5 -> 72.5), in, to the altar's ramp's foot, up its east half, on
+      // the top to the left, to the bowl.
       const valley = () => {
         const S = SP1(), A = S ? S.approach : [-14, 952];
         // from the west gate's stairs' foot southward, west of the palace's terrace and of the City of David's wall, to the place before the
         // spring at the city's south-western corner (the user's decision 117, renewed: the Gihon in the west, as the Malbim) - model choices
         // [-165, 345]: round the mount's south-western corner (its west wall x -150, its south wall z 333) - not over it
-        return [[-177.5, 0], [-185, 60], [-170, 250], [-165, 345], [-110, 400], [-60, 560], [-36, 720], [-30, 860], A];
+        // RAMP13_420: from the foot of the west gate's ramp (84 amot out, an amah in three - 20-mount.js), back south-east to the level strip by
+        // the wall (clear of the rose garden, x -177..-150, z 12..38), and on as before
+        return [[-233.5, 0], [-208, 36], [-186, 92], [-170, 250], [-165, 345], [-110, 400], [-60, 560], [-36, 720], [-30, 860], A];
       };
       const WAYS = () => {
         const V = valley(), Vr = V.slice().reverse();
         return [
           { pts: [[91.6, 0], [91.7, 0]], t: [0, 0.1], near: 7, endYaw: Math.PI / 2 },   // in the gate, behind the two with trumpets
           { pts: [[91.7, 0], [98, 0], [106, 0], [226.5, 0]], t: [T.walk0 + 0.5, T.out1 + 0.5], near: 7, endYaw: -Math.PI / 2 },   // his face to the west there
-          { pts: [[226.5, 0], [229.5, 0], [236, 0], [240, 74], [160, 86], [-60, 86], [-110, 40], [-140, 4], [-149.5, 0]], t: [T.decl1 + 0.2, T.east1], near: 4, proc: true },   // round the outer court and the inner one, to the west gate
-          { pts: [[-149.5, 0], [-177.5, 0]], t: [T.east1, T.steps1], stairs: [0, -28], proc: true },
+          { pts: [[226.5, 0], [229.5, 0], [240.5, 0], [243, 74], [160, 97], [-90, 97], [-104, 80], [-112, 40], [-140, 4], [-149.5, 0]], t: [T.decl1 + 0.2, T.east1], near: 4, proc: true },   // round the outer court and the inner one, to the west gate (RAMP13_420: down the outer gate's ramp to its foot, x 238.5, before turning; south of the inner gates' ramps' feet, z 90.5, and round the inner court's corner)
+          { pts: [[-149.5, 0], [-233.5, 0]], t: [T.east1, T.steps1], stairs: [0, -28], proc: true },   // RAMP13_420: down the ramp (was 28 amot of stairs)
           { pts: V, t: [T.steps1, T.path1], terrain: true, proc: true },
           { pts: [V[V.length - 1], standF()], t: [T.path1, T.rim1], terrain: true, endYaw: standYaw() },   // his face to the fall
           { pts: [standF()].concat(Vr.slice(1)), t: [T.back0, T.backS], terrain: true, proc: true },
-          { pts: [[-177.5, 0], [-149.5, 0]], t: [T.backS, T.back1], stairs: [-28, 0], proc: true },
-          { pts: [[-149.5, 0], [-140, 4], [-110, 40], [-60, 86], [36, 86], [40, 80.5]], t: [T.back1 + 0.1, T.wg0], near: 4, proc: true },   // the procession with him, south of the inner court
-          { pts: [[40, 80.5], [40, 78.5], [40, 72.5], [40, 71]], t: [T.wg0, T.wg1], steps: [[78.5, 0], [72.5, 6]], endYaw: Math.PI },   // up to the gate, his face into the court
+          { pts: [[-233.5, 0], [-149.5, 0]], t: [T.backS, T.back1], stairs: [-28, 0], proc: true },
+          // RAMP13_420: round the inner court's south-western corner (its podium x -98.5..98.5, z -72.5..72.5 - until now the way cut across it)
+          // and along z 97, south of the feet of the south gates' ramps (18 amot out, to z 90.5 - 30-courts.js), to the foot of the eastern one
+          { pts: [[-149.5, 0], [-140, 4], [-112, 40], [-104, 80], [-90, 97], [36, 97], [40, 94]], t: [T.back1 + 0.1, T.wg0], near: 4, proc: true },   // the procession with him, south of the inner court
+          { pts: [[40, 94], [40, 90.5], [40, 72.5], [40, 71]], t: [T.wg0, T.wg1], steps: [[90.5, 0], [72.5, 6]], endYaw: Math.PI },   // up the gate's ramp, his face into the court
           { pts: [[40, 71], [40, 66], [46, 60], AW(57.0, 44.5)], t: [T.blow1, T.in1], near: 7 },
           { pts: [AW(57.0, 44.5), AW(57.0, yose() ? 15.5 : 13.5)], t: [T.in1, T.ramp1], ramp: true },
           { pts: [AW(57.0, yose() ? 15.5 : 13.5), AW(56.4, yose() ? 11.6 : 9.6)].concat(yose() ? [AW(50, 10.8), AW(46.6, 10.4)] : [AW(51.5, 8.9), AW(48.4, 8.3)]).concat([standP()]), t: [T.ramp1, T.top1], near: 18, endYaw: 0 }   // "ופנה לשמאלו"
@@ -1446,7 +1454,7 @@
           [0, [118, 15, 18], [96, 9.5, 0]], [3.4, [119, 14.5, 16], [97, 9, 0]], [T.walk0 + 1.6, [150, 17, 26], [122, 4, 0]], [T.out1 - 1.2, [196, 15, 24], [224, 4, 0]],
           [T.out1 + 0.8, [244, 12, 13], [224, 5, 0]], [T.decl1, [242, 13, 14], [224, 5, 0]],
           off(T.decl1 + 1.6, [24, 18, 30]), off(T.decl1 + 4.0, [10, 26, 44]), off(T.east1 - 1.4, [26, 32, 30]),   // round the courts, from high in the south (over their chambers, 26)
-          [T.east1, [-128, 26, 24], [-152, 3, 0]], [T.east1 + 1.4, [-190, 20, 30], [-165, -12, 0]], [T.steps1, [-200, -10, 24], [-178, -27, 2]],   // out by the west gate, over its wall (20), down its stairs
+          [T.east1, [-128, 26, 24], [-152, 3, 0]], [T.east1 + 1.4, [-178, 12, 38], [-195, -15, 0]], [T.steps1, [-256, -12, 26], [-234, -27, 2]],   // out by the west gate, over its wall (20), down its ramp (RAMP13_420: 84 amot)
           off(T.steps1 + 3, [-22, 18, 30]), off(T.steps1 + 7, [-22, 18, 30]), off(T.steps1 + 10, [-24, 16, 26]),   // southward, west of the terrace and the city, before them
           // the spring (as the Second Temple's: the cliff, the opening and the pool at a man's height; the filling closer, from the side)
           [T.path1 - 2.2, kp(10.5, sy + 9, -35.4), kp(2.5, sy + 4, -1.4)],
@@ -1455,9 +1463,9 @@
           [T.fill1 + 0.6, kp(3.6, sy + 7.5, -7.5), kp(-0.4, M - 0.8, -0.4)],   // up from the pool's side first - over the crowd round it
           off(T.back0 + 1.2, [9, 12, 13]),   // he turns back with the full flask
           off(T.back0 + 3.2, [-24, 20, -40]), off(T.back0 + 7.5, [-24, 20, -40]),   // northward: before them, looking back at them
-          [T.backS - 0.6, [-200, -10, 24], [-178, -27, 2]], [T.back1 - 0.4, [-190, 8, 22], [-150, 2, 0]],
+          [T.backS - 0.6, [-256, -12, 26], [-234, -27, 2]], [T.back1 - 0.4, [-190, 8, 22], [-150, 2, 0]],
           off(T.back1 + 0.9, [26, 44, 74]), off(T.back1 + 3.2, [26, 44, 74]), off(T.wg0 - 1.2, [22, 30, 52]),   // across the great court, from high in the south-east
-          [T.wg0 - 0.2, [58, 18, 104], [42, 4, 80]], [T.wg1 - 0.4, [56, 16, 96], [40, 7.5, 73]], [T.blow1, [57, 15.6, 95], [40, 7.6, 73.2]],
+          [T.wg0 - 0.2, [60, 18, 112], [41, 3, 92]], [T.wg1 - 0.4, [56, 16, 96], [40, 7.5, 73]], [T.blow1, [57, 15.6, 95], [40, 7.6, 73.2]],
           [T.blow1 + 1.0, [72, 34, 92], [48, 6, 60]], [T.in1 - 0.8, [76, 18, A1[1] + 18], [57, 8, A1[1] + 8]], [T.ramp1 - 1.0, [72, 22, A1[1] - 2], [57, 13, A1[1] - 12]],
           [T.top1, [33, 22, B[1] + 11], [B[0] + 3, 15.5, B[1] - 1]], [T.pour0 + 0.8, [41, 20.4, B[1] + 8.6], [B[0] + 0.3, 16.2, B[1] - 0.4]],
           [T.pour0 + 2.8, [48, 22.5, B[1] + 13], [B[0] + 0.6, 16.2, B[1] - 0.6]], [T.end, [48.5, 22.5, B[1] + 13.4], [B[0] + 0.6, 16.2, B[1] - 0.6]]

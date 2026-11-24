@@ -232,7 +232,11 @@
       H2.box(parent, wL, top, dp, M2.stoneSmooth, gx, 0, zc);
       if (rw) H2.box(parent, wL, top, rw, M2.stoneSmooth, gx, 0, s > 0 ? z1 + rw / 2 : z0 - rw / 2);
       platRail(parent, gx - wL / 2, gx + wL / 2, rw && s < 0 ? z0 - rw : z0, rw && s > 0 ? z1 + rw : z1, top, [s < 0 ? "n" : "s"].concat(o.endRail === false ? [] : [dx > 0 ? "w" : "e"]));
-      stairsR(parent, { width: dp, totalRise: top, steps: n, dir: dx > 0 ? "W" : "E", x: gx + dx * (wL / 2 + n * 0.5), y: 0, z: zc, tread: 0.5, ramp: true });
+      // CHEL_STEPS_420 (the user, 24.11.2026, of the gates from the chel: "תרחיב עליהם יש מקור - אם לא כבש"; the sources - Middot 2:3 "ושתים
+      // עשרה מעלות היו שם", Tiferet Yisrael, Yachin Middot 2:23 (819:191) "שהמעלות הללו, לא לבד בין השערים שלמטה ושלמעלה היו, רק היו מקיפים
+      // כל הר הבית", and his Tzurat Beit HaMikdash, siman 8 (6029:25) "דכל הששה אמות גובה שסביב בכל הד' רוחות לחומה הפנימית, היה עשוי כולו
+      // מדריגות מדריגות"): STEPS again, as until 4.2.0 (4.2.0 made them a ramp, an amah in an amah)
+      stairsR(parent, { width: dp, totalRise: top, steps: n, dir: dx > 0 ? "W" : "E", x: gx + dx * (wL / 2 + n * 0.5), y: 0, z: zc, tread: 0.5 });
     };
     // RAMPS_N4 (the user, 24.11.2026: "הכבש לבהמות מיושר ומחובר למדרגות של השער - חלק מדרגות וחלק כבש באותו גרם, עד נחיתת השער"): at the gate of the
     // firstborn (south) and the gate of the offering (north) the flight is two strips side by side, from the gate's landing (13.5): the steps (4 wide, as the
@@ -240,6 +244,9 @@
     // long); one rail round the landing and along the ramp's outer edge. The beast and the one who brings the firstborn go up it together. Until 3.1.0 a winding
     // ramp on piers (from Rav Chaim Kanievsky, as brought in the Chalamish) beside the flight - the user's decision 41, now replaced. The ramp's width, slope and
     // rail - model choices. The south flight and its ramp run WEST (the east is the Water Gate's flight), the north's west, as it was.
+    // BEAST_N_OFF_420 (the user, 24.11.2026, of the north one: "ביטול הכבש"; "המעקה והכבש יוצא מחוץ לסורג!"): the gate of the offering's
+    // ramp is gone - 54 amot long, it ran before the landing of the Nitzotz gate, out through the soreg at the north-west corner, and the
+    // night's watchmen of the morning's service stood in it (55-tamid.js). Only the gate of the firstborn's (south) stays.
     const rampG = new Group(); rampG.name = "animalRamps"; g.add(rampG); ctx2.layers.animalRamps = rampG;
     const RAMP_W = 3, RAMP_SLOPE = 4;
     const beastRamp = (gx, s, dx, wL, top, zFace, dp) => {
@@ -263,7 +270,7 @@
     };
     for (const [gx, s] of [[-78, -1], [-78, 1], [-48, -1], [BECH_X, 1], [WATER_X, 1]]) {   // 1.3.0: the approaches follow the gates (Rambam 5:4, the western part); 1.8.0: Beit HaMoked's own gate to the chel (north, -18) - by the house, below
       const joined = (gx === -78 && s > 0) || (gx === -48 && s < 0);   // a small gate's landing joins this one's free end in the readings of thirteen gates
-      const beast = gx === BECH_X || (gx === -48 && s < 0), fdx = gx === BECH_X ? -1 : s > 0 ? 1 : -1;   // RAMPS_N4
+      const beast = gx === BECH_X, fdx = gx === BECH_X ? -1 : s > 0 ? 1 : -1;   // RAMPS_N4; BEAST_N_OFF_420: the gate of the offering's (north) - cancelled
       chelFlight(g, gx, s, fdx, { endRail: !joined, rampW: beast ? RAMP_W : 0 });
       if (beast) beastRamp(gx, s, fdx, 12, 13.5, 70, 4);
       // GATE_STEPS_A2 (fix-a2; the user's decision 79, 22.11.2026): the last two and a half amot inside the gate - a step of one amah and
@@ -1329,7 +1336,7 @@
         const sg = Math.sign(z), wt = WEST_T.get(grp);   // WEST2_D: the TYT's west gates' landings and flights
         H2.box(wt, 4, 13.5, 6, M2.stoneSmooth, -98, 0, z);
         platRail(wt, -100, -96, z - 3, z + 3, 13.5, ["w", sg > 0 ? "n" : "s"]);
-        stairsR(wt, { width: 4, totalRise: 13.5, steps: 27, dir: sg > 0 ? "N" : "S", x: -98, y: 0, z: z + sg * 16.5, tread: 0.5, ramp: true });
+        stairsR(wt, { width: 4, totalRise: 13.5, steps: 27, dir: sg > 0 ? "N" : "S", x: -98, y: 0, z: z + sg * 16.5, tread: 0.5 });   // CHEL_STEPS_420: steps again
       }
     }
     H2.box(g13, 8.5, 13.5, 4, M2.stoneSmooth, -37.75, 0, -72);

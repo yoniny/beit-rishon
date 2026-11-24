@@ -242,13 +242,25 @@
       if (x < CO2.harW) v += 24 * Math.exp(-((((CO2.harW - x) - 110) / 70) ** 2)) * sm(0, 5, CO2.harW - x);
       return v;
     };
+    // RAMP13_420: the ramps before the east and the west gates go out 84 amot (an amah in three, from the platform down to GROUND_Y) and the
+    // ground falls away 35 amot from the walls' feet: before those two gates it stays level as far as the ramp and a little beyond - a strip
+    // along the gate's axis (level to 100 amot out and 16 to each side, faded out over the next 30 and 26). Its measures - model choices
+    const GATE_FLAT = [[CO2.harE + T / 2, MNT_EW_GATE_Z, 1, 0], [CO2.harW - T / 2, MNT_EW_GATE_Z, -1, 0]];
+    const gateFlat = (x, z) => {
+      let m = 0;
+      for (const [x0, z0, ux, uz] of GATE_FLAT) {
+        const a = (x - x0) * ux + (z - z0) * uz, b = Math.abs((x - x0) * uz - (z - z0) * ux);
+        if (a > -2 && a < 130 && b < 42) m = Math.max(m, (1 - sm(100, 130, a)) * (1 - sm(16, 42, b)));
+      }
+      return m;
+    };
     const terrainH0 = (x, z) => {
       const d = rectDist(x, z);
       const ramp = sm(70, 380, d);
       let h = bump(x, z, 1100, 30, 460, 950, 190) + bump(x, z, -700, 620, 420, 330, 130) + bump(x, z, -560, -760, 460, 380, 100) + bump(x, z, 220, 1350, 560, 320, 130) + bump(x, z, 380, -1380, 620, 360, 120);
       h += (fbm(x * 3e-3, z * 3e-3) - 0.5) * 120 + (fbm(x * 0.012, z * 0.012) - 0.5) * 22;
       const rim = sm(1500, 2500, Math.hypot(x - CX, z - CZ)) * 260;
-      return GROUND_Y + ramp * Math.max(h * 0.2, -5) + rim * 0.15 * ramp - sm(35, 100, d) * valley(x, z);
+      return GROUND_Y + ramp * Math.max(h * 0.2, -5) + rim * 0.15 * ramp - sm(35, 100, d) * valley(x, z) * (1 - gateFlat(x, z));
     };
     // VALLEYS_188 (fix-f, 22.11.2026 - the coordinator's task 188: "להעמיק את הקרקע סביב עיר דוד... את הגיא ממערב ואת הנחל (קדרון)
     // ממזרח, כך שעיר דוד תיראה באמת כרכס בולט, גם ממערב ומרחוק"): until now the ground round the City of David lay 20 to 27 under the
@@ -532,15 +544,20 @@
     mnt_gatePortal(g, Object.assign({ axis: "x", gx: gS.x, gz: gS.z, inward: -1, fadeWith: wallS.stone }, portal));
     mnt_gatePortal(g, Object.assign({ axis: "z", gx: gW.x, gz: gW.z, inward: -1, fadeWith: wallW.stone }, portal));
 
-    // ---------- exterior steps from the ground up to the platform at each gate (model choice) ----------
-    // SPEC 3: a flight of 56 steps of the model's 0.5 / 0.5 step from the ground (GROUND_Y -28, as 1.0.19) up to the platform (rise 28),
-    // so the flight really reaches the ground.
-    const STEPS = Math.round(-GROUND_Y / MNT_STEP), RUN = STEPS * MNT_STEP; // 56 steps, run 28
-    const SW = 14; // model choice: flight width 14 (as the 1.0.19 Shushan gate steps)
-    H2.stairs(g, { width: SW, totalRise: -GROUND_Y, steps: STEPS, dir: "W", x: CO2.harE + T / 2 + RUN, y: GROUND_Y, z: gE.z, tread: MNT_STEP, ramp: true });
-    H2.stairs(g, { width: SW, totalRise: -GROUND_Y, steps: STEPS, dir: "E", x: CO2.harW - T / 2 - RUN, y: GROUND_Y, z: gW.z, tread: MNT_STEP, ramp: true });
-    H2.stairs(g, { width: SW, totalRise: -GROUND_Y, steps: STEPS, dir: "S", x: gN.x, y: GROUND_Y, z: CO2.harN - T / 2 - RUN, tread: MNT_STEP, ramp: true });
-    H2.stairs(g, { width: SW, totalRise: -GROUND_Y, steps: STEPS, dir: "N", x: gS.x, y: GROUND_Y, z: CO2.harS + T / 2 + RUN, tread: MNT_STEP, ramp: true });
+    // ---------- the ramps from the ground up to the platform at each gate ----------
+    // SPEC 3 (until 4.2.0): a flight of 56 steps of the model's 0.5 / 0.5 step from the ground (GROUND_Y -28, as 1.0.19) up to the platform.
+    // 4.2.0 (the user: "כל המדרגות בכל השערים צריכים לעוף ובמקומם כבשים"): a ramp in the flight's place, as long as it - an amah in an amah.
+    // RAMP13_420 (the user, 24.11.2026: "ב" - an amah in three; "היה מאלמוגים! גם המעקות"; "כל המעקות והכבשים היו מאלמוגים!"): each ramp
+    // goes out 84 amot from the wall's face down to the ground, of almug, with a railing on both its sides (H2.ramp, 10-core.js); before the
+    // east and the west gates the ground stays level as far as it reaches (gateFlat, above). The south gate has none: the way down from it is
+    // the king's ascent to his house (60-palace.js; the user: "אני חייב שיראו את בית המלך"), winding in the gap between this wall and the
+    // king's terrace. Width 14 (as the 1.0.19 Shushan gate steps) - a model choice.
+    const SW = 14, RAMP_RISE = LV2.HAR - GROUND_Y;   // 28
+    const rampOf = (o) => H2.ramp(g, Object.assign({ y: LV2.HAR, width: SW, rise: RAMP_RISE, slope: 3, mat: M2.almug || M2.cedar, base: 12, name: "mountRamp" }, o));
+    rampOf({ x: CO2.harE + T / 2, z: gE.z, dir: "E" });
+    rampOf({ x: CO2.harW - T / 2, z: gW.z, dir: "W" });
+    rampOf({ x: gN.x, z: CO2.harN - T / 2, dir: "N" });
+    ctx.shared.mountRamps = { run: 3 * RAMP_RISE, rise: RAMP_RISE, width: SW, wallFace: { E: CO2.harE + T / 2, W: CO2.harW - T / 2, N: CO2.harN - T / 2, S: CO2.harS + T / 2 } };
 
     // ---------- the outer court (החצר החיצונה) ----------
     // Source: Rashi on I Kings 6:36 "קורא אותה פנימית לפי שהיתה לפנים מעזרת נשים" (the only mention; Rashi's term is "עזרת נשים"; the model
@@ -576,8 +593,9 @@
     } catch (e) {
       console.warn("[mount] outer court gate trim skipped:", e);
     }
-    // 6 steps (3 rise) from the platform up to the outer court gate (model choice), dir W, bottom at x 232.5; flight width 12 (model choice: a little wider than the 10-wide gate)
-    H2.stairs(g, { width: 12, totalRise: WC.y - LV2.HAR, steps: 6, dir: "W", x: wcPodE + 6 * MNT_STEP, y: LV2.HAR, z: 0, tread: MNT_STEP, ramp: true });
+    // 6 steps (3 rise) from the platform up to the outer court gate (model choice), dir W, bottom at x 232.5; flight width 12 (model choice: a little wider than the 10-wide gate).
+    // 4.2.0: a ramp in their place; RAMP13_420: an amah in three (9 amot out, to x 238.5), of almug with its railing - as the mount's gates (above)
+    H2.ramp(g, { x: wcPodE, y: WC.y, z: 0, dir: "E", width: 12, rise: WC.y - LV2.HAR, slope: 3, mat: M2.almug || M2.cedar, base: 0.3, name: "outerCourtRamp" });
 
     // ---------- the uses of the outer court (1.0.1, FIXES D.2: the user - "היו בה שימושים, הוסף") ----------
     // The sources name things that stood in this court but give no measures or places; every number below is a model choice (MNT_LISHKA,
