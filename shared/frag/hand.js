@@ -337,21 +337,32 @@
       const V3 = (a, mx) => new Vector3(a[0] * mx, a[1], a[2]);
       const build = (sd, pose, low) => {
         const key0 = pose + "|" + low;
-        const R = SK[key0] || (SK[key0] = (() => {
-          const H = parts(pose, low === 2), M = mesh(H.field, H.lo, H.hi, low === 2 ? 0.0105 : low === 1 ? 0.0072 : 0.0046), col = shadeOf(H, M, low === 2);
-          return { H, M, col };
-        })());
-        const mx = sd > 0 ? -1 : 1, { H, M, col } = R, nv = M.pos.length / 3;
-        const pos = new Float32Array(M.pos), nor = new Float32Array(M.nor), uv = new Float32Array(nv * 2);
-        for (let q = 0; q < nv; q++) { pos[q * 3] *= mx; nor[q * 3] *= mx; uv[q * 2] = 0.9; uv[q * 2 + 1] = 0.2; }
-        let idx = M.idx;
-        if (mx < 0) { idx = idx.slice(); for (let q = 0; q < idx.length; q += 3) { const t = idx[q + 1]; idx[q + 1] = idx[q + 2]; idx[q + 2] = t; } }
-        const geo = new BufferGeometry();
-        geo.setAttribute("position", new Float32BufferAttribute(pos, 3));
-        geo.setAttribute("normal", new Float32BufferAttribute(nor, 3));
-        geo.setAttribute("uv", new Float32BufferAttribute(uv, 2));
-        geo.setAttribute("color", new Float32BufferAttribute(col.slice(), 3));
-        geo.setIndex(idx);
+        const R = SK[key0] || (SK[key0] = { H: parts(pose, low === 2), geo: null });
+        const mx = sd > 0 ? -1 : 1, { H } = R;
+        // Grip positions, finger joints and the surface used by the tefillin need only the skeleton/field. Build the expensive
+        // surface nets on the first .geo read, then keep only its typed geometry buffers (not the duplicate JS pos/idx arrays).
+        // The right hand is also the canonical surface for the left, whose winding and x normals are mirrored once.
+        let geo = null;
+        const geometry = () => {
+          if (geo) return geo;
+          if (!R.geo) {
+            const M = mesh(H.field, H.lo, H.hi, low === 2 ? 0.0105 : low === 1 ? 0.0072 : 0.0046), col = shadeOf(H, M, low === 2);
+            const nv = M.pos.length / 3, uv = new Float32Array(nv * 2);
+            for (let q = 0; q < nv; q++) { uv[q * 2] = 0.9; uv[q * 2 + 1] = 0.2; }
+            R.geo = new BufferGeometry();
+            R.geo.setAttribute("position", new Float32BufferAttribute(M.pos, 3));
+            R.geo.setAttribute("normal", new BufferAttribute(M.nor, 3));
+            R.geo.setAttribute("uv", new BufferAttribute(uv, 2));
+            R.geo.setAttribute("color", new BufferAttribute(col, 3));
+            R.geo.setIndex(M.idx);
+          }
+          if (mx > 0) return (geo = R.geo);
+          geo = R.geo.clone();
+          const pos = geo.attributes.position.array, nor = geo.attributes.normal.array, idx = geo.index.array;
+          for (let q = 0; q < pos.length; q += 3) { pos[q] = -pos[q]; nor[q] = -nor[q]; }
+          for (let q = 0; q < idx.length; q += 3) { const t = idx[q + 1]; idx[q + 1] = idx[q + 2]; idx[q + 2] = t; }
+          return geo;
+        };
         const fingers = H.fingers.map((F) => ({ j: F.j.map((p) => V3(p, mx)), r: F.r.slice(), ax: new Vector3(F.ax[0], F.ax[1] * mx, F.ax[2] * mx) }));
         const P = POSE[pose] || POSE.rest, mf = fingers[1].j;
         let grip;
@@ -368,7 +379,7 @@
           for (let it = 0; it < 14; it++) { const m = (a + b) / 2; if (H.field(X, y, m) > 0) b = m; else a = m; }
           return (a + b) / 2;
         };
-        return { geo, sk: { PL, PM: PL * 0.5, grip, gripAx, ring: P.rh || 0, fingers, thumb: H.tj.map((p) => V3(p, mx)), back } };
+        return { get geo() { return geometry(); }, sk: { PL, PM: PL * 0.5, grip, gripAx, ring: P.rh || 0, fingers, thumb: H.tj.map((p) => V3(p, mx)), back } };
       };
       // o.low: the crowds' (the fingers together, a coarse grid); o.mid: the same hand in fewer faces (from a few amot - 55-tamid.js)
       return (o = {}) => {

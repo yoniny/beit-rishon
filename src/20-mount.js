@@ -352,6 +352,7 @@
       tm.vertexColors = true;
       tm.color.set(15527123);
       const terrain = new Mesh(geo, tm);
+      tm_terrainRaycast(terrain, SEG, SEG);
       terrain.receiveShadow = true;
       g.add(terrain);
       // VALLEYS_188: the terrain's cells are 23.6 amot - too coarse for the valleys' banks (the drawn ground would stand amot off the

@@ -75,6 +75,7 @@
       tm.vertexColors = true;
       tm.color.set(15527123);
       const terrain = new Mesh(geo, tm);
+      tm_terrainRaycast(terrain, SEG, SEG);
       terrain.receiveShadow = true;
       g.add(terrain);
     }
@@ -633,18 +634,28 @@
     g.add(repairG, breachG);
     breachG.visible = false;
     const GAP_W = 4;
+    // Fallen boards and broken rail ends are static. Keep their exact world UVs/rotations, with one batch per board size.
+    const debrisBatches = new Map();
+    const debris = (w, h, d, x, y, z, axis, angle) => {
+      const key = w + ":" + h + ":" + d;
+      if (!debrisBatches.has(key)) debrisBatches.set(key, { w, h, d, matrices: [] });
+      const mm = new Matrix4();
+      if (axis === "x") mm.makeRotationX(angle);
+      else if (axis === "y") mm.makeRotationY(angle);
+      else mm.makeRotationZ(angle);
+      mm.setPosition(x, y + h / 2, z);
+      debrisBatches.get(key).matrices.push(mm);
+    };
     const soregDebris = (axis, fixed, c, w) => {   // the Greeks' days: slats fallen by the gap, a broken stub of the top rail at each side
       const P = (t, off) => axis === "x" ? [t, off] : [off, t];
       const pieces = [[-1.2, 0.35, 0.4, 0.9], [-0.3, -0.5, 1.7, 1.3], [0.6, 0.6, 2.6, 1.1], [1.1, -0.2, 0.9, 1.7], [0.2, 0.9, 3.4, 0.8]];
       for (const [dt, doff, rot, len] of pieces) {
         const [x, z] = P(c + dt * w / 3, fixed + doff);
-        const m = H2.box(breachG, 0.1, 0.06, len, SG_MAT, x, 0.02, z);
-        m.rotation.y = rot;
+        debris(0.1, 0.06, len, x, 0.02, z, "y", rot);
       }
       for (const sgn of [-1, 1]) {
         const [x, z] = P(c + sgn * (w / 2 - 0.25), fixed);
-        const m = H2.box(breachG, axis === "x" ? 0.5 : SG_T, SG_R, axis === "x" ? SG_T : 0.5, SG_MAT, x, SG_H - SG_R - 0.25, z);
-        m.rotation[axis === "x" ? "z" : "x"] = sgn * 0.5;
+        debris(axis === "x" ? 0.5 : SG_T, SG_R, axis === "x" ? SG_T : 0.5, x, SG_H - SG_R - 0.25, z, axis === "x" ? "z" : "x", sgn * 0.5);
       }
     };
     // gates: the openings opposite the court's gates (open in the repaired soreg, closed in the Greeks' days unless a breach is there);
@@ -692,6 +703,13 @@
     soregSide("x", sz2, sx1, sx2, [-78, -48, -18], [161], [B4(-88), B4(-78), B4(-48), B4(-18)]);
     soregSide("z", sx2, sz1, sz2, [0], [], [[0, 8], B4(-12), B4(12)]);
     soregSide("z", sx1, sz1, sz2, [0], [], [B4(-20), B4(20)]);
+    for (const { w, h, d, matrices } of debrisBatches.values()) {
+      const im = new InstancedMesh(H2.uvWorldBox(new BoxGeometry(w, h, d), w, h, d), SG_MAT, matrices.length);
+      matrices.forEach((mm, i) => im.setMatrixAt(i, mm));
+      im.castShadow = im.receiveShadow = true;
+      im.computeBoundingSphere();
+      breachG.add(im);
+    }
     // ===== ROOF_ALL_211 (the user, 15.11.2026 00:53: a row of opinions for THE ROOFING OF THE TEMPLE MOUNT). The Rambam (Beit HaBechirah
     // 5:1, book 337 line 76): "הר הבית... וכלו היה מקרה סטיו לפנים מסטיו" (Pesachim 13b, 106 line 388: "הר הבית סטיו כפול היה... סטיו
     // לפנים מסטיו"). THE TOSAFOT YOM TOV (Middot 2:1, 948 line 64): "ודאי שאין הר הבית מכוסה, שלא היה מסוכך אלא ע"ג האצטבאות... והן
@@ -740,6 +758,7 @@
           SKY.push([x, z]);
         }
       }
+      const curbMats = [[], []];   // identical opaque boards; roof slabs stay separately sortable
       const slab = (x0, x1, z0, z1) => {
         const m = new Mesh(new BoxGeometry(x1 - x0, 0.7, z1 - z0), roofM); m.position.set((x0 + x1) / 2, 23.5, (z0 + z1) / 2); m.userData.noPick = true; m.renderOrder = 6; RGP.add(m);
         // the same slab with its skylights: a shape with square holes, extruded 0.7
@@ -752,7 +771,7 @@
         const mh = new Mesh(geo, roofM); mh.position.set(0, 23.85, 0); mh.userData.noPick = true; mh.renderOrder = 6; RGH.add(mh);
         for (const [x, z] of holes) {                                                // the curb: four low boards round the opening
           for (const [w, d, dx, dz] of [[9, 0.5, 0, -4.25], [9, 0.5, 0, 4.25], [0.5, 8, -4.25, 0], [0.5, 8, 4.25, 0]]) {
-            const c = new Mesh(new BoxGeometry(w, 0.9, d), M2.cedar); c.position.set(x + dx, 24.3, z + dz); c.userData.noPick = true; RGH.add(c);
+            curbMats[w === 9 ? 0 : 1].push(m4(x + dx, 24.3, z + dz));
           }
         }
       };
@@ -767,6 +786,10 @@
       slab(X0, X1, IZ1, Z1);
       slab(X0, IX0, IZ0, IZ1);
       slab(IX1, X1, IZ0, IZ1);
+      for (let i = 0; i < curbMats.length; i++) if (curbMats[i].length) {
+        const c = instMesh(RGH, new BoxGeometry(i ? 0.5 : 9, 0.9, i ? 8 : 0.5), M2.cedar, curbMats[i], false);
+        c.userData.noPick = true;
+      }
       const LSG = new Group(); LSG.name = "harRoofLS"; ctx2.layers.harRoofLS = LSG;   // (a layer only: the labels of the reading "all")
       ctx2.labels.push({ text: "״וכולו היה מקורה, סטיו לפנים מסטיו״ (רמב״ם) — כל הר הבית, כלחם שמים", x: 250, y: 30, z: 160, size: 5, layers: ["harRoofAll", "harRoofLS"] });
       ctx2.labels.push({ text: "ארובות בקירוי — ״כדי להביא אור תחת הקרוי״ (תפארת ישראל)", x: SKY.length ? SKY[0][0] : 0, y: 27, z: SKY.length ? SKY[0][1] : 0, size: 2.4, layers: ["harRoofAll", "harRoofLS"] });
@@ -786,11 +809,20 @@
         ezSlab(CX0, CX1, -WZ, WZ);                                                    // the middle, from the north wall to the south wall
         ezSlab(WX0, CX0, -CZ, CZ);                                                    // the west arm (over the fifteen steps)
         ezSlab(CX1, WX1, -CZ, CZ);                                                    // the east arm (before the gate)
-        const beam = (x, z, w, d) => { const m = new Mesh(new BoxGeometry(w, 1.0, d), M2.cedar); m.position.set(x, YR - 0.5, z); m.castShadow = true; m.userData.noPick = true; EZ.add(m); };
+        const beamMats = new Map();
+        const beam = (x, z, w, d) => {
+          const key = w + "," + d;
+          if (!beamMats.has(key)) beamMats.set(key, { w, d, mats: [] });
+          beamMats.get(key).mats.push(m4(x, YR - 0.5, z));
+        };
         for (let z = -WZ + 3; z <= WZ - 2.9; z += 6.2) beam((CX0 + CX1) / 2, z, CX1 - CX0, 0.8);   // the middle: east to west
         for (let x = WX0 + 3; x < CX0 - 1; x += 6.25) beam(x, 0, 0.8, 2 * CZ);                     // the arms: north to south
         for (let x = CX1 + 3; x < WX1 - 1; x += 6.25) beam(x, 0, 0.8, 2 * CZ);
         for (const x of [CX0, CX1]) beam(x, 0, 1.6, 2 * CZ + 1);                                  // the two lintels on the columns
+        for (const { w, d, mats } of beamMats.values()) {
+          const m = instMesh(EZ, new BoxGeometry(w, 1.0, d), M2.cedar, mats, false);
+          m.castShadow = true; m.userData.noPick = true;
+        }
         const ec = H2.colonnade(EZ, EZC.map(([x, z]) => ({ x, y: LV.EZN, z })), { height: YR - 1 - LV.EZN, rShaft: 0.95, mat: M2.marble, style: "corinthian" });
         ec.userData.noPick = true;
       }

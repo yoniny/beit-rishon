@@ -1,0 +1,844 @@
+{
+  "provenance": {
+    "run": "https://github.com/yom-chadash/beit-rishon/actions/runs/45256012887",
+    "sourceCommit": "e80bb4dbe8cfb93db7f356b2fd45f850746f848d"
+  },
+  "note": "Model-only; Canvas/DOM/audio stubbed. Counts are scene objects, not measured GPU draw calls or FPS.",
+  "houses": {
+    "rishon": [
+      {
+        "name": "default",
+        "candidate": {
+          "objects": 2133,
+          "meshes": 1698,
+          "visibleMeshes": 853,
+          "components": 18918,
+          "visibleComponents": 5185,
+          "geometries": 1359,
+          "materials": 434,
+          "geometryBytes": 13859948,
+          "instanceBytes": 1142784
+        },
+        "baseline": {
+          "objects": 2133,
+          "meshes": 1698,
+          "visibleMeshes": 853,
+          "components": 18918,
+          "visibleComponents": 5185,
+          "geometries": 1359,
+          "materials": 434,
+          "geometryBytes": 13859948,
+          "instanceBytes": 1142784
+        },
+        "validation": {
+          "comparedComponents": 18918,
+          "visibleOnly": false,
+          "maxMatrixError": 0,
+          "equivalent": true
+        }
+      }
+    ],
+    "sheni": [
+      {
+        "name": "default",
+        "candidate": {
+          "objects": 5361,
+          "meshes": 4375,
+          "visibleMeshes": 2089,
+          "components": 30728,
+          "visibleComponents": 13087,
+          "geometries": 3398,
+          "materials": 601,
+          "geometryBytes": 20641556,
+          "instanceBytes": 1778368
+        },
+        "baseline": {
+          "objects": 5922,
+          "meshes": 4936,
+          "visibleMeshes": 2281,
+          "components": 30728,
+          "visibleComponents": 13087,
+          "geometries": 4015,
+          "materials": 601,
+          "geometryBytes": 21226444,
+          "instanceBytes": 1738752
+        },
+        "validation": {
+          "comparedComponents": 30728,
+          "visibleOnly": false,
+          "maxMatrixError": 6.103515630684342e-06,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "guards-on",
+        "candidate": {
+          "objects": 5361,
+          "meshes": 4375,
+          "visibleMeshes": 2117,
+          "components": 30728,
+          "visibleComponents": 13159,
+          "geometries": 3398,
+          "materials": 601,
+          "geometryBytes": 20641556,
+          "instanceBytes": 1778368
+        },
+        "baseline": {
+          "objects": 5922,
+          "meshes": 4936,
+          "visibleMeshes": 2353,
+          "components": 30728,
+          "visibleComponents": 13159,
+          "geometries": 4015,
+          "materials": 601,
+          "geometryBytes": 21226444,
+          "instanceBytes": 1738752
+        },
+        "validation": {
+          "comparedComponents": 13159,
+          "visibleOnly": true,
+          "maxMatrixError": 3.051757815342171e-06,
+          "equivalent": true
+        },
+        "picking": {
+          "rays": 72,
+          "hits": 72,
+          "maxPointError": 1.1473868924109438e-07,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "guards-near",
+        "candidate": {
+          "objects": 5361,
+          "meshes": 4375,
+          "visibleMeshes": 2117,
+          "components": 30728,
+          "visibleComponents": 13159,
+          "geometries": 3398,
+          "materials": 601,
+          "geometryBytes": 20641556,
+          "instanceBytes": 1778368
+        },
+        "baseline": {
+          "objects": 5922,
+          "meshes": 4936,
+          "visibleMeshes": 2353,
+          "components": 30728,
+          "visibleComponents": 13159,
+          "geometries": 4015,
+          "materials": 601,
+          "geometryBytes": 21226444,
+          "instanceBytes": 1738752
+        },
+        "validation": {
+          "comparedComponents": 13159,
+          "visibleOnly": true,
+          "maxMatrixError": 3.051757815342171e-06,
+          "equivalent": true
+        },
+        "picking": {
+          "rays": 72,
+          "hits": 72,
+          "maxPointError": 1.1473868924109438e-07,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "guards-far",
+        "candidate": {
+          "objects": 5361,
+          "meshes": 4375,
+          "visibleMeshes": 2117,
+          "components": 30728,
+          "visibleComponents": 13159,
+          "geometries": 3398,
+          "materials": 601,
+          "geometryBytes": 20641556,
+          "instanceBytes": 1778368
+        },
+        "baseline": {
+          "objects": 5922,
+          "meshes": 4936,
+          "visibleMeshes": 2353,
+          "components": 30728,
+          "visibleComponents": 13159,
+          "geometries": 4015,
+          "materials": 601,
+          "geometryBytes": 21226444,
+          "instanceBytes": 1738752
+        },
+        "validation": {
+          "comparedComponents": 13159,
+          "visibleOnly": true,
+          "maxMatrixError": 3.051757815342171e-06,
+          "equivalent": true
+        },
+        "picking": {
+          "rays": 72,
+          "hits": 72,
+          "maxPointError": 0,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "guards-clipped",
+        "candidate": {
+          "objects": 5361,
+          "meshes": 4375,
+          "visibleMeshes": 2117,
+          "components": 30728,
+          "visibleComponents": 13159,
+          "geometries": 3398,
+          "materials": 601,
+          "geometryBytes": 20641556,
+          "instanceBytes": 1778368
+        },
+        "baseline": {
+          "objects": 5922,
+          "meshes": 4936,
+          "visibleMeshes": 2353,
+          "components": 30728,
+          "visibleComponents": 13159,
+          "geometries": 4015,
+          "materials": 601,
+          "geometryBytes": 21226444,
+          "instanceBytes": 1738752
+        },
+        "validation": {
+          "comparedComponents": 13159,
+          "visibleOnly": true,
+          "maxMatrixError": 3.051757815342171e-06,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "guards-off",
+        "candidate": {
+          "objects": 5361,
+          "meshes": 4375,
+          "visibleMeshes": 2089,
+          "components": 30728,
+          "visibleComponents": 13087,
+          "geometries": 3398,
+          "materials": 601,
+          "geometryBytes": 20641556,
+          "instanceBytes": 1778368
+        },
+        "baseline": {
+          "objects": 5922,
+          "meshes": 4936,
+          "visibleMeshes": 2281,
+          "components": 30728,
+          "visibleComponents": 13087,
+          "geometries": 4015,
+          "materials": 601,
+          "geometryBytes": 21226444,
+          "instanceBytes": 1738752
+        },
+        "validation": {
+          "comparedComponents": 13087,
+          "visibleOnly": true,
+          "maxMatrixError": 3.051757815342171e-06,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "soreg-greeks",
+        "candidate": {
+          "objects": 5361,
+          "meshes": 4375,
+          "visibleMeshes": 2082,
+          "components": 30728,
+          "visibleComponents": 13106,
+          "geometries": 3398,
+          "materials": 601,
+          "geometryBytes": 20641556,
+          "instanceBytes": 1778368
+        },
+        "baseline": {
+          "objects": 5922,
+          "meshes": 4936,
+          "visibleMeshes": 2358,
+          "components": 30728,
+          "visibleComponents": 13106,
+          "geometries": 4015,
+          "materials": 601,
+          "geometryBytes": 21226444,
+          "instanceBytes": 1738752
+        },
+        "validation": {
+          "comparedComponents": 13106,
+          "visibleOnly": true,
+          "maxMatrixError": 6.103515630684342e-06,
+          "equivalent": true
+        },
+        "picking": {
+          "rays": 115,
+          "hits": 115,
+          "maxPointError": 2.6283354409884416e-08,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "soreg-clipped",
+        "candidate": {
+          "objects": 5361,
+          "meshes": 4375,
+          "visibleMeshes": 2082,
+          "components": 30728,
+          "visibleComponents": 13106,
+          "geometries": 3398,
+          "materials": 601,
+          "geometryBytes": 20641556,
+          "instanceBytes": 1778368
+        },
+        "baseline": {
+          "objects": 5922,
+          "meshes": 4936,
+          "visibleMeshes": 2358,
+          "components": 30728,
+          "visibleComponents": 13106,
+          "geometries": 4015,
+          "materials": 601,
+          "geometryBytes": 21226444,
+          "instanceBytes": 1738752
+        },
+        "validation": {
+          "comparedComponents": 13106,
+          "visibleOnly": true,
+          "maxMatrixError": 6.103515630684342e-06,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "soreg-repaired",
+        "candidate": {
+          "objects": 5361,
+          "meshes": 4375,
+          "visibleMeshes": 2089,
+          "components": 30728,
+          "visibleComponents": 13087,
+          "geometries": 3398,
+          "materials": 601,
+          "geometryBytes": 20641556,
+          "instanceBytes": 1778368
+        },
+        "baseline": {
+          "objects": 5922,
+          "meshes": 4936,
+          "visibleMeshes": 2281,
+          "components": 30728,
+          "visibleComponents": 13087,
+          "geometries": 4015,
+          "materials": 601,
+          "geometryBytes": 21226444,
+          "instanceBytes": 1738752
+        },
+        "validation": {
+          "comparedComponents": 13087,
+          "visibleOnly": true,
+          "maxMatrixError": 3.051757815342171e-06,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "whole-mount-roof",
+        "candidate": {
+          "objects": 5361,
+          "meshes": 4375,
+          "visibleMeshes": 2096,
+          "components": 30728,
+          "visibleComponents": 13633,
+          "geometries": 3398,
+          "materials": 601,
+          "geometryBytes": 20641556,
+          "instanceBytes": 1778368
+        },
+        "baseline": {
+          "objects": 6268,
+          "meshes": 5198,
+          "visibleMeshes": 2394,
+          "components": 31868,
+          "visibleComponents": 13633,
+          "geometries": 4078,
+          "materials": 620,
+          "geometryBytes": 21599016,
+          "instanceBytes": 1804288
+        },
+        "validation": {
+          "comparedComponents": 13633,
+          "visibleOnly": true,
+          "maxMatrixError": 3.051757815342171e-06,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "kanievsky-roof",
+        "candidate": {
+          "objects": 5361,
+          "meshes": 4375,
+          "visibleMeshes": 2101,
+          "components": 30728,
+          "visibleComponents": 13567,
+          "geometries": 3398,
+          "materials": 601,
+          "geometryBytes": 20641556,
+          "instanceBytes": 1778368
+        },
+        "baseline": {
+          "objects": 6614,
+          "meshes": 5460,
+          "visibleMeshes": 2325,
+          "components": 33008,
+          "visibleComponents": 13567,
+          "geometries": 4129,
+          "materials": 636,
+          "geometryBytes": 21699328,
+          "instanceBytes": 1869824
+        },
+        "validation": {
+          "comparedComponents": 13567,
+          "visibleOnly": true,
+          "maxMatrixError": 3.051757815342171e-06,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "ulam-open",
+        "candidate": {
+          "objects": 5361,
+          "meshes": 4375,
+          "visibleMeshes": 2051,
+          "components": 30728,
+          "visibleComponents": 13372,
+          "geometries": 3398,
+          "materials": 601,
+          "geometryBytes": 20641556,
+          "instanceBytes": 1778368
+        },
+        "baseline": {
+          "objects": 6614,
+          "meshes": 5460,
+          "visibleMeshes": 2213,
+          "components": 33008,
+          "visibleComponents": 13372,
+          "geometries": 4129,
+          "materials": 636,
+          "geometryBytes": 21699328,
+          "instanceBytes": 1869824
+        },
+        "validation": {
+          "comparedComponents": 13372,
+          "visibleOnly": true,
+          "maxMatrixError": 2.746582040913381e-06,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "ulam-closed",
+        "candidate": {
+          "objects": 5361,
+          "meshes": 4375,
+          "visibleMeshes": 2101,
+          "components": 30728,
+          "visibleComponents": 13567,
+          "geometries": 3398,
+          "materials": 601,
+          "geometryBytes": 20641556,
+          "instanceBytes": 1778368
+        },
+        "baseline": {
+          "objects": 6614,
+          "meshes": 5460,
+          "visibleMeshes": 2325,
+          "components": 33008,
+          "visibleComponents": 13567,
+          "geometries": 4129,
+          "materials": 636,
+          "geometryBytes": 21699328,
+          "instanceBytes": 1869824
+        },
+        "validation": {
+          "comparedComponents": 13567,
+          "visibleOnly": true,
+          "maxMatrixError": 3.051757815342171e-06,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "lamps-mid-rashi",
+        "candidate": {
+          "objects": 5707,
+          "meshes": 4637,
+          "visibleMeshes": 2219,
+          "components": 31868,
+          "visibleComponents": 14563,
+          "geometries": 3461,
+          "materials": 620,
+          "geometryBytes": 21014128,
+          "instanceBytes": 1843904
+        },
+        "baseline": {
+          "objects": 6614,
+          "meshes": 5460,
+          "visibleMeshes": 2443,
+          "components": 33008,
+          "visibleComponents": 14563,
+          "geometries": 4129,
+          "materials": 636,
+          "geometryBytes": 21699328,
+          "instanceBytes": 1869824
+        },
+        "validation": {
+          "comparedComponents": 14563,
+          "visibleOnly": true,
+          "maxMatrixError": 3.051757815342171e-06,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "lamps-mid-rashi-pour",
+        "candidate": {
+          "objects": 5707,
+          "meshes": 4637,
+          "visibleMeshes": 2251,
+          "components": 31868,
+          "visibleComponents": 14595,
+          "geometries": 3461,
+          "materials": 620,
+          "geometryBytes": 21014128,
+          "instanceBytes": 1843904
+        },
+        "baseline": {
+          "objects": 6614,
+          "meshes": 5460,
+          "visibleMeshes": 2475,
+          "components": 33008,
+          "visibleComponents": 14595,
+          "geometries": 4129,
+          "materials": 636,
+          "geometryBytes": 21699328,
+          "instanceBytes": 1869824
+        },
+        "validation": {
+          "comparedComponents": 14595,
+          "visibleOnly": true,
+          "maxMatrixError": 3.051757815342171e-06,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "lamps-mid-rashi-lit",
+        "candidate": {
+          "objects": 5707,
+          "meshes": 4637,
+          "visibleMeshes": 2251,
+          "components": 31868,
+          "visibleComponents": 14595,
+          "geometries": 3461,
+          "materials": 620,
+          "geometryBytes": 21014128,
+          "instanceBytes": 1843904
+        },
+        "baseline": {
+          "objects": 6614,
+          "meshes": 5460,
+          "visibleMeshes": 2475,
+          "components": 33008,
+          "visibleComponents": 14595,
+          "geometries": 4129,
+          "materials": 636,
+          "geometryBytes": 21699328,
+          "instanceBytes": 1869824
+        },
+        "validation": {
+          "comparedComponents": 14595,
+          "visibleOnly": true,
+          "maxMatrixError": 3.051757815342171e-06,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "lamps-corner-rashi",
+        "candidate": {
+          "objects": 6053,
+          "meshes": 4899,
+          "visibleMeshes": 2219,
+          "components": 33008,
+          "visibleComponents": 14563,
+          "geometries": 3512,
+          "materials": 636,
+          "geometryBytes": 21114440,
+          "instanceBytes": 1909440
+        },
+        "baseline": {
+          "objects": 6614,
+          "meshes": 5460,
+          "visibleMeshes": 2443,
+          "components": 33008,
+          "visibleComponents": 14563,
+          "geometries": 4129,
+          "materials": 636,
+          "geometryBytes": 21699328,
+          "instanceBytes": 1869824
+        },
+        "validation": {
+          "comparedComponents": 14563,
+          "visibleOnly": true,
+          "maxMatrixError": 3.051757815342171e-06,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "lamps-corner-rashi-pour",
+        "candidate": {
+          "objects": 6053,
+          "meshes": 4899,
+          "visibleMeshes": 2251,
+          "components": 33008,
+          "visibleComponents": 14595,
+          "geometries": 3512,
+          "materials": 636,
+          "geometryBytes": 21114440,
+          "instanceBytes": 1909440
+        },
+        "baseline": {
+          "objects": 6614,
+          "meshes": 5460,
+          "visibleMeshes": 2475,
+          "components": 33008,
+          "visibleComponents": 14595,
+          "geometries": 4129,
+          "materials": 636,
+          "geometryBytes": 21699328,
+          "instanceBytes": 1869824
+        },
+        "validation": {
+          "comparedComponents": 14595,
+          "visibleOnly": true,
+          "maxMatrixError": 3.051757815342171e-06,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "lamps-corner-rashi-lit",
+        "candidate": {
+          "objects": 6053,
+          "meshes": 4899,
+          "visibleMeshes": 2251,
+          "components": 33008,
+          "visibleComponents": 14595,
+          "geometries": 3512,
+          "materials": 636,
+          "geometryBytes": 21114440,
+          "instanceBytes": 1909440
+        },
+        "baseline": {
+          "objects": 6614,
+          "meshes": 5460,
+          "visibleMeshes": 2475,
+          "components": 33008,
+          "visibleComponents": 14595,
+          "geometries": 4129,
+          "materials": 636,
+          "geometryBytes": 21699328,
+          "instanceBytes": 1869824
+        },
+        "validation": {
+          "comparedComponents": 14595,
+          "visibleOnly": true,
+          "maxMatrixError": 3.051757815342171e-06,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "lamps-mid-ty",
+        "candidate": {
+          "objects": 6411,
+          "meshes": 5173,
+          "visibleMeshes": 2231,
+          "components": 34240,
+          "visibleComponents": 14655,
+          "geometries": 3576,
+          "materials": 652,
+          "geometryBytes": 21232856,
+          "instanceBytes": 1980096
+        },
+        "baseline": {
+          "objects": 6972,
+          "meshes": 5734,
+          "visibleMeshes": 2455,
+          "components": 34240,
+          "visibleComponents": 14655,
+          "geometries": 4193,
+          "materials": 652,
+          "geometryBytes": 21817744,
+          "instanceBytes": 1940480
+        },
+        "validation": {
+          "comparedComponents": 14655,
+          "visibleOnly": true,
+          "maxMatrixError": 3.051757815342171e-06,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "lamps-mid-ty-pour",
+        "candidate": {
+          "objects": 6411,
+          "meshes": 5173,
+          "visibleMeshes": 2263,
+          "components": 34240,
+          "visibleComponents": 14687,
+          "geometries": 3576,
+          "materials": 652,
+          "geometryBytes": 21232856,
+          "instanceBytes": 1980096
+        },
+        "baseline": {
+          "objects": 6972,
+          "meshes": 5734,
+          "visibleMeshes": 2487,
+          "components": 34240,
+          "visibleComponents": 14687,
+          "geometries": 4193,
+          "materials": 652,
+          "geometryBytes": 21817744,
+          "instanceBytes": 1940480
+        },
+        "validation": {
+          "comparedComponents": 14687,
+          "visibleOnly": true,
+          "maxMatrixError": 3.051757815342171e-06,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "lamps-mid-ty-lit",
+        "candidate": {
+          "objects": 6411,
+          "meshes": 5173,
+          "visibleMeshes": 2263,
+          "components": 34240,
+          "visibleComponents": 14687,
+          "geometries": 3576,
+          "materials": 652,
+          "geometryBytes": 21232856,
+          "instanceBytes": 1980096
+        },
+        "baseline": {
+          "objects": 6972,
+          "meshes": 5734,
+          "visibleMeshes": 2487,
+          "components": 34240,
+          "visibleComponents": 14687,
+          "geometries": 4193,
+          "materials": 652,
+          "geometryBytes": 21817744,
+          "instanceBytes": 1940480
+        },
+        "validation": {
+          "comparedComponents": 14687,
+          "visibleOnly": true,
+          "maxMatrixError": 3.051757815342171e-06,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "lamps-corner-ty",
+        "candidate": {
+          "objects": 6769,
+          "meshes": 5447,
+          "visibleMeshes": 2231,
+          "components": 35472,
+          "visibleComponents": 14655,
+          "geometries": 3639,
+          "materials": 668,
+          "geometryBytes": 21343248,
+          "instanceBytes": 2050752
+        },
+        "baseline": {
+          "objects": 7330,
+          "meshes": 6008,
+          "visibleMeshes": 2455,
+          "components": 35472,
+          "visibleComponents": 14655,
+          "geometries": 4256,
+          "materials": 668,
+          "geometryBytes": 21928136,
+          "instanceBytes": 2011136
+        },
+        "validation": {
+          "comparedComponents": 14655,
+          "visibleOnly": true,
+          "maxMatrixError": 3.051757815342171e-06,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "lamps-corner-ty-pour",
+        "candidate": {
+          "objects": 6769,
+          "meshes": 5447,
+          "visibleMeshes": 2263,
+          "components": 35472,
+          "visibleComponents": 14687,
+          "geometries": 3639,
+          "materials": 668,
+          "geometryBytes": 21343248,
+          "instanceBytes": 2050752
+        },
+        "baseline": {
+          "objects": 7330,
+          "meshes": 6008,
+          "visibleMeshes": 2487,
+          "components": 35472,
+          "visibleComponents": 14687,
+          "geometries": 4256,
+          "materials": 668,
+          "geometryBytes": 21928136,
+          "instanceBytes": 2011136
+        },
+        "validation": {
+          "comparedComponents": 14687,
+          "visibleOnly": true,
+          "maxMatrixError": 3.051757815342171e-06,
+          "equivalent": true
+        }
+      },
+      {
+        "name": "lamps-corner-ty-lit",
+        "candidate": {
+          "objects": 6769,
+          "meshes": 5447,
+          "visibleMeshes": 2263,
+          "components": 35472,
+          "visibleComponents": 14687,
+          "geometries": 3639,
+          "materials": 668,
+          "geometryBytes": 21343248,
+          "instanceBytes": 2050752
+        },
+        "baseline": {
+          "objects": 7330,
+          "meshes": 6008,
+          "visibleMeshes": 2487,
+          "components": 35472,
+          "visibleComponents": 14687,
+          "geometries": 4256,
+          "materials": 668,
+          "geometryBytes": 21928136,
+          "instanceBytes": 2011136
+        },
+        "validation": {
+          "comparedComponents": 14687,
+          "visibleOnly": true,
+          "maxMatrixError": 3.051757815342171e-06,
+          "equivalent": true
+        }
+      }
+    ]
+  },
+  "baseline": "695456732c1d93db67268d13b7367cca76783aee"
+}

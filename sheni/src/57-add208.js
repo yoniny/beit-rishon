@@ -701,12 +701,13 @@
         caps(t);
       };
       const resetSet = (C) => { for (const Y of C.youths) { Y.G.position.set(Y.foot[0], Y.foot[1], Y.foot[2]); Y.jar.rotation.x = 0; Y.jar.position.y = 1.05 * YS; Y.run.visible = false; } C.oils.forEach((o) => { o.visible = false; }); C.flames.forEach((f) => { f.visible = false; }); C.halos.forEach((h) => { h.visible = false; }); };
-      const reset = () => { caps(-1); D.t0 = -1; resetSet(cur()); };
+      // Cleanup must not build an unseen set: leaving another place or changing a roof can stop these lamps before first use.
+      const reset = () => { caps(-1); D.t0 = -1; if (S) resetSet(S); };
       // SIMCHA_STOP_211 (the function review, F1-06 / F1-07; U-50): stop / pause / resume / restart, an entry in demoStops, and the two
       // flights fired by the demonstration's own clock. SIMCHA_LAMPS_B2: the first flight goes to the first lamp of the set shown
       const FLY = [[8.5, () => { const C = cur(), [x0, z0] = SPOT[C.at][0], T = FORM[C.form].TOPY; return [[x0 + 11, T + 3, z0 + 13], [x0, T - 4, z0]]; }], [15.8, () => [[215, 60, 80], [161, 30, 0]]]];
       SH.simchaDemo = {
-        start() { if (!MG.visible) MG.visible = true; reset(); D.held = -1; D.fl = 0; D.t0 = performance.now() / 1000; },
+        start() { if (!MG.visible) MG.visible = true; cur(); reset(); D.held = -1; D.fl = 0; D.t0 = performance.now() / 1000; },
         running() { return D.t0 >= 0; },
         stop() { D.held = -1; D.fl = 0; reset(); },
         pause() { if (D.t0 >= 0 && D.held < 0) D.held = performance.now() / 1000; },
@@ -726,8 +727,9 @@
           if (o && (o.at === "mid" || o.at === "corner")) LAMP.at = o.at;
           if (o && (o.form === "rashi" || o.form === "ty")) LAMP.form = o.form;
           const run = D.t0 >= 0;
-          cur();
-          if (!run) resetSet(S);
+          // A roof choice changes the lamps' configuration even when their layer is hidden. Build only when actually shown/running.
+          if (MG.visible || run) cur();
+          if (!run && S) resetSet(S);
           if (ctx2.requestRender) ctx2.requestRender();
           return { at: LAMP.at, form: LAMP.form };
         }

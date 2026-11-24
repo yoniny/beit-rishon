@@ -1,4 +1,5 @@
   // plugin/js/core.js
+  //@@include terrain-raycast
   // webgpu round: THE ENVIRONMENT LIGHT AS IN THREE.JS 160 - 160 applied a material's envMapIntensity to the scene's environment map too;
   // since 163 only to the material's own envMap (else scene.environmentIntensity, 1). The materials here tune it (stone and paving 0.5-0.7,
   // gold and bronze 1.1-1.3): a standard material without an envMap of its own whose envMapIntensity is not 1 reports the scene's current

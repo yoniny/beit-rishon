@@ -790,8 +790,9 @@
       const dt = new DepthTexture(4, 4);
       dt.type = UnsignedIntType;
       pre = new WebGLRenderTarget(4, 4, { minFilter: NearestFilter, magFilter: NearestFilter, depthTexture: dt });
-      aoRT = new WebGLRenderTarget(4, 4, { type: HalfFloatType });
-      pdRT = new WebGLRenderTarget(4, 4, { type: HalfFloatType });
+      // Full-screen passes only write colour; depth testing/writing are disabled in both materials.
+      aoRT = new WebGLRenderTarget(4, 4, { type: HalfFloatType, depthBuffer: false });
+      pdRT = new WebGLRenderTarget(4, 4, { type: HalfFloatType, depthBuffer: false });
       const G = L.GTAOShader;
       gtaoM = new ShaderMaterial({ defines: Object.assign({}, G.defines), uniforms: UniformsUtils.clone(G.uniforms), vertexShader: G.vertexShader,
         fragmentShader: G.fragmentShader, blending: NoBlending, depthTest: false, depthWrite: false });
@@ -824,8 +825,10 @@
       pu.normalPhi.value = 3;
       pu.radius.value = 8;
       litRT = new WebGLRenderTarget(4, 4, { type: HalfFloatType });
-      giRT = new WebGLRenderTarget(4, 4, { type: HalfFloatType, depthBuffer: false });
-      gdRT = new WebGLRenderTarget(4, 4, { type: HalfFloatType, depthBuffer: false });
+      // AO and GI are mutually exclusive resolve paths: GI returns before the AO passes (its alpha already contains AO).
+      // Both paths need the same two half-float colour buffers. Reuse them when switching modes instead of retaining four.
+      giRT = aoRT;
+      gdRT = pdRT;
       gdM = new ShaderMaterial({ uniforms: { tInput: { value: giRT.texture }, tDepth: { value: dt }, tNormal: { value: pre.texture }, resolution: { value: new Vector2() },
         cameraProjectionMatrixInverse: { value: new Matrix4() } }, vertexShader: G.vertexShader, fragmentShader: DEN_FRAG, blending: NoBlending, depthTest: false, depthWrite: false });
       giM = new ShaderMaterial({
@@ -851,8 +854,6 @@
       aoRT.setSize(w, h);
       pdRT.setSize(w, h);
       litRT.setSize(w, h);
-      giRT.setSize(w, h);
-      gdRT.setSize(w, h);
       giM.uniforms.resolution.value.set(w, h);
       gdM.uniforms.resolution.value.set(w, h);
       gtaoM.uniforms.resolution.value.set(w, h);
@@ -861,6 +862,14 @@
     // ---- once a frame, before the canvas is drawn
     function frame() {
       if (!S.ao && !S.gi) { U.tmHQOn.value = 0; return; }
+      // GI cannot consume the normal/depth prepass until its lit shaders finish compiling. With AO off, drawing that scene
+      // meanwhile is entirely discarded. Keep the same unmodified lighting and start all GI passes on its first ready frame.
+      if (!S.ao && S.giWarm !== 2) {
+        U.tmGITex.value = BLACK;
+        U.tmAOMask.value.set(1, 0, 0, 0);
+        U.tmHQOn.value = 0;
+        return;
+      }
       const rt = renderer.getRenderTarget(), auto = renderer.autoClear, alpha = renderer.getClearAlpha();
       renderer.getClearColor(CC);
       let swapped = false;

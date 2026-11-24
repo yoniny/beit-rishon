@@ -1,0 +1,601 @@
+{
+  "provenance": {
+    "sourceCommit": "9559c2ae3a72bfb239c1ea98225a1c2d4ca15f6f",
+    "harnessCommit": "b4757b9b816283f8923456bbc6600644a37f9718",
+    "command": "node tools/perf-ray-model.mjs --out build/perf/rays-final-local.json",
+    "measurement": "Local Linux CPU; actual model builders with Canvas/DOM/audio stubs. Absolute timings vary with runner load."
+  },
+  "note": "Node CPU ray-query benchmark with actual model geometry; Canvas/DOM/audio stubbed. Not browser FPS or whole-application memory.",
+  "reference": "Same scene and queries, with the coarse terrain using Three.js original _computeIntersections.",
+  "roomReference": "Same current scene and terrain accelerator; compare the indoor guard before and after prefiltering its tmPass surfaces.",
+  "environment": {
+    "node": "v24.22.3",
+    "platform": "linux",
+    "arch": "x64",
+    "cpu": "INTEL(R) XEON(R) PLATINUM 8573C"
+  },
+  "workload": {
+    "warmQueriesPerBatch": 40,
+    "timingBatches": 3,
+    "statistic": "median milliseconds per batch",
+    "randomSeed": 729418,
+    "firstHouseReadings": "Actual UI default Rashi and restored Rambam, before and after deferred valley refinement."
+  },
+  "states": [
+    {
+      "house": "rishon",
+      "state": "coarse-rashi",
+      "solids": 777,
+      "verifiedRays": 250,
+      "coldFirstQueryMs": 83.47530499999993,
+      "traksin": "rashi",
+      "uiDefault": true,
+      "targetedWarpRays": 110,
+      "terrainDeformation": {
+        "changedVertices": 8,
+        "affectedCellCount": 15,
+        "vertices": [
+          {
+            "vertex": 23307,
+            "column": 102,
+            "row": 105,
+            "before": [
+              -86.09091186523438,
+              -28,
+              -35.68181610107422
+            ],
+            "after": [
+              -87.09091186523438,
+              -28,
+              -35.68181610107422
+            ]
+          },
+          {
+            "vertex": 23308,
+            "column": 103,
+            "row": 105,
+            "before": [
+              -62.45454406738281,
+              -28,
+              -35.68181610107422
+            ],
+            "after": [
+              -63.39952087402344,
+              -28,
+              -35.68181610107422
+            ]
+          },
+          {
+            "vertex": 23528,
+            "column": 102,
+            "row": 106,
+            "before": [
+              -86.09091186523438,
+              -28,
+              -12.045455932617188
+            ],
+            "after": [
+              -87.09091186523438,
+              -28,
+              -12.045455932617188
+            ]
+          },
+          {
+            "vertex": 23529,
+            "column": 103,
+            "row": 106,
+            "before": [
+              -62.45454406738281,
+              -28,
+              -12.045455932617188
+            ],
+            "after": [
+              -63.39952087402344,
+              -28,
+              -12.045455932617188
+            ]
+          },
+          {
+            "vertex": 23749,
+            "column": 102,
+            "row": 107,
+            "before": [
+              -86.09091186523438,
+              -28,
+              11.590911865234375
+            ],
+            "after": [
+              -87.09091186523438,
+              -28,
+              11.590911865234375
+            ]
+          },
+          {
+            "vertex": 23750,
+            "column": 103,
+            "row": 107,
+            "before": [
+              -62.45454406738281,
+              -28,
+              11.590911865234375
+            ],
+            "after": [
+              -63.39952087402344,
+              -28,
+              11.590911865234375
+            ]
+          },
+          {
+            "vertex": 23970,
+            "column": 102,
+            "row": 108,
+            "before": [
+              -86.09091186523438,
+              -28,
+              35.227272033691406
+            ],
+            "after": [
+              -87.09091186523438,
+              -28,
+              35.227272033691406
+            ]
+          },
+          {
+            "vertex": 23971,
+            "column": 103,
+            "row": 108,
+            "before": [
+              -62.45454406738281,
+              -28,
+              35.227272033691406
+            ],
+            "after": [
+              -63.39952087402344,
+              -28,
+              35.227272033691406
+            ]
+          }
+        ],
+        "affectedCells": [
+          22981,
+          22982,
+          22983,
+          23201,
+          23202,
+          23203,
+          23421,
+          23422,
+          23423,
+          23641,
+          23642,
+          23643,
+          23861,
+          23862,
+          23863
+        ],
+        "beforeBounds": {
+          "min": [
+            -86.09091186523438,
+            -28,
+            -35.68181610107422
+          ],
+          "max": [
+            -62.45454406738281,
+            -28,
+            35.227272033691406
+          ]
+        },
+        "afterBounds": {
+          "min": [
+            -87.09091186523438,
+            -28,
+            -35.68181610107422
+          ],
+          "max": [
+            -63.39952087402344,
+            -28,
+            35.227272033691406
+          ]
+        },
+        "coordinateDelta": {
+          "min": [
+            -1,
+            0,
+            0
+          ],
+          "max": [
+            -0.944976806640625,
+            0,
+            0
+          ]
+        }
+      },
+      "gridIndexTypedArrayBytes": 197136,
+      "note": "Base lattice typed-array count excludes sparse-cell and object/Map overhead; cold query includes ordinary ray initialization too.",
+      "timings": {
+        "reference": {
+          "ms": 4509.688996000001,
+          "hits": 40
+        },
+        "terrain": {
+          "ms": 25.249800000001414,
+          "hits": 40
+        },
+        "bounds": {
+          "ms": 33.34893899999952,
+          "hits": 40
+        },
+        "nearest": {
+          "ms": 19.749878000002354,
+          "hits": 40
+        }
+      },
+      "valleyCells": 0
+    },
+    {
+      "house": "rishon",
+      "state": "coarse-rambam",
+      "solids": 777,
+      "verifiedRays": 250,
+      "coldFirstQueryMs": 137.740478000007,
+      "traksin": "rambam",
+      "uiDefault": false,
+      "targetedWarpRays": 110,
+      "terrainDeformation": {
+        "changedVertices": 0,
+        "affectedCellCount": 0,
+        "vertices": [],
+        "affectedCells": [],
+        "beforeBounds": null,
+        "afterBounds": null,
+        "coordinateDelta": null
+      },
+      "gridIndexTypedArrayBytes": 197136,
+      "note": "Base lattice typed-array count excludes sparse-cell and object/Map overhead; cold query includes ordinary ray initialization too.",
+      "timings": {
+        "reference": {
+          "ms": 2068.1777919999877,
+          "hits": 40
+        },
+        "terrain": {
+          "ms": 22.189531000010902,
+          "hits": 40
+        },
+        "bounds": {
+          "ms": 18.33584499999415,
+          "hits": 40
+        },
+        "nearest": {
+          "ms": 11.249967999989167,
+          "hits": 40
+        }
+      },
+      "valleyCells": 0
+    },
+    {
+      "house": "rishon",
+      "state": "refined-valleys-rashi",
+      "solids": 805,
+      "verifiedRays": 310,
+      "coldFirstQueryMs": 63.92442399999709,
+      "traksin": "rashi",
+      "uiDefault": true,
+      "targetedWarpRays": 110,
+      "terrainDeformation": {
+        "changedVertices": 8,
+        "affectedCellCount": 15,
+        "vertices": [
+          {
+            "vertex": 23307,
+            "column": 102,
+            "row": 105,
+            "before": [
+              -86.09091186523438,
+              -28,
+              -35.68181610107422
+            ],
+            "after": [
+              -87.09091186523438,
+              -28,
+              -35.68181610107422
+            ]
+          },
+          {
+            "vertex": 23308,
+            "column": 103,
+            "row": 105,
+            "before": [
+              -62.45454406738281,
+              -28,
+              -35.68181610107422
+            ],
+            "after": [
+              -63.39952087402344,
+              -28,
+              -35.68181610107422
+            ]
+          },
+          {
+            "vertex": 23528,
+            "column": 102,
+            "row": 106,
+            "before": [
+              -86.09091186523438,
+              -28,
+              -12.045455932617188
+            ],
+            "after": [
+              -87.09091186523438,
+              -28,
+              -12.045455932617188
+            ]
+          },
+          {
+            "vertex": 23529,
+            "column": 103,
+            "row": 106,
+            "before": [
+              -62.45454406738281,
+              -28,
+              -12.045455932617188
+            ],
+            "after": [
+              -63.39952087402344,
+              -28,
+              -12.045455932617188
+            ]
+          },
+          {
+            "vertex": 23749,
+            "column": 102,
+            "row": 107,
+            "before": [
+              -86.09091186523438,
+              -28,
+              11.590911865234375
+            ],
+            "after": [
+              -87.09091186523438,
+              -28,
+              11.590911865234375
+            ]
+          },
+          {
+            "vertex": 23750,
+            "column": 103,
+            "row": 107,
+            "before": [
+              -62.45454406738281,
+              -28,
+              11.590911865234375
+            ],
+            "after": [
+              -63.39952087402344,
+              -28,
+              11.590911865234375
+            ]
+          },
+          {
+            "vertex": 23970,
+            "column": 102,
+            "row": 108,
+            "before": [
+              -86.09091186523438,
+              -28,
+              35.227272033691406
+            ],
+            "after": [
+              -87.09091186523438,
+              -28,
+              35.227272033691406
+            ]
+          },
+          {
+            "vertex": 23971,
+            "column": 103,
+            "row": 108,
+            "before": [
+              -62.45454406738281,
+              -28,
+              35.227272033691406
+            ],
+            "after": [
+              -63.39952087402344,
+              -28,
+              35.227272033691406
+            ]
+          }
+        ],
+        "affectedCells": [
+          22981,
+          22982,
+          22983,
+          23201,
+          23202,
+          23203,
+          23421,
+          23422,
+          23423,
+          23641,
+          23642,
+          23643,
+          23861,
+          23862,
+          23863
+        ],
+        "beforeBounds": {
+          "min": [
+            -86.09091186523438,
+            -28,
+            -35.68181610107422
+          ],
+          "max": [
+            -62.45454406738281,
+            -28,
+            35.227272033691406
+          ]
+        },
+        "afterBounds": {
+          "min": [
+            -87.09091186523438,
+            -28,
+            -35.68181610107422
+          ],
+          "max": [
+            -63.39952087402344,
+            -28,
+            35.227272033691406
+          ]
+        },
+        "coordinateDelta": {
+          "min": [
+            -1,
+            0,
+            0
+          ],
+          "max": [
+            -0.944976806640625,
+            0,
+            0
+          ]
+        }
+      },
+      "gridIndexTypedArrayBytes": 197136,
+      "note": "Base lattice typed-array count excludes sparse-cell and object/Map overhead; cold query includes ordinary ray initialization too.",
+      "timings": {
+        "reference": {
+          "ms": 2174.6898710000096,
+          "hits": 40
+        },
+        "terrain": {
+          "ms": 19.245670999996946,
+          "hits": 40
+        },
+        "bounds": {
+          "ms": 16.68798099999549,
+          "hits": 40
+        },
+        "nearest": {
+          "ms": 18.480446999994456,
+          "hits": 40
+        }
+      },
+      "valleyCells": 995
+    },
+    {
+      "house": "rishon",
+      "state": "refined-valleys-rambam",
+      "solids": 805,
+      "verifiedRays": 310,
+      "coldFirstQueryMs": 30.13384599998244,
+      "traksin": "rambam",
+      "uiDefault": false,
+      "targetedWarpRays": 110,
+      "terrainDeformation": {
+        "changedVertices": 0,
+        "affectedCellCount": 0,
+        "vertices": [],
+        "affectedCells": [],
+        "beforeBounds": null,
+        "afterBounds": null,
+        "coordinateDelta": null
+      },
+      "gridIndexTypedArrayBytes": 197136,
+      "note": "Base lattice typed-array count excludes sparse-cell and object/Map overhead; cold query includes ordinary ray initialization too.",
+      "timings": {
+        "reference": {
+          "ms": 4857.970155000017,
+          "hits": 40
+        },
+        "terrain": {
+          "ms": 13.217768000002252,
+          "hits": 40
+        },
+        "bounds": {
+          "ms": 42.258777999988524,
+          "hits": 40
+        },
+        "nearest": {
+          "ms": 25.969262999977218,
+          "hits": 40
+        }
+      },
+      "valleyCells": 995
+    },
+    {
+      "house": "sheni",
+      "state": "coarse",
+      "solids": 1883,
+      "verifiedRays": 140,
+      "coldFirstQueryMs": 2.276507999980822,
+      "traksin": null,
+      "uiDefault": true,
+      "targetedWarpRays": 0,
+      "terrainDeformation": {
+        "changedVertices": 0,
+        "affectedCellCount": 0,
+        "vertices": [],
+        "affectedCells": [],
+        "beforeBounds": null,
+        "afterBounds": null,
+        "coordinateDelta": null
+      },
+      "gridIndexTypedArrayBytes": 197136,
+      "note": "Base lattice typed-array count excludes sparse-cell and object/Map overhead; cold query includes ordinary ray initialization too.",
+      "timings": {
+        "reference": {
+          "ms": 2622.66411100002,
+          "hits": 40
+        },
+        "terrain": {
+          "ms": 255.03467300001648,
+          "hits": 40
+        },
+        "bounds": {
+          "ms": 132.4325790000148,
+          "hits": 40
+        },
+        "nearest": {
+          "ms": 72.62458100001095,
+          "hits": 40
+        }
+      },
+      "valleyCells": 0
+    }
+  ],
+  "rooms": [
+    {
+      "house": "rishon",
+      "verifiedPoses": 40,
+      "markedRoomSurfaces": 295,
+      "solids": 805,
+      "timedViews": [
+        "shulchanot",
+        "shulchanMoshe",
+        "menorot",
+        "incenseAltar",
+        "kodeshHakodashim",
+        "throne",
+        "throneSteps"
+      ],
+      "queriesPerBatch": 35,
+      "baselineMs": 3331.979005000001,
+      "candidateMs": 238.66219899998396,
+      "note": "Median of three batches; actual close viewpoints, unchanged camera result. Includes current terrain acceleration in both paths."
+    },
+    {
+      "house": "sheni",
+      "verifiedPoses": 16,
+      "markedRoomSurfaces": 959,
+      "solids": 1883,
+      "timedViews": [
+        "menorah",
+        "shulchan"
+      ],
+      "queriesPerBatch": 10,
+      "baselineMs": 558.6512090000033,
+      "candidateMs": 5.091137000010349,
+      "note": "Median of three batches; actual close viewpoints, unchanged camera result. Includes current terrain acceleration in both paths."
+    }
+  ]
+}

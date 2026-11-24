@@ -63,6 +63,9 @@
   // ---------- 2. pausing ----------
   var nativeRaf = window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : null;
   var paused = false, wantPause = false, held = [];
+  // The renderer/watchdog also consult this flag; CSS-hidden iframes do not acquire
+  // document.hidden, and timer callbacks are independent of the RAF wrapper.
+  window.__tmHouseVisible = true;
   function ready() { return document.documentElement.classList.contains("tm-ready"); }
   if (nativeRaf) {
     window.requestAnimationFrame = function (cb) {
@@ -77,6 +80,7 @@
     if (p && !ready()) return;            // still loading: pause when ready (the observer below)
     if (paused === p) return;
     paused = p;
+    window.__tmHouseVisible = !p;
     if (!p && nativeRaf) {
       var list = held; held = [];
       for (var i = 0; i < list.length; i++) nativeRaf(list[i]);

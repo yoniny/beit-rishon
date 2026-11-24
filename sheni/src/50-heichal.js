@@ -144,12 +144,18 @@
       const paneM = new MeshStandardMaterial({ color: 0xf3efe2, roughness: 0.22, metalness: 0, transparent: true, opacity: 0.92, emissive: 0x24221b });
       const UWG = new Group(); UWG.name = "ulamWindows"; g.add(UWG); ctx2.layers.ulamWindows = UWG;
       const WW = 4, WH = 6, X = 17.5;
+      // Keep transparent panes individually sortable, and batch only the identical opaque frames.
+      const paneGeo = new BoxGeometry(0.12, WH, WW), frameMats = [[], []];
       for (const yb of [77, 91]) for (const sd of [-1, 1]) for (const zc of [14.2, 20.4, 26.6, 32.8, 39, 45.2]) {
         const z = sd * zc, yc = yb + WH / 2;
-        const pane = new Mesh(new BoxGeometry(0.12, WH, WW), paneM); pane.position.set(X + 0.08, yc, z); pane.userData.noPick = true; UWG.add(pane); ulamFrontCut.push(pane);
+        const pane = new Mesh(paneGeo, paneM); pane.position.set(X + 0.08, yc, z); pane.userData.noPick = true; UWG.add(pane); ulamFrontCut.push(pane);
         for (const [dy, dz, h, w] of [[WH / 2 + 0.2, 0, 0.4, WW + 0.8], [-WH / 2 - 0.2, 0, 0.4, WW + 0.8], [0, WW / 2 + 0.2, WH, 0.4], [0, -WW / 2 - 0.2, WH, 0.4]]) {
-          const f = new Mesh(new BoxGeometry(0.35, h, w), M2.stoneSmooth); f.position.set(X + 0.17, yc + dy, z + dz); f.castShadow = true; f.userData.noPick = true; UWG.add(f); ulamFrontCut.push(f);
+          frameMats[h === WH ? 1 : 0].push(m4(X + 0.17, yc + dy, z + dz));
         }
+      }
+      for (let i = 0; i < frameMats.length; i++) {
+        const f = instMesh(UWG, new BoxGeometry(0.35, i ? WH : 0.4, i ? 0.4 : WW + 0.8), M2.stoneSmooth, frameMats[i], false);
+        f.castShadow = true; f.userData.noPick = true; ulamFrontCut.push(f);
       }
       ctx2.labels.push({ text: "חלונות סתומים ״במחיצה בהירה וזכה״ (מצודת דוד, יחזקאל מא, כו) — ״בחלונות עליות האולם״ (רבינו שמעיה, מידות ג, ח)", x: X + 2, y: 101, z: -32, size: 1.8, layer: "ulamWindows" });
     }

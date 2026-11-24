@@ -1,0 +1,53 @@
+{
+  "provenance": {
+    "sourceCommit": "9559c2ae3a72bfb239c1ea98225a1c2d4ca15f6f",
+    "harnessCommit": "b4757b9b816283f8923456bbc6600644a37f9718",
+    "command": "node tools/perf-ray-model.mjs --out build/perf/rays-final-local.json",
+    "measurement": "Local Linux CPU; actual model builders with Canvas/DOM/audio stubs. Absolute timings vary with runner load."
+  },
+  "note": "Node CPU ray-query benchmark with actual model geometry; Canvas/DOM/audio stubbed. Not browser FPS or whole-application memory.",
+  "reference": "Same scene and queries, with the coarse terrain using Three.js original _computeIntersections.",
+  "roomReference": "Same current scene and terrain accelerator; compare the indoor guard before and after prefiltering its tmPass surfaces.",
+  "environment": {
+    "node": "v24.22.3",
+    "platform": "linux",
+    "arch": "x64",
+    "cpu": "INTEL(R) XEON(R) PLATINUM 8573C"
+  },
+  "rooms": [
+    {
+      "house": "rishon",
+      "verifiedPoses": 40,
+      "markedRoomSurfaces": 295,
+      "solids": 805,
+      "timedViews": [
+        "shulchanot",
+        "shulchanMoshe",
+        "menorot",
+        "incenseAltar",
+        "kodeshHakodashim",
+        "throne",
+        "throneSteps"
+      ],
+      "queriesPerBatch": 35,
+      "baselineMs": 3331.979005000001,
+      "candidateMs": 238.66219899998396,
+      "note": "Median of three batches; actual close viewpoints, unchanged camera result. Includes current terrain acceleration in both paths."
+    },
+    {
+      "house": "sheni",
+      "verifiedPoses": 16,
+      "markedRoomSurfaces": 959,
+      "solids": 1883,
+      "timedViews": [
+        "menorah",
+        "shulchan"
+      ],
+      "queriesPerBatch": 10,
+      "baselineMs": 558.6512090000033,
+      "candidateMs": 5.091137000010349,
+      "note": "Median of three batches; actual close viewpoints, unchanged camera result. Includes current terrain acceleration in both paths."
+    }
+  ],
+  "workload": "Median of three batches; exact query counts and viewpoints appear in each room record."
+}

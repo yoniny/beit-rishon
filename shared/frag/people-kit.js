@@ -507,7 +507,8 @@
         for (const im of clAll) { im.count = 0; im.visible = false; im.frustumCulled = false; near.add(im); im.updateMatrixWorld(true); }   // (made during a frame: placed at once)
       };
       const sel = new Map(), wInv = new Matrix4(), cL = new Vector3(), hp = new Vector3();
-      let selKey = "";
+      const lastCamera = new Vector3(), lastParent = new Matrix4();
+      let selKey = "", poseVersion = 0, lastPose = -1, lastFactor = 0;
       const putClose = (i, j) => {   // figure i as the j-th of the near ones
         const sl = slots[i], hk = CL.hair[sl[0]], hj = hk.count++;
         CL.head.setMatrixAt(j, M[i]); CL.head.setColorAt(j, CS[i]); CL.eyes.setMatrixAt(j, M[i]);
@@ -518,6 +519,11 @@
       const flagAll = () => { for (const im of clAll.concat([head], hairs)) { im.instanceMatrix.needsUpdate = true; if (im.instanceColor) im.instanceColor.needsUpdate = true; } };
       const close = {
         update(cam, f) {
+          // Selecting the same six faces does not need a per-figure distance scan, sort and temporary arrays every frame.
+          // Test the parent's full matrix as well as the eye/lens: a moving crowd still updates while the camera stands still.
+          if (lastPose === poseVersion && lastFactor === f && lastCamera.equals(cam.position) && lastParent.equals(parent.matrixWorld)) return;
+          lastPose = poseVersion; lastFactor = f;
+          lastCamera.copy(cam.position); lastParent.copy(parent.matrixWorld);
           wInv.copy(parent.matrixWorld).invert();
           cL.copy(cam.position).applyMatrix4(wInv);
           const cand = [];
@@ -537,7 +543,7 @@
           flagAll();
         }
       };
-      LOD.push({ near, mid, far, anchor, R: R * 1.0, lv: 1, k: o.lodK > 0 ? o.lodK : 1, min: o.minLv | 0, tef, close });   // PEOPLE_LOD_304: lodK, minLv (this house's copy); TEFILLIN_A2; FACE_E: close
+      LOD.push({ near, mid, far, anchor, parent, R: R * 1.0, lv: 1, k: o.lodK > 0 ? o.lodK : 1, min: o.minLv | 0, tef, close });   // PEOPLE_LOD_304: lodK, minLv (this house's copy); TEFILLIN_A2; FACE_E: close
       // MUSICIANS_305: the crowd's handle - its level of detail, and a figure moved (its matrix: place, turn, scale)
       const lodE = LOD[LOD.length - 1], allIm = [cloth, skin, fm, mCl, mSk, mHr].concat(avN ? [avN, avD] : [], tef ? [tef] : []).filter(Boolean);   // AVNET_305, TEFILLIN_A2
       near.userData.crowd = {
@@ -545,6 +551,7 @@
         pose(i, m) {
           for (const im of allIm) im.setMatrixAt(i, m);
           M[i].copy(m);
+          poseVersion++;
           const c = sel.get(i), sl = slots[i];
           if (c) { CL.head.setMatrixAt(c[0], m); CL.eyes.setMatrixAt(c[0], m); CL.hair[c[1]].setMatrixAt(c[2], m); }   // FACE_E: a near one - its full face moves
           else { head.setMatrixAt(i, m); if (sl) hairs[sl[0]].setMatrixAt(sl[1], m); }
@@ -612,6 +619,11 @@
       if (!cam) return;
       const f = cam.isPerspectiveCamera ? Math.tan(cam.fov * Math.PI / 360) / 0.4142 / (cam.zoom || 1) : 1;
       for (const e of LOD) {
+        // These groups also belong to disabled layers and demonstrations. They cannot contribute a pixel while an ancestor
+        // is hidden; resume their normal distance/pose checks immediately when that ancestor is shown again.
+        let visible = true;
+        for (let p = e.parent; p; p = p.parent) if (p.visible === false) { visible = false; break; }
+        if (!visible) continue;
         e.anchor.getWorldPosition(wp);
         const d = Math.max(0, wp.distanceTo(cam.position) - e.R) * f * e.k;
         let lv = e.lv;

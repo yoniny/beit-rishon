@@ -115,15 +115,19 @@
   sun.shadow.normalBias = 0.35;
   scene.add(sun);
   //@@slot after-sc
-  var shc = { scene: scene, force: true, again: 0, skip: false, n: -1, h: 0, sec: "", frames: 0, draws: 0 };
+  var shc = { scene: scene, force: true, again: 0, skip: false, n: -1, h: 0, sec: "", frames: 0, draws: 0,
+    objectValues: new Float64Array(7), lightValues: new Float64Array(9), state: { n: 0, h: 0, dirty: false } };
   function shc_obj(o) {
     let c = o.__shc, ch = false;
     if (!c) { c = o.__shc = new Float64Array(23); ch = true; }
     const e = o.matrixWorld.elements;
     for (let i = 0; i < 16; i++) if (c[i] !== e[i]) { c[i] = e[i]; ch = true; }
     const g = o.geometry, pa = g && g.attributes ? g.attributes.position : null, m = o.material, im = o.instanceMatrix;
-    const v = [g ? g.id : -1, pa ? pa.version : -1, Array.isArray(m) ? -m.length : (m ? m.id : -1), Array.isArray(m) ? 1 : (m && m.visible ? 1 : 0),
-      o.layers.mask, im ? im.version : -1, o.isInstancedMesh ? o.count : -1];
+    // One scratch buffer for the pass, not a new array for every caster in every frame.
+    const v = shc.objectValues;
+    v[0] = g ? g.id : -1; v[1] = pa ? pa.version : -1;
+    v[2] = Array.isArray(m) ? -m.length : (m ? m.id : -1); v[3] = Array.isArray(m) ? 1 : (m && m.visible ? 1 : 0);
+    v[4] = o.layers.mask; v[5] = im ? im.version : -1; v[6] = o.isInstancedMesh ? o.count : -1;
     for (let i = 0; i < 7; i++) if (c[16 + i] !== v[i]) { c[16 + i] = v[i]; ch = true; }
     return ch;
   }
@@ -143,7 +147,11 @@
     if (!c) { c = L.__shcL = new Float64Array(41); ch = true; }
     const a = L.matrixWorld.elements, b = L.target ? L.target.matrixWorld.elements : a;
     for (let i = 0; i < 16; i++) { if (c[i] !== a[i]) { c[i] = a[i]; ch = true; } if (c[16 + i] !== b[i]) { c[16 + i] = b[i]; ch = true; } }
-    const v = sc2 ? [sc2.left, sc2.right, sc2.top, sc2.bottom, sc2.near, sc2.far, s.mapSize.x, s.mapSize.y, sc2.fov || 0] : [0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const v = shc.lightValues;
+    if (sc2) {
+      v[0] = sc2.left; v[1] = sc2.right; v[2] = sc2.top; v[3] = sc2.bottom; v[4] = sc2.near; v[5] = sc2.far;
+      v[6] = s.mapSize.x; v[7] = s.mapSize.y; v[8] = sc2.fov || 0;
+    } else v.fill(0);
     for (let i = 0; i < 9; i++) if (c[32 + i] !== v[i]) { c[32 + i] = v[i]; ch = true; }
     return ch;
   }
@@ -152,7 +160,8 @@
     if (scn !== shc.scene || !lights || !lights.length || !this.enabled) return shc_render.call(this, lights, scn, cam);
     if (shc.skip) return;   // HQ_302: the light toggles' prepass draws the scene again - the map stays as it is
     shc.frames++;
-    const st = { n: 0, h: 0, dirty: false };
+    const st = shc.state;
+    st.n = 0; st.h = 0; st.dirty = false;
     shc_walk(scn, st);
     let dirty = st.dirty || st.n !== shc.n || st.h !== shc.h;
     shc.n = st.n;
@@ -262,6 +271,7 @@
   var cam = { mode: "orbit", inside: true, lookLock: false, roofed: false, floorY: -Infinity, decideAt: 0, ray: null, n: new Vector3(), tmp: new Vector3(), s: new Spherical(), dirs: [new Vector3(1, 0, 0), new Vector3(-1, 0, 0), new Vector3(0, 0, 1), new Vector3(0, 0, -1)], up: new Vector3(0, 1, 0) };
   var ent_look = cam;   // (the name the roofed test below uses for its ray and directions)
   var ent_sol = { t: -1e9, all: [], roof: [], floor: [], walls: [], big: [] };
+  //@@include raycast-bounds
   function ent_solids(withCut) {
     const now = performance.now();
     if (now - ent_sol.t > 1000) {
@@ -329,7 +339,7 @@
     try {
       const ray = ent_look.ray || (ent_look.ray = new Raycaster());
       ray.camera = camera;
-      const list = ent_solids(true), hit = (d, far) => { ray.set(p, d); ray.near = 0; ray.far = far; const h = ray.intersectObjects(list, false); return h.length ? h[0].distance : Infinity; };
+      const list = ent_solids(true), hit = (d, far) => { ray.set(p, d); ray.near = 0; ray.far = far; const h = ent_intersect.first(ray, list); return h ? h.distance : Infinity; };
       const walls = ent_look.dirs.map((d) => hit(d, 60));
       const near = walls.filter((w) => w < 60).length, tight = walls.filter((w) => w < 30).length;
       res = (near >= 3 && hit(ent_look.up, 60) < 60) || tight === 4;
@@ -344,8 +354,8 @@
       ray.set(cam.tmp.set(p.x, p.y + 0.3, p.z), CAM_DOWN);
       ray.near = 0;
       ray.far = 500;
-      const h = ray.intersectObjects(list || ent_solids(false), false);
-      return h.length ? h[0].point.y : -Infinity;
+      const h = ent_intersect.first(ray, list || ent_solids(false));
+      return h ? h.point.y : -Infinity;
     } catch (_) {
       return -Infinity;
     }
@@ -395,7 +405,7 @@
     cam_decide();
     return true;
   }
-  var cam_in = { dir: new Vector3() };
+  var cam_in = { dir: new Vector3(), walls: [] };
   function cam_keepInside(p, q) {
     try {
       const v = cam_in.dir.copy(p).sub(q), L = v.length();
@@ -406,7 +416,13 @@
       ray.set(q, v);
       ray.near = 0.3;
       ray.far = L;
-      for (const h of ray.intersectObjects(ent_solids(false), false)) {
+      // Only the surfaces marked by the wall-fade system can constrain this orbit.
+      // Filtering after raycasting made every indoor frame intersect the terrain and
+      // all props too, although their hits were immediately ignored below.
+      const walls = cam_in.walls;
+      walls.length = 0;
+      for (const o of ent_solids(false)) if (o.userData.tmPass) walls.push(o);
+      for (const h of ent_intersect(ray, walls)) {
         if (!h.object.userData.tmPass || h.distance >= L - 0.05) continue;
         // KEEP_CUT_211 (the place of the vessels' chamber, 15.11.2026: the eye looks down into a cell whose ceiling the section has cut
         // away - and the ceiling, which no one sees, still drew the eye down to a span from the shelves): a surface that stands in the
@@ -465,8 +481,8 @@
         ray.set(camera.position, v);
         ray.near = 0.5;
         ray.far = d;
-        const h = ray.intersectObjects(ent_solids(false), false);
-        if (h.length) d = Math.max(1, h[0].distance - 0.5);
+        const h = ent_intersect.first(ray, ent_solids(false));
+        if (h) d = Math.max(1, h.distance - 0.5);
       } catch (_) {
       }
       controls.target.copy(camera.position).addScaledVector(v, d);
@@ -666,8 +682,8 @@
       const down = (x, z, from) => {
         try {
           ray.set(F.o.set(x, from, z), CAM_DOWN);
-          const h = ray.intersectObjects(solids, false);
-          return h.length ? h[0].point.y : NaN;
+          const h = ent_intersect.first(ray, solids);
+          return h ? h.point.y : NaN;
         } catch (_) { return NaN; }
       };
       let fy = NaN;
@@ -800,23 +816,26 @@
   });
   //@@slot after-ent_walkModeSet-note
   var ent_sec = { on: false, axis: "z", v: 0, plane: new Plane(new Vector3(0, 0, -1), 0), sides: new Map() };
+  function ent_sectionMaterial(m) {
+    if (!m || m.isShaderMaterial || m.isSpriteMaterial) return;
+    const P = ent_sec.plane;
+    if (m.clippingPlanes && m.clippingPlanes.length === 1 && m.clippingPlanes[0] === P) return;
+    //@@slot ent_sectionApply-note-2
+    if (!ent_sec.sides.has(m)) ent_sec.sides.set(m, m.clippingPlanes && m.clippingPlanes.length ? FrontSide : m.side);
+    m.clippingPlanes = [P];
+    m.clipShadows = true;
+    m.side = DoubleSide;
+    m.needsUpdate = true;
+  }
+  function ent_sectionObject(o) {
+    //@@slot ent_sectionApply-note
+    if (!(o.isMesh || o.isLine || o.isPoints) || !o.material) return;
+    if (Array.isArray(o.material)) { for (const m of o.material) ent_sectionMaterial(m); }
+    else ent_sectionMaterial(o.material);
+  }
   function ent_sectionApply() {
     if (!ent_sec.on || !ctx || !ctx.root) return;
-    const P = ent_sec.plane;
-    ctx.root.traverse((o) => {
-      //@@slot ent_sectionApply-note
-      if (!(o.isMesh || o.isLine || o.isPoints) || !o.material) return;
-      for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
-        if (!m || m.isShaderMaterial || m.isSpriteMaterial) continue;
-        if (m.clippingPlanes && m.clippingPlanes.length === 1 && m.clippingPlanes[0] === P) continue;
-        //@@slot ent_sectionApply-note-2
-        if (!ent_sec.sides.has(m)) ent_sec.sides.set(m, m.clippingPlanes && m.clippingPlanes.length ? FrontSide : m.side);
-        m.clippingPlanes = [P];
-        m.clipShadows = true;
-        m.side = DoubleSide;
-        m.needsUpdate = true;
-      }
-    });
+    ctx.root.traverse(ent_sectionObject);
   }
   function ent_sectionSet(on, axis, v) {
     on = !!on;
@@ -980,14 +999,10 @@
       ray.camera = camera;
       ray.near = 0.3;
       ray.far = 3000;
-      const seen = (o) => { for (let q = o; q; q = q.parent) { if (!q.visible || q.name === "labels") return false; } return true; };
-      for (const h of ray.intersectObjects(scene.children, true)) {
-        const o = h.object;
-        if (!o.isMesh || o.isSprite || (o.userData && o.userData.noPick) || !seen(o)) continue;
-        const m = Array.isArray(o.material) ? o.material[0] : o.material;
-        if (!m || (m.uniforms && m.uniforms.sunPosition) || (m.transparent && m.opacity < 0.5) || m.visible === false) continue;
-        return h.point.clone();
-      }
+      // Filter before raycasting: the hidden demonstrations/alternate readings and the
+      // sky used to be intersected in full, only to have all their hits thrown away.
+      const hit = ent_intersect.first(ray, ent_pickable(scene));
+      if (hit) return hit.point.clone();
       const d = camera.position.distanceTo(controls.target);
       return ray.ray.origin.clone().addScaledVector(ray.ray.direction, Math.max(4, d));
     } catch (_) {
@@ -1963,8 +1978,12 @@
     makeControls(lastGoodTarget);
     controls.update();
   }
+  // SAFETY (4.2.0): the background-render stop is OFF by default - the model keeps drawing and the demonstrations keep advancing in a hidden
+  // document exactly as before (the 250ms interval below), because WebView2 inside Otzaria was not tested with it. Only the house bridge's own
+  // pause (__tmHouseVisible === false) stops it; set window.__tmBgRenderStop = true to also stop on document.hidden.
+  function ent_isVisible() { return window.__tmHouseVisible !== false && !(window.__tmBgRenderStop === true && document.hidden); }
   renderer.setAnimationLoop((t) => {
-    if (ent_load.loading) return;   // 1.0.1-K: nothing is drawn behind the loading overlay (see initModules)
+    if (ent_load.loading || !ent_isVisible()) return;   // nothing is drawn behind the loading overlay or by a hidden house/tab
     if (flyAnim) {
       const k = Math.min(1, (t - flyAnim.t0) / flyAnim.dur), e = ease(k);
       camera.position.lerpVectors(flyAnim.p0, flyAnim.p1, e);
@@ -2003,7 +2022,7 @@
     }
   });
   setInterval(() => {
-    if (document.hidden && !ent_load.loading) {
+    if (document.hidden && !ent_load.loading && window.__tmBgRenderStop !== true && window.__tmHouseVisible !== false) {
       ent_damp(performance.now());   // 1.0.1-L (L.87)
       ent_zoomStep();
       cam_update();   // 1.2.0
@@ -2021,7 +2040,8 @@
   // the view follows the window: on "resize" and from a watchdog (a webview may show the tab without firing "resize"; see viewSize)
   var fitW = viewWH[0], fitH = viewWH[1];
   function fitToWindow() {
-    guardCamera();   // the watchdog also runs the camera guard: it ticks even where neither the animation loop nor the hidden-document interval does
+    if (!ent_isVisible()) return;
+    guardCamera();   // recover a visible webview even if its animation loop has not resumed yet
     const wh = viewSize();
     if (wh[0] === fitW && wh[1] === fitH) return;
     fitW = wh[0];
@@ -2031,6 +2051,7 @@
     renderer.setSize(fitW, fitH);
   }
   window.addEventListener("resize", fitToWindow);
+  document.addEventListener("visibilitychange", fitToWindow);
   setInterval(fitToWindow, 500);
   var isOtzaria = typeof window.Otzaria !== "undefined";
   if (isOtzaria) {

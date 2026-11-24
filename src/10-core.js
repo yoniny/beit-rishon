@@ -623,4 +623,5 @@
     return inst;
   }
   var H = { occ, OCC, box, cyl, wall, stairs, columnGeo, colonnade, crenellate, ring, lathe, uvWorld, uvWorldBox };
+  //@@include terrain-raycast
 
