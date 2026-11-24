@@ -3438,7 +3438,12 @@
       // from just inside the devir door (between its open leaves). 1.0.1-L (L.30): from above the wings' plane (y 20.6), looking down at the
       // horizontal canopy, the faces, the bodies and the ark (K: [-45.4, 18.4, 2.3] -> [-58.6, 18.6, -0.6], at eye level - level wings seen
       // edge-on); the target just over the meeting of the inner wings
-      cherubim: { pos: [-45.6, 26.5, 3.4], target: [-58.8, 20.9, 0] },
+      // fix-g17: the points move after this line - the ark's switch (arkPlace, below) shifts this one with the ark by +4 (the default "middle"),
+      // and the sloping floor (houseSlope) lifts each end of it by the floor's rise at its x (about 2.9 at the eye, 3.4 at the target). The eye
+      // that stood here at x -45.6 (1.1 from the east wall's inner face, -44.5) therefore ended inside the amah wall and its lintel (a white
+      // screen); now the eye ends 8 amot east of the ark's middle (x -46.5 with the ark in the middle, -54.5 with it by the west wall: always
+      // inside the room), at y 26.5 (the heads' level, over the wings' plane) and the target 4.3 lower, at the figures' faces and the ark.
+      cherubim: { pos: [-50.5, 23.6, 3.4], target: [-58.8, 18.8, 0] },
       // 1.0.1-L (L.85): the open ark from above and from the east, under the great wings (y 20.5) - steep, so that the scroll on the ark's floor shows
       // over the east wall; the target on the ark's east face, so that the ray is clear with the ark closed too (the UI's L.90 table, pill "arkInside")
       arkInside: { pos: [-56, 17.6, 0.9], target: [-57.6, 12.8, 0.1] },
