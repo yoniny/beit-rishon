@@ -996,6 +996,7 @@
         id: "hei-mesibah", label: "פתח את המסיבה", labelOn: "סגור את המסיבה", removal: true, maxDist: 260, layer: "nonRambamCells",
         title: "מסיר את הכותל החיצוני של המסיבה שבצפון הבית, כדי לראות את המעבר העולה מקרן מזרחית־צפונית אל גג התאים (מידות ד, ה). כלי צפייה בלבד.",
         anchor: () => (ctx2.camera && ctx2.camera.position.z < -20 ? [-40, 45, -35.5] : null),
+        scope: (c) => !!c && /מסיבה/.test(c.title),   // PILL_SCOPE_N8: only for the place of the mesibah (not over other views and demonstrations)
         get: () => on,
         set: (v) => { on = !!v; for (const m of ctx2.mesibahCut) m.visible = !on; for (const m of ctx2.shellNorth || []) m.visible = !on; }   // 1.9.1: and the Rambam's north wall
       });
@@ -3099,7 +3100,17 @@
         const tC = t4 + 12.0 / 1.35;               // the cut from the tunnel south to the tunnel west
         const SHOTS = [
           [0, T.a1 - 1.2, keys([[0, WEST], [T.a1 - 1.2, [-31.9, F0 + 5.0, -65.6]]]), null],
-          [T.a1 - 1.2, T.s2, keys([[T.a1 - 1.2, [-25.3, F0 + 4.9, -71.0]], [T.a1 + 1.8, [-26.0, F0 + 5.1, -75.5]], [T.s2, [-27.4, F0 + 5.3, -74.9]]]), null],
+          // TEVILA_CAM_N8 (the user, 24.11.2026: "המצלמה לא עוקבת אחרי הכהן היורד לבית הטבילה, וחוזרת רק אחרי כמה שניות מבפנים"): until now the eye
+          // stood over the mouth of the stair, outside the shaft, while he went down its first turn and a half out of sight, and only at the cut
+          // (T.s2) came in at the bottom. Now it comes down the shaft WITH him: from the chamber's air east of the mouth, over its edge (the
+          // shaft is open to the chamber, no wall between), and behind him on the stair - 55 degrees behind, 1.5 from the pillar's axis (the shaft's
+          // half-breadth is 1.75, the steps and the pillar - 0.35 - are not in its way), 2.7 over his feet. The cut at T.s2 is his: he skips the
+          // stair's middle turns there, and the eye with him.
+          [T.a1 - 1.2, T.s2, (t) => {
+            const th = -15 - Math.max(0, t - T.s1) * SPD, ph = (th + 55) * Math.PI / 180;
+            const st = [M.MX + 1.5 * Math.sin(ph), M.FL - M.RISE * (-th / 30) - 0.25 + 2.7, M.MZ + 1.5 * Math.cos(ph)];
+            return lerp3([-25.3, F0 + 4.9, -71.0], st, sm((t - (T.a1 - 1.2)) / 1.5));
+          }, null],
           [T.s2, t4 + 1.2, keys([[T.s2, [M.MX + 0.3, M.YF + 2.7, -69.9]], [t4, [M.MX + 0.15, M.YF + 2.8, -69.4]], [t4 + 1.2, [M.MX, M.YF + 3.0, -68.0]]]), null],
           // the tunnel south: the eye ahead of him, never past its end (the corner's wall would stand between them)
           [t4 + 1.2, tC, (t) => { const s = Math.min((t - t4) * 1.35 + 4.6, 15.0), p = BV.at(s); return [p[0], M.YF + 3.65, p[2]]; }, null],

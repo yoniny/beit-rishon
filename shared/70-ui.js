@@ -557,6 +557,7 @@ details.tm-pl .tm-cnt{position:absolute;left:3px;top:-7px;min-width:17px;height:
 #tm-ops .tm-op .src a:hover,#tm-panel .tm-src a:hover{color:#fff2c8}
 #tm-ops .tm-op .bb{display:grid;grid-template-columns:1fr 1fr;gap:4px}
 #tm-ops .tm-op .bb.c3{grid-template-columns:1fr 1fr 1fr}
+#tm-ops .tm-op .bb.one{grid-template-columns:1fr}
 #tm-ops .tm-op button{background:rgba(201,168,76,.10);border:1px solid rgba(201,168,76,.32);color:#e8dcae;border-radius:6px;padding:4px 3px;font:11px 'Segoe UI',Arial,sans-serif;cursor:pointer;line-height:1.3}
 #tm-ops .tm-op button:hover{background:rgba(201,168,76,.28)}
 #tm-ops .tm-op button.on{background:rgba(201,168,76,.42);color:#fff2c8;border-color:rgba(201,168,76,.7)}
@@ -624,7 +625,7 @@ body.tm-measuring canvas{cursor:crosshair}
 #tm-xcard .tt{flex:1;font-weight:700;color:#f3dc9a;font-size:13px;line-height:1.4}
 #tm-xcard .x{flex:none;width:22px;height:22px;padding:0;border-radius:50%;border:1px solid rgba(201,168,76,.45);background:rgba(201,168,76,.12);color:#e8dcae;font-size:12px;line-height:1;cursor:pointer}
 #tm-xcard .x:hover{background:rgba(201,168,76,.35)}
-#tm-search-wrap{position:sticky;top:0;z-index:2;margin:0 0 6px;padding:2px 0 4px;background:inherit}
+#tm-search-wrap{position:sticky;top:-12px;z-index:2;margin:0 0 6px;padding:14px 0 4px;background:#0f141d}   /* PANEL_FIT_N8: opaque, and over the panel's top padding: the list no longer shows through above and behind the search box */
 #tm-search{width:100%;box-sizing:border-box;height:28px;padding:0 8px;border-radius:8px;border:1px solid rgba(201,168,76,.55);background:rgba(12,16,24,.9);color:#f3dc9a;font:13px 'Segoe UI',Arial,sans-serif;direction:rtl;outline:none}
 #tm-search:focus{border-color:#f3dc9a;box-shadow:0 0 0 1px rgba(243,220,154,.4)}
 #tm-search-none{display:none;padding:6px 2px;font-size:12px;color:#d9cfa8}
@@ -714,6 +715,8 @@ body.tm-measuring canvas{cursor:crosshair}
 #tm-report .b button.y{background:rgba(201,168,76,.5);color:#14110a}
 #tm-report .b button:disabled{opacity:.5;cursor:default}
 #tm-panel,#tm-card .b,#tm-xcard .b,#tm-xcard .r,#tm-tour-box .body,#tm-tour-box .bub{scrollbar-width:thin;scrollbar-color:rgba(201,168,76,.5) transparent}
+/* PANEL_FIT_N8: in a window narrower than the bottom row of buttons (#tm-nav, from the left to about 780 px) plus the panel, the panel ends above that row, not under it */
+@media(max-width:1080px){#tm-panel{max-height:calc(100vh - var(--topbar-h, 56px) - 9px - 58px)}}
 @media(max-width:${ui_PHONE_MAX}px){#tm-nav .tm-grp .cap{display:none}
   #tm-xcard{left:8px;right:8px;top:auto;bottom:76px;width:auto;max-height:min(42vh,calc(50vh - 60px))}
   #tm-xcard .r{max-height:66px}
@@ -1268,7 +1271,10 @@ body.tm-measuring canvas{cursor:crosshair}
         box.appendChild(cap);
         // 1.1.0 (the user): no sources in the tree - the row's refs stay on the card of its subject (the chips) and in the presentation
         const bb = document.createElement("div");
-        bb.className = "bb" + (row.options.length % 3 === 0 ? " c3" : "");   // 1.0.1-L: three in a row; two and four in two columns (1.8.0: six - two rows of three)
+        // PANEL_FIT_N8 (the user, 24.11.2026: "תפארת ישראל — בלילה, בבית המוקד" came out narrow and cut): a reading whose label is long takes the row's
+        // whole width (one column) - in a half-width cell (about 75 px) it ran to four lines
+        const longOpt = row.options.some((o) => ui_stripSrc(String(o && o[1] || "")).length > 18);
+        bb.className = "bb" + (longOpt ? " one" : row.options.length % 3 === 0 ? " c3" : "");   // 1.0.1-L: three in a row; two and four in two columns (1.8.0: six - two rows of three)
         const bts = [];
         const mark = (key) => {
           row.cur = key;
@@ -1672,6 +1678,9 @@ body.tm-measuring canvas{cursor:crosshair}
       };
       //@@slot buildUI.after-a-note
       let leaveLayer = null, leaveFeat = null;
+      // PILL_SCOPE_N8 (the user, 24.11.2026: "למה מוצגים פה?" - "פתח את המסיבה" and "הסר ענן" in the middle of a demonstration): the place the
+      // reader last pressed in the panel ({ title, group }); a view button or "↺ החזר הכל" clears it. A pill with a scope() shows only for its own place.
+      let uiPlaceCtx = null;
       const placeLeave = (it) => {
         // LEAVE_TWICE_211 (the refuter, R-03): the same place clicked twice in a row keeps what it armed at the first click - before
         // this the second click forgot it (the feature was "already on", so it passed for the reader's own) and it never went off again.
@@ -2531,6 +2540,8 @@ body.tm-measuring canvas{cursor:crosshair}
             try { autoOff.flush(); } catch (_) {}
             try { if (typeof ctx.shared.closeAuto === "function") ctx.shared.closeAuto(); } catch (_) {}
             try { placeLeave({}); } catch (_) {}
+            uiPlaceCtx = null;   // PILL_SCOPE_N8
+            try { if (typeof ctx.camReset === "function") ctx.camReset(); } catch (_) {}   // CAM_RESET_N8
             // 1.0.1-K: no automatic removal (v.interior / v.yatzia / v.ulam are data only)
             const fp = resolveFp(v.key);
             if (fp) fly(fp.pos, fp.target);
@@ -2710,6 +2721,8 @@ body.tm-measuring canvas{cursor:crosshair}
               try { autoOff.flush(); } catch (_) {}
               try { if (typeof ctx.shared.closeAuto === "function") ctx.shared.closeAuto(); } catch (_) {}
               try { placeLeave(it); } catch (_) {}   // PLACE_LEAVE_210
+              try { if (typeof ctx.camReset === "function") ctx.camReset(); } catch (_) {}   // CAM_RESET_N8
+              uiPlaceCtx = { title: String(it.t || ""), group: String(gname || "") };   // PILL_SCOPE_N8
               if (it.layer) setLayer(it.layer, true);
               if (typeof it.action === "function") {
                 try {
@@ -4209,7 +4222,8 @@ body.tm-measuring canvas{cursor:crosshair}
           anchor: [KKC.x, KKC.y, KKC.z], maxDist: 1e9, occlude: false,   // the cloud has its own ray test (cloudSeen)
           get: () => !cloudOn,
           set: (on) => { if (on) askRemoveCloud(() => setCloud(false)); else setCloud(true); },
-          show: () => cloudSeen.show, scale: () => cloudSeen.scale
+          show: () => cloudSeen.show, scale: () => cloudSeen.scale,
+          scope: (c) => !c || /הר הבית|עיר דוד/.test(c.group + " " + c.title)   // PILL_SCOPE_N8: not over the court, the house or the cells
         });
         // the house: its south wall, its roof and the interior pieces on that side (ctx.cutaway) - seen from the south or from above
         if (has(ctx.cutaway)) reg({
@@ -4286,7 +4300,7 @@ body.tm-measuring canvas{cursor:crosshair}
           roofTimers.set(b.id, setTimeout(() => {
             roofTimers.delete(b.id);
             if (!b.get()) return;
-            try { revealPress(b); } catch (err) { console.warn("[ui.js] roof timer " + b.id + ":", err && err.message); }
+            try { revealPress(b, true); } catch (err) { console.warn("[ui.js] roof timer " + b.id + ":", err && err.message); }
             frame(true);
           }, 30000));
         };
@@ -4294,7 +4308,7 @@ body.tm-measuring canvas{cursor:crosshair}
           const f = revealView(id);
           if (f) fly(f.pos, f.target);
         };
-        const revealPress = (b) => {
+        const revealPress = (b, auto) => {
           const id = b.id, R = REVEAL[id];
           const pose = { pos: ctx.camera.position.toArray(), target: ctx.controls.target.toArray() };
           const was = !!b.get();
@@ -4321,7 +4335,11 @@ body.tm-measuring canvas{cursor:crosshair}
             roofDisarm(id);
             const back = revealSaved.get(id);
             revealSaved.delete(id);
-            if (back) realFly(back.pos, back.target);
+            // CAM_RESET_N8: the roof's own timer (30 s) puts the eye back where it was only if it is still where the roof's view left it - a
+            // reader who has gone on to another card is not pulled back to the view of a minute ago
+            let stay = false;
+            if (auto && back) { try { const f = revealView(id); const near = (a, b2, r) => Math.hypot(a[0] - b2[0], a[1] - b2[1], a[2] - b2[2]) < r; stay = !(f && near(ctx.camera.position.toArray(), f.pos, 40) && near(ctx.controls.target.toArray(), f.target, 40)); } catch (_) {} }
+            if (back && !stay) realFly(back.pos, back.target);
           }
         };
         // the renderer
@@ -4399,6 +4417,15 @@ body.tm-measuring canvas{cursor:crosshair}
           }
           return false;
         };
+        // PILL_SCOPE_N8: a demonstration (ctx.shared.demoStops, the walk too) or the presentation is running; read every 6 frames
+        let busyAt = -1e9, busyVal = false;
+        const sceneBusy = () => {
+          if (frameNo - busyAt < 6) return busyVal;
+          busyAt = frameNo; busyVal = false;
+          try { busyVal = (ctx.shared.demoStops || []).some((d) => { try { return !!(d && typeof d.running === "function" && d.running()); } catch (_) { return false; } }); } catch (_) {}
+          if (!busyVal) { try { const T = ctx.shared.tour; busyVal = !!(T && typeof T.state === "function" && T.state().running); } catch (_) {} }
+          return busyVal;
+        };
         const layerVis = (l) => {
           const g = ctx.layers && ctx.layers[l];
           return !!g && visUp(g);
@@ -4409,6 +4436,10 @@ body.tm-measuring canvas{cursor:crosshair}
           if (b.layer && !layerVis(b.layer)) return null;
           if (Array.isArray(b.layers)) for (const l of b.layers) if (!layerVis(l)) return null;
           if (typeof b.show === "function" && !b.show()) return null;
+          // PILL_SCOPE_N8: the removal / opening pills are not drawn over a demonstration or the presentation (the demonstration bar and its
+          // own buttons are there to stop it), and a pill with a scope() only while the place that it belongs to is the one pressed
+          if (b.removal && sceneBusy()) return null;
+          if (typeof b.scope === "function" && !(b.get && b.get())) { let ok = false; try { ok = !!b.scope(uiPlaceCtx); } catch (_) {} if (!ok) return null; }
           let a = b.anchor;
           if (typeof a === "function") a = a();
           if (!Array.isArray(a) || a.length < 3 || !isFinite(a[0] + a[1] + a[2])) return null;
@@ -4442,6 +4473,7 @@ body.tm-measuring canvas{cursor:crosshair}
         const resetAll = () => {
           autoOff.flush();   // 1.0.1-L (L.27): what a place switched on goes back now (the tables of the ulam have no pill), and no timer stays
           try { placeLeave({}); } catch (_) {}   // VIEW_LEAVE_211: and the place's own layer or untimed feature
+          uiPlaceCtx = null;   // PILL_SCOPE_N8
           for (const b of MB.slice()) {
             try {
               if (b && typeof b.get === "function" && typeof b.set === "function" && b.get()) b.set(false);
@@ -4579,6 +4611,7 @@ body.tm-measuring canvas{cursor:crosshair}
             let x = p[0];
             let y = p[1];
             x = pillFreeX(x, y, w, h);   // PILL_FREE_210
+            x = Math.max(w / 2 + 6, Math.min(window.innerWidth - w / 2 - 6, x));   // PANEL_FIT_N8: a pill at the window's edge is whole, not cut
             // PILL_HOME_211 (the user, 15.11.2026: "כל כפתורי הפתיחה, כגון הסר ענן, פתח את האולם, יצאו החוצה סתם" - a pill moved from under
             // the card floated beside it, over a part of the model that is not its own): a pill whose own place is under the card or the
             // panel is NOT shown (folding the card or turning the view brings it back at its place). One that is switched on still moves
