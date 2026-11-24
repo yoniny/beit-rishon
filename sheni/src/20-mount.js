@@ -460,10 +460,15 @@
       const yt = Math.min(32, (25.6 - E * k) / (1 - k));
       OLV.eye = [OLV.x, E, 0]; OLV.door = [DX, yt, 0]; OLV.ok = yt >= 22.2;
       const L = Math.hypot(OLV.x - DX, E - yt);
-      const lineM = new MeshBasicMaterial({ color: 0xffcc33, transparent: true, opacity: 0.85, depthWrite: false });
-      const ln = new Mesh(new CylinderGeometry(0.22, 0.22, L, 8, 1, true), lineM);
-      ln.rotation.z = Math.atan2(E - yt, OLV.x - DX) - Math.PI / 2; ln.position.set((OLV.x + DX) / 2, (E + yt) / 2, 0); ln.userData.noPick = true; ln.renderOrder = 7; SG.add(ln);
-      const dot = new Mesh(new SphereGeometry(0.7, 12, 8), lineM); dot.position.set(DX + 0.4, yt, 0); dot.userData.noPick = true; SG.add(dot);
+      // SIGHT_BOLD_420 (the user, 24.11.2026: "הקו לא נראה כלל"; "למה הפוך צריך להכהות! (צבע אחר)"): a thick dark-blue core and a darker
+      // halo, drawn over everything - against the light ground and stone (it was 0.22 thick, pale gold)
+      const lineM = new MeshBasicMaterial({ color: 0x14285e, transparent: true, opacity: 1, depthWrite: false, depthTest: false });
+      const haloM = new MeshBasicMaterial({ color: 0x0b1633, transparent: true, opacity: 0.3, depthWrite: false, depthTest: false });
+      for (const [r, m, ro] of [[0.6, lineM, 8], [1.7, haloM, 7]]) {
+        const ln = new Mesh(new CylinderGeometry(r, r, L, 12, 1, true), m);
+        ln.rotation.z = Math.atan2(E - yt, OLV.x - DX) - Math.PI / 2; ln.position.set((OLV.x + DX) / 2, (E + yt) / 2, 0); ln.userData.noPick = true; ln.renderOrder = ro; SG.add(ln);
+      }
+      const dot = new Mesh(new SphereGeometry(1.3, 14, 10), lineM); dot.position.set(DX + 0.4, yt, 0); dot.userData.noPick = true; SG.add(dot);
       const pad = new Mesh(new CylinderGeometry(3.2, 3.6, 0.6, 20), M2.stoneSmooth); pad.position.set(OLV.x, yTop + 0.1, 0); pad.receiveShadow = true; SG.add(pad);
       let fig = null;
       const ensureFig = () => {
@@ -789,6 +794,7 @@
         if (this.mode === "around") { show(ringG, false); try { build(); } catch (e) { console.warn("[chel] steps:", e && e.message); } show(ringG, true); for (const r of rails) r.visible = false; }
         else show(ringG, false);
         if (typeof ctx2.shared.solidsChanged === "function") ctx2.shared.solidsChanged();
+        if (ctx2.shared.helTyt) ctx2.shared.helTyt.set(this.mode === "around");   // HEL_TYT_420
         return this.mode;
       } };
     }
@@ -1084,13 +1090,30 @@
       bm.instanceMatrix.needsUpdate = true; if (bm.instanceColor) bm.instanceColor.needsUpdate = true;
       bm.castShadow = bm.receiveShadow = true; bm.userData.noPick = true; SY.add(bm);
     };
+    // SYN_FURNISH_420 (the user, 24.11.2026: "בית הכנסת הוספת ספסלים ושלחנות"): the synagogue on the mount - an open roof as the house of
+    // study's, and four rows of benches and tables in two columns, facing south (the door in the north). Their number and form - model choices
+    const synFurnish = (SY, X, Z) => {
+      const tmp = new Group(), FL = 0.22, wd = M2.cedar, wd2 = new MeshStandardMaterial({ color: 0x6a4a2c, roughness: 0.8 }), paper = new MeshStandardMaterial({ color: 0xeee6cf, roughness: 0.8 });
+      const bx = (w, h, d, mat, x, y, z) => H2.box(tmp, w, h, d, mat, X + x, y, Z + z);
+      const TL = 7;
+      for (const sx of [-1, 1]) for (const zc of [-4.6, -1.8, 1.0, 3.8]) {
+        const cx = sx * 5.2, bz = zc - 1.0, tz = zc + 0.2;
+        bx(TL, 0.12, 0.7, wd, cx, FL + 0.78, bz); for (const e of [-1, 1]) bx(0.12, 0.78, 0.6, wd2, cx + e * (TL / 2 - 0.35), FL, bz); bx(TL, 0.1, 0.06, wd2, cx, FL + 0.5, bz + 0.32);
+        bx(TL, 0.12, 1.2, wd, cx, FL + 1.38, tz); for (const e of [-1, 1]) bx(0.14, 1.38, 1.0, wd2, cx + e * (TL / 2 - 0.35), FL, tz); bx(TL - 0.7, 0.12, 0.08, wd2, cx, FL + 1.0, tz);
+        for (let k = -1; k <= 1; k++) { const px = cx + k * 2.1; bx(0.95, 0.07, 0.65, wd2, px, FL + 1.5, tz - 0.1); bx(0.88, 0.06, 0.58, paper, px, FL + 1.57, tz - 0.1); }
+      }
+      tmp.updateMatrixWorld(true);
+      const byMat = new Map();
+      tmp.traverse((o) => { if (o.isMesh) { if (!byMat.has(o.material)) byMat.set(o.material, []); byMat.get(o.material).push(o.geometry.clone().applyMatrix4(o.matrixWorld)); } });
+      for (const [mat, list] of byMat) { const m = new Mesh(mergeGeometries(list), mat); m.castShadow = m.receiveShadow = true; m.userData.noPick = true; SY.add(m); }
+    };
     const plainHouse = (name, X, Z, W, D, HH, text, furnish) => {
       const SY = new Group(); SY.name = name; g.add(SY); ctx2.layers[name] = SY;
       H2.wall(SY, { axis: "x", length: W, height: HH, thickness: 1.2, mat: M2.stoneLight, cx: X, cz: Z - D / 2, y: 0, openings: [{ center: 0, width: 3, height: 6 }] });
       H2.wall(SY, { axis: "x", length: W, height: HH, thickness: 1.2, mat: M2.stoneLight, cx: X, cz: Z + D / 2, y: 0, openings: [] });
       H2.wall(SY, { axis: "z", length: D - 1.2, height: HH, thickness: 1.2, mat: M2.stoneLight, cx: X - W / 2 + 0.6, cz: Z, y: 0, openings: [] });
       H2.wall(SY, { axis: "z", length: D - 1.2, height: HH, thickness: 1.2, mat: M2.stoneLight, cx: X + W / 2 - 0.6, cz: Z, y: 0, openings: [] });
-      if (!furnish) H2.box(SY, W + 1.2, 0.8, D + 1.2, M2.stone, X, HH, Z);                      // the roof
+      if (!furnish) H2.box(SY, W + 1.2, 0.8, D + 1.2, M2.stone, X, HH, Z);                      // the roof (SYN_FURNISH_420: the synagogue's - open, as the house of study's)
       else {   // the house of study: an open roof - bare beams across, so that the inside is seen (a model choice)
         for (let i = 0; i < 6; i++) H2.box(SY, 0.5, 0.5, D + 1.2, M2.cedar, X - W / 2 + 0.3 + i * ((W - 0.6) / 5), HH, Z);
         for (const sd of [-1, 1]) H2.box(SY, W + 1.2, 0.5, 0.6, M2.stone, X, HH, Z + sd * (D / 2 + 0.3));
@@ -1103,7 +1126,10 @@
       }
       H2.box(SY, 4.4, 0.6, 2, M2.stoneSmooth, X, 0, Z - D / 2 - 1.6);                          // a step before the door
       ctx2.labels.push({ text, x: X, y: HH + 4, z: Z, size: 2.2, layer: name });
-      if (furnish) {
+      if (furnish === "syn") {
+        synFurnish(SY, X, Z);
+        ctx2.labels.push({ text: "ספסלים ושולחנות (בחירת מודל)", x: X, y: 5.2, z: Z, size: 1.2, layer: name });
+      } else if (furnish) {
         const items = ctx2.shared.harMidrashItems = [];
         midrashFurnish(SY, X, Z, W, D, HH, 0, items);
         ctx2.labels.push({ text: "ראש הישיבה — כסא מכובד על במה (בחירת מודל)", x: X, y: 9.2, z: Z + 4.9, size: 1.2, layer: name });
@@ -1111,7 +1137,7 @@
         ctx2.labels.push({ text: "ארונות ספרים (בחירת מודל)", x: X + 8.9, y: 7, z: Z - 1, size: 1.2, layer: name });
       }
     };
-    plainHouse("harSynagogue", 161, 112, 24, 16, 13, "בית הכנסת שבהר הבית — ״היה סמוך לעזרה בהר הבית״ (רש״י יומא סח:)");
+    plainHouse("harSynagogue", 161, 112, 24, 16, 13, "בית הכנסת שבהר הבית — ״היה סמוך לעזרה בהר הבית״ (רש״י יומא סח:)", "syn");
     plainHouse("harMidrash", 40, 112, 20, 14, 11, "בית המדרש שבהר הבית (תוספתא חגיגה ב, ד)", true);
     ctx2.labels.push({ text: "שלוש עשרה פרצות כנגד שלשה עשר שערים — הראבי״ה (תוספות יום טוב מידות ב, ג)", x: 30, y: 4.5, z: sz2 + 1, size: 2.2, layer: "soregBreach" });   // BREACH13_D: by the south breaches (was x 70)
     ctx2.layers = ctx2.layers || {};
@@ -1224,6 +1250,17 @@
         const sl = new Mesh(geo, pm);
         sl.userData.noPick = true;
         grp.add(sl);
+        // HEL_TYT_420 (the user, 24.11.2026: "תפאי מעלות החיל - צבע צף כמו בקריאה הרגילה"): in Tiferet Yisrael's reading of the steps round
+        // the courts (chelSteps "around") the colour floats over them all round - four sloped patches from the walls' faces (six amot up) to six
+        // amot out, meeting at the corners; the east's own patch over the women's court's flight goes then
+        const T6 = new Group(); T6.name = "helTyt"; T6.visible = false; grp.add(T6);
+        const quad = (a, b, c, d) => { const q = new BufferGeometry(); q.setAttribute("position", new Float32BufferAttribute([...a, ...b, ...c, ...d], 3)); q.setIndex([0, 1, 2, 0, 2, 3]); const m = new Mesh(q, pm); m.userData.noPick = true; T6.add(m); };
+        const W6 = 6, yT = 6 + lift, yB = lift;
+        quad([ix0, yT, iz0], [ix1, yT, iz0], [ix1 + W6, yB, iz0 - W6], [ix0 - W6, yB, iz0 - W6]);
+        quad([ix0, yT, iz1], [ix1, yT, iz1], [ix1 + W6, yB, iz1 + W6], [ix0 - W6, yB, iz1 + W6]);
+        quad([ix0, yT, iz0], [ix0, yT, iz1], [ix0 - W6, yB, iz1 + W6], [ix0 - W6, yB, iz0 - W6]);
+        quad([ix1, yT, iz0], [ix1, yT, iz1], [ix1 + W6, yB, iz1 + W6], [ix1 + W6, yB, iz0 - W6]);
+        ctx2.shared.helTyt = { set(on) { T6.visible = !!on; sl.visible = !on; } };
       }
       g.add(grp);
       ctx2.layers.zoneHel = grp;

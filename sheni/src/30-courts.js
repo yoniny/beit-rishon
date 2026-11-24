@@ -1451,8 +1451,16 @@
         disc(WEST_K.get(grp), -3, 43.5, true);                //   and over the heichal's (inside the ulam)
         { const d = FARG[FARG.length - 1]; d.position.set(-3, 43.5, 0); }
       }
+      // DOTS7_420 (the user, 24.11.2026: "לקריאת חכמים להוסיף נקו' צבעוניות כמו ב13 שערים"): the seven of the Sages - a gold disc over each,
+      // shown once the reading is picked in its row (ctx2.shared.gates7Dots.on, 70-ui slots: the row "שער העליון"), not in every view
+      const d7 = new Group(); d7.name = "gates7Dots"; d7.visible = false; g7.add(d7);
+      for (const [, x] of gN) disc(d7, x, -67.5, false);
+      disc(d7, MOKED_X, -56, false);
+      for (const [, x] of gS) disc(d7, x, 67.5, false);
+      disc(d7, 93.5, 0, false);
+      ctx2.shared.gates7Dots = { set(on) { d7.visible = !!on; } };
       if (ctx2.animated) ctx2.animated.push(() => {
-        if (!g13.visible && !g13r.visible) return;
+        if (!g13.visible && !g13r.visible && !d7.visible) return;
         const cp = ctx2.camera.position;
         for (const d of FARG) { const k = Math.min(4.5, Math.max(1, cp.distanceTo(d.position) / 110)); d.scale.set(k, 1, k); }
       });

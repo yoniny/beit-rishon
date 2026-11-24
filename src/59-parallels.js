@@ -183,6 +183,23 @@
         bm.instanceMatrix.needsUpdate = true; if (bm.instanceColor) bm.instanceColor.needsUpdate = true;
         bm.castShadow = bm.receiveShadow = true; bm.userData.noPick = true; SY.add(bm);
       };
+      // SYN_FURNISH_420 (the user, 24.11.2026: "בית הכנסת הוספת ספסלים ושלחנות"): as the Second Temple's 20-mount.js - an open roof and four
+      // rows of benches and tables in two columns, facing south. Their number and form - model choices
+      const synFurnish = (SY, X, Z) => {
+        const tmp = new Group(), FL = LV2.HAR + 0.22, wd = M2.cedar, wd2 = new MeshStandardMaterial({ color: 0x6a4a2c, roughness: 0.8 }), paper = new MeshStandardMaterial({ color: 0xeee6cf, roughness: 0.8 });
+        const bx = (w, h, d, mat, x, y, z) => H2.box(tmp, w, h, d, mat, X + x, y, Z + z);
+        const TL = 7;
+        for (const sx of [-1, 1]) for (const zc of [-4.6, -1.8, 1.0, 3.8]) {
+          const cx = sx * 5.2, bz = zc - 1.0, tz = zc + 0.2;
+          bx(TL, 0.12, 0.7, wd, cx, FL + 0.78, bz); for (const e of [-1, 1]) bx(0.12, 0.78, 0.6, wd2, cx + e * (TL / 2 - 0.35), FL, bz); bx(TL, 0.1, 0.06, wd2, cx, FL + 0.5, bz + 0.32);
+          bx(TL, 0.12, 1.2, wd, cx, FL + 1.38, tz); for (const e of [-1, 1]) bx(0.14, 1.38, 1.0, wd2, cx + e * (TL / 2 - 0.35), FL, tz); bx(TL - 0.7, 0.12, 0.08, wd2, cx, FL + 1.0, tz);
+          for (let k = -1; k <= 1; k++) { const px = cx + k * 2.1; bx(0.95, 0.07, 0.65, wd2, px, FL + 1.5, tz - 0.1); bx(0.88, 0.06, 0.58, paper, px, FL + 1.57, tz - 0.1); }
+        }
+        tmp.updateMatrixWorld(true);
+        const byMat = new Map();
+        tmp.traverse((o) => { if (o.isMesh) { if (!byMat.has(o.material)) byMat.set(o.material, []); byMat.get(o.material).push(o.geometry.clone().applyMatrix4(o.matrixWorld)); } });
+        for (const [mat, list] of byMat) { const m = new Mesh(mergeGeometries(list), mat); m.castShadow = m.receiveShadow = true; m.userData.noPick = true; SY.add(m); }
+      };
       const plainHouse = (name, X, Z, W, D, HH, text, furnish) => {
         const SY = new Group(); SY.name = name; g.add(SY); ctx.layers[name] = SY;
         H2.wall(SY, { axis: "x", length: W, height: HH, thickness: 1.2, mat: M2.stoneLight, cx: X, cz: Z - D / 2, y: LV2.HAR, openings: [{ center: 0, width: 3, height: 6 }] });
@@ -202,7 +219,10 @@
         }
         H2.box(SY, 4.4, 0.6, 2, M2.stoneSmooth, X, LV2.HAR, Z - D / 2 - 1.6);                    // a step before the door (the door toward the courts, north)
         ctx.labels.push({ text, x: X, y: LV2.HAR + HH + 4, z: Z, size: 2.2, layer: name });
-        if (furnish) {
+        if (furnish === "syn") {
+          synFurnish(SY, X, Z);
+          ctx.labels.push({ text: "ספסלים ושולחנות (בחירת מודל)", x: X, y: LV2.HAR + 5.2, z: Z, size: 1.2, layer: name });
+        } else if (furnish) {
           const items = ctx.shared.harMidrashItems = [];
           midrashFurnish(SY, X, Z, W, D, HH, LV2.HAR, items);
           ctx.labels.push({ text: "ראש הישיבה — כסא מכובד על במה (בחירת מודל)", x: X, y: LV2.HAR + 9.2, z: Z + 4.9, size: 1.2, layer: name });
@@ -210,7 +230,7 @@
           ctx.labels.push({ text: "ארונות ספרים (בחירת מודל)", x: X + 8.9, y: LV2.HAR + 7, z: Z - 1, size: 1.2, layer: name });
         }
       };
-      plainHouse("harSynagogue", 161, 112, 24, 16, 13, "בית הכנסת שבהר הבית — ״היה סמוך לעזרה בהר הבית״ (רש״י יומא סח:)");
+      plainHouse("harSynagogue", 161, 112, 24, 16, 13, "בית הכנסת שבהר הבית — ״היה סמוך לעזרה בהר הבית״ (רש״י יומא סח:)", "syn");
       plainHouse("harMidrash", 40, 112, 20, 14, 11, "בית המדרש שבהר הבית (תוספתא חגיגה ב, ד)", true);
     }
 

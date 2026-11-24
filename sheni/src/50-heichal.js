@@ -141,23 +141,26 @@
     // storey, two rows of six on each side of the opening, along the whole width of the facade (decision: "חלונות לכל האורך"), each shut with a light, clear pane in a frame. Their number, size and places -
     // model choices. (They go with the facade when "פתח את האולם" opens it.)
     {
-      const paneM = new MeshStandardMaterial({ color: 0xf3efe2, roughness: 0.22, metalness: 0, transparent: true, opacity: 0.92, emissive: 0x24221b });
+      // ULAM_GLASS_420 (the user, 24.11.2026: "עם חלונות זכוכית שקופות היום זה לבן"; "סיכמנו על כל האורך"): clear glass - the dark of the room
+      // seen through it (until now a white pane); rows over the facade's whole height and width, between the pilasters (until now two rows,
+      // and the pilasters ran across some of them). Their number, size and places - model choices
+      const paneM = new MeshStandardMaterial({ color: 0x31414d, roughness: 0.08, metalness: 0.35, transparent: true, opacity: 0.88, emissive: 0x0b1218 });
       const UWG = new Group(); UWG.name = "ulamWindows"; g.add(UWG); ctx2.layers.ulamWindows = UWG;
-      const WW = 4, WH = 6, X = 17.5;
-      // Keep transparent panes individually sortable, and batch only the identical opaque frames.
-      const paneGeo = new BoxGeometry(0.12, WH, WW), frameMats = [[], []];
-      for (const yb of [77, 91]) for (const sd of [-1, 1]) for (const zc of [14.2, 20.4, 26.6, 32.8, 39, 45.2]) {
+      const WH = 6, X = 17.5;
+      // [z, width]: three wide between the opening's gold frame (to z 15.2) and the first pilaster (z 33.7), one narrow in each gap between
+      // the pilasters (z 34.5, 39.5, 44.5, 49 - each 1.6 wide)
+      const COLS = [[18.6, 4], [24.6, 4], [30.6, 4], [37, 2], [42, 2], [46.75, 1.6]], ROWS = [26, 40, 54, 68, 82, 96];
+      const frames = [];
+      for (const yb of ROWS) for (const sd of [-1, 1]) for (const [zc, WW] of COLS) {
+        if (yb < 72 && zc - WW / 2 - 0.4 < 15.4) continue;   // (clear of the beams over the opening)
         const z = sd * zc, yc = yb + WH / 2;
-        const pane = new Mesh(paneGeo, paneM); pane.position.set(X + 0.08, yc, z); pane.userData.noPick = true; UWG.add(pane); ulamFrontCut.push(pane);
+        const pane = new Mesh(new BoxGeometry(0.12, WH, WW), paneM); pane.position.set(X + 0.08, yc, z); pane.userData.noPick = true; UWG.add(pane); ulamFrontCut.push(pane);
         for (const [dy, dz, h, w] of [[WH / 2 + 0.2, 0, 0.4, WW + 0.8], [-WH / 2 - 0.2, 0, 0.4, WW + 0.8], [0, WW / 2 + 0.2, WH, 0.4], [0, -WW / 2 - 0.2, WH, 0.4]]) {
-          frameMats[h === WH ? 1 : 0].push(m4(X + 0.17, yc + dy, z + dz));
+          const fg = new BoxGeometry(0.35, h, w); fg.translate(X + 0.17, yc + dy, z + dz); frames.push(fg);
         }
       }
-      for (let i = 0; i < frameMats.length; i++) {
-        const f = instMesh(UWG, new BoxGeometry(0.35, i ? WH : 0.4, i ? 0.4 : WW + 0.8), M2.stoneSmooth, frameMats[i], false);
-        f.castShadow = true; f.userData.noPick = true; ulamFrontCut.push(f);
-      }
-      ctx2.labels.push({ text: "חלונות סתומים ״במחיצה בהירה וזכה״ (מצודת דוד, יחזקאל מא, כו) — ״בחלונות עליות האולם״ (רבינו שמעיה, מידות ג, ח)", x: X + 2, y: 101, z: -32, size: 1.8, layer: "ulamWindows" });
+      { const f = new Mesh(mergeGeometries(frames), M2.stoneSmooth); f.castShadow = true; f.userData.noPick = true; UWG.add(f); ulamFrontCut.push(f); }
+      ctx2.labels.push({ text: "חלונות של זכוכית ״במחיצה בהירה וזכה״ (מצודת דוד, יחזקאל מא, כו) — ״בחלונות עליות האולם״ (רבינו שמעיה, מידות ג, ח)", x: X + 2, y: 101, z: -32, size: 1.8, layer: "ulamWindows" });
     }
     const beamW = [22, 24, 26, 28, 30];
     for (let i = 0; i < 5; i++) ulamFrontCut.push(H2.box(g, 0.8, 1, beamW[i], M2.cedar, 17.6, 62.5 + i * 2, 0));

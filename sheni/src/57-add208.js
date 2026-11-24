@@ -1791,6 +1791,9 @@
         try {
           if (sndT >= 0 && t > sndT && fnc(SH.sfx)) {
             if (sndT < 0.8 && t >= 0.8) SH.sfx("trumpets");   // the opening, at the Nikanor gate
+            // BLOW_WALK_420 (the user: "הכהנים לא תוקעים מהירידה במדרגות עד השער"; Sukkah 5:4 "היו תוקעין והולכין, עד שמגיעין לשער היוצא מזרח"):
+            // one drawn blast from where they go down until the eastern gate (as the rejoicing's, TEKIA_LEGATO_G1)
+            if (sndT < T.walk0 && t >= T.walk0) SH.sfx("trumpets", { pattern: "drawn", dur: Math.max(2, (T.out1 - t) * ((SH && SH.demoSlow) || 1.5)) });
             for (const ts of [T.rim1 - 2.4, T.rim1 + 1.5, T.fill0 + 2.5]) if (sndT < ts && t >= ts) { if (SHL.kit) SHL.kit.roar(); }   // SHILOACH_KIT_B2: the kit's roar   // SPRING_ROAR_B2: "נובעים בקול גדול"
             if (sndT < T.fill0 + 0.4 && t >= T.fill0 + 0.4) SH.sfx("water", { dur: 2.2, gain: 0.7 });
             if (sndT < T.blow0 && t >= T.blow0) SH.sfx("trumpets");
