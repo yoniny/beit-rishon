@@ -1648,7 +1648,7 @@
         if (o.pattern === "drawn") {   // TERUAH_305: Rashi's - the tekia, the teruah and the tekia drawn out over o.dur seconds
           const d = Math.max(4.5, +o.dur || 20) / 3;
           brass(a, t, d - 0.25, k);
-          for (let i = 0, n = Math.max(9, Math.round((d - 0.3) / 0.2)); i < n; i++) brass(a, t + d + i * 0.2, 0.13, k * 1.1);
+          for (let i = 0, n = Math.max(9, Math.round((d - 0.3) / 0.2)); i < n; i++) brass(a, t + d + i * 0.2, 0.2, k * 1.1);   // TEKIA_LEGATO_G1: bursts touch - no silence along the march
           brass(a, t + 2 * d + 0.15, d - 0.15, k);
           return;
         }

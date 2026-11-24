@@ -2523,6 +2523,7 @@
           start();
           SH.simchaShoeva.seek(TD + 13.6);
           apply(TD + 13.6);
+          D.snd = TD + 13.6;   // TEKIA_ONCE_G1: the blasts before this point are not sounded again at the jump
           const w = want(TD + 13.6);
           if (w && fnc(ctx2.flyTo)) { try { ctx2.flyTo(w[0], w[1], 1800); } catch (_) {} }
         };
