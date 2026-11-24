@@ -777,7 +777,7 @@
       const mPath = new MeshStandardMaterial({ color: 0xcbbd9a, roughness: 1, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
       // CHULDA_RAMPS_B2 (decision 103): from the foot of the western gate of Chulda's ramp (20-mount.js, ctx2.shared.chuldaRamp)
       const RP = SH.chuldaRamp || { z0: 335, zf: 364.5, yf: -28, yAt: (z) => -28 * Math.min(1, Math.max(0, (z - 335) / 29.5)) };
-      const PATH = [[0, RP.zf + 1]].concat([[-6, 440], [-26, 468], [-58, 492], [-92, 512], [-122, 526], [-138.5, 531.5]].filter((q) => q[1] > RP.zf + 6));   // SHILOACH_WEST_B2: from the southern ramp's foot south and south-west, down the valley, to the spring
+      const PATH = [[0, RP.zf + 1], [-5, RP.zf + 5], [-18, RP.zf + 9]].concat([[-6, 440], [-26, 468], [-58, 492], [-92, 512], [-122, 526], [-138.5, 531.5]].filter((q) => q[1] > RP.zf + 12));   // CHULDA_LONG_420: the ramp (an amah in three) ends at z 498 now - a gentle turn at its foot (the curve swung 8 amot off the ramp's side, into the air)   // SHILOACH_WEST_B2: from the southern ramp's foot south and south-west, down the valley, to the spring
       const streamTo = (yb) => { const SP = SHL.SP; if (SHL.kit) { SHL.kit.setBottom(yb); return; } if (!SP.st) return; const h = Math.max(0.05, SP.y - yb); SP.st.position.set(SP.x, yb + h / 2, SP.zT); SP.st.scale.y = h; };   // SHILOACH_KIT_B2: the kit's fall
       const buildPool = () => {
         if (built) return;
@@ -1292,6 +1292,7 @@
           const g = ty == null ? groundY(x, z, 20) : ty + 0.06;   // (the path's strip lies 0.06 over the ground)
           return Math.hypot(x - SHL.SP.x, z - SHL.SP.z) < 24 ? Math.max(g, kitY(x, z)) : g;
         }
+        if (z >= 335.3 && z <= RP.zf) { const g = ty == null ? groundY(x, z, 20) : ty + 0.06; if (isFinite(g)) return g; }   // CHULDA_LONG_420: beside the ramp - the ground, not the mount's floor (0) in the air
         return 0;   // the mount's floor
       };
       // ---- a leg: the curve resampled every STEP; at(s) -> [x, z, yaw]; its floor (per lateral offset, read when first asked); the body's
@@ -1332,13 +1333,15 @@
         const OUTP = [[91, 0], [96, 0], [102, 0], [110, 0], [118, 0], [130, 0], [170, 0], [210, 0], [222, 0], [228, 0], [234, 0], [240, 0], [244.5, 0.3],
           [249, 2.5], [251.6, 7], [252.4, 14], [252.5, 40], [252.3, 70], [250.5, 86], [244, 98], [200, 128.8], [127, 180], [54, 231.2], [10, 262],
           [-2.5, 276], [-3.85, 286], [-3.85, 300], [-3.85, 314], [-3.0, 319], [-1.5, 323], [-1.05, 326], [-1.0, 329], [-1.0, 334], [-0.6, 337],
-          [0, 341], [0, 380], [0, RP.zf]].concat(PATH.slice(1), [sf]);
+          [0, 341], [0, 380], [0, (380 + RP.zf) / 2], [0, RP.zf - 8], [0, RP.zf]].concat(PATH.slice(1), [sf]);   // CHULDA_LONG_420: straight down the whole ramp
         const OUT = mkLeg("out", denseOf(OUTP), 13.5);
         // BACK: the out way reversed (the same line, point for point) up to the stoa's aisle, then north to the soreg's opening before the Water
         // Gate (x -20.5..-16), along the chel (z 74..80) east to the stair's foot, and up it (z 70.1..73.8) to the landing before the gate
         const iDiv = Math.round(OUT.near(-3.85, 300) / STEP), rev = [];
         for (let i = OUT.N - 1; i >= iDiv; i--) rev.push([OUT.xs[i], OUT.zs[i]]);
-        const BP = [[OUT.xs[iDiv], OUT.zs[iDiv]], [-3.85, 290], [-4.6, 280], [-7, 268], [6, 230], [22, 180], [37, 115], [43.8, 92], [43.8, 84], [43.8, 79],
+        // MIDRASH_AROUND_420 (the user 24.11.2026: "חוזרים דרך ביהמ״ד (חותכים אותו ממש!)"): north past the west of the house of study on the
+        // mount (x 30..50, z 105..119; the line went through it at (37, 115)) - by (24.5, 140), (25.5, 108), then east to the soreg's opening
+        const BP = [[OUT.xs[iDiv], OUT.zs[iDiv]], [-3.85, 290], [-4.6, 280], [-7, 268], [6, 230], [20, 180], [24.5, 140], [25.5, 108], [31, 98.5], [39, 94.5], [43.8, 91], [43.8, 84], [43.8, 79],
           [44.8, 77.4], [48, 76.9], [58, 76.9], [64, 76.9], [66.6, 76.0], [67.6, 74.4], [67.0, 72.8], [65.4, 72.05], [63.5, 72.0], [56, 72.0], [49.5, 72.0],
           [46.5, 72.0], [44, 72.0]];   // WATER_GATE_N4: the Water Gate now stands at x 44, opposite the altar (30-courts.js; the way from the soreg's opening to the landing as before, 62 amot east)
         const BACK = mkLeg("back", rev.concat(denseOf(BP).slice(1)), FLOOR(sf[0], sf[1], 20));
@@ -1357,7 +1360,7 @@
         L.rig = new Map([
           [OUT, [[0, 12, 3.6], [S_TG - 12, 12, 5.0], [S_TG + 4, 12, 6.2], [S_SOR, 12, 5.6], [L.S_J - 26, 15, 6.5], [L.S_J + 6, 16, 8], [sO(244, 98) + 15, 20, 11], [sO(-2.5, 276) - 40, 20, 11],
             [sO(-2.5, 276) - 14, 15, 4.8], [L.S_CHULDA + 6, 15, 4.8], [sO(0, 376), 16, 6.5], [L.S_RAMPF + 8, 15, 6.5], [L.S_A - 20, 14, 5.5], [S_T, 10, 3.6]]],
-          [BACK, [[0, 10, 3.6], [L.U_R + 4, 15, 6], [BACK.near(0, 376), 16, 6.5], [L.U_CHULDA - 6, 15, 4.8], [sB(-4.6, 280) + 6, 15, 4.8], [sB(22, 180), 20, 10],
+          [BACK, [[0, 10, 3.6], [L.U_R + 4, 15, 6], [BACK.near(0, 376), 16, 6.5], [L.U_CHULDA - 6, 15, 4.8], [sB(-4.6, 280) + 6, 15, 4.8], [sB(20, 180), 20, 10],
             [L.U_P - 20, 18, 9], [L.U_P + 4, 14, 6], [U_SOR, 10, 4.6], [sB(66.6, 76.0), 9, 4.6], [BACK.len, 9, 4.6]]],
           [IN, [[0, 6, 4.4], [IN.near(44, 63), 8, 5], [IN.near(49, 53.2), 11, 8.5], [IN.near(57.1, 50.3), 12, 7], [IN.len, 10, 4.5]]]]);   // WATER_GATE_N4: straight in from the gate to the ramp's foot
         // PACE_G: the speed along each leg (amot a demonstration second; V_WALK - a man's walk)
@@ -1643,7 +1646,8 @@
         const w2 = D2.w;
         w2.g.visible = true;
         {
-          const sw = st.leg === L.IN ? clamp(st.s - L.S_FOOT + 2.1, 0, L.WINE.len) : 0, mv = st.leg === L.IN && sw > 0 && sw < L.WINE.len - 1e-3;
+          const sw = st.leg === L.IN ? clamp((st.s - L.S_FOOT + 2.1) * L.WINE.len / Math.max(1, L.IN.len - L.S_FOOT + 2.1), 0, L.WINE.len) : 0,   // WINE_AT_BOWL_420: by the share of the way (his leg is longer than the rest of the water's - he stopped 1.5 amot short, east of his bowl, and the stream went across)
+            mv = st.leg === L.IN && sw > 0 && sw < L.WINE.len - 1e-3;
           const qw = L.WINE.at(sw), yawW = sw >= L.WINE.len - 1e-3 ? angTo(qw[2], 0, smooth(clamp((t - T.top1) / 0.8, 0, 1))) : qw[2];
           placeFig(w2, L.WINE, sw, yawW, mv ? st.v : 0, st.dist + 0.7, 0, true);
           const pk = smooth(clamp((t - T.pour0) / 0.6, 0, 1)) * (1 - smooth(clamp((t - T.pour1) / 0.6, 0, 1)));
@@ -1656,7 +1660,13 @@
           D2.wjug.position.copy(NECK).applyQuaternion(QT).applyQuaternion(QG);
           D2.wjug.updateMatrixWorld(true);
           D2.wwine.visible = false;
-          if (pk > 0.92) { const m = D2.wjug.localToWorld(V1.copy(MOUTH)), by = bowlY(), h = Math.max(0.05, m.y - by); D2.wwine.visible = true; D2.wwine.position.set(m.x, by + h / 2, m.z); D2.wwine.scale.y = h; }
+          // WINE_INTO_BOWL_420 (the user 24.11.2026: "היין לא נשפך לספל"): the wine's stream from the jug's mouth INTO the eastern bowl (of the
+          // wine, x 43.95 beside the water's 43.05) - until now straight down from the mouth, beside the bowl
+          if (pk > 0.92) {
+            const m = D2.wjug.localToWorld(V1.copy(MOUTH)), E = AW(43.95, 9.4), by = bowlY() + 0.12, dv = new Vector3(E[0] - m.x, by - m.y, E[1] - m.z), h = Math.max(0.05, dv.length());
+            D2.wwine.visible = true; D2.wwine.position.set((m.x + E[0]) / 2, (m.y + by) / 2, (m.z + E[1]) / 2); D2.wwine.scale.set(1, h, 1);
+            D2.wwine.quaternion.setFromUnitVectors(new Vector3(0, 1, 0), dv.multiplyScalar(-1 / h));
+          }
         }
         // the deputy on the horn with the sudar ("הסגן עומד על הקרן והסודרים בידו", Tamid 7:3) - there from the start; he waves while they pour
         {

@@ -140,7 +140,7 @@
   // night and the dawn, and gives them back), and the floor under a point (the solids' downward ray of the walking mode: a figure's feet)
   ctx.shared.sky = { sky, sun, hemi, sunDir: sunDir.clone(), sunInt: sun.intensity, hemiInt: hemi.intensity, exposure: renderer.toneMappingExposure, fogColor: scene.fog.color.getHex(), env: scene.environment };
   ctx.shared.floorY = (x, y, z) => cam_floorY({ x, y, z });
-  ctx.shared.viewLimits = { get: () => ({ R: ent_view.R, yMin: ent_view.yMin, yMax: ent_view.yMax }), set: (o) => { if (o) Object.assign(ent_view, o); }, include: (q) => ent_viewInclude(q) };   // SHILOACH_305: the Shiloach's walk
+  ctx.shared.viewLimits = { get: () => ({ R: ent_view.R, yMin: ent_view.yMin, yMax: ent_view.yMax }), set: (o) => { if (o) Object.assign(ent_view, o); }, include: (q) => { const R1 = ent_view.R; ent_viewInclude(q); ent_view.R = Math.max(R1, ent_view.R); } };   // VIEW_WIDEN_420: a demo's include only widens (a part built lazily during the Shiloach walk called it with a near point, and the radius fell back to 290 - the eye was pulled back to z 364 and saw nothing)   // SHILOACH_305: the Shiloach's walk
   // 1.9.2 / 1.3.4 (the user's recording: a chamber's roof came back while the eye was inside it, and all one saw was the stone):
   // ctx.shared.camUnder(list) - is the eye under one of these pieces (inside its plan, below its top)? Their boxes are taken once.
   // ctx.shared.openFor(id, ms) - a place or a row opens a pill for a while (another call within it starts the count again; a pill the user
