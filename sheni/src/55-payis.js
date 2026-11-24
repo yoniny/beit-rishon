@@ -732,12 +732,20 @@
       GAR = null;
       if (!RUN) { g.visible = false; resetFigures(); }
     };
+    // FEET_ON_FLOOR_N18 (the user, 24.11.2026, of the card "בגדי הכהנים": the three priests stood in the air): the floor under a figure is
+    // asked of the model itself (SH.floorY - a downward ray on the floors, from a little over the nominal level), and the nominal level is
+    // only the fallback
+    const groundAt = (x, z, nominal) => {
+      let y = typeof SH.floorY === "function" ? SH.floorY(x, nominal + 1.5, z) : -Infinity;
+      if (!isFinite(y) || Math.abs(y - nominal) > 3) y = nominal;
+      return y;
+    };
     const garmentsOn = (ms) => {
       if (RUN) return;
       garmentsOff();
       resetFigures();
       stripes(P.avnet !== "butz");
-      [[78.5, -1.7, Math.PI / 2], [78.5, 0, Math.PI], [78.5, 1.7, -Math.PI / 2]].forEach(([x, z, ry], i) => { const f = K[i]; f.position.set(x, LV.KOH, z); f.rotation.y = ry; f.visible = true; });
+      [[78.5, -1.7, Math.PI / 2], [78.5, 0, Math.PI], [78.5, 1.7, -Math.PI / 2]].forEach(([x, z, ry], i) => { const f = K[i]; f.position.set(x, groundAt(x, z, LV.KOH), z); f.rotation.y = ry; f.visible = true; });
       g.visible = true;
       GAR = setTimeout(() => { GAR = null; if (!RUN) { g.visible = false; resetFigures(); } }, ms);
     };
