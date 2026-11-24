@@ -2219,17 +2219,17 @@
  "unmapped": {
   "הובא": {
    "seen": 1,
-   "first": "sheni/src/slots/70-ui.slots.js:857",
+   "first": "sheni/src/slots/70-ui.slots.js:867",
    "suggest": []
   },
   "סימן": {
-   "seen": 5,
-   "first": "sheni/src/slots/70-ui.slots.js:875",
+   "seen": 1,
+   "first": "sheni/src/slots/70-ui.slots.js:886",
    "suggest": []
   },
   "תשובות": {
    "seen": 1,
-   "first": "sheni/src/slots/70-ui.slots.js:935",
+   "first": "sheni/src/slots/70-ui.slots.js:945",
    "suggest": [
     [
      3782,
@@ -2283,17 +2283,17 @@
   },
   "הכותל המזרחי הנמוך": {
    "seen": 1,
-   "first": "sheni/src/slots/70-ui.slots.js:1560",
+   "first": "sheni/src/slots/70-ui.slots.js:1572",
    "suggest": []
   },
   "חלק סימן": {
    "seen": 2,
-   "first": "sheni/src/slots/70-ui.slots.js:1887",
+   "first": "sheni/src/slots/70-ui.slots.js:1904",
    "suggest": []
   },
   "רש״י על שיר השירים": {
    "seen": 2,
-   "first": "src/59-parallels.js:1911",
+   "first": "src/59-parallels.js:2146",
    "suggest": [
     [
      3659,
@@ -2302,13 +2302,13 @@
    ]
   },
   "בית המדרש": {
-   "seen": 5,
-   "first": "src/60-palace.js:2357",
+   "seen": 3,
+   "first": "src/60-palace.js:3739",
    "suggest": []
   },
   "פנים אחרים נוסח": {
    "seen": 3,
-   "first": "shared/70-ui.js:2573",
+   "first": "shared/70-ui.js:2617",
    "suggest": []
   },
   "ברייתא דמלאכת המשכן": {
