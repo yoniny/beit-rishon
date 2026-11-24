@@ -1699,9 +1699,10 @@ body.tm-measuring canvas{cursor:crosshair}
       };
       const autoOff = {
         seconds: ui_AUTO_OFF_S,
-        arm: (key, off, btn) => {
+        arm: (key, off, btn, secs) => {
           autoClear(key);
-          const a = { off, left: ui_AUTO_OFF_S, badge: null, timer: 0, tick: 0 };
+          const S = secs > 0 ? secs : ui_AUTO_OFF_S;   // AUTO30_242: a feature may ask for its own seconds (F.secs)
+          const a = { off, left: S, badge: null, timer: 0, tick: 0 };
           if (btn) {
             a.badge = document.createElement("span");
             a.badge.className = "tm-cnt";
@@ -1715,7 +1716,7 @@ body.tm-measuring canvas{cursor:crosshair}
           a.timer = setTimeout(() => {
             autoClear(key);
             try { off(); } catch (_) {}
-          }, ui_AUTO_OFF_S * 1000);
+          }, S * 1000);
           AUTO.set(key, a);
         },
         // cancel(key): that feature's timer, cancel(): every timer; the features stay as they are
@@ -1730,7 +1731,7 @@ body.tm-measuring canvas{cursor:crosshair}
           if (!F || typeof F.on !== "function") return;
           const armed = AUTO.has(F.key), was = !!F.isOn();
           if (!was) F.on();
-          if (F.timed !== false && typeof F.off === "function" && (!was || armed)) autoOff.arm(F.key, F.off, btn);
+          if (F.timed !== false && typeof F.off === "function" && (!was || armed)) autoOff.arm(F.key, F.off, btn, F.secs);
         },
         // "↺ החזר הכל": what the timers would have switched off goes back now, and no timer stays
         flush: () => {

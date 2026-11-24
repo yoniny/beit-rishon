@@ -2230,6 +2230,32 @@
           Object.assign({ text: "פשפש — שבכה ברצפה, מכאן לדרום קודש (פירוש המשניות לרמב״ם)", x: X, y: FL + 2.2, z: -65.2, size: 1.0, layer: "pisR" }, PM));
         ctx2.layers = ctx2.layers || {}; ctx2.layers.pisB = pB; ctx2.layers.pisR = pR;
       }
+      // PIS_ARROWS_242 (the user, 24.11.2026: "הדגש בשני חצים משני הכיוונים בהיר את ההבדל"): the card of the pispasin shows bright arrows from
+      // both sides (the holy and the profane; the court of Israel and the priests') pointing at the thing of the reading chosen - the beam-ends
+      // (the Bartenura) or the low lattice on the floor (the Rambam) - so that the difference between the readings is seen at once.
+      // PISPASIN.arrows(true) shows them (the card's view calls it for 15 s). The arrows' places and size - model choices.
+      {
+        const PIS2 = ctx2.shared.pispasin, mA = new MeshBasicMaterial({ color: 0xfff2a8, transparent: true, opacity: 0.96, depthTest: false, depthWrite: false });
+        const pArr = new Group(); pArr.visible = false; g.add(pArr);
+        const aB = new Group(), aR = new Group(), iaB = new Group(), iaR = new Group();
+        for (const q of [aB, aR, iaB, iaR]) pArr.add(q);
+        PIS2.B.push(aB, iaB); PIS2.R.push(aR, iaR); aR.visible = false; iaR.visible = false;
+        const arrow = (par, a, b) => {
+          const d = new Vector3(b[0] - a[0], b[1] - a[1], b[2] - a[2]), L = d.length(), A = new Group();
+          const sh = new Mesh(new CylinderGeometry(0.22, 0.22, L * 0.6, 8), mA), hd = new Mesh(new CylinderGeometry(0, 0.75, L * 0.4, 10), mA);
+          sh.position.y = L * 0.3; hd.position.y = L * 0.8; sh.renderOrder = hd.renderOrder = 45; A.add(sh, hd);
+          A.position.set(a[0], a[1], a[2]); A.quaternion.setFromUnitVectors(new Vector3(0, 1, 0), d.normalize()); par.add(A);
+        };
+        for (const sx of [-1, 1]) {
+          const bx = X + sx * (W / 2 - 1.8), rx = X + sx * 10;
+          arrow(aB, [bx, 24.2, -57], [bx, 24.2, -63.6]); arrow(aB, [bx, 24.2, -73.4], [bx, 24.2, -66.8]);   // the beam-ends, from the holy side and from the profane
+          arrow(aR, [rx, FL + 2.2, -57], [rx, FL + 0.9, -63.6]); arrow(aR, [rx, FL + 2.2, -73.4], [rx, FL + 0.9, -66.8]);   // the lattice
+        }
+        for (const zz of [-52, 63]) { arrow(iaB, [77, 24, zz], [83.6, 24, zz]); arrow(iaB, [93, 24, zz], [86.4, 24, zz]); }   // the beam-ends between the courts
+        arrow(iaR, [77, 15.4, 10], [83.6, 14.6, 10]); arrow(iaR, [93, 15.4, 10], [86.4, 14.6, 10]);
+        PIS2.arrows = (on) => { pArr.visible = on !== false; return pArr.visible; };
+        ctx2.layers.pisArrows = pArr;
+      }
       lbl("בית המוקד", X, 13.5 + Hh + 7.5, Z, 3);
       const CH = [[-1, 1, "לשכת טלאי קרבן"], [1, 1, "לשכת עושי לחם הפנים"], [1, -1, "לשכת אבני המזבח שגנזו בני חשמונאי"], [-1, -1, "הירידה לבית הטבילה"]];
       const chCeil = [];
