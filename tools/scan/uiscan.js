@@ -56,7 +56,7 @@
   }
   // 4. doubled buttons: the same label twice in the same row / container, both visible
   const by = new Map();
-  for (const e of ctls) { const t = txt(e); if (!t || t.length < 2 || e.tagName === 'INPUT') continue; const k = (e.parentElement ? desc(e.parentElement) : '') + '|' + t; (by.get(k) || by.set(k, []).get(k)).push(e); }
-  for (const [k, L] of by) if (L.length > 1) { const rs = L.map((e) => e.getBoundingClientRect()); add('duplicate-button', L[1], `${L.length} כפתורים זהים ("${txt(L[0])}") באותו מכל ${k.split('|')[0]}`); }
+  for (const e of ctls) { const t = txt(e); if (!t || t.length < 2 || e.tagName === 'INPUT') continue; const pe = e.parentElement; if (!pe) continue; (by.get(pe) || by.set(pe, new Map()).get(pe)); const m = by.get(pe); (m.get(t) || m.set(t, []).get(t)).push(e); }
+  for (const [pe, m] of by) for (const [t, L] of m) if (L.length > 1) add('duplicate-button', L[1], `${L.length} כפתורים זהים ("${t}") באותו מכל ${desc(pe)}`);   // the same ELEMENT as parent, not the same selector
   return out;
 })()
