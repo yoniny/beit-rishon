@@ -1,0 +1,2350 @@
+{
+ "_doc": "The book table of tools/verify-quotes.py. tractates: name -> {mishnah, bavli, yerushalmi, <commentator key>: library book id}; mt: Mishneh Torah laws (id + by{commentator key: id}); tanach: books (id + by); books: stand-alone books (ids list); commentators: key -> aliases (gershayim and quotes are ignored when matching); pool: more ids searched when a quote is not found in its own book (all ids above are searched too); unmapped: reference names that could not be resolved (filled by the tool - put the id in the right place above and delete the entry). Not in the library under the ids once given by hand: 635645, 4110022, 6434705. Very large books that hang a 40 s command (בית יוסף 3900, שו״ע) are kept out of the pool.",
+ "pool": [
+  1,
+  2,
+  3,
+  5,
+  6,
+  7,
+  13,
+  14,
+  27,
+  28,
+  29,
+  31,
+  32,
+  33,
+  34,
+  257,
+  258,
+  259,
+  285,
+  288,
+  289,
+  290,
+  696,
+  883,
+  1002,
+  1074,
+  1083,
+  2082,
+  3182,
+  3189,
+  6028,
+  6036
+ ],
+ "commentators": {
+  "rashi": [
+   "רש״י",
+   "רשי",
+   "רש\"י"
+  ],
+  "tosafot": [
+   "תוספות",
+   "תוס׳",
+   "תוס'",
+   "תוס"
+  ],
+  "tyt": [
+   "תוספות יום טוב",
+   "תוס׳ יום טוב",
+   "תוי״ט",
+   "תוס׳ יו״ט",
+   "תוספות יו״ט",
+   "תוספות יום-טוב",
+   "התוספות יום טוב"
+  ],
+  "bartenura": [
+   "ברטנורא",
+   "הברטנורא",
+   "רע״ב",
+   "ר׳ עובדיה מברטנורא"
+  ],
+  "yachin": [
+   "יכין",
+   "הכין"
+  ],
+  "boaz": [
+   "בועז"
+  ],
+  "rambam_mishna": [
+   "הרמב״ם",
+   "רמב״ם",
+   "פירוש המשניות",
+   "פירוש המשנה",
+   "פירוש המשניות לרמב״ם",
+   "רמב״ם על המשנה",
+   "הרמב״ם בפירוש המשניות"
+  ],
+  "shemaya": [
+   "רבינו שמעיה",
+   "שמעיה"
+  ],
+  "lechem_shamayim": [
+   "לחם שמים"
+  ],
+  "melechet": [
+   "מלאכת שלמה"
+  ],
+  "meiri": [
+   "מאירי",
+   "המאירי"
+  ],
+  "rash_shantz": [
+   "רש״ש"
+  ],
+  "rosh": [
+   "הרא״ש",
+   "פירוש הרא״ש",
+   "רא״ש"
+  ],
+  "mefaresh": [
+   "המפרש",
+   "מפרש",
+   "פירוש המפרש"
+  ],
+  "gershom": [
+   "רבינו גרשום"
+  ],
+  "ritva": [
+   "ריטב״א"
+  ],
+  "psakei_tosafot": [
+   "פסקי תוספות"
+  ],
+  "chok_natan": [
+   "חק נתן"
+  ],
+  "gra": [
+   "הגר״א",
+   "באורי הגר״א"
+  ],
+  "tosafot_yeshanim": [
+   "תוספות ישנים"
+  ],
+  "tosafot_rid": [
+   "תוספות רי״ד"
+  ],
+  "rashbam": [
+   "רשב״ם"
+  ],
+  "radak": [
+   "רד״ק"
+  ],
+  "metzudat_david": [
+   "מצודת דוד"
+  ],
+  "malbim": [
+   "מלבי״ם"
+  ],
+  "ralbag": [
+   "רלב״ג"
+  ],
+  "abarbanel": [
+   "אברבנאל"
+  ],
+  "ramban": [
+   "רמב״ן"
+  ],
+  "ibn_ezra": [
+   "אבן עזרא"
+  ],
+  "kesef_mishneh": [
+   "כסף משנה"
+  ],
+  "lechem_mishneh": [
+   "לחם משנה"
+  ],
+  "maase_lamelech": [
+   "מעשה למלך",
+   "מעשי למלך"
+  ],
+  "even_haezel": [
+   "אבן האזל"
+  ],
+  "mishneh_lamelech": [
+   "משנה למלך"
+  ],
+  "raavad": [
+   "ראב״ד",
+   "הראב״ד",
+   "השגות הראב״ד"
+  ],
+  "korkos": [
+   "קורקוס",
+   "הרדב״ז",
+   "מהר״י קורקוס"
+  ],
+  "har_hamoriah": [
+   "הר המוריה"
+  ],
+  "yerushalmi": []
+ },
+ "tractates": {
+  "ברכות": {
+   "aliases": [],
+   "mishnah": 40,
+   "bavli": 103,
+   "yerushalmi": 140,
+   "tosefta": 179,
+   "rashi": 2182,
+   "tosafot": 1927,
+   "rambam_mishna": 556,
+   "bartenura": 611,
+   "tyt": 921,
+   "yachin": 797,
+   "meiri": 2218,
+   "ritva": 1952,
+   "rash_shantz": 2512,
+   "boaz": 1310,
+   "lechem_shamayim": 1115,
+   "melechet": 1187
+  },
+  "פאה": {
+   "aliases": [],
+   "mishnah": 41,
+   "yerushalmi": 141,
+   "tosefta": 180,
+   "rambam_mishna": 555,
+   "bartenura": 620,
+   "tyt": 923,
+   "yachin": 800,
+   "boaz": 1312,
+   "lechem_shamayim": 1116,
+   "melechet": 1182
+  },
+  "דמאי": {
+   "aliases": [],
+   "mishnah": 42,
+   "yerushalmi": 142,
+   "tosefta": 181,
+   "rambam_mishna": 549,
+   "bartenura": 616,
+   "tyt": 925,
+   "yachin": 795,
+   "boaz": 1304,
+   "lechem_shamayim": 1125,
+   "melechet": 1184
+  },
+  "כלאים": {
+   "aliases": [],
+   "mishnah": 43,
+   "yerushalmi": 143,
+   "tosefta": 182,
+   "rambam_mishna": 550,
+   "bartenura": 612,
+   "tyt": 920,
+   "yachin": 798,
+   "boaz": 1311,
+   "lechem_shamayim": 1124,
+   "melechet": 1185
+  },
+  "שביעית": {
+   "aliases": [],
+   "mishnah": 44,
+   "yerushalmi": 144,
+   "tosefta": 183,
+   "rambam_mishna": 547,
+   "bartenura": 615,
+   "tyt": 924,
+   "yachin": 793,
+   "boaz": 1305,
+   "lechem_shamayim": 1122,
+   "melechet": 1178
+  },
+  "תרומות": {
+   "aliases": [],
+   "mishnah": 45,
+   "yerushalmi": 145,
+   "tosefta": 184,
+   "rambam_mishna": 552,
+   "bartenura": 613,
+   "tyt": 927,
+   "yachin": 796,
+   "boaz": 1314,
+   "lechem_shamayim": 1121,
+   "melechet": 1188
+  },
+  "מעשרות": {
+   "aliases": [],
+   "mishnah": 46,
+   "yerushalmi": 146,
+   "tosefta": 185,
+   "rambam_mishna": 551,
+   "bartenura": 618,
+   "tyt": 926,
+   "yachin": 791,
+   "boaz": 1307,
+   "lechem_shamayim": 1123,
+   "melechet": 1181
+  },
+  "מעשר שני": {
+   "aliases": [
+    "מעשר שני"
+   ],
+   "mishnah": 47,
+   "yerushalmi": 147,
+   "tosefta": 186,
+   "rambam_mishna": 548,
+   "bartenura": 619,
+   "tyt": 922,
+   "yachin": 792,
+   "boaz": 1313,
+   "lechem_shamayim": 1119,
+   "melechet": 1179
+  },
+  "חלה": {
+   "aliases": [],
+   "mishnah": 48,
+   "yerushalmi": 148,
+   "tosefta": 187,
+   "rambam_mishna": 546,
+   "bartenura": 614,
+   "tyt": 928,
+   "yachin": 790,
+   "boaz": 1306,
+   "lechem_shamayim": 1120,
+   "melechet": 1180
+  },
+  "ערלה": {
+   "aliases": [],
+   "mishnah": 49,
+   "yerushalmi": 149,
+   "tosefta": 188,
+   "rambam_mishna": 554,
+   "bartenura": 621,
+   "tyt": 929,
+   "yachin": 794,
+   "boaz": 1308,
+   "lechem_shamayim": 1118,
+   "melechet": 1186
+  },
+  "ביכורים": {
+   "aliases": [
+    "בכורים"
+   ],
+   "mishnah": 50,
+   "tosefta": 189,
+   "rambam_mishna": 553,
+   "bartenura": 617,
+   "tyt": 930,
+   "yachin": 799,
+   "boaz": 1309,
+   "lechem_shamayim": 1117,
+   "melechet": 1183,
+   "en": [
+    "Bikkurim"
+   ]
+  },
+  "שבת": {
+   "aliases": [],
+   "mishnah": 51,
+   "bavli": 104,
+   "yerushalmi": 151,
+   "tosefta": 190,
+   "rashi": 2156,
+   "tosafot": 1907,
+   "rambam_mishna": 525,
+   "bartenura": 585,
+   "tyt": 894,
+   "yachin": 764,
+   "meiri": 2200,
+   "rash_shantz": 2487,
+   "boaz": 1276,
+   "lechem_shamayim": 1097,
+   "melechet": 1153,
+   "en": [
+    "Shabbat"
+   ]
+  },
+  "עירובין": {
+   "aliases": [],
+   "mishnah": 52,
+   "bavli": 105,
+   "yerushalmi": 152,
+   "tosefta": 191,
+   "rashi": 2166,
+   "tosafot": 1911,
+   "rambam_mishna": 518,
+   "bartenura": 584,
+   "tyt": 891,
+   "yachin": 761,
+   "meiri": 2197,
+   "ritva": 1944,
+   "rash_shantz": 2489,
+   "boaz": 1280,
+   "lechem_shamayim": 1086,
+   "melechet": 1155,
+   "en": [
+    "Eruvin"
+   ]
+  },
+  "פסחים": {
+   "aliases": [],
+   "mishnah": 53,
+   "bavli": 106,
+   "yerushalmi": 153,
+   "tosefta": 192,
+   "rashi": 2162,
+   "tosafot": 1905,
+   "rambam_mishna": 524,
+   "bartenura": 589,
+   "tyt": 901,
+   "yachin": 769,
+   "rashbam": 1958,
+   "meiri": 2196,
+   "ritva": 1943,
+   "rash_shantz": 2492,
+   "boaz": 1278,
+   "lechem_shamayim": 1095,
+   "melechet": 1150,
+   "en": [
+    "Pesachim"
+   ]
+  },
+  "שקלים": {
+   "aliases": [],
+   "mishnah": 54,
+   "yerushalmi": 154,
+   "tosefta": 193,
+   "rambam_mishna": 523,
+   "bartenura": 593,
+   "tyt": 893,
+   "yachin": 768,
+   "boaz": 1279,
+   "lechem_shamayim": 1091,
+   "melechet": 1152,
+   "en": [
+    "Shekalim"
+   ]
+  },
+  "יומא": {
+   "aliases": [],
+   "mishnah": 55,
+   "bavli": 107,
+   "yerushalmi": 155,
+   "tosefta": 194,
+   "rashi": 2157,
+   "tosafot": 1908,
+   "rambam_mishna": 517,
+   "bartenura": 582,
+   "tyt": 898,
+   "yachin": 762,
+   "meiri": 2199,
+   "ritva": 1940,
+   "rash_shantz": 2494,
+   "boaz": 1281,
+   "lechem_shamayim": 1094,
+   "melechet": 1151,
+   "tosafot_yeshanim": 1992,
+   "tosafot_rid": 2109,
+   "en": [
+    "Yoma"
+   ]
+  },
+  "סוכה": {
+   "aliases": [],
+   "mishnah": 56,
+   "bavli": 108,
+   "yerushalmi": 156,
+   "tosefta": 195,
+   "rashi": 2163,
+   "tosafot": 1903,
+   "rambam_mishna": 521,
+   "bartenura": 588,
+   "tyt": 899,
+   "yachin": 772,
+   "meiri": 2195,
+   "ritva": 1938,
+   "rash_shantz": 2490,
+   "boaz": 1284,
+   "lechem_shamayim": 1096,
+   "melechet": 1156,
+   "en": [
+    "Sukkah",
+    "Sukka"
+   ]
+  },
+  "ביצה": {
+   "aliases": [],
+   "mishnah": 57,
+   "bavli": 109,
+   "yerushalmi": 157,
+   "tosefta": 196,
+   "rashi": 2160,
+   "tosafot": 1910,
+   "rambam_mishna": 528,
+   "bartenura": 592,
+   "tyt": 896,
+   "yachin": 766,
+   "meiri": 2201,
+   "rash_shantz": 2495,
+   "boaz": 1277,
+   "lechem_shamayim": 1092,
+   "melechet": 1159
+  },
+  "ראש השנה": {
+   "aliases": [
+    "ר״ה"
+   ],
+   "mishnah": 58,
+   "bavli": 110,
+   "yerushalmi": 158,
+   "tosefta": 514,
+   "rashi": 2158,
+   "tosafot": 1904,
+   "rambam_mishna": 519,
+   "bartenura": 583,
+   "tyt": 895,
+   "yachin": 765,
+   "meiri": 2192,
+   "ritva": 1942,
+   "rash_shantz": 2496,
+   "boaz": 1275,
+   "lechem_shamayim": 1090,
+   "melechet": 1157
+  },
+  "תענית": {
+   "aliases": [],
+   "mishnah": 59,
+   "bavli": 111,
+   "yerushalmi": 159,
+   "tosefta": 197,
+   "rashi": 2165,
+   "tosafot": 1909,
+   "rambam_mishna": 522,
+   "bartenura": 591,
+   "tyt": 900,
+   "yachin": 767,
+   "meiri": 2193,
+   "ritva": 1937,
+   "rash_shantz": 2486,
+   "boaz": 1283,
+   "lechem_shamayim": 1089,
+   "melechet": 1158
+  },
+  "מגילה": {
+   "aliases": [],
+   "mishnah": 60,
+   "bavli": 112,
+   "yerushalmi": 160,
+   "tosefta": 198,
+   "rashi": 2159,
+   "tosafot": 1902,
+   "rambam_mishna": 526,
+   "bartenura": 590,
+   "tyt": 890,
+   "yachin": 770,
+   "meiri": 2194,
+   "ritva": 1939,
+   "rash_shantz": 2493,
+   "boaz": 1285,
+   "lechem_shamayim": 1093,
+   "melechet": 1154
+  },
+  "מועד קטן": {
+   "aliases": [
+    "מו״ק"
+   ],
+   "mishnah": 61,
+   "bavli": 113,
+   "yerushalmi": 161,
+   "tosefta": 199,
+   "rashi": 2164,
+   "tosafot": 1901,
+   "rambam_mishna": 527,
+   "bartenura": 587,
+   "tyt": 897,
+   "yachin": 763,
+   "meiri": 2198,
+   "ritva": 1941,
+   "rash_shantz": 2491,
+   "boaz": 1286,
+   "lechem_shamayim": 1088,
+   "melechet": 1160
+  },
+  "חגיגה": {
+   "aliases": [],
+   "mishnah": 62,
+   "bavli": 114,
+   "yerushalmi": 162,
+   "tosefta": 200,
+   "rashi": 2161,
+   "tosafot": 1906,
+   "rambam_mishna": 520,
+   "bartenura": 586,
+   "tyt": 892,
+   "yachin": 771,
+   "meiri": 2202,
+   "rash_shantz": 2488,
+   "boaz": 1282,
+   "lechem_shamayim": 1087,
+   "melechet": 1149
+  },
+  "יבמות": {
+   "aliases": [],
+   "mishnah": 63,
+   "bavli": 115,
+   "yerushalmi": 163,
+   "tosefta": 201,
+   "rashi": 2167,
+   "tosafot": 1918,
+   "rambam_mishna": 529,
+   "bartenura": 597,
+   "tyt": 909,
+   "yachin": 773,
+   "meiri": 2203,
+   "ritva": 1945,
+   "rash_shantz": 2503,
+   "boaz": 1287,
+   "lechem_shamayim": 1100,
+   "melechet": 1163
+  },
+  "כתובות": {
+   "aliases": [],
+   "mishnah": 64,
+   "bavli": 116,
+   "yerushalmi": 164,
+   "tosefta": 202,
+   "rashi": 2168,
+   "tosafot": 1914,
+   "rambam_mishna": 532,
+   "bartenura": 596,
+   "tyt": 906,
+   "yachin": 778,
+   "meiri": 2209,
+   "ritva": 1948,
+   "rash_shantz": 2502,
+   "boaz": 1293,
+   "lechem_shamayim": 1101,
+   "melechet": 1161
+  },
+  "נדרים": {
+   "aliases": [],
+   "mishnah": 65,
+   "bavli": 117,
+   "yerushalmi": 165,
+   "tosefta": 203,
+   "rashi": 2170,
+   "tosafot": 1915,
+   "rambam_mishna": 533,
+   "bartenura": 598,
+   "tyt": 907,
+   "yachin": 777,
+   "meiri": 2207,
+   "ritva": 1947,
+   "rash_shantz": 2499,
+   "boaz": 1289,
+   "lechem_shamayim": 1103,
+   "melechet": 1166
+  },
+  "נזיר": {
+   "aliases": [],
+   "mishnah": 66,
+   "bavli": 118,
+   "yerushalmi": 166,
+   "tosefta": 204,
+   "rashi": 2171,
+   "tosafot": 1913,
+   "rambam_mishna": 530,
+   "bartenura": 600,
+   "tyt": 905,
+   "yachin": 774,
+   "meiri": 2204,
+   "rash_shantz": 2500,
+   "boaz": 1291,
+   "lechem_shamayim": 1102,
+   "melechet": 1167
+  },
+  "סוטה": {
+   "aliases": [],
+   "mishnah": 67,
+   "bavli": 119,
+   "yerushalmi": 167,
+   "tosefta": 205,
+   "rashi": 2172,
+   "tosafot": 1912,
+   "rambam_mishna": 535,
+   "bartenura": 595,
+   "tyt": 908,
+   "yachin": 776,
+   "meiri": 2205,
+   "rash_shantz": 2498,
+   "boaz": 1292,
+   "lechem_shamayim": 1098,
+   "melechet": 1165,
+   "en": [
+    "Sotah"
+   ]
+  },
+  "גיטין": {
+   "aliases": [],
+   "mishnah": 68,
+   "bavli": 120,
+   "yerushalmi": 168,
+   "tosefta": 206,
+   "rashi": 2169,
+   "tosafot": 1917,
+   "rambam_mishna": 531,
+   "bartenura": 599,
+   "tyt": 903,
+   "yachin": 779,
+   "meiri": 2206,
+   "ritva": 6893,
+   "rash_shantz": 2497,
+   "boaz": 1290,
+   "lechem_shamayim": 1104,
+   "melechet": 1162
+  },
+  "קידושין": {
+   "aliases": [],
+   "mishnah": 69,
+   "bavli": 121,
+   "yerushalmi": 169,
+   "tosefta": 207,
+   "rashi": 2173,
+   "tosafot": 1916,
+   "rambam_mishna": 534,
+   "bartenura": 594,
+   "tyt": 904,
+   "yachin": 775,
+   "meiri": 2208,
+   "ritva": 1946,
+   "rash_shantz": 2501,
+   "boaz": 1288,
+   "lechem_shamayim": 1099,
+   "melechet": 1164
+  },
+  "בבא קמא": {
+   "aliases": [
+    "ב״ק",
+    "בבא קמא"
+   ],
+   "mishnah": 70,
+   "bavli": 122,
+   "yerushalmi": 170,
+   "tosefta": 208,
+   "rashi": 2177,
+   "tosafot": 1925,
+   "rambam_mishna": 545,
+   "bartenura": 602,
+   "tyt": 912,
+   "yachin": 783,
+   "meiri": 2211,
+   "rash_shantz": 2510,
+   "boaz": 1302,
+   "lechem_shamayim": 1114,
+   "melechet": 1176,
+   "en": [
+    "Bava Kamma"
+   ]
+  },
+  "בבא מציעא": {
+   "aliases": [
+    "ב״מ"
+   ],
+   "mishnah": 71,
+   "bavli": 123,
+   "yerushalmi": 171,
+   "tosefta": 209,
+   "rashi": 2181,
+   "tosafot": 1920,
+   "rambam_mishna": 542,
+   "bartenura": 608,
+   "tyt": 919,
+   "yachin": 781,
+   "meiri": 2212,
+   "rash_shantz": 2504,
+   "boaz": 1301,
+   "lechem_shamayim": 1113,
+   "melechet": 1171
+  },
+  "בבא בתרא": {
+   "aliases": [
+    "ב״ב"
+   ],
+   "mishnah": 72,
+   "bavli": 124,
+   "yerushalmi": 172,
+   "tosefta": 210,
+   "rashi": 2178,
+   "tosafot": 1923,
+   "rambam_mishna": 537,
+   "bartenura": 606,
+   "tyt": 910,
+   "yachin": 782,
+   "rashbam": 1959,
+   "meiri": 2217,
+   "rash_shantz": 2506,
+   "boaz": 1295,
+   "lechem_shamayim": 1110,
+   "melechet": 1168,
+   "en": [
+    "Bava Batra"
+   ]
+  },
+  "סנהדרין": {
+   "aliases": [],
+   "mishnah": 73,
+   "bavli": 125,
+   "yerushalmi": 173,
+   "tosefta": 211,
+   "rashi": 2180,
+   "tosafot": 1921,
+   "rambam_mishna": 544,
+   "bartenura": 607,
+   "tyt": 918,
+   "yachin": 785,
+   "meiri": 2214,
+   "rash_shantz": 2509,
+   "boaz": 1297,
+   "lechem_shamayim": 1111,
+   "melechet": 1169,
+   "en": [
+    "Sanhedrin"
+   ]
+  },
+  "מכות": {
+   "aliases": [],
+   "mishnah": 74,
+   "bavli": 126,
+   "yerushalmi": 174,
+   "tosefta": 212,
+   "rashi": 2176,
+   "tosafot": 1922,
+   "rambam_mishna": 538,
+   "bartenura": 604,
+   "tyt": 916,
+   "yachin": 784,
+   "meiri": 2216,
+   "ritva": 1951,
+   "rash_shantz": 2511,
+   "boaz": 1299,
+   "lechem_shamayim": 1105,
+   "melechet": 1177
+  },
+  "שבועות": {
+   "aliases": [],
+   "mishnah": 75,
+   "bavli": 127,
+   "yerushalmi": 175,
+   "tosefta": 213,
+   "rashi": 2174,
+   "tosafot": 1926,
+   "rambam_mishna": 540,
+   "bartenura": 601,
+   "tyt": 917,
+   "yachin": 788,
+   "meiri": 2210,
+   "ritva": 1950,
+   "rash_shantz": 2505,
+   "boaz": 1298,
+   "lechem_shamayim": 1106,
+   "melechet": 1172
+  },
+  "עדיות": {
+   "aliases": [],
+   "mishnah": 76,
+   "rambam_mishna": 541,
+   "bartenura": 610,
+   "tyt": 911,
+   "yachin": 780,
+   "boaz": 1296,
+   "lechem_shamayim": 1108,
+   "melechet": 1174
+  },
+  "עבודה זרה": {
+   "aliases": [
+    "ע״ז"
+   ],
+   "mishnah": 77,
+   "bavli": 128,
+   "yerushalmi": 176,
+   "tosefta": 215,
+   "rashi": 2175,
+   "tosafot": 1919,
+   "rambam_mishna": 539,
+   "bartenura": 603,
+   "tyt": 914,
+   "yachin": 786,
+   "meiri": 2215,
+   "ritva": 1949,
+   "rash_shantz": 2507,
+   "boaz": 1300,
+   "lechem_shamayim": 1109,
+   "melechet": 1170
+  },
+  "אבות": {
+   "aliases": [],
+   "mishnah": 78,
+   "rambam_mishna": 543,
+   "bartenura": 609,
+   "tyt": 915,
+   "yachin": 789,
+   "boaz": 1303,
+   "melechet": 1175
+  },
+  "הוריות": {
+   "aliases": [],
+   "mishnah": 79,
+   "bavli": 129,
+   "yerushalmi": 177,
+   "tosefta": 216,
+   "rashi": 2179,
+   "tosafot": 1924,
+   "rambam_mishna": 536,
+   "bartenura": 605,
+   "tyt": 913,
+   "yachin": 787,
+   "meiri": 2213,
+   "rash_shantz": 2508,
+   "boaz": 1294,
+   "lechem_shamayim": 1112,
+   "melechet": 1173
+  },
+  "זבחים": {
+   "aliases": [],
+   "mishnah": 80,
+   "bavli": 130,
+   "tosefta": 217,
+   "rashi": 2191,
+   "tosafot": 1936,
+   "rambam_mishna": 579,
+   "bartenura": 639,
+   "tyt": 945,
+   "yachin": 813,
+   "rash_shantz": 2516,
+   "boaz": 1322,
+   "lechem_shamayim": 1147,
+   "melechet": 1204,
+   "en": [
+    "Zevachim"
+   ]
+  },
+  "מנחות": {
+   "aliases": [],
+   "mishnah": 81,
+   "bavli": 131,
+   "tosefta": 218,
+   "rashi": 2186,
+   "tosafot": 1933,
+   "rambam_mishna": 577,
+   "bartenura": 635,
+   "tyt": 950,
+   "yachin": 814,
+   "rashbam": 1960,
+   "rash_shantz": 2515,
+   "boaz": 1327,
+   "lechem_shamayim": 1142,
+   "melechet": 1211,
+   "en": [
+    "Menachot"
+   ]
+  },
+  "חולין": {
+   "aliases": [],
+   "mishnah": 82,
+   "bavli": 132,
+   "tosefta": 219,
+   "rashi": 2184,
+   "tosafot": 1935,
+   "rambam_mishna": 576,
+   "bartenura": 642,
+   "tyt": 943,
+   "yachin": 816,
+   "meiri": 2220,
+   "ritva": 1954,
+   "rash_shantz": 2520,
+   "boaz": 1326,
+   "lechem_shamayim": 1146,
+   "melechet": 1205
+  },
+  "בכורות": {
+   "aliases": [],
+   "mishnah": 83,
+   "bavli": 133,
+   "tosefta": 220,
+   "rashi": 2188,
+   "tosafot": 1929,
+   "rambam_mishna": 572,
+   "bartenura": 636,
+   "tyt": 951,
+   "yachin": 815,
+   "rash_shantz": 2521,
+   "boaz": 1323,
+   "lechem_shamayim": 1148,
+   "melechet": 1208
+  },
+  "ערכין": {
+   "aliases": [],
+   "mishnah": 84,
+   "bavli": 134,
+   "tosefta": 221,
+   "rashi": 2190,
+   "tosafot": 1930,
+   "rambam_mishna": 570,
+   "bartenura": 644,
+   "tyt": 946,
+   "yachin": 817,
+   "rash_shantz": 2514,
+   "boaz": 1328,
+   "lechem_shamayim": 1139,
+   "melechet": 1206,
+   "en": [
+    "Arachin",
+    "Erchin"
+   ]
+  },
+  "תמורה": {
+   "aliases": [],
+   "mishnah": 85,
+   "bavli": 135,
+   "tosefta": 222,
+   "rashi": 2185,
+   "tosafot": 1932,
+   "rambam_mishna": 571,
+   "bartenura": 641,
+   "tyt": 952,
+   "yachin": 822,
+   "rash_shantz": 2517,
+   "boaz": 1325,
+   "lechem_shamayim": 1138,
+   "melechet": 1209
+  },
+  "כריתות": {
+   "aliases": [],
+   "mishnah": 86,
+   "bavli": 136,
+   "tosefta": 223,
+   "rashi": 2189,
+   "tosafot": 1934,
+   "rambam_mishna": 581,
+   "bartenura": 638,
+   "tyt": 947,
+   "yachin": 820,
+   "rash_shantz": 2518,
+   "boaz": 1324,
+   "lechem_shamayim": 1143,
+   "melechet": 1203
+  },
+  "מעילה": {
+   "aliases": [],
+   "mishnah": 87,
+   "bavli": 137,
+   "tosefta": 224,
+   "rashi": 2187,
+   "tosafot": 1931,
+   "rambam_mishna": 580,
+   "bartenura": 637,
+   "tyt": 949,
+   "yachin": 823,
+   "rash_shantz": 2519,
+   "boaz": 1332,
+   "lechem_shamayim": 1144,
+   "melechet": 1201,
+   "en": [
+    "Meilah"
+   ]
+  },
+  "תמיד": {
+   "aliases": [],
+   "mishnah": 88,
+   "bavli": 138,
+   "rambam_mishna": 575,
+   "bartenura": 634,
+   "tyt": 944,
+   "yachin": 818,
+   "meiri": 2221,
+   "boaz": 1330,
+   "lechem_shamayim": 1140,
+   "melechet": 1202,
+   "mefaresh": 2105,
+   "rosh": 2224,
+   "gershom": 2101,
+   "en": [
+    "Tamid"
+   ]
+  },
+  "קינים": {
+   "aliases": [],
+   "mishnah": 90,
+   "tosafot": 7420,
+   "rambam_mishna": 574,
+   "bartenura": 640,
+   "tyt": 953,
+   "yachin": 821,
+   "boaz": 1331,
+   "lechem_shamayim": 1141,
+   "melechet": 1207,
+   "en": [
+    "Kinnim"
+   ]
+  },
+  "כלים": {
+   "aliases": [],
+   "mishnah": 91,
+   "rambam_mishna": 558,
+   "bartenura": 627,
+   "tyt": 931,
+   "yachin": 809,
+   "boaz": 1319,
+   "lechem_shamayim": 1132,
+   "melechet": 1200,
+   "en": [
+    "Kelim"
+   ]
+  },
+  "אהלות": {
+   "aliases": [],
+   "mishnah": 92,
+   "tosefta": 228,
+   "rambam_mishna": 560,
+   "bartenura": 626,
+   "tyt": 933,
+   "yachin": 804,
+   "boaz": 1318,
+   "lechem_shamayim": 1131,
+   "melechet": 1196
+  },
+  "נגעים": {
+   "aliases": [],
+   "mishnah": 93,
+   "tosefta": 229,
+   "rambam_mishna": 565,
+   "bartenura": 633,
+   "tyt": 941,
+   "yachin": 801,
+   "boaz": 1317,
+   "lechem_shamayim": 1133,
+   "melechet": 1189
+  },
+  "פרה": {
+   "aliases": [],
+   "mishnah": 94,
+   "tosefta": 230,
+   "rambam_mishna": 569,
+   "bartenura": 632,
+   "tyt": 934,
+   "yachin": 812,
+   "boaz": 1321,
+   "lechem_shamayim": 1130,
+   "melechet": 1192,
+   "en": [
+    "Parah"
+   ]
+  },
+  "טהרות": {
+   "aliases": [],
+   "mishnah": 95,
+   "tosefta": 231,
+   "rambam_mishna": 557,
+   "bartenura": 624,
+   "tyt": 937,
+   "yachin": 803,
+   "boaz": 1315,
+   "lechem_shamayim": 1128,
+   "melechet": 1198
+  },
+  "מקואות": {
+   "aliases": [],
+   "mishnah": 96,
+   "rambam_mishna": 563,
+   "bartenura": 629,
+   "tyt": 936,
+   "yachin": 808,
+   "boaz": 1320,
+   "melechet": 1193
+  },
+  "נדה": {
+   "aliases": [],
+   "mishnah": 97,
+   "bavli": 139,
+   "yerushalmi": 178,
+   "tosefta": 233,
+   "rashi": 2183,
+   "tosafot": 1928,
+   "rambam_mishna": 559,
+   "bartenura": 630,
+   "tyt": 940,
+   "yachin": 805,
+   "meiri": 2219,
+   "ritva": 1953,
+   "rash_shantz": 2513,
+   "boaz": 1316,
+   "lechem_shamayim": 1136,
+   "melechet": 1191
+  },
+  "מכשירין": {
+   "aliases": [],
+   "mishnah": 98,
+   "tosefta": 234,
+   "rambam_mishna": 568,
+   "bartenura": 631,
+   "tyt": 935,
+   "yachin": 802,
+   "lechem_shamayim": 1135,
+   "melechet": 1199
+  },
+  "זבים": {
+   "aliases": [],
+   "mishnah": 99,
+   "tosefta": 235,
+   "rambam_mishna": 561,
+   "bartenura": 625,
+   "tyt": 932,
+   "yachin": 807,
+   "lechem_shamayim": 1137,
+   "melechet": 1195
+  },
+  "טבול יום": {
+   "aliases": [],
+   "mishnah": 100,
+   "tosefta": 236,
+   "rambam_mishna": 562,
+   "bartenura": 628,
+   "tyt": 938,
+   "yachin": 810,
+   "lechem_shamayim": 1134,
+   "melechet": 1190
+  },
+  "ידים": {
+   "aliases": [],
+   "mishnah": 101,
+   "tosefta": 237,
+   "rambam_mishna": 564,
+   "bartenura": 623,
+   "tyt": 942,
+   "yachin": 811,
+   "lechem_shamayim": 1129,
+   "melechet": 1194
+  },
+  "עוקצים": {
+   "aliases": [],
+   "mishnah": 102,
+   "rambam_mishna": 567,
+   "bartenura": 622,
+   "tyt": 939,
+   "yachin": 806,
+   "lechem_shamayim": 1127,
+   "melechet": 1197
+  },
+  "מידות": {
+   "aliases": [
+    "מדות"
+   ],
+   "mishnah": 89,
+   "rambam_mishna": 573,
+   "bartenura": 643,
+   "tyt": 948,
+   "yachin": 819,
+   "boaz": 1329,
+   "melechet": 1210,
+   "lechem_shamayim": 1145,
+   "shemaya": 645,
+   "rash_shantz": 750,
+   "meiri": 6033,
+   "psakei_tosafot": 2082,
+   "chok_natan": 6026,
+   "gra": 7509,
+   "rosh": 6035,
+   "en": [
+    "Middot",
+    "Midot"
+   ]
+  }
+ },
+ "mt": {
+  "בית הבחירה": {
+   "id": 337,
+   "aliases": [
+    "הלכות בית הבחירה",
+    "רמב״ם בית הבחירה"
+   ],
+   "by": {
+    "kesef_mishneh": 4260,
+    "maase_lamelech": 4304,
+    "even_haezel": 4466,
+    "mishneh_lamelech": 4606,
+    "raavad": 5252,
+    "korkos": 5308,
+    "har_hamoriah": 5474,
+    "lechem_shamayim": 5069
+   }
+  },
+  "כלי המקדש": {
+   "id": 338,
+   "aliases": [
+    "כלי המקדש והעובדין בו"
+   ],
+   "by": {
+    "kesef_mishneh": 4255,
+    "maase_lamelech": 4305
+   }
+  },
+  "איסורי המזבח": {
+   "id": 339,
+   "aliases": [
+    "איסורי מזבח"
+   ],
+   "by": {}
+  },
+  "ביאת מקדש": {
+   "id": 340,
+   "aliases": [
+    "ביאת המקדש"
+   ],
+   "by": {}
+  },
+  "עבודת יום הכפורים": {
+   "id": 342,
+   "aliases": [
+    "עבודת יום הכיפורים"
+   ],
+   "by": {}
+  },
+  "תמידים ומוספין": {
+   "id": 344,
+   "aliases": [
+    "תמידין",
+    "תמידין ומוספין"
+   ],
+   "by": {
+    "kesef_mishneh": 4261,
+    "lechem_mishneh": 4030,
+    "raavad": 5256,
+    "har_hamoriah": 5468
+   }
+  },
+  "שקלים (רמב״ם)": {
+   "id": 310,
+   "aliases": [],
+   "by": {}
+  },
+  "פרה אדומה": {
+   "id": 372,
+   "aliases": [
+    "הלכות פרה אדומה"
+   ],
+   "by": {}
+  },
+  "סנהדרין והעונשין": {
+   "id": 375,
+   "aliases": [
+    "הלכות סנהדרין"
+   ],
+   "by": {}
+  },
+  "יסודי התורה": {
+   "id": 296,
+   "aliases": [],
+   "by": {}
+  },
+  "דעות": {
+   "id": 297,
+   "aliases": [],
+   "by": {}
+  },
+  "תלמוד תורה": {
+   "id": 298,
+   "aliases": [],
+   "by": {}
+  },
+  "עבודה זרה וחוקות הגויים": {
+   "id": 299,
+   "aliases": [
+    "עבודה זרה"
+   ],
+   "by": {}
+  },
+  "תשובה": {
+   "id": 300,
+   "aliases": [],
+   "by": {}
+  },
+  "קריאת שמע": {
+   "id": 301,
+   "aliases": [],
+   "by": {}
+  },
+  "תפילה וברכת כהנים": {
+   "id": 302,
+   "aliases": [],
+   "by": {}
+  },
+  "תפילין ומזוזה וספר תורה": {
+   "id": 303,
+   "aliases": [],
+   "by": {}
+  },
+  "ציצית": {
+   "id": 304,
+   "aliases": [],
+   "by": {}
+  },
+  "ברכות (רמב״ם)": {
+   "id": 305,
+   "aliases": [],
+   "by": {}
+  },
+  "מילה": {
+   "id": 306,
+   "aliases": [],
+   "by": {}
+  },
+  "שבת (רמב״ם)": {
+   "id": 308,
+   "aliases": [],
+   "by": {}
+  },
+  "עירובין (רמב״ם)": {
+   "id": 309,
+   "aliases": [],
+   "by": {}
+  },
+  "קידוש החודש": {
+   "id": 311,
+   "aliases": [],
+   "by": {}
+  },
+  "תעניות": {
+   "id": 312,
+   "aliases": [],
+   "by": {}
+  },
+  "מגילה וחנוכה": {
+   "id": 313,
+   "aliases": [],
+   "by": {}
+  },
+  "שופר וסוכה ולולב": {
+   "id": 314,
+   "aliases": [
+    "שופר סוכה ולולב"
+   ],
+   "by": {}
+  },
+  "שביתת יום טוב": {
+   "id": 315,
+   "aliases": [],
+   "by": {}
+  },
+  "שביתת עשור": {
+   "id": 316,
+   "aliases": [],
+   "by": {}
+  },
+  "חמץ ומצה": {
+   "id": 317,
+   "aliases": [],
+   "by": {}
+  },
+  "אישות": {
+   "id": 318,
+   "aliases": [],
+   "by": {}
+  },
+  "גירושין": {
+   "id": 319,
+   "aliases": [],
+   "by": {}
+  },
+  "יבום וחליצה": {
+   "id": 320,
+   "aliases": [],
+   "by": {}
+  },
+  "סוטה (רמב״ם)": {
+   "id": 321,
+   "aliases": [],
+   "by": {}
+  },
+  "נערה בתולה": {
+   "id": 322,
+   "aliases": [],
+   "by": {}
+  },
+  "מאכלות אסורות": {
+   "id": 323,
+   "aliases": [],
+   "by": {}
+  },
+  "שחיטה": {
+   "id": 324,
+   "aliases": [],
+   "by": {}
+  },
+  "איסורי ביאה": {
+   "id": 325,
+   "aliases": [],
+   "by": {}
+  },
+  "נדרים (רמב״ם)": {
+   "id": 326,
+   "aliases": [],
+   "by": {}
+  },
+  "נזירות": {
+   "id": 327,
+   "aliases": [],
+   "by": {}
+  },
+  "ערכים וחרמין": {
+   "id": 328,
+   "aliases": [
+    "ערכין וחרמין",
+    "ערכים וחרמים"
+   ],
+   "by": {}
+  },
+  "שבועות (רמב״ם)": {
+   "id": 329,
+   "aliases": [],
+   "by": {}
+  },
+  "תרומות (רמב״ם)": {
+   "id": 330,
+   "aliases": [],
+   "by": {}
+  },
+  "מעשרות (רמב״ם)": {
+   "id": 331,
+   "aliases": [],
+   "by": {}
+  },
+  "מעשר שני ונטע רבעי": {
+   "id": 332,
+   "aliases": [],
+   "by": {}
+  },
+  "שמיטה ויובל": {
+   "id": 333,
+   "aliases": [],
+   "by": {}
+  },
+  "מתנות עניים": {
+   "id": 334,
+   "aliases": [],
+   "by": {}
+  },
+  "כלאים (רמב״ם)": {
+   "id": 335,
+   "aliases": [],
+   "by": {}
+  },
+  "ביכורים ושאר מתנות כהונה שבגבולין": {
+   "id": 336,
+   "aliases": [
+    "ביכורים ושאר מתנות כהונה"
+   ],
+   "by": {}
+  },
+  "מעשה הקרבנות": {
+   "id": 341,
+   "aliases": [],
+   "by": {}
+  },
+  "פסולי המוקדשין": {
+   "id": 343,
+   "aliases": [],
+   "by": {}
+  },
+  "מעילה (רמב״ם)": {
+   "id": 345,
+   "aliases": [],
+   "by": {}
+  },
+  "בכורות (רמב״ם)": {
+   "id": 346,
+   "aliases": [],
+   "by": {}
+  },
+  "שגגות": {
+   "id": 347,
+   "aliases": [],
+   "by": {}
+  },
+  "מחוסרי כפרה": {
+   "id": 348,
+   "aliases": [],
+   "by": {}
+  },
+  "תמורה (רמב״ם)": {
+   "id": 349,
+   "aliases": [],
+   "by": {}
+  },
+  "קרבן פסח": {
+   "id": 350,
+   "aliases": [],
+   "by": {}
+  },
+  "חגיגה (רמב״ם)": {
+   "id": 351,
+   "aliases": [],
+   "by": {}
+  },
+  "נזקי ממון": {
+   "id": 352,
+   "aliases": [],
+   "by": {}
+  },
+  "גזילה ואבידה": {
+   "id": 353,
+   "aliases": [],
+   "by": {}
+  },
+  "גניבה": {
+   "id": 354,
+   "aliases": [],
+   "by": {}
+  },
+  "חובל ומזיק": {
+   "id": 355,
+   "aliases": [],
+   "by": {}
+  },
+  "רוצח ושמירת נפש": {
+   "id": 356,
+   "aliases": [],
+   "by": {}
+  },
+  "מכירה": {
+   "id": 357,
+   "aliases": [],
+   "by": {}
+  },
+  "זכייה ומתנה": {
+   "id": 358,
+   "aliases": [],
+   "by": {}
+  },
+  "שלוחין ושותפין": {
+   "id": 359,
+   "aliases": [],
+   "by": {}
+  },
+  "עבדים": {
+   "id": 360,
+   "aliases": [],
+   "by": {}
+  },
+  "שכנים": {
+   "id": 361,
+   "aliases": [],
+   "by": {}
+  },
+  "מלווה ולווה": {
+   "id": 362,
+   "aliases": [],
+   "by": {}
+  },
+  "שכירות": {
+   "id": 363,
+   "aliases": [],
+   "by": {}
+  },
+  "נחלות": {
+   "id": 364,
+   "aliases": [],
+   "by": {}
+  },
+  "טוען ונטען": {
+   "id": 365,
+   "aliases": [],
+   "by": {}
+  },
+  "שאלה ופיקדון": {
+   "id": 366,
+   "aliases": [],
+   "by": {}
+  },
+  "שאר אבות הטומאות": {
+   "id": 367,
+   "aliases": [],
+   "by": {}
+  },
+  "טומאת מת": {
+   "id": 368,
+   "aliases": [],
+   "by": {}
+  },
+  "טומאת צרעת": {
+   "id": 369,
+   "aliases": [],
+   "by": {}
+  },
+  "מטמאי משכב ומושב": {
+   "id": 370,
+   "aliases": [],
+   "by": {}
+  },
+  "טומאת אוכלים": {
+   "id": 371,
+   "aliases": [],
+   "by": {}
+  },
+  "מקואות (רמב״ם)": {
+   "id": 373,
+   "aliases": [],
+   "by": {}
+  },
+  "כלים (רמב״ם)": {
+   "id": 374,
+   "aliases": [],
+   "by": {}
+  },
+  "עדות": {
+   "id": 376,
+   "aliases": [],
+   "by": {}
+  },
+  "ממרים": {
+   "id": 377,
+   "aliases": [],
+   "by": {}
+  },
+  "אבל": {
+   "id": 378,
+   "aliases": [],
+   "by": {}
+  },
+  "מלכים ומלחמות": {
+   "id": 379,
+   "aliases": [
+    "מלכים"
+   ],
+   "by": {}
+  }
+ },
+ "tanach": {
+  "שמות": {
+   "id": 2,
+   "by": {
+    "rashi": 3692,
+    "ramban": 3627,
+    "ibn_ezra": 3619,
+    "rashbam": 3549
+   },
+   "aliases": []
+  },
+  "דברים": {
+   "id": 5,
+   "by": {},
+   "aliases": []
+  },
+  "בראשית": {
+   "id": 1,
+   "by": {},
+   "aliases": []
+  },
+  "ויקרא": {
+   "id": 3,
+   "by": {
+    "rashi": 3694
+   },
+   "aliases": []
+  },
+  "במדבר": {
+   "id": 4,
+   "by": {
+    "rashi": 3693
+   },
+   "aliases": []
+  },
+  "שמואל א": {
+   "id": 8,
+   "by": {},
+   "aliases": []
+  },
+  "שמואל ב": {
+   "id": 9,
+   "by": {
+    "rashi": 3688,
+    "radak": 3541,
+    "metzudat_david": 3329,
+    "malbim": 3390,
+    "ralbag": 3643,
+    "abarbanel": 3577
+   },
+   "aliases": []
+  },
+  "מלכים א": {
+   "id": 10,
+   "by": {
+    "rashi": 3673,
+    "radak": 3540,
+    "metzudat_david": 3345,
+    "malbim": 3394,
+    "ralbag": 3645,
+    "abarbanel": 3574
+   },
+   "aliases": []
+  },
+  "מלכים ב": {
+   "id": 11,
+   "by": {
+    "rashi": 3680,
+    "radak": 3542,
+    "metzudat_david": 3335,
+    "malbim": 3379,
+    "ralbag": 3644,
+    "abarbanel": 3568
+   },
+   "aliases": []
+  },
+  "ישעיהו": {
+   "id": 12,
+   "by": {
+    "rashi": 3686,
+    "abarbanel": 3566
+   },
+   "aliases": [
+    "ישעיה"
+   ]
+  },
+  "ירמיהו": {
+   "id": 13,
+   "by": {
+    "rashi": 3675,
+    "metzudat_david": 3332,
+    "malbim": 3381,
+    "abarbanel": 3582
+   },
+   "aliases": [
+    "ירמיה"
+   ]
+  },
+  "יחזקאל": {
+   "id": 14,
+   "by": {
+    "rashi": 3684,
+    "radak": 3531,
+    "metzudat_david": 3334,
+    "malbim": 3386,
+    "abarbanel": 3569
+   },
+   "aliases": []
+  },
+  "יואל": {
+   "id": 16,
+   "by": {},
+   "aliases": []
+  },
+  "זכריה": {
+   "id": 25,
+   "by": {
+    "rashi": 3677,
+    "radak": 3544,
+    "metzudat_david": 3331,
+    "malbim": 3375,
+    "abarbanel": 3570,
+    "ibn_ezra": 3615
+   },
+   "aliases": []
+  },
+  "חגי": {
+   "id": 24,
+   "by": {},
+   "aliases": []
+  },
+  "מלאכי": {
+   "id": 26,
+   "by": {
+    "rashi": 3678,
+    "radak": 3538,
+    "metzudat_david": 3341,
+    "malbim": 3387
+   },
+   "aliases": []
+  },
+  "תהילים": {
+   "id": 28,
+   "aliases": [
+    "תהלים"
+   ],
+   "by": {
+    "radak": 3523
+   }
+  },
+  "נחמיה": {
+   "id": 37,
+   "by": {
+    "malbim": 3370,
+    "ralbag": 3635
+   },
+   "aliases": []
+  },
+  "עזרא": {
+   "id": 36,
+   "by": {
+    "rashi": 3669,
+    "metzudat_david": 3322,
+    "malbim": 3373,
+    "ralbag": 3631
+   },
+   "aliases": []
+  },
+  "דברי הימים א": {
+   "id": 38,
+   "aliases": [
+    "דה״א"
+   ],
+   "by": {
+    "rashi": 3664,
+    "radak": 3521,
+    "malbim": 3372
+   }
+  },
+  "דברי הימים ב": {
+   "id": 39,
+   "aliases": [
+    "דה״ב"
+   ],
+   "by": {
+    "rashi": 3662,
+    "radak": 3522,
+    "metzudat_david": 3318,
+    "malbim": 3364,
+    "ralbag": 3639
+   }
+  },
+  "יהושע": {
+   "id": 6,
+   "by": {
+    "rashi": 3679,
+    "radak": 3526,
+    "metzudat_david": 3333,
+    "malbim": 3376,
+    "abarbanel": 3579,
+    "ralbag": 3641
+   },
+   "aliases": []
+  },
+  "שופטים": {
+   "id": 7,
+   "by": {
+    "rashi": 3683,
+    "radak": 3534,
+    "metzudat_david": 3325,
+    "malbim": 3382,
+    "abarbanel": 3567,
+    "ralbag": 3646
+   },
+   "aliases": []
+  },
+  "דניאל": {
+   "id": 35,
+   "by": {
+    "rashi": 3670,
+    "metzudat_david": 3315,
+    "malbim": 3368,
+    "ibn_ezra": 3603
+   },
+   "aliases": []
+  },
+  "משלי": {
+   "id": 30,
+   "by": {
+    "metzudat_david": 3319,
+    "malbim": 3367
+   },
+   "aliases": []
+  },
+  "עמוס": {
+   "id": 17,
+   "by": {
+    "rashi": 3687,
+    "radak": 3530,
+    "metzudat_david": 3336,
+    "malbim": 3383,
+    "abarbanel": 3573
+   },
+   "aliases": []
+  },
+  "מיכה": {
+   "id": 20,
+   "by": {
+    "rashi": 3691,
+    "radak": 3527,
+    "metzudat_david": 3344,
+    "malbim": 3380,
+    "abarbanel": 3563
+   },
+   "aliases": []
+  },
+  "הושע": {
+   "id": 15,
+   "by": {},
+   "aliases": []
+  },
+  "אסתר": {
+   "id": 34,
+   "aliases": [],
+   "by": {}
+  },
+  "שיר השירים": {
+   "id": 31,
+   "aliases": [
+    "שה״ש"
+   ],
+   "by": {}
+  },
+  "קהלת": {
+   "id": 32,
+   "aliases": [],
+   "by": {}
+  },
+  "רות": {
+   "id": 27,
+   "aliases": [],
+   "by": {}
+  },
+  "איכה": {
+   "id": 33,
+   "aliases": [],
+   "by": {}
+  },
+  "איוב": {
+   "id": 29,
+   "aliases": [],
+   "by": {}
+  }
+ },
+ "books": {
+  "צורת בית המקדש": {
+   "ids": [
+    6029,
+    3190
+   ],
+   "aliases": [
+    "תפארת ישראל",
+    "צורת בית המקדש להתפארת ישראל",
+    "צורת בית המקדש לתפארת ישראל",
+    "תפא״י"
+   ]
+  },
+  "צורת בית המקדש השני לתוס׳ יו״ט": {
+   "ids": [
+    6028
+   ],
+   "aliases": [
+    "צורת בית המקדש להתוספות יום טוב"
+   ]
+  },
+  "תורת העולה": {
+   "ids": [
+    3167
+   ],
+   "aliases": []
+  },
+  "בנין ציון": {
+   "ids": [
+    5791
+   ],
+   "aliases": []
+  },
+  "שולחן ערוך אורח חיים": {
+   "ids": [
+    382
+   ],
+   "aliases": [
+    "שו״ע או״ח",
+    "שולחן ערוך או״ח",
+    "שו״ע אורח חיים"
+   ]
+  },
+  "ילקוט שמעוני": {
+   "ids": [
+    3059
+   ],
+   "aliases": [
+    "ילקוט שמעוני נ״ך"
+   ]
+  },
+  "ספר השרשים": {
+   "ids": [
+    6063
+   ],
+   "aliases": []
+  },
+  "אסתר רבה": {
+   "ids": [
+    264
+   ],
+   "aliases": [
+    "מדרש אסתר רבה"
+   ]
+  },
+  "שיר השירים רבה": {
+   "ids": [
+    262
+   ],
+   "aliases": []
+  },
+  "תרגום שני": {
+   "ids": [
+    3237,
+    7421
+   ],
+   "aliases": [
+    "תרגום שני לאסתר",
+    "תרגום שני על אסתר"
+   ]
+  },
+  "תרגום יונתן": {
+   "ids": [
+    3206,
+    3214,
+    3218,
+    3229,
+    3226,
+    3227,
+    3228,
+    3204,
+    3205,
+    3215,
+    3217,
+    3212
+   ],
+   "aliases": [
+    "תרגום יונתן בן עוזיאל"
+   ]
+  },
+  "פסיקתא דרב כהנא": {
+   "ids": [
+    277
+   ],
+   "aliases": [
+    "פסיקתא"
+   ]
+  },
+  "מדרש תדשא": {
+   "ids": [
+    7715
+   ],
+   "aliases": [
+    "ילקוט מדרשים תדשא"
+   ]
+  },
+  "מדרש אבא גוריון": {
+   "ids": [
+    5844
+   ],
+   "aliases": []
+  },
+  "מכילתא": {
+   "ids": [
+    285,
+    286
+   ],
+   "aliases": [
+    "מכילתא דרבי ישמעאל",
+    "מכילתא בחדש",
+    "מכילתא דרשב״י"
+   ]
+  },
+  "ספר הישר": {
+   "ids": [
+    273,
+    3757
+   ],
+   "aliases": []
+  },
+  "יפה ענף": {
+   "ids": [
+    3078,
+    3079,
+    3080
+   ],
+   "aliases": []
+  },
+  "מדרש תהילים": {
+   "ids": [
+    267
+   ],
+   "aliases": []
+  },
+  "תנחומא": {
+   "ids": [
+    268,
+    282
+   ],
+   "aliases": [
+    "מדרש תנחומא"
+   ]
+  },
+  "סדר עולם": {
+   "ids": [
+    270,
+    271
+   ],
+   "aliases": [
+    "סדר עולם רבה"
+   ]
+  },
+  "ספרא": {
+   "ids": [
+    288
+   ],
+   "aliases": [
+    "תורת כהנים"
+   ]
+  },
+  "ספרי": {
+   "ids": [
+    289,
+    290,
+    291
+   ],
+   "aliases": []
+  },
+  "אבות דרבי נתן": {
+   "ids": [
+    1851
+   ],
+   "aliases": [
+    "אדר״נ"
+   ]
+  },
+  "פרקי דרבי אליעזר": {
+   "ids": [
+    279
+   ],
+   "aliases": [
+    "פרדר״א"
+   ]
+  }
+ },
+ "unmapped": {
+  "הובא": {
+   "seen": 1,
+   "first": "sheni/src/slots/70-ui.slots.js:857",
+   "suggest": []
+  },
+  "סימן": {
+   "seen": 5,
+   "first": "sheni/src/slots/70-ui.slots.js:875",
+   "suggest": []
+  },
+  "תשובות": {
+   "seen": 1,
+   "first": "sheni/src/slots/70-ui.slots.js:935",
+   "suggest": [
+    [
+     3782,
+     "תשובות רפואיות"
+    ],
+    [
+     5729,
+     "תשובות הרא\"ש"
+    ],
+    [
+     5731,
+     "שאלות ותשובות מן השמים"
+    ],
+    [
+     5732,
+     "תשובות הרמב\"ם - מהדורת בלאו"
+    ],
+    [
+     5733,
+     "תשובות הרמב\"ם"
+    ],
+    [
+     5736,
+     "תשובות הרשב\"ש"
+    ],
+    [
+     5738,
+     "תשובות רש\"י"
+    ],
+    [
+     5739,
+     "תשובות הריב\"ש"
+    ],
+    [
+     5740,
+     "תשובות הר\"י מיגאש"
+    ],
+    [
+     5743,
+     "תשובות מהר\"ם"
+    ],
+    [
+     5745,
+     "תשובות מהר\"ח אור זרוע"
+    ],
+    [
+     5746,
+     "הערות שוליים על תשובות הרשב\"א מיוחס להרמב\"ן"
+    ]
+   ]
+  },
+  "הכותל המזרחי הנמוך": {
+   "seen": 1,
+   "first": "sheni/src/slots/70-ui.slots.js:1560",
+   "suggest": []
+  },
+  "חלק סימן": {
+   "seen": 2,
+   "first": "sheni/src/slots/70-ui.slots.js:1887",
+   "suggest": []
+  },
+  "רש״י על שיר השירים": {
+   "seen": 2,
+   "first": "src/59-parallels.js:1911",
+   "suggest": [
+    [
+     3659,
+     "רש\"י על שיר השירים"
+    ]
+   ]
+  },
+  "בית המדרש": {
+   "seen": 5,
+   "first": "src/60-palace.js:2357",
+   "suggest": []
+  },
+  "פנים אחרים נוסח": {
+   "seen": 3,
+   "first": "shared/70-ui.js:2573",
+   "suggest": []
+  },
+  "ברייתא דמלאכת המשכן": {
+   "seen": 2,
+   "first": "src/slots/70-ui.slots.js:965",
+   "suggest": []
+  },
+  "הקירוי": {
+   "seen": 1,
+   "first": "src/slots/70-ui.slots.js:1208",
+   "suggest": []
+  },
+  "מצודת דוד על שיר השירים": {
+   "seen": 1,
+   "first": "src/slots/70-ui.slots.js:2367",
+   "suggest": [
+    [
+     3316,
+     "מצודת דוד על שיר השירים"
+    ]
+   ]
+  },
+  "\"אבנטו כהן הדיוט\"": {
+   "seen": 1,
+   "first": "shared/frag/people-kit.js:188",
+   "suggest": []
+  },
+  "אויר": {
+   "seen": 2,
+   "first": "sheni/src/40-altar.js:275",
+   "suggest": []
+  },
+  "\"ומאי": {
+   "seen": 1,
+   "first": "sheni/src/57-add208.js:193",
+   "suggest": []
+  }
+ }
+}
