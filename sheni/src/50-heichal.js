@@ -332,9 +332,10 @@
     // north wall, z -45 (its partition has the door); the Rambam's: the hall's north end, z -45). Three rows of eight; their size, height and places, and
     // the order of the windows (WINDOW_NAMES_H: the order of the watches in I Chronicles 24 - the user's decision 197 a) - model choices.
     {
-      const nDark = new MeshBasicMaterial({ color: 0x17110b });
+      const nDark = new MeshBasicMaterial({ color: 0x3a2d20 });   // KNIVES_N16: lighter than before (0x17110b), so the knives read against it
       const bladeM = new MeshStandardMaterial({ color: 0xb9bcc0, metalness: 0.85, roughness: 0.3 });
       const handleM = new MeshStandardMaterial({ color: 0x5a3c22, roughness: 0.8 });
+      const sheathM = new MeshStandardMaterial({ color: 0x2b1d12, roughness: 0.7 });   // KNIVES_N16: a sheath (nadan) of dark leather
       const plugM = M2.stoneSmooth;
       // WINDOW_NAMES_H (fix-h, 23.11.2026 - the user: "השמות של המשמרות"): each window's watch written on a small stone plate over it, in
       // the three readings. The names - ctx2.shared.watches24 (30-courts.js: I Chronicles 24:7-18, the order of the lots). THE ORDER OF THE
@@ -383,12 +384,19 @@
           if (bilga) bilgaAt = [x, y];
           if (bilga) { const p = new Mesh(new BoxGeometry(0.85, 0.85, 0.12), plugM); p.position.set(x, y, zFace + dir * 0.06); tmp.add(p); continue; }
           const d = new Mesh(new PlaneGeometry(0.8, 0.8), nDark); d.position.set(x, y, z); d.rotation.y = dir > 0 ? 0 : Math.PI; tmp.add(d);
-          for (const [fx, fy, fw, fh] of [[0, 0.46, 1.0, 0.12], [0, -0.46, 1.0, 0.12], [-0.46, 0, 0.12, 0.8], [0.46, 0, 0.12, 0.8]]) {
-            const f = new Mesh(new BoxGeometry(fw, fh, 0.1), plugM); f.position.set(x + fx, y + fy, zFace + dir * 0.05); tmp.add(f);
+          // KNIVES_N16 (the user: "הוסף סכיני שחיטה בכל חלון"): the frame is a reveal 0.3 deep; inside it two shelves, and on each shelf slaughtering knives
+          // (straight, long metal blade, a handle; some in a dark sheath) lying side by side. Their length (0.5 blade + 0.16 handle), number (3 and 2) and
+          // layout - model choices. Bilga's window (above) is shut and has none: "וחלונה סתומה".
+          for (const [fx, fy, fw, fh, fd, fz] of [[0, 0.46, 1.0, 0.12, 0.3, 0.15], [0, -0.46, 1.0, 0.12, 0.3, 0.15], [-0.46, 0, 0.12, 0.8, 0.3, 0.15], [0.46, 0, 0.12, 0.8, 0.3, 0.15], [0, -0.07, 0.8, 0.035, 0.24, 0.13], [0, -0.30, 0.8, 0.035, 0.24, 0.13]]) {
+            const f = new Mesh(new BoxGeometry(fw, fh, fd), plugM); f.position.set(x + fx, y + fy, zFace + dir * fz); tmp.add(f);
           }
-          for (const sx of [-0.18, 0.12]) {   // two knives lying in the niche
-            const b = new Mesh(new BoxGeometry(0.34, 0.012, 0.07), bladeM); b.position.set(x + sx + 0.08, y - 0.36, zFace + dir * 0.07); tmp.add(b);
-            const h = new Mesh(new BoxGeometry(0.14, 0.03, 0.05), handleM); h.position.set(x + sx - 0.16, y - 0.36, zFace + dir * 0.07); tmp.add(h);
+          for (const [sy, n] of [[-0.07, 2], [-0.30, 3]]) for (let q = 0; q < n; q++) {
+            const kz = zFace + dir * (0.05 + (n === 3 ? 0.05 + q * 0.055 : 0.07 + q * 0.09));
+            const ky = y + sy + 0.0175, sx0 = x - 0.36 + ((k + q) % 2) * 0.04, sheath = (k + q) % 3 === 0;
+            const bl = new Mesh(new BoxGeometry(0.5, 0.05, 0.012), sheath ? sheathM : bladeM); bl.position.set(sx0 + 0.25, ky + 0.025, kz); tmp.add(bl);
+            const tip = new Mesh(new BoxGeometry(0.06, 0.03, 0.012), sheath ? sheathM : bladeM); tip.position.set(sx0 + 0.53, ky + 0.015, kz); tmp.add(tip);
+            if (!sheath) { const sp = new Mesh(new BoxGeometry(0.5, 0.012, 0.012), bladeM); sp.position.set(sx0 + 0.25, ky + 0.056, kz); tmp.add(sp); }   // the spine
+            const h = new Mesh(new BoxGeometry(0.17, 0.04, 0.03), handleM); h.position.set(sx0 - 0.085, ky + 0.02, kz); tmp.add(h);
           }
         }
         tmp.updateMatrixWorld(true);
@@ -398,7 +406,7 @@
         if (plateM && plates.length) { const pm = new Mesh(mergeGeometries(plates), plateM); pm.userData.noPick = true; parent.add(pm); }   // WINDOW_NAMES_H
         ctx2.labels.push({ text: "בית החליפות — ״ששם גונזים את הסכינים״ (מידות ד, ז): כ״ד חלונות, אחד לכל משמר", x: 7, y: F + 7.2, z: zFace + dir * 1.5, size: 0.9, layer: parent === ulamM ? "ulamMishnah" : parent === ulamT ? "ulamTiferet" : "ulamRambam" });
         // WINDOW_NAMES_H: on Bilga's shut stone (its plate over it says "בלגה"); until now over the windows above it, and crowding them
-        ctx2.labels.push({ text: "״וחלונה סתומה״", x: bilgaAt ? bilgaAt[0] : 2.6 + 7 * 1.25, y: bilgaAt ? bilgaAt[1] : F + 2.4 + 1.3, z: zFace + dir * 0.35, size: 0.3, layer: parent === ulamM ? "ulamMishnah" : parent === ulamT ? "ulamTiferet" : "ulamRambam" });
+        ctx2.labels.push({ text: "״וחלונה סתומה״ — בלי סכינים, כי סתום", x: bilgaAt ? bilgaAt[0] : 2.6 + 7 * 1.25, y: bilgaAt ? bilgaAt[1] : F + 2.4 + 1.3, z: zFace + dir * 0.35, size: 0.3, layer: parent === ulamM ? "ulamMishnah" : parent === ulamT ? "ulamTiferet" : "ulamRambam" });
       };
       windows(ulamM, -35, 1);          // the Mishnah's reading: on the north block's face toward the ulam
       windows(ulamT, -45, 1);          // the Tiferet Yisrael's: in the room, on its north wall (the partition has its door)
