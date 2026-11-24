@@ -909,6 +909,7 @@
         f.kid = true;
         const heads = [];
         f.g.traverse((o) => { if (o.isMesh && o.name === "tefillin-rosh") heads.push(o); });
+        { const ends = []; f.g.traverse((o) => { if (o.isMesh && o.name === "tefillin-rosh-ends") ends.push(o); }); for (const e of ends) e.removeFromParent(); }   // TEF_ENDS_BODY_420: their hanging ends too (now on the neck)
         for (const m of heads) { const hg = m.parent; m.removeFromParent(); if (KIT && KIT.headBare) { KIT.headBare(hg, KID_HAIR); continue; } const hair = hg.children[2]; if (hair && hair.isMesh) { hair.visible = false; const head = hg.children[0]; head.geometry.computeBoundingBox(); const bb = head.geometry.boundingBox, c = bb.getCenter(new Vector3()), sz = bb.getSize(new Vector3()); const sc = new Mesh(new SphereGeometry(1, 16, 8, 0, Math.PI * 2, 0, 1.5), KID_HAIR); sc.scale.set(sz.x * 0.53, sz.y * 0.53, sz.z * 0.54); sc.rotation.x = -0.42; sc.position.set(c.x, c.y + sz.y * 0.04, c.z - sz.z * 0.03); hg.add(sc); } }   // the hair over the crown and the back, the forehead and the face bare
         const arm = [];
         if (KIT && KIT.mTef) f.g.traverse((o) => { if (o.isMesh && o.name === "tefillin-bulge") arm.push(o); else if (o.isMesh && o.material === KIT.mTef) arm.push(o.parent && o.parent.isGroup && o.parent.children.every((c) => c.material === KIT.mTef) ? o.parent : o); });
@@ -3570,6 +3571,7 @@
     const followCam = (id, o, sec) => {
       const key = id + "|" + o;
       let jump = Math.abs(sec - FOL.sec) > 0.9;
+      const dts = Math.max(0, Math.min(0.5, sec - FOL.sec));   // FOLLOW_TAG_420: the glide by the stage's own time (not by frames - at 0.1 s a step the eye trailed 13 amot behind him round the altar)
       if (FOL.key !== key) { FOL.key = key; FOL.last = {}; FOL.actor = null; FOL.still = 0; FOL.cam.copy(ctx2.camera.position); FOL.tg.copy(ctx2.controls.target); FOL.el = 0; FOL.chk = 0; FOL.blocked = false; jump = false; }
       FOL.sec = sec;
       let best = null, bd = 0.012;
@@ -3580,9 +3582,19 @@
         if (L && !jump) { const d = Math.hypot(q.x - L[0], q.z - L[2]) + Math.abs(q.y - L[1]) * 0.5; if (d > bd) { bd = d; best = k; } }
         FOL.last[k] = [q.x, q.y, q.z];
       }
-      const cur = FOL.actor && W.figs[FOL.actor] && W.figs[FOL.actor].st.vis ? FOL.actor : null;
-      if (best === cur) FOL.still = 0; else if (cur) FOL.still++;
-      if (!cur || (best && FOL.still > 20)) { if (best) { FOL.actor = best; FOL.still = 0; } }
+      // FOLLOW_TAG_420 (the sweep: in "תרומת הדשן" the eye left the priest raking on the altar for two others walking in the court): the one
+      // whose caption is shown now is the one the stage is about - he is followed while it is shown (of several with captions, the one
+      // that moved last); without a caption, as before, the one that moved last
+      const tagged = [];
+      for (const k in W.figs) { const f = W.figs[k]; if (f.st && f.st.vis && f.st.tag && f.g) tagged.push(k); }
+      if (tagged.length === 1) { FOL.actor = tagged[0]; FOL.still = 0; }
+      else {
+        const pool = tagged.length > 1 ? tagged : null;
+        const cur = FOL.actor && W.figs[FOL.actor] && W.figs[FOL.actor].st.vis && (!pool || pool.includes(FOL.actor)) ? FOL.actor : null;
+        const best2 = pool && best && !pool.includes(best) ? null : best;
+        if (best2 === cur) FOL.still = 0; else if (cur) FOL.still++;
+        if (!cur || (best2 && FOL.still > 20)) { if (best2) { FOL.actor = best2; FOL.still = 0; } else if (!cur && pool) { FOL.actor = pool[0]; FOL.still = 0; } }
+      }
       if (!FOL.actor || !W.figs[FOL.actor] || !W.figs[FOL.actor].st.vis) return;
       const v = VIEW[id] ? VIEW[id](o) : null;
       if (!v || !v[0] || !v[1]) return;
@@ -3591,7 +3603,7 @@
       if (hl < 1e-3) { hx = 0; hz = 1; hl = 1; }
       hx /= hl; hz /= hl;
       const full = Math.hypot(hl, v[0][1] - v[1][1]);
-      const D = Math.max(10, Math.min(18, full * 0.7));
+      const D = Math.max(8, Math.min(12.5, full * 0.4));   // FOLLOW_TAG_420: nearer (10-18 showed him small)
       const el0 = Math.max(0.35, Math.min(0.95, Math.atan2(v[0][1] - v[1][1], hl)));
       fw.set(g.x, g.y + 1.6, g.z);
       const put = (e) => fv.set(fw.x + hx * Math.cos(e) * D, fw.y + Math.sin(e) * D, fw.z + hz * Math.cos(e) * D);
@@ -3607,7 +3619,7 @@
         }
       }
       if (FOL.blocked) { fv.set(v[0][0], v[0][1], v[0][2]); fw.set(v[1][0], v[1][1], v[1][2]); }
-      const k = jump ? 1 : 0.07;
+      const k = jump ? 1 : 1 - Math.exp(-dts / 0.3);
       FOL.tg.lerp(fw, k); FOL.cam.lerp(fv, k);
       ctx2.camera.position.copy(FOL.cam);
       ctx2.controls.target.copy(FOL.tg);

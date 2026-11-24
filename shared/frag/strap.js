@@ -63,6 +63,11 @@
       const t = new Vector3(0, n.z, -n.y), tilt = Math.atan2(n.y, n.z);
       const place = (q, d, back = 0) => { q.rotateX(-tilt); q.translate(t.x * back, TY + n.y * d + t.y * back, zs + n.z * d + t.z * back); return q; };
       const BASE = 0.008, MA = 0.016;   // the base's thickness; the passage's length behind the box
+      // TEF_ENDS_BODY_420 (the user 25.11.2026, of the figure for scale: one end went into his chest and the other hung in the air): the
+      // hanging ends belong to the body, not to the head - a head turned a little (every priest's own turn) swung them into the chest and
+      // out of it. o.ends === "only" - the two ends alone (laid on the neck's group by tefOn, unturned); false - the head's part alone
+      const only = o.ends === "only";
+      if (!only) {
       parts.push(place(new BoxGeometry(TB * 1.25, TB * 1.25, BASE), BASE / 2 + 0.001));                      // the titura, flat on the head
       parts.push(place(new BoxGeometry(TB, TB, TB), BASE + 0.001 + TB / 2));                                   // the bayit on it
       parts.push(place(new BoxGeometry(TB * 1.25, MA, BASE * 1.6), BASE * 0.8 + 0.001, TB * 0.625 + MA / 2));    // the ma'avarta, behind it, the strap through it
@@ -76,8 +81,9 @@
         ring.push(new Vector3(Math.sin(ph) * r, y, Math.cos(ph) * r));
       }
       parts.push(tm_strap(ring, (p) => new Vector3(p.x / (HR[0] * HR[0]), p.y / (HR[1] * HR[1]), p.z / (HR[2] * HR[2])), SW, ST, true, low ? 40 : 96));
+      }
       const kz = -(headR(Math.PI, KY) + 0.009);
-      parts.push(new BoxGeometry(0.024, 0.02, 0.012).translate(0, KY - 0.002, kz));   // the knot, in the nape's middle
+      if (!only) parts.push(new BoxGeometry(0.024, 0.02, 0.012).translate(0, KY - 0.002, kz));   // the knot, in the nape's middle
       if (o.ends !== false) for (const sd of [-1, 1]) {   // the two ends: behind the neck, over the shoulder by the neck, and down before him (sd -1 his right)
         const end = sd < 0 ? -0.93 : -0.8;
         const pts = [[0.008, KY - 0.008, kz + 0.004], [0.05, -0.13, -0.118], [0.098, -0.19, -0.088], [0.13, -0.212, -0.02], [0.136, -0.235, 0.07], [0.134, -0.29, 0.122], [0.13, -0.36, 0.142],

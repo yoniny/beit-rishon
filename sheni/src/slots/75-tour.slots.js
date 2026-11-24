@@ -379,11 +379,20 @@
                 const TT = ctx.shared.tour, SL = (TT && TT.slides) || slides;
                 let ids = { lamps: ["lamps5", "lamps2"], belt: ["kiyor12"], hp: ["birkat", "haalaah"], kidd: ["kiyor", "kiyor12"], mitz: ["birkat", "haalaah"], ephod: ["birkat", "haalaah"] }[g.k] || null;
                 if (g.k === "order" && fnc(T.list)) {
-                  const la = call(T.list, "abba") || [], lr = call(T.list, "rambam") || [];
-                  let f = 0; while (f < la.length && f < lr.length && la[f] === lr[f]) f++;
-                  let e1 = la.length - 1, e2 = lr.length - 1; while (e1 > f && e2 > f && la[e1] === lr[e2]) { e1--; e2--; }
-                  const cur = v === "rambam" ? lr : la, e = v === "rambam" ? e2 : e1;
-                  ids = f <= e ? cur.slice(f, e + 1) : null;
+                  // ORDER_PARTS_420: only the parts where the two orders differ (until now from the first difference to the last - 32 of the 39
+                  // stages, nearly the whole presentation): the stages common to both in the same sequence (their longest common sequence) are
+                  // left out, and each place where they part - with up to two common stages between two such places, so that a swap is seen
+                  // whole - is played in the chosen reading's own order (now: the lot and the patrol; the lamps beside the akedah and the blood;
+                  // the lamps, the ashes, the coals, the incense, the blessing and the limbs)
+                  const A = call(T.list, "abba") || [], B = call(T.list, "rambam") || [], n = A.length, m = B.length;
+                  const Lc = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+                  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) Lc[i][j] = A[i] === B[j] ? Lc[i + 1][j + 1] + 1 : Math.max(Lc[i + 1][j], Lc[i][j + 1]);
+                  const pairs = []; { let i = 0, j = 0; while (i < n && j < m) { if (A[i] === B[j]) { pairs.push([i, j]); i++; j++; } else if (Lc[i + 1][j] >= Lc[i][j + 1]) i++; else j++; } }
+                  const regs = []; { let pi = -1, pj = -1; for (const [a2, b2] of pairs.concat([[n, m]])) { if (a2 - pi > 1 || b2 - pj > 1) regs.push([pi + 1, a2, pj + 1, b2]); pi = a2; pj = b2; } }
+                  const MR = []; for (const r of regs) { const l = MR[MR.length - 1]; if (l && r[0] - l[1] <= 2 && r[2] - l[3] <= 2) { l[1] = r[1]; l[3] = r[3]; } else MR.push(r.slice()); }
+                  const mine = v === "rambam", out = [];
+                  for (const r of MR) { const s0 = mine ? r[2] : r[0], s1 = mine ? r[3] : r[1]; for (let k = s0; k < s1; k++) out.push((mine ? B : A)[k]); }
+                  ids = out.length ? out : null;
                 }
                 if ((g.k === "mitz" || g.k === "ephod") && fnc(T.setHp) && (call(T.readings) || {}).hp !== "on") call(T.setHp, "on");
                 if (!ids || !TT || !fnc(TT.only) || !fnc(TT.goto)) return;

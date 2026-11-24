@@ -345,7 +345,17 @@
     const gTefRAt = (ty = TY) => GTR[ty] || (GTR[ty] = tm_tefRosh({ HR, headR, TY: ty, TB, ends: true }));
     const gTefR = gTefRAt(TY);
     // the head's tefillin on a head made by headOn (its group): priests only - the figures that are priests ask for it
-    const tefOn = (hg, o) => { const m = new Mesh(o && o.TY != null ? gTefRAt(o.TY) : gTefR, mTef); m.name = "tefillin-rosh"; m.visible = TEF.on; hg.add(m); TEF.list.push(m); return m; };
+    // TEF_ENDS_BODY_420: the head's part on the head; its two hanging ends on the head's parent (the neck, the body) at the head's place,
+    // not turned with the head - a head turned a little swung one end into the chest and the other into the air (a head with no parent yet: as before)
+    const GTH = {}, GTE = {};
+    const gTefHeadAt = (ty = TY) => GTH[ty] || (GTH[ty] = tm_tefRosh({ HR, headR, TY: ty, TB, ends: false }));
+    const gTefEndsAt = (ty = TY) => GTE[ty] || (GTE[ty] = tm_tefRosh({ HR, headR, TY: ty, TB, ends: "only" }));
+    const tefOn = (hg, o) => {
+      const ty = o && o.TY != null ? o.TY : TY, P = hg.parent;
+      const m = new Mesh(P ? gTefHeadAt(ty) : gTefRAt(ty), mTef); m.name = "tefillin-rosh"; m.visible = TEF.on; hg.add(m); TEF.list.push(m);
+      if (P) { const e = new Mesh(gTefEndsAt(ty), mTef); e.name = "tefillin-rosh-ends"; e.position.copy(hg.position); e.scale.copy(hg.scale); e.visible = TEF.on; P.add(e); TEF.list.push(e); m.userData.tefEnds = e; }
+      return m;
+    };
     // TEFILLIN_A2: THE ARM'S, for the Levites (the user, 00:58: "תפילין גם ללויים" - no priestly garments, nothing between): on the left
     // arm's upper part. up / fo: the arm's two lengths in its own frame (the shoulder at 0, the elbow at -up; the forearm from the elbow,
     // 0 .. -fo); rU / rF: their radii.
