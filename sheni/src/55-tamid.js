@@ -3150,6 +3150,74 @@
       o.quaternion.copy(QA.invert()).multiply(_hQ);
       o.position.set(-H.at[0], -H.at[1], -H.at[2]).applyQuaternion(o.quaternion);
     };
+    // TRUMPET_HANDS_N11 (the user: "הכהנים לא אוחזים את החצוצרה בידיים"): a silver trumpet (tru1, tru2) is in BOTH hands in every frame - the
+    // right by the mouthpiece, the left along the tube - at the mouth while the pose is "trumpet" (it rises and falls with the pose's
+    // time), else before his chest, its bell up and forward; also while he walks and stands. The trumpet is placed in the figure's lean
+    // frame and each arm is solved to it (the shoulder's two turns and the elbow's: damped Gauss-Newton on the closed hand's ring); the
+    // wrist turns the ring along the tube and the arm is solved again. The two places on the tube and the poses - model choices
+    const _tq = new Quaternion(), _tq2 = new Quaternion(), _te = new Euler(), _tv = [new Vector3(), new Vector3(), new Vector3(), new Vector3(), new Vector3()], _tz = new Vector3(0, 0, 1);
+    const trFk = (f, A2, side, a, b, c, out) => {
+      _te.set(a, 0, side * b, "XYZ"); _tq.setFromEuler(_te);
+      _te.set(c, 0, 0, "XYZ"); _tq2.setFromEuler(_te);
+      out.copy(A2.grip.position).applyQuaternion(_tq2).add(_tv[4].set(0, -f.A.up, 0)).applyQuaternion(_tq).add(A2.sh.position);
+      if (f.bend) out.y += f.bend.position.y;
+      return out;
+    };
+    const trSolve = (f, A2, side, T, iters) => {
+      let [a, b, c] = A2.ik || [-1.2, 0.05, -0.8];
+      const P0 = _tv[0], P1 = _tv[1], P2 = _tv[2], P3 = _tv[3];
+      for (let it = 0; it < iters; it++) {
+        trFk(f, A2, side, a, b, c, P0);
+        const r0 = [T.x - P0.x, T.y - P0.y, T.z - P0.z];
+        if (r0[0] * r0[0] + r0[1] * r0[1] + r0[2] * r0[2] < 1e-8) break;
+        const e = 1e-3, J = [];
+        for (const [da, db, dc, Pn] of [[e, 0, 0, P1], [0, e, 0, P2], [0, 0, e, P3]]) { trFk(f, A2, side, a + da, b + db, c + dc, Pn); J.push([(Pn.x - P0.x) / e, (Pn.y - P0.y) / e, (Pn.z - P0.z) / e]); }
+        const l = 0.02, M = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+        for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) { let q = i === j ? l : 0; for (let k = 0; k < 3; k++) q += J[k][i] * J[k][j]; M[i][j] = q; }
+        const det = M[0][0] * (M[1][1] * M[2][2] - M[1][2] * M[2][1]) - M[0][1] * (M[1][0] * M[2][2] - M[1][2] * M[2][0]) + M[0][2] * (M[1][0] * M[2][1] - M[1][1] * M[2][0]);
+        if (Math.abs(det) < 1e-12) break;
+        const inv = (i, j) => { const i1 = (i + 1) % 3, i2 = (i + 2) % 3, j1 = (j + 1) % 3, j2 = (j + 2) % 3; return (M[j1][i1] * M[j2][i2] - M[j1][i2] * M[j2][i1]) / det; };
+        const y = [0, 1, 2].map((i) => inv(i, 0) * r0[0] + inv(i, 1) * r0[1] + inv(i, 2) * r0[2]);
+        a += J[0][0] * y[0] + J[0][1] * y[1] + J[0][2] * y[2];
+        b += J[1][0] * y[0] + J[1][1] * y[1] + J[1][2] * y[2];
+        c += J[2][0] * y[0] + J[2][1] * y[1] + J[2][2] * y[2];
+        a = clamp(a, -2.9, 1.0); b = clamp(b, -1.1, 1.2); c = clamp(c, -2.75, 0.05);
+      }
+      A2.ik = [a, b, c];
+      A2.sh.rotation.set(a, 0, side * b); A2.el.rotation.set(c, 0, 0);
+      return trFk(f, A2, side, a, b, c, P0).distanceTo(T);
+    };
+    const trHold = (f, p) => {
+      if (!f.A || !f.L.wr || !W.ring || !W.ring.grip || !SH.priestKit) return false;
+      const o = p.o, s = f.st, k = s.pose === "trumpet" ? smooth(clamp((s.t || 0) / 0.4, 0, 1)) * smooth(clamp((s.tl == null ? 9 : s.tl) / 0.3, 0, 1)) : 0;
+      if (o.parent !== f.lean) f.lean.add(o);
+      // the trumpet (its tube along +z, from the mouthpiece at z -0.1): its mouthpiece at the mouth, or before his chest
+      const my = SH.priestKit.HEAD_Y * SH.priestKit.FS - 0.17, dy = lerp(0.62, 0.32, k), dz = Math.sqrt(1 - dy * dy);
+      const d = _tv[4].set(0, dy, dz);
+      const mx = 0, mY = lerp(f.A.sy - 0.5, my, k), mZ = lerp(0.3, 0.14, k);
+      o.quaternion.setFromUnitVectors(_tz, d);
+      o.position.set(mx + d.x * 0.1, mY + d.y * 0.1, mZ + d.z * 0.1);
+      o.scale.set(1, 1, 1);
+      const dir = d.clone();
+      let miss = 0;
+      f.handK = f.handK || { R: "grip", L: "grip" }; f.handK.R = f.handK.L = "grip"; setHands(f);
+      for (const [A2, side, zz] of [[f.R, -1, 0.26], [f.L, 1, 0.82]]) {
+        const T = new Vector3(mx, mY, mZ).addScaledVector(dir, zz + 0.0);
+        const AX = W.ring.grip.ax[side], G = W.ring.grip.at[side];
+        for (let pass = 0; pass < 2; pass++) {
+          miss = Math.max(miss, trSolve(f, A2, side, T, pass ? 4 : 6));
+          // the wrist turns the ring along the tube (in the elbow's frame), the ring goes with it
+          _te.set(A2.sh.rotation.x, 0, A2.sh.rotation.z, "XYZ"); _tq.setFromEuler(_te);
+          _te.set(A2.el.rotation.x, 0, 0, "XYZ"); _tq2.setFromEuler(_te); _tq.multiply(_tq2).invert();
+          const ax = _tv[3].copy(dir).applyQuaternion(_tq);
+          A2.wr.quaternion.setFromUnitVectors(AX, ax);
+          A2.grip.position.set(G.x, G.y, G.z).applyQuaternion(A2.wr.quaternion);
+          A2.grip.position.y -= f.A.fo;
+        }
+      }
+      f.trMiss = miss;
+      return true;
+    };
     const applyProps = () => {
       for (const id in W.props) {
         const p = W.props[id], s = p.st, o = p.o;
@@ -3157,6 +3225,7 @@
         if (s.fig) {
           const f = W.figs[s.fig];
           if (!f.st.vis) { o.visible = false; continue; }
+          if (/^tru[12]$/.test(id) && trHold(f, p)) { o.visible = true; continue; }   // TRUMPET_HANDS_N11: both hands
           const A2 = s.hand === "L" ? f.L : f.R, gp = A2.grip, side = s.hand === "L" ? 1 : -1, hk = /^(lyre|nevel)/.test(id) ? null : p.hold || "grip";
           if (f.handK && W.hands && hk) { f.handK[s.hand === "L" ? "L" : "R"] = hk; setHands(f); }   // HAND_A2: closed round what it holds (the instruments rest on the hand)
           if (o.parent !== gp) gp.add(o);
