@@ -299,6 +299,7 @@
       const rail = new Mesh(new BoxGeometry(len, 0.11, 0.13), railMat);
       rail.position.set(xa + dx * Lr / 2, (ya + yb) / 2, zr); rail.rotation.z = Math.atan2(ya - yb, Lr) * (dx > 0 ? -1 : 1);
       rampG.add(rail);
+      ctx2.shared.beastRampGeo = { xTop: xa, xFoot: xa + dx * Lr, zIn: zlo, zOut: zlo + RAMP_W, top };   // BIKKURIM_WAY_420: for the firstfruits' way (57-add208.js)
       ctx2.labels.push({ text: "כבש לבהמות — חלק מגרם המדרגות של השער (הגר״ח קניבסקי, כפי שהובא בחלמיש)", x: xa + dx * Lr * 0.45, y: top * 0.55 + 2.5, z: zc + 0.5 * s, size: 1.3, layer: "animalRamps" });
     };
     for (const [gx, s] of [[-78, -1], [-78, 1], [-48, -1], [BECH_X, 1], [WATER_X, 1]]) {   // 1.3.0: the approaches follow the gates (Rambam 5:4, the western part); 1.8.0: Beit HaMoked's own gate to the chel (north, -18) - by the house, below

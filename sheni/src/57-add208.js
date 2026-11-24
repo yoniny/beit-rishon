@@ -3062,7 +3062,11 @@
       // together - the ox on the outer side, a little before him. Until now: by the women's court and Nikanor's gate, and across the foot of the altar's ramp.
       // ezn0 - he appears before the soreg, ezn1 - on the landing, steps1 - in the gate, nik - in the court; from the corner on - the times as before, shifted
 const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.4, walk0: 24.2, corner: 33.5, read0: 33.7 };
-      const mkT = (r) => { const C = T0.corner; return Object.assign({}, T0, r === "rj" ? { wave0: C + 2.4, wave1: C + 7.2, put: C + 9.2, bow0: C + 9.8, bow1: C + 11.2, end: C + 13.6 } : { wave0: C + 4.0, wave1: C + 8.8, put: C + 10.0, bow0: C + 10.6, bow1: C + 12.0, end: C + 14.4 }); };
+      // BIKKURIM_WAY_420: in the Rambam's reading the way to the beasts' ramp is long (from the soreg's opening at the Delek gate east along the
+      // chel to the ramp's foot, and up it, 54 amot): from the ramp on every time is 7 seconds later. (In Tiferet Yisrael's reading - steps
+      // straight up to the gate - as it was)
+      const T0R = (() => { const o = Object.assign({}, T0), sh = SH.chelSteps && SH.chelSteps.mode === "around" ? 0 : 7; for (const k of ["ezn1", "steps1", "nik", "walk0", "corner", "read0"]) o[k] += sh; return o; });
+      const mkT = (r) => { const T0 = T0R(), C = T0.corner; return Object.assign({}, T0, r === "rj" ? { wave0: C + 2.4, wave1: C + 7.2, put: C + 9.2, bow0: C + 9.8, bow1: C + 11.2, end: C + 13.6 } : { wave0: C + 4.0, wave1: C + 8.8, put: C + 10.0, bow0: C + 10.6, bow1: C + 12.0, end: C + 14.4 }); };
       BK.reading = "tk";
       let T = mkT(BK.reading);
       const lerp2 = (a, b, u) => a + (b - a) * u, clamp2 = (v, a, b) => Math.max(a, Math.min(b, v)), sm2 = (u) => u * u * (3 - 2 * u);
@@ -3077,16 +3081,23 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
         const Q = SH.__add208QA; let xb = null;
         if (Q) for (let x = this.gx + 33; x >= this.gx + 18; x -= 0.25) { const y = Q.groundAt(x, 78.6, 21, NaN); if (isFinite(y) && y > 4) { xb = x; break; } }
         this.xb = xb == null ? this.gx + 28 : Math.round((xb + 0.25) * 2) / 2 + 0.0;   // (the deck's last point, to a half amah)
+        // BIKKURIM_WAY_420: the beasts' ramp as 30-courts.js builds it since RAMPS_N4 - straight, against the flight's outer side, its top at the
+        // landing (xTop) and its foot 54 amot west (xFoot); the way in through the soreg's opening at the Delek gate (west of the foot)
+        const RG = SH.beastRampGeo; this.rf = RG ? { xT: RG.xTop, xf: RG.xFoot, zi: RG.zIn } : { xT: this.gx - 6, xf: this.gx - 60, zi: 74 };
+        this.ex = sg && typeof sg.dalk === "number" ? sg.dalk : -78;
         this.found = true; return this; } };
       const SW = () => { const dz = altDzB(), A = (x, z) => [x, z + dz], { gx: g, xb } = BKW.geo();
         return [
           [[[0, RPb.zf + 5], [0, 336]], 0.4, T.gate, "ramp"],
           [[[0, 336], [0, 333.5]], T.gate, T.take, "floor", 0],
-          [[[0, 333.5], [g + 0.8, 98]], T.take + 0.2, T.ezn0, "hide"],
-          [[[g + 0.8, 98], [g + 0.8, 88], [g + 0.8, 83], [g + 1.5, 79.9]], T.ezn0, T.ezn0 + 1.5, "floor", 0],
+          ...(tyt() ? [[[[0, 333.5], [g + 0.8, 98]], T.take + 0.2, T.ezn0, "hide"],
+            [[[g + 0.8, 98], [g + 0.8, 88], [g + 0.8, 83], [g + 1.5, 79.9]], T.ezn0, T.ezn0 + 1.5, "floor", 0]]
+          : (() => { const ex = BKW.geo().ex; return [[[[0, 333.5], [ex - 0.8, 98]], T.take + 0.2, T.ezn0, "hide"],
+            [[[ex - 0.8, 98], [ex - 0.8, 88], [ex - 0.8, 83], [ex - 0.3, 79.9]], T.ezn0, T.ezn0 + 1.5, "floor", 0]]; })()),
           // the ramp - his lane the inner one (z 77.9 on the lower run, 76.3 on the upper), the ox's the outer (79.0, 75.2): 1.1 apart; round the turn (centre xb, z 77.1) at radius 0.8
           tyt() ? [[[g + 1.5, 79.9], [g + 1.3, 77], [g + 1.3, 71.5]], T.ezn0 + 1.5, T.ezn1, "floor", Math.PI]   // STEPS_TYT_420: up the twelve steps
-          : [[[g + 1.5, 79.9], [g + 3.8, 77.9], [g + 8, 77.9], [xb - 3, 77.9], [xb, 77.9], [xb + 0.7, 77.6], [xb + 0.8, 77.1], [xb + 0.7, 76.6], [xb, 76.3], [xb - 10, 76.3], [g + 5, 76.3], [g + 1.8, 75.5], [g + 1.3, 71.5]], T.ezn0 + 1.5, T.ezn1, "floor", Math.PI],
+          : (() => { const { ex, rf } = BKW.geo(), { xT, xf, zi } = rf, zl = zi + 1.2;   // BIKKURIM_WAY_420: east along the chel (z 78.6) to the ramp's foot, round onto it, up it to the landing
+              return [[[ex - 0.3, 79.9], [ex + 1.5, 78.6], [xf - 2.5, 78.6], [xf - 1.2, 78.2], [xf - 0.8, 77.3], [xf - 0.4, zl + 0.6], [xf + 0.6, zl], [xT, zl], [xT + 1.5, zi + 0.6], [g + 1.3, 72.6], [g + 1.3, 71.5]], T.ezn0 + 1.5, T.ezn1, "floor", Math.PI]; })(),
           tyt() ? [[[g + 1.3, 71.5], [g + 1.3, 64], [g + 1.3, 59.2]], T.ezn1, T.nik, "floor", Math.PI]   // and the twenty inside the gate, to the court's floor (z 60)
           : [[[g + 1.3, 71.5], [g + 1.3, 69.5], [g + 1.3, 64]], T.ezn1, T.nik, "floor", Math.PI],
           // the south lane (z 61.5) between the priests' court's south wall and the ulam's south side (its end the Parvah, the washers and the salt - the
@@ -3218,8 +3229,10 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
       // to the rings. t0: the second it appears at the ramp's foot - before the bringer comes to the flight's foot (T.ezn0) so that it is before them on the landing
       const OXC = { t0: 9.2, get pts() {
         if (this._p) return this._p;
-        const { gx: g, xb } = BKW.geo(), xe = Math.max(24, g + 20);
+        const { gx: g, xb } = BKW.geo(), xe = Math.min(46, Math.max(24, g + 20));   // OX_PLACE_420: x 46 at most - from x 49.5 the court's south-eastern chambers stand (the ox stood in the salt chamber since the gate moved to x 30)
         if (tyt()) return (this._p = [[g - 0.6, 98], [g - 0.6, 88], [g - 0.5, 83], [g - 0.3, 78], [g - 0.2, 70], [g, 62], [g + 4, 58.5], [g + 14, 57], [(g + 14 + xe) / 2, 57], [xe, 55.5]]);   // STEPS_TYT_420
+        { const { ex, rf } = BKW.geo(), { xT, xf, zi } = rf, zo = zi + 2.3;   // BIKKURIM_WAY_420: the outer lane, before him
+          return (this._p = [[ex - 1.4, 98], [ex - 1.4, 88], [ex - 1.4, 83], [ex - 0.6, 80.2], [ex + 2, 79.3], [xf - 3, 79.3], [xf - 1.6, 78.8], [xf - 0.9, 78], [xf - 0.2, zo + 0.3], [xf + 1.5, zo], [xT, zo], [xT + 2, zo - 0.7], [g - 1.5, 73.5], [g - 0.2, 70], [g, 66], [g + 4, 59.5], [g + 14, 57], [(g + 14 + xe) / 2, 57], [xe, 55.5]]); }
         return (this._p = [[g - 0.6, 98], [g - 0.6, 88], [g - 0.5, 83], [g + 0.2, 80.6], [g + 3, 79.1], [g + 8, 79], [xb - 10, 79], [xb - 3, 78.9], [xb, 79], [xb + 1.3, 78.4], [xb + 1.9, 77.1], [xb + 1.3, 75.8], [xb, 75.2], [xb - 10, 75.2], [g + 5, 75.2], [g + 1.4, 74.6], [g + 0.4, 73], [g - 0.2, 70], [g, 66], [g + 4, 59.5], [g + 14, 57], [(g + 14 + xe) / 2, 57], [xe, 55.5]]);
       } };
       const oxGround = (x, z) => { const y = fnc2(SH.floorY) ? SH.floorY(x, 20.5, z) : -Infinity; return isFinite(y) ? y : hAt(x, z, 21); };
@@ -3284,7 +3297,7 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
         // STEPS_TYT_420 (the user: "השור עולה איתו?"): in Tiferet Yisrael's reading the way has no ramp and is short - the ox would be in the
         // court long before the bringer. It keeps with him: at the foot of the twelve steps a moment before him, up the steps and through the
         // gate beside him (the time between stretched to his), into the court a little before him
-        if (tyt()) {
+        {   // (BIKKURIM_WAY_420: in both readings - the ramp's way is long too)
           let iA = -1, iB = -1; for (let i = 0; i <= n; i++) { if (iA < 0 && Z[i] < 80) iA = i; if (iB < 0 && Z[i] < 60) iB = i; }
           if (iA > 0 && iB > iA) {
             const d0 = (T.ezn0 + 1.0) - Tm[iA]; for (let i = 0; i <= n; i++) Tm[i] += d0;
@@ -3695,7 +3708,7 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
           // ("יש לו רשות לתתם לעבדו וקרובו בכל הדרך עד שמגיע להר הבית")
           const lag = 0.7 + i * 0.55, tt = t - lag, w = wayNow(Math.min(tt, T.ezn0 - 0.02)) || W[0];
           if (tt >= T.ezn0) {   // over the mount (unseen) they come to the chel's outer side, south of the soreg, and stand there facing north
-            const u = sm2(clamp2((tt - T.ezn0) / 1.4, 0, 1)), sx = BKW.geo().gx - 4.6 - (i % 2) * 1.8, sz = 90 + Math.floor(i / 2) * 2.2, g0 = BKW.geo().gx, x0 = g0 + 0.8 + (i % 2 ? 1 : -1) * 1.1 + (i % 2 ? 0 : -3.0);
+            const u = sm2(clamp2((tt - T.ezn0) / 1.4, 0, 1)), sx = (tyt() ? BKW.geo().gx : BKW.geo().ex) - 4.6 - (i % 2) * 1.8, sz = 90 + Math.floor(i / 2) * 2.2, g0 = tyt() ? BKW.geo().gx : BKW.geo().ex, x0 = g0 + 0.8 + (i % 2 ? 1 : -1) * 1.1 + (i % 2 ? 0 : -3.0);
             F.G.position.set(lerp2(x0, sx, u), 0, lerp2(98 + i * 0.5, sz, u)); F.G.rotation.y = Math.PI; F.G.visible = true; return;
           }
           if (w[3] === "hide") { F.G.visible = false; return; }
@@ -3732,7 +3745,9 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
           // (every x from the gate's: BKW.gx)
           ...(() => { const { gx: g, xb } = BKW.geo(), x0 = g + 1.3, x1 = 38, bx = (f) => x0 + (x1 - x0) * f;
             return [[T.take + 1.0, [g + 90, 70, 200], [g + 1, 0, 95]],
-              [T.ezn0, [g + 26, 14, 122], [g + 1, 3, 92]], [T.ezn0 + 1.5, [g + 36, 14, 104], [g + 8, 5, 79]], [T.ezn0 + 4, [g + 36, 20, 106], [(g + xb) / 2, 6, 78]], [T.ezn0 + 7.5, [xb - 12, 22, 102], [xb - 6, 9, 77]],
+              ...(tyt() ? [[T.ezn0, [g + 26, 14, 122], [g + 1, 3, 92]], [T.ezn0 + 1.5, [g + 20, 14, 100], [g + 1, 4, 78]], [T.ezn0 + 5, [g + 16, 20, 100], [g + 1, 6, 74]]]
+                : (() => { const { ex, rf } = BKW.geo(), { xT, xf } = rf;   // BIKKURIM_WAY_420: the soreg's opening, along the chel, the ramp's foot, up the ramp
+                  return [[T.ezn0, [ex + 12, 14, 112], [ex, 3, 88]], [T.ezn0 + 1.5, [ex + 22, 16, 104], [ex + 6, 3, 80]], [T.ezn0 + 5, [xf - 2, 18, 104], [xf - 8, 3, 79]], [T.ezn0 + 9, [xf + 12, 22, 104], [xf + 4, 4, 77]], [T.ezn0 + 13, [xf + 34, 24, 104], [xf + 30, 9, 76]], [T.ezn1 - 4, [xT + 4, 26, 102], [xT - 4, 13, 75]]]; })()),
               [T.ezn1 - 2, [g + 18, 26, 102], [g + 5, 12, 75]], [T.ezn1, [g + 14, 24, 96], [g + 2, 14, 72]], [T.steps1, [g + 12, 24, 92], [g + 1.3, 15, 68]], [T.nik, [x0 - 25, 46, 106], [x0, 17, 63]],
               [T.nik + 2.6, [bx(0.3) - 8, 46, 104], [bx(0.3), 17, 61]], [T.nik + 5.2, [bx(0.62) - 8, 46, 104], [bx(0.62), 17, 60]], [T.nik + 7.4, [bx(0.9) - 8, 46, 100], [bx(0.9), 17, 58]]]; })(),
           [T.corner - 0.5, [31.5, 21.5, C[1] + 7], [C[0], 17.2, C[1]]],
@@ -3761,7 +3776,7 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
       const startFrom = (off0, end0) => {
         const Wk = SH.walk; if (!Wk) return false;
         if (typeof SH.stopDemos === "function") SH.stopDemos("bikkurimDemo");
-        build(); prime();
+        build(); T = mkT(BK.reading); prime();
         let lg = null; try { lg = ctx2.root.getObjectByName("labels"); } catch (_) {}
         BK.saved = { lg, labels: lg ? lg.visible : true, view: SH.viewLimits ? SH.viewLimits.get() : null };
         if (lg) lg.visible = false;
@@ -3801,7 +3816,7 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
       const wk = () => (SH.demoStops || []).find((q2) => q2.id === "walk");
       (SH.demoStops || (SH.demoStops = [])).push({ id: "bikkurimDemo", running: () => BK.run, stop, pause: () => { const w = wk(); if (w) w.pause(); }, resume: () => { const w = wk(); if (w) w.resume(); }, paused: () => { const w = wk(); return !!(w && w.paused()); }, restart: () => { stop(); start(); } });
       // CHIP_KEEPS_DEMO_T: setReading while it runs - on from the same second, at most from the reading (until now: from the start)
-      SH.bikkurim = { start, stop, at: (t) => { build(); prime(); T = mkT(BK.reading); BG.visible = true; apply(t); }, keys, get reading() { return BK.reading; }, get off() { return BK.run ? BK.off || 0 : 0; }, get _k() { return { D, T, OXW, SW, KH: KF ? kHold() : null, kHoldOf, LIP, wallR }; }, get wave() { return KW.way; }, setWave: (m) => { const was = KW.way, r = setWave(m); if (BK.run && BK.focus && was !== r) focus(BK.focus.part); return r; }, focus,   /* HANDS_K: for the checks */ setReading: (r) => { BK.reading = r === "rj" ? "rj" : "tk"; if (BK.run && BK.focus) { focus(BK.focus.part); } else if (BK.run) { const Wk = SH.walk, now = (Wk && typeof Wk.now === "function" ? Math.max(0, Wk.now()) : 0) + (BK.off || 0); stop(); startFrom(Math.min(now, T.read0)); } return BK.reading; }, get on() { return BK.run; } };
+      SH.bikkurim = { start, stop, at: (t) => { build(); T = mkT(BK.reading); prime(); BG.visible = true; apply(t); }, keys, get reading() { return BK.reading; }, get off() { return BK.run ? BK.off || 0 : 0; }, get _k() { return { D, T, OXW, SW, KH: KF ? kHold() : null, kHoldOf, LIP, wallR }; }, get wave() { return KW.way; }, setWave: (m) => { const was = KW.way, r = setWave(m); if (BK.run && BK.focus && was !== r) focus(BK.focus.part); return r; }, focus,   /* HANDS_K: for the checks */ setReading: (r) => { BK.reading = r === "rj" ? "rj" : "tk"; if (BK.run && BK.focus) { focus(BK.focus.part); } else if (BK.run) { const Wk = SH.walk, now = (Wk && typeof Wk.now === "function" ? Math.max(0, Wk.now()) : 0) + (BK.off || 0); stop(); startFrom(Math.min(now, T.read0)); } return BK.reading; }, get on() { return BK.run; } };
     }
     // ---------- AQUEDUCTS_B2 (fix-b2, 22.11.2026 - the user's decisions 170 and 171 a): THE TWO WATER CHANNELS ----------
     // (1) the channel under the court from the shitin to the Kidron - Middot 3:2 (89:20): "ובקרן מערבית דרומית היו שני נקבים, כמין שני
