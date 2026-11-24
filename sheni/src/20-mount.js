@@ -892,13 +892,127 @@
     // Tosefta, Chagigah 2:4 (200:17): "ובשבתות ובימים טובים נכנסין לבית המדרש שבהר הבית"; the Gemara (Sanhedrin 88b, 125:3450) has
     // "ובשבתות ובימים טובים, יושבין בחיל" (the card brings both). South of the court of Israel, between the ways from the two gates of
     // Chulda; 20 by 14, 11 high. Their places, sizes and forms - model choices, proposed to the user.
-    const plainHouse = (name, X, Z, W, D, HH, text) => {
+    // MIDRASH_FURNISH_N13 (fix-n13, 24.11.2026 - the user's request): THE INSIDE OF THE HOUSE OF STUDY - (a) benches and tables for the pupils,
+    // (b) bookcases, (c) a special place for the head of the yeshiva (a dignified chair on a platform, a reading desk before it, a hanging
+    // behind). The sources speak of the house of study only by name (the Tosefta, Chagigah 2:4), so every piece, measure and place here is
+    // a model choice, marked so in the card and the labels. The roof is open (bare beams) so that the inside is seen. Units: amah; the floor
+    // y0 + 0.22; the door in the north wall (x 40 +-1.5), so the middle aisle is kept clear from the door to the platform.
+    // Every piece is registered in ctx.shared.harMidrashItems (name, box) - the test of no piece entering another and none blocking the way.
+    const midrashFurnish = (SY, X, Z, W, D, HH, y0, items) => {
+      const FL = y0 + 0.22;
+      const tmp = new Group();
+      const wd = M2.cedar, wd2 = new MeshStandardMaterial({ color: 0x6a4a2c, roughness: 0.8 }), cloth = new MeshStandardMaterial({ color: 0x7a2a22, roughness: 0.92 });
+      const brass = new MeshStandardMaterial({ color: 0xb8923a, roughness: 0.4, metalness: 0.5 }), paper = new MeshStandardMaterial({ color: 0xeee6cf, roughness: 0.8 });
+      const reg = (name, cx, cz, sx, sz, yb, yt) => items.push({ name, x0: X + cx - sx / 2, x1: X + cx + sx / 2, z0: Z + cz - sz / 2, z1: Z + cz + sz / 2, y0: yb, y1: yt });
+      const bx = (w, h, d, mat, x, y, z) => H2.box(tmp, w, h, d, mat, X + x, y, Z + z);   // x, z from the house's middle; y absolute
+      const cyl = (r0, r1, h, mat, x, y, z, seg = 10) => { const m = new Mesh(new CylinderGeometry(r0, r1, h, seg), mat); m.position.set(X + x, y + h / 2, Z + z); tmp.add(m); return m; };
+      // (a) the pupils' rows: two columns, three rows each - a bench (north of its table) and a long table, the pupils facing south, to the head
+      const ROWS = [-3.6, -0.9, 1.8], TL = 5.6;
+      for (const sx of [-1, 1]) for (const zc of ROWS) {
+        const cx = sx * 4.7, bz = zc - 1.0, tz = zc + 0.2;
+        bx(TL, 0.12, 0.7, wd, cx, FL + 0.78, bz);                                            // the bench's seat
+        for (const e of [-1, 1]) bx(0.12, 0.78, 0.6, wd2, cx + e * (TL / 2 - 0.35), FL, bz);   // its two end boards
+        bx(TL, 0.1, 0.06, wd2, cx, FL + 0.5, bz + 0.32);                                      // the rail under the seat
+        reg("bench", cx, bz, TL, 0.7, FL, FL + 0.9);
+        bx(TL, 0.12, 1.3, wd, cx, FL + 1.38, tz);                                            // the table's top
+        for (const e of [-1, 1]) bx(0.14, 1.38, 1.1, wd2, cx + e * (TL / 2 - 0.35), FL, tz);   // its end boards
+        bx(TL - 0.7, 0.12, 0.08, wd2, cx, FL + 1.0, tz);                                     // the stretcher between them
+        // the pupils' books on the table: open volumes (paper and two covers) at three places along it
+        for (let k = -1; k <= 1; k++) {
+          const px = cx + k * 1.7, pz = tz - 0.1;
+          bx(0.95, 0.07, 0.65, wd2, px, FL + 1.5, pz); bx(0.88, 0.06, 0.58, paper, px, FL + 1.57, pz);
+        }
+        reg("table", cx, tz, TL, 1.3, FL, FL + 1.5 + 0.14);
+      }
+      // (c) the head of the yeshiva's place, in the south wall's middle, facing the door: a platform (x +-3.6, z 3.4..6.4, 0.6 high) with a
+      // step before it, a rug on it, the chair, the reading desk before the chair, two bronze lamp stands at its sides, a hanging on the wall
+      const PT = FL + 0.6;
+      bx(7.2, 0.6, 3.0, M2.stoneSmooth, 0, FL, 4.9); reg("platform", 0, 4.9, 7.2, 3.0, FL, PT);
+      bx(5.4, 0.3, 0.45, M2.stoneSmooth, 0, FL, 3.2); reg("step", 0, 3.2, 5.4, 0.45, FL, FL + 0.3);
+      bx(4.6, 0.03, 2.4, cloth, 0, PT, 4.9);                                                   // the rug on the platform
+      const CZ = 5.45;
+      bx(1.7, 0.14, 1.4, wd2, 0, PT + 0.95, CZ);                                              // the seat
+      bx(1.5, 0.16, 1.2, cloth, 0, PT + 1.09, CZ - 0.02);                                    // the cushion
+      for (const ex of [-1, 1]) for (const ez of [-1, 1]) bx(0.16, 0.95, 0.16, wd2, ex * 0.75, PT, CZ + ez * 0.58);   // the four legs
+      bx(1.7, 2.7, 0.14, wd2, 0, PT + 1.09, CZ + 0.68);                                       // the high back
+      bx(1.3, 0.9, 0.04, cloth, 0, PT + 1.9, CZ + 0.59);                                      // its padded panel
+      for (const ex of [-1, 1]) {
+        bx(0.14, 0.12, 1.3, wd2, ex * 0.86, PT + 1.75, CZ - 0.02);                            // the arms
+        bx(0.14, 0.66, 0.14, wd2, ex * 0.86, PT + 1.09, CZ - 0.58);                           // and their front posts
+        bx(0.2, 0.34, 0.2, brass, ex * 0.84, PT + 3.79, CZ + 0.68);                           // the gilt knobs on the back's top
+      }
+      reg("chair", 0, CZ + 0.05, 1.9, 1.5, PT, PT + 4.13);
+      const DZ = 4.1;
+      bx(2.4, 0.12, 0.9, wd, 0, PT + 1.4, DZ);                                                 // the reading desk's top
+      for (const ex of [-1, 1]) bx(0.14, 1.4, 0.8, wd2, ex * 1.05, PT, DZ);
+      bx(0.95, 0.07, 0.65, wd2, 0, PT + 1.52, DZ); bx(0.88, 0.06, 0.58, paper, 0, PT + 1.59, DZ);
+      reg("desk", 0, DZ, 2.4, 0.9, PT, PT + 1.65);
+      for (const ex of [-1, 1]) {                                                              // the lamp stands
+        cyl(0.28, 0.34, 0.12, brass, ex * 3.1, PT, 4.2); cyl(0.07, 0.07, 3.4, brass, ex * 3.1, PT + 0.12, 4.2); cyl(0.3, 0.12, 0.28, brass, ex * 3.1, PT + 3.5, 4.2);
+        reg("lamp", ex * 3.1, 4.2, 0.7, 0.7, PT, PT + 3.78);
+      }
+      bx(4.6, 4.4, 0.06, cloth, 0, FL + 1.2, 6.33);                                           // the hanging behind the chair
+      bx(4.9, 0.14, 0.12, brass, 0, FL + 5.6, 6.3); bx(4.6, 0.12, 0.08, brass, 0, FL + 1.1, 6.32);
+      reg("hanging", 0, 6.33, 4.9, 0.14, FL + 1.1, FL + 5.74);
+      // (b) the bookcases: along the east and west walls (4 each, 2.2 long) and the south wall's two sides (2 each, 1.9 long), 4.3 high, five shelves
+      const CASES = [];
+      for (const sx of [-1, 1]) for (const zc of [-4.6, -2.2, 0.2, 2.6]) CASES.push({ ax: "z", cx: sx * 8.9, cz: zc, L: 2.2, sx });
+      for (const sx of [-1, 1]) for (const xc of [5.15, 7.2]) CASES.push({ ax: "x", cx: sx * xc, cz: 5.95, L: 1.9, sx });
+      const CD = 0.9, CHT = 4.46, SH = 0.86;
+      const books = [];   // [x, y, z, sx, sy, sz, colour]
+      let seed = 7;
+      const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+      const COLS = [0x5a2a1c, 0x3a2a1a, 0x2a3a5a, 0x4a1c24, 0x1f3a2a, 0x8a6a3a, 0x2a2a2a, 0x6a4a2c, 0x7a3a2a, 0x4a3a6a];
+      for (const c of CASES) {
+        const z = c.ax === "z", aw = z ? CD : c.L, ad = z ? c.L : CD;   // the case's size along x and along z
+        const into = z ? -c.sx : -1;                                      // the direction from the wall into the room, along its depth axis (x for the side walls, z for the south wall)
+        // the shell: the back against the wall, two sides, the top and the bottom, the four shelves between
+        const back = z ? [0.1, CHT, c.L, c.cx - into * (CD / 2 - 0.05), c.cz] : [c.L, CHT, 0.1, c.cx, c.cz + (CD / 2 - 0.05)];
+        bx(back[0], back[1], back[2], wd2, back[3], FL, back[4]);
+        for (const e of [-1, 1]) {
+          if (z) bx(CD, CHT, 0.1, wd2, c.cx, FL, c.cz + e * (c.L / 2 - 0.05)); else bx(0.1, CHT, CD, wd2, c.cx + e * (c.L / 2 - 0.05), FL, c.cz);
+        }
+        for (let k = 0; k <= 5; k++) {
+          const yy = FL + (k === 0 ? 0 : k === 5 ? CHT - 0.12 : 0.1 + k * SH - 0.06);
+          bx(aw, 0.12, ad, wd, c.cx, yy, c.cz);
+        }
+        reg("bookcase", c.cx, c.cz, aw, ad, FL, FL + CHT);
+        // the books: five rows, each filled along the case with volumes of varied width and height, their spines to the room
+        for (let k = 0; k < 5; k++) {
+          const by = FL + (k === 0 ? 0.12 : 0.1 + k * SH + 0.06);
+          let u = -c.L / 2 + 0.16;
+          while (u < c.L / 2 - 0.3) {
+            const w = 0.16 + rnd() * 0.14, h = 0.5 + rnd() * 0.22, d = 0.5 + rnd() * 0.08;
+            if (u + w > c.L / 2 - 0.12) break;
+            const col = COLS[Math.floor(rnd() * COLS.length)];
+            if (z) books.push([c.cx - into * (CD / 2 - 0.12 - d / 2), by, c.cz + u + w / 2, d, h, w, col]);
+            else books.push([c.cx + u + w / 2, by, c.cz + (CD / 2 - 0.12 - d / 2), w, h, d, col]);
+            u += w + 0.015 + (rnd() < 0.08 ? 0.25 : 0);
+          }
+        }
+      }
+      // merged by material: the furniture; the books: one InstancedMesh with a colour for each
+      tmp.updateMatrixWorld(true);
+      const byMat = new Map();
+      tmp.traverse((o) => { if (o.isMesh) { if (!byMat.has(o.material)) byMat.set(o.material, []); byMat.get(o.material).push(o.geometry.clone().applyMatrix4(o.matrixWorld)); } });
+      for (const [mat, list] of byMat) { const m = new Mesh(mergeGeometries(list), mat); m.castShadow = m.receiveShadow = true; m.userData.noPick = true; SY.add(m); }
+      const bm = new InstancedMesh(new BoxGeometry(1, 1, 1), new MeshStandardMaterial({ color: 0xffffff, roughness: 0.75 }), books.length);
+      const M4 = new Matrix4(), cc = new Color();
+      books.forEach((b, i) => { M4.makeScale(b[3], b[4], b[5]); M4.setPosition(X + b[0], b[1] + b[4] / 2, Z + b[2]); bm.setMatrixAt(i, M4); bm.setColorAt(i, cc.setHex(b[6])); });
+      bm.instanceMatrix.needsUpdate = true; if (bm.instanceColor) bm.instanceColor.needsUpdate = true;
+      bm.castShadow = bm.receiveShadow = true; bm.userData.noPick = true; SY.add(bm);
+    };
+    const plainHouse = (name, X, Z, W, D, HH, text, furnish) => {
       const SY = new Group(); SY.name = name; g.add(SY); ctx2.layers[name] = SY;
       H2.wall(SY, { axis: "x", length: W, height: HH, thickness: 1.2, mat: M2.stoneLight, cx: X, cz: Z - D / 2, y: 0, openings: [{ center: 0, width: 3, height: 6 }] });
       H2.wall(SY, { axis: "x", length: W, height: HH, thickness: 1.2, mat: M2.stoneLight, cx: X, cz: Z + D / 2, y: 0, openings: [] });
       H2.wall(SY, { axis: "z", length: D - 1.2, height: HH, thickness: 1.2, mat: M2.stoneLight, cx: X - W / 2 + 0.6, cz: Z, y: 0, openings: [] });
       H2.wall(SY, { axis: "z", length: D - 1.2, height: HH, thickness: 1.2, mat: M2.stoneLight, cx: X + W / 2 - 0.6, cz: Z, y: 0, openings: [] });
-      H2.box(SY, W + 1.2, 0.8, D + 1.2, M2.stone, X, HH, Z);                                   // the roof
+      if (!furnish) H2.box(SY, W + 1.2, 0.8, D + 1.2, M2.stone, X, HH, Z);                      // the roof
+      else {   // the house of study: an open roof - bare beams across, so that the inside is seen (a model choice)
+        for (let i = 0; i < 6; i++) H2.box(SY, 0.5, 0.5, D + 1.2, M2.cedar, X - W / 2 + 0.3 + i * ((W - 0.6) / 5), HH, Z);
+        for (const sd of [-1, 1]) H2.box(SY, W + 1.2, 0.5, 0.6, M2.stone, X, HH, Z + sd * (D / 2 + 0.3));
+      }
       H2.box(SY, W, 0.2, D, M2.paveFine, X, 0.02, Z);                                          // the floor
       const dark = new MeshBasicMaterial({ color: 0x1d1610 });
       const nw = Math.floor((W - 6) / 3);
@@ -907,9 +1021,16 @@
       }
       H2.box(SY, 4.4, 0.6, 2, M2.stoneSmooth, X, 0, Z - D / 2 - 1.6);                          // a step before the door
       ctx2.labels.push({ text, x: X, y: HH + 4, z: Z, size: 2.2, layer: name });
+      if (furnish) {
+        const items = ctx2.shared.harMidrashItems = [];
+        midrashFurnish(SY, X, Z, W, D, HH, 0, items);
+        ctx2.labels.push({ text: "ראש הישיבה — כסא מכובד על במה (בחירת מודל)", x: X, y: 9.2, z: Z + 4.9, size: 1.2, layer: name });
+        ctx2.labels.push({ text: "ספסלים ושולחנות לתלמידים (בחירת מודל)", x: X - 4.7, y: 5.2, z: Z - 0.9, size: 1.2, layer: name });
+        ctx2.labels.push({ text: "ארונות ספרים (בחירת מודל)", x: X + 8.9, y: 7, z: Z - 1, size: 1.2, layer: name });
+      }
     };
     plainHouse("harSynagogue", 161, 112, 24, 16, 13, "בית הכנסת שבהר הבית — ״היה סמוך לעזרה בהר הבית״ (רש״י יומא סח:)");
-    plainHouse("harMidrash", 40, 112, 20, 14, 11, "בית המדרש שבהר הבית (תוספתא חגיגה ב, ד)");
+    plainHouse("harMidrash", 40, 112, 20, 14, 11, "בית המדרש שבהר הבית (תוספתא חגיגה ב, ד)", true);
     ctx2.labels.push({ text: "שלוש עשרה פרצות כנגד שלשה עשר שערים — הראבי״ה (תוספות יום טוב מידות ב, ג)", x: -48, y: 4.5, z: sz2 + 1, size: 2.2, layer: "soregBreach" });   // BREACH13_D: by the south breaches (was x 70)
     ctx2.layers = ctx2.layers || {};
     ctx2.layers.soregBreach = breachG;
