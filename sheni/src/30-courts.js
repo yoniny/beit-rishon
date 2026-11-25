@@ -1764,7 +1764,10 @@
           leaf.castShadow = leaf.receiveShadow = true;
           g.add(leaf); ctx2.lishkotCut.push(leaf); if (opts && opts.frontCut) opts.frontCut.push(leaf);   // LEAF_CUT_420: the user (24.11.2026, the views from above): the leaf ajar covered the room
         } else {
-          H2.box(g, nx ? T : along, h, nx ? along : T, M2.stoneLight, wx, y0, wz);
+          const sw = H2.box(g, nx ? T : along, h, nx ? along : T, M2.stoneLight, wx, y0, wz);
+          // MADICHIN_CUT_441 (the user's decision 1ב, 26.11.2026: the eye stays where it was, and the wall before it is cut): opts.cutWalls -
+          // more walls (by their outer normal) that the card's front cut takes away with the door's wall
+          if (opts && opts.frontCut && opts.cutWalls && opts.cutWalls.some(([ax, az]) => ax === nx && az === nz)) opts.frontCut.push(sw);
         }
       };
       sideWall(1, 0); sideWall(-1, 0); sideWall(0, 1); sideWall(0, -1);
@@ -3625,7 +3628,7 @@
       let on = false;
       (Array.isArray(ctx2.shared.modelButtons) ? ctx2.shared.modelButtons : (ctx2.shared.modelButtons = [])).push({
         id: "crt-south-front", label: "פתח את חזית הלשכות", labelOn: "סגור את חזית הלשכות", removal: true, maxDist: 200,
-        title: "מסיר את הכתלים הצפוניים של לשכת המלח ושל לשכת הפרוה, שמצד העזרה, ואת האכסדראות, כדי לראות את כל הלשכה. כלי צפייה בלבד; נסגר מעצמו.",
+        title: "מסיר את הכתלים הצפוניים של לשכת המלח, של לשכת הפרוה ושל לשכת המדיחין, שמצד העזרה (ובמדיחין גם את הכותל המזרחי, שמצד המסיבה), ואת האכסדראות, כדי לראות את כל הלשכה. כלי צפייה בלבד; נסגר מעצמו.",
         anchor: () => null,
         get: () => on,
         set: (v) => {   // (the user: "שלא יהיה מוסתר באכסדראות וכד' מבט נקי כמו בכל לשכה" - the exedras, before the rooms' fronts, go too, and come back as they were)
@@ -3694,8 +3697,8 @@
     // CHAMBERS_EAST_N2: the Parvah (x 77..91, z 45..55; floor 13.5, roof as before - 30; door north, onto the alley) and the Madichin (x 77..91,
     // z 29.4..39.4; roof 29.5 as before; the door to the mesibah in its south wall, near the east end - the pit and the tables are clear of it).
     // Until now both stood on the priests' court's floor (16), opposite the altar and the ramp - the Parvah x 47..61 and the Madichin x 27..41.
-    room(79.75, 60, 5.5, 10, 14, LV.KOH, [{ dx: 0, dz: -1 }], "לשכת הפרוה", 0, F_PARVAH, { T: 0.8, doorW: 2.4, frontCut: SOUTH_FRONT });   // SOUTH_SMALL_430: x 77..82.5 (until now 67.5..79.5); SOUTH_ROW_N4: the door north, to the priests' court
-    room(74.5, 60, 5, 10, 13.5, LV.KOH, [{ dx: 0, dz: -1, off: -0.45 }], "לשכת המדיחין", 0, F_MADICHIN, { floorHole: MPIT, T: 0.8, doorW: 2.4 });   // SOUTH_SMALL_430: x 72..77, its door north to the mesibah (until now x 49.5..61.5, the door east)   // ... its door east, to the mesibah
+    room(79.75, 60, 5.5, 10, 14, LV.KOH, [{ dx: 0, dz: -1 }], "לשכת הפרוה", 0, F_PARVAH, { T: 0.8, doorW: 2.4, frontCut: SOUTH_FRONT, cutWalls: [[-1, 0]] });   // MADICHIN_CUT_441: its west wall too (against the Madichin, under the mesibah)   // SOUTH_SMALL_430: x 77..82.5 (until now 67.5..79.5); SOUTH_ROW_N4: the door north, to the priests' court
+    room(74.5, 60, 5, 10, 13.5, LV.KOH, [{ dx: 0, dz: -1, off: -0.45 }], "לשכת המדיחין", 0, F_MADICHIN, { floorHole: MPIT, T: 0.8, doorW: 2.4, frontCut: SOUTH_FRONT, cutWalls: [[1, 0]] });   // SOUTH_SMALL_430: x 72..77, its door north to the mesibah (until now x 49.5..61.5, the door east)   // ... its door east, to the mesibah
     // the mesibah from לשכת המדיחין up to the roof of בית הפרוה (Middot 5:3 "ומשם מסבה עולה לגג בית הפרוה"). 1.8.0: as the Bartenura - "בנין
     // אבנים מעלות מגלגלות וסובבות לעלות לגג בית הפרוה" - a winding stair of stone in the gap between the two rooms (x 41..47), up to the
     // Parvah's roof (28.2); until 1.7.1 a straight flight along the rooms' face, which crossed the ramp's foot. Its radius - model choice.

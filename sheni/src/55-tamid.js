@@ -3158,7 +3158,7 @@
       for (const [A2, side, k] of [[f.R, -1, "R"], [f.L, 1, "L"]]) {
         const m = A2.wr && A2.wr.userData.hand;
         if (!m) continue;
-        const kind = f.levite && side > 0 ? "rest" : f.handK[k], geo = W.hands[kind] && (far ? W.handMid(kind, side) : W.hands[kind][side]);
+        const kind = f.levite && side > 0 && f.handK[k] !== "grip" ? "rest" : f.handK[k],   /* TORCH_GRIP_441: a Levite's left hand closes round what it holds (the officer's torch hung by his open hand) */ geo = W.hands[kind] && (far ? W.handMid(kind, side) : W.hands[kind][side]);
         if (geo && m.geometry !== geo) m.geometry = geo;
       }
     };
@@ -3319,7 +3319,12 @@
             gp.updateWorldMatrix(true, false);
             _taP.copy(o.position).applyMatrix4(gp.matrixWorld);
             _taD.subVectors(_taT, _taP);
-            if (_taD.lengthSq() > 1e-6) { _taD.normalize(); QB.setFromUnitVectors(_taUp, _taD); gp.getWorldQuaternion(QA); o.quaternion.copy(QA.invert()).multiply(QB); }
+            if (_taD.lengthSq() > 1e-6) {
+              _taD.normalize(); QB.setFromUnitVectors(_taUp, _taD); gp.getWorldQuaternion(QA); o.quaternion.copy(QA.invert()).multiply(QB);
+              // TORCH_GRIP_441 (the user 26.11.2026, of the torch at the hem: it floated by the open hand, the hand did not hold it): the stick
+              // turns about the hand, not about its own fixed spot in the grip - its lower part (0.13 above the butt, the stick -0.15..0.55) stays in the closed hand
+              o.position.set(0, -0.02, 0).applyQuaternion(o.quaternion).negate();
+            }
           }
           if (p.upright) {   // vessels stay upright whatever the arm does
             gp.getWorldQuaternion(QA);
