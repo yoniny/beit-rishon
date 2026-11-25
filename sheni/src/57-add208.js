@@ -2816,6 +2816,7 @@
           const p = hit(o, d, 30);
           const MF = SH.mesibahFoot;   // SOUTH_SMALL_430: no overhang and no columns where the mesibah stands before the chambers' fronts - it rises through that height
           if (MF && S.run === "x" && S.d > 0 && a >= MF.x0 - 0.5 && a <= MF.x1 + 0.5 && p && p.z >= MF.z0) { F.push(null); continue; }
+          if (p && (S.run === "x" ? Math.abs(p.z) > 65.2 : Math.abs(p.x) > 91.6)) { F.push(null); continue; }   // SOUTH_SMALL_430: a ray that went out through an opening (a gate, its curtain at 70.7) - no face there, the gate stays open (it made a stub of the overhang inside the gate)
           F.push(p ? (S.run === "x" ? p.z : p.x) : null);
         }
         // a door's narrow gap (the ray went into a chamber) takes the face on both its sides
@@ -2894,7 +2895,7 @@
       for (let x = 30 + RW / 2; x <= 75.5; x += RW + GAP) {   // BENCH_DUCHAN_420 (the user 24.11.2026: "לא יתכן שבקריאת החזו״א יהיו אצטבאות על הדוכן"): to x 75.5 - the Chazon Ish's chamber of the duchan opens at 76.5 (80 until now)
         const cut = [];
         if (x > 38.6 && x < 72.4) cut.push([-20.4, 12.6]);   // the altar's base (and its yesod)
-        if (x > 45.6 && x < 65.4) cut.push([12.4, 43.6]);    // the ramp and its little ramps
+        if (x > 45.6 && x < 65.4) cut.push([12.4, Z1]);     // the ramp and its little ramps - SOUTH_SMALL_430 (the user 25.11.2026: "אין מקום לרדת מהכבש"): and south of its foot nothing - the way down from it to the south wall is free (until now short rows, 43.6..45.5, stood a step from its foot)
         if (x > 38.5 && x < 45.6) cut.push([12.4, 20.5]);    // the shitin's corner and the tables west of the ramp
         if (x > 33 && x < 38.6) cut.push([5.5, 21]);       // BENCH_CORNER_420 (the user 24.11.2026: "כהן באוויר - הנפה בשתי הקריאות" - the bikkurim's priest and bringer stood half on a row at the south-west corner): the corner's ground free, where the first fruits are waved and set down
         cut.sort((a, b) => a[0] - b[0]);
@@ -3147,8 +3148,8 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
           // BACK_FORTH_430 (the user 25.11.2026: "המביא, בתחילת הגעתו לעזרה עושה הלוך וחזור כמה פעמים"): since the Bechorot gate moved east (x 30)
           // the lane's points (made for the gate at x -48: east 8 amot from the gate, then to x 30) took him east to 39.3, back west to 30 and
           // east again - now straight on from the gate toward the corner
-          [(tyt() ? [[g + 1.3, 59.2], [38, 57.5]] : g + 9.3 < 30 ? [[g + 1.3, 64], [g + 9.3, 61.5], [30, 61.5], [38, 57.5]] : g + 3.3 < 38 ? [[g + 1.3, 64], [g + 3.3, 61.6], [38, 57.5]] : [[g + 1.3, 64], [g + 0.8, 60.6], [38, 57.5]])   /* SOUTH_SMALL_430: the gate east of x 38 - straight west, south of the ramp's foot */.concat([[38, 52], A(38, 16.2), A(38.3, 15.0 + WZ)]), T.nik, T.corner, "floor", 2.62],
-          [[A(38.3, 15.0 + WZ), A(37.8, 17), A(38, 39.5), [38, 57.5], [34, 61.5]], T.bow1 + 0.2, T.end, "floor"]
+          [(tyt() ? [[g + 1.3, 59.2]].concat(g > 40 ? [[39.4, 58.6], [38.3, 58.4], [38.3, 57.5]] : [[38, 57.5]]) : g + 9.3 < 30 ? [[g + 1.3, 64], [g + 9.3, 61.5], [30, 61.5], [38, 57.5]] : g + 3.3 < 38 ? [[g + 1.3, 64], [g + 3.3, 61.6], [38, 57.5]] : [[g + 1.3, 64], [g + 0.8, 60.6], [39.4, 58.6], [38.3, 58.4], [38.3, 57.5]])   /* SOUTH_SMALL_430: the gate east of x 38 - straight west, south of the ramp's foot and of the benches' ends (z 58), then into the gap between two rows (x 37.95..38.7) */.concat([[38.3, 52], A(38.3, 16.2), A(38.3, 15.0 + WZ)]), T.nik, T.corner,   /* SOUTH_SMALL_430: x 38.3 - the middle of the gap between the rows (37.95..38.7); at 38 his shoulder was in the row */ "floor", 2.62],
+          [[A(38.3, 15.0 + WZ), A(38.3, 17), A(38.3, 39.5)].concat(g > 40 ? [[38.3, 57.5], [38.6, 58.6], [42, 60.4]] : [[38, 57.5], [34, 61.5]]), T.bow1 + 0.2, T.end, "floor"]   // SOUTH_SMALL_430: out of the rows, toward his gate (east of x 38)
         ]; };
       const hCache = new Map();
       // STEPS_TYT_420 (the user: "את הדגמת הביכורים בשיטת התפאי - שיעלו על המדרגות, מה הבעיה?"): in Tiferet Yisrael's reading of the chel's twelve
@@ -3401,11 +3402,13 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
         // upright: on a slope the hips stand higher over the floor by 1/cos - so the body comes down by that, and by half the step's rise and
         // a little for the steps' noses, so the hind hoof reaches back down the slope); each hoof's place under its hip
         const gF = Pr.gS(S2.s + 1.0), gH = Pr.gS(S2.s - 1.15), th = Math.atan2(gF - gH, 2.15), cT = Math.cos(th), sT = Math.sin(th), A0 = tb.STRd[Math.min(tb.STRd.length - 1, Math.max(0, Math.floor(t * 120)))] || 0;
-        const sl3 = (d2) => Math.atan(Math.abs(Pr.gS(S2.s + d2 + 0.3) - Pr.gS(S2.s + d2 - 0.3)) / 0.6), thd = Math.max(Math.abs(th), sl3(-1.15), sl3(1.0)), cD = Math.cos(thd), sD = Math.sin(thd);
+        const sl3 = (d2) => Math.atan(Math.abs(Pr.gS(S2.s + d2 + 0.3) - Pr.gS(S2.s + d2 - 0.3)) / 0.6), thd = Math.max(Math.abs(th), Math.min(0.75, Math.max(sl3(-1.15), sl3(1.0)))), cD = Math.cos(thd), sD = Math.sin(thd);
+        // SOUTH_SMALL_430: a step's face (the court gates' steps, an amah high) read as a slope of 59 degrees and sank the body by an amah and more - its rump
+        // and its tail under the floor at the Bechorot gate's threshold; no more than a stair's 43 here
         let yC = (gF * 1.15 + gH * 1.0) / 2.15 - 1.8 * (1 / cD - 1) - 0.5 * A0 * sD / cD - 0.25 * sD / 0.7071;
         yC += (1 - k) * 0.075;   // (standing, its legs almost straight)
         // but never so low that its belly, chest or rump comes within a tenth of an amah of the floor under it (the steps' foot and top)
-        for (const [by, bz] of [[1.25, -0.8], [1.2, 0], [1.18, 0.8], [1.3, 1.3], [1.95, -1.75], [1.6, -1.5]]) {
+        for (const [by, bz] of [[1.25, -0.8], [1.2, 0], [1.18, 0.8], [1.3, 1.3], [1.95, -1.75], [1.6, -1.5], [1.2, -1.95], [0.95, -2.0]]) {   // SOUTH_SMALL_430: and the thighs' backs and the tail's end - pitched up a step (the gates' steps) they went under the floor
           const yy = yC + by * cT + bz * sT, aa = S2.s + bz * cT - by * sT; let fl2 = -1e9; for (let q = -0.2; q <= 0.2; q += 0.1) fl2 = Math.max(fl2, Pr.hAtS(aa + q));
           if (yy < fl2 + 0.1) yC += fl2 + 0.1 - yy;
         }
