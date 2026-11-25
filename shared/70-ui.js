@@ -1330,6 +1330,21 @@ body.tm-measuring canvas{cursor:crosshair}
           bts.push({ key, el: b });
         }
         box.appendChild(bb);
+        // SIDES_430 (the user 25.11.2026, of the parochot's figures: "איך רואים את הצד השני?" - "להוסיף"): a row's own actions beside its
+        // readings, row.extra = [[label, tip, fn]] - a button under the readings, and a chip after them on the card
+        if (Array.isArray(row.extra) && row.extra.length) {
+          const xb = document.createElement("div");
+          xb.className = "bb one";
+          for (const [lab, tip, fn] of row.extra) {
+            const b = document.createElement("button");
+            b.type = "button";
+            b.textContent = lab;
+            if (tip) b.title = tip;
+            b.addEventListener("click", () => { try { fn(); } catch (_) {} hidePanelOnPhone(); });
+            xb.appendChild(b);
+          }
+          box.appendChild(xb);
+        }
         //@@slot opRow-2
         mark(row.current);
         return { mark };
@@ -1569,6 +1584,16 @@ body.tm-measuring canvas{cursor:crosshair}
               pickFromCard(row, key, typeof keep === "function" ? !!keep() : !!keep);   // CHIP_KEEPS_DEMO_T
               if (onPicked) onPicked(row, key);
             });
+            g.appendChild(a);
+          }
+          for (const [lab, tip, fn] of Array.isArray(row.extra) ? row.extra : []) {   // SIDES_430
+            const a = document.createElement("a");
+            a.href = "#";
+            a.setAttribute("role", "button");
+            a.className = keep ? "tm-dk" : "";
+            a.textContent = lab;
+            if (tip) a.title = tip;
+            a.addEventListener("click", (ev) => { ev.preventDefault(); ev.stopPropagation(); try { fn(); } catch (_) {} });
             g.appendChild(a);
           }
           host.appendChild(g);

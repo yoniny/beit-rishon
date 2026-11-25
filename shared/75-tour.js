@@ -1493,7 +1493,10 @@ body.tm-measuring #tm-tour-box{bottom:96px}
         setBtn();
         idx = -1;
         //@@slot start-3
-        go(0, 1);   // (closes the label's card: tour-2)
+        // KIDD_DEMO_430: a run of some slides only, from its start (opts.onlyIds - the slides' ids): they play and it holds at the last
+        let first = 0;
+        if (opts && Array.isArray(opts.onlyIds)) { const ix = []; slides.forEach((x, i) => { if (x && opts.onlyIds.indexOf(x.id) >= 0) ix.push(i); }); if (ix.length) { onlyIx = ix; first = ix[0]; } }
+        go(first, 1);   // (closes the label's card: tour-2)
         return true;
       };
       // 1.0.1-K review (tour-3): the hidden banner keeps no focus (a focused speed <select> would go on taking the arrow keys)

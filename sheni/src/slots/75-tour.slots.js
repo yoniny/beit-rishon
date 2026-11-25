@@ -358,7 +358,7 @@
         if (!on) return;
         const cur = call(T.readings) || {};
         elOpts.textContent = "";
-        for (const g of TAMID_OPTS) {
+        for (const g of TAMID_OPTS.filter((q) => !ctx.shared.__kiddOnly || q.k === "kidd")) {   // KIDD_DEMO_430: in the kiddush's own run - its readings only
           const w = mk("span", "og", null, elOpts);
           tip(mk("b", null, g.lab + ":", w), g.tip);
           g.o.forEach(([v, lab], j) => {
@@ -450,12 +450,14 @@
 //@@end start-2
 //@@begin start-3
         if (mode.key === "tamid" && ctx.shared.tamid) call(ctx.shared.tamid.begin);   // 2.0 (55-tamid.js): the night, the figures
+        if (!(opts && opts.onlyIds)) ctx.shared.__kiddOnly = false;   // KIDD_DEMO_430: the kiddush's own run only (70-ui.slots.js)
 //@@end start-3
 //@@begin showEnd
         elPart.textContent = mode.key === "tamid" ? "סדר עבודת הבוקר" : mode.key === "verses" ? "לפי סדר הפסוקים" : "לפי הנושאים";
 //@@end showEnd
 //@@begin finish
         if (mode && mode.key === "tamid" && ctx.shared.tamid) call(ctx.shared.tamid.end);   // 2.0 (55-tamid.js): the day and the model back
+        ctx.shared.__kiddOnly = false;   // KIDD_DEMO_430
 //@@end finish
 //@@begin plan.list
         const list = M.key === "tamid" ? tamidSlides() : M.key === "verses" ? verseSlides() : topicSlides();

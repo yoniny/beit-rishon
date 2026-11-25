@@ -3084,7 +3084,19 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
       // BIKKURIM_WAY_420: in the Rambam's reading the way to the beasts' ramp is long (from the soreg's opening at the Delek gate east along the
       // chel to the ramp's foot, and up it, 54 amot): from the ramp on every time is 7 seconds later. (In Tiferet Yisrael's reading - steps
       // straight up to the gate - as it was)
-      const T0R = (() => { const o = Object.assign({}, T0), sh = SH.chelSteps && SH.chelSteps.mode === "around" ? 0 : 7; for (const k of ["ezn1", "steps1", "nik", "walk0", "corner", "read0"]) o[k] += sh; return o; });
+      // MOUNT_SEEN_430 (the user 25.11.2026: "השור נעלם אחרי הכבש וחוזר פתאום"): the way across the mount is walked in sight - from the gate of
+      // Chulda north through the royal stoa between its columns (the way of the Shiloach's procession), out onto the mount, and over it to the
+      // soreg's opening (in the Rambam's reading at the Delek gate; in Tiferet Yisrael's - before the Bechorot gate, west of the house of
+      // study); until now they were hidden at the gate and seen again at the soreg 1.8 seconds later. At 26 amot a second (the pace of their
+      // going up the ramp): from the soreg on every time is later by the crossing less those 1.8 seconds. The way - a model choice
+      const mountP = () => { const sg = SH.southGates, g = sg && typeof sg.bech === "number" ? sg.bech : -48, ex = sg && typeof sg.dalk === "number" ? sg.dalk : -78;
+        const head = [[0, 333.5], [-1, 329], [-1.05, 326], [-1.5, 323], [-3, 319], [-3.85, 314], [-3.85, 300], [-3.85, 290]];
+        return SH.chelSteps && SH.chelSteps.mode === "around" ? head.concat([[-4.6, 280], [-7, 268], [6, 230], [20, 180], [24.5, 140], [25.5, 108], [g + 0.8, 101], [g + 0.8, 98]])
+          : head.concat([[-5, 280], [ex - 0.8, 106], [ex - 0.8, 98]]); };
+      const MOUNT_V = 26;
+      const T0R = (() => { const o = Object.assign({}, T0), sh = SH.chelSteps && SH.chelSteps.mode === "around" ? 0 : 7, P = mountP(); let L = 0; for (let i = 1; i < P.length; i++) L += Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]);
+        const mt = Math.max(0, Math.round((L / MOUNT_V - (T0.ezn0 - T0.take - 0.2)) * 10) / 10);
+        o.ezn0 += mt; for (const k of ["ezn1", "steps1", "nik", "walk0", "corner", "read0"]) o[k] += sh + mt; return o; });
       const mkT = (r) => { const T0 = T0R(), C = T0.corner; return Object.assign({}, T0, r === "rj" ? { wave0: C + 2.4, wave1: C + 7.2, put: C + 9.2, bow0: C + 9.8, bow1: C + 11.2, end: C + 13.6 } : { wave0: C + 4.0, wave1: C + 8.8, put: C + 10.0, bow0: C + 10.6, bow1: C + 12.0, end: C + 14.4 }); };
       BK.reading = "tk";
       let T = mkT(BK.reading);
@@ -3109,10 +3121,9 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
         return [
           [[[0, RPb.zf + 5], [0, 336]], 0.4, T.gate, "ramp"],
           [[[0, 336], [0, 333.5]], T.gate, T.take, "floor", 0],
-          ...(tyt() ? [[[[0, 333.5], [g + 0.8, 98]], T.take + 0.2, T.ezn0, "hide"],
-            [[[g + 0.8, 98], [g + 0.8, 88], [g + 0.8, 83], [g + 1.5, 79.9]], T.ezn0, T.ezn0 + 1.5, "floor", 0]]
-          : (() => { const ex = BKW.geo().ex; return [[[[0, 333.5], [ex - 0.8, 98]], T.take + 0.2, T.ezn0, "hide"],
-            [[[ex - 0.8, 98], [ex - 0.8, 88], [ex - 0.8, 83], [ex - 0.3, 79.9]], T.ezn0, T.ezn0 + 1.5, "floor", 0]]; })()),
+          [mountP(), T.take + 0.2, T.ezn0, "mount", Math.PI],   // MOUNT_SEEN_430: across the mount, in sight (until now "hide")
+          ...(tyt() ? [[[[g + 0.8, 98], [g + 0.8, 88], [g + 0.8, 83], [g + 1.5, 79.9]], T.ezn0, T.ezn0 + 1.5, "floor", 0]]
+          : (() => { const ex = BKW.geo().ex; return [[[[ex - 0.8, 98], [ex - 0.8, 88], [ex - 0.8, 83], [ex - 0.3, 79.9]], T.ezn0, T.ezn0 + 1.5, "floor", 0]]; })()),
           // the ramp - his lane the inner one (z 77.9 on the lower run, 76.3 on the upper), the ox's the outer (79.0, 75.2): 1.1 apart; round the turn (centre xb, z 77.1) at radius 0.8
           tyt() ? [[[g + 1.5, 79.9], [g + 1.3, 77], [g + 1.3, 71.5]], T.ezn0 + 1.5, T.ezn1, "floor", Math.PI]   // STEPS_TYT_420: up the twelve steps
           : (() => { const { ex, rf } = BKW.geo(), { xT, xf, zi } = rf, zl = zi + 1.2;   // BIKKURIM_WAY_420: east along the chel (z 78.6) to the ramp's foot, round onto it, up it to the landing
@@ -3121,7 +3132,10 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
           : [[[g + 1.3, 71.5], [g + 1.3, 69.5], [g + 1.3, 64]], T.ezn1, T.nik, "floor", Math.PI],
           // the south lane (z 61.5) between the priests' court's south wall and the ulam's south side (its end the Parvah, the washers and the salt - the
           // rooms of the east, z 55-65 from x 49.5), east to x 38, then north along x 38 - west of the ramp and of its two tables - to the corner
-          [(tyt() ? [[g + 1.3, 59.2], [38, 57.5]] : [[g + 1.3, 64], [g + 9.3, 61.5], [30, 61.5], [38, 57.5]]).concat([[38, 52], A(38, 16.2), A(38.3, 15.0 + WZ)]), T.nik, T.corner, "floor", 2.62],
+          // BACK_FORTH_430 (the user 25.11.2026: "המביא, בתחילת הגעתו לעזרה עושה הלוך וחזור כמה פעמים"): since the Bechorot gate moved east (x 30)
+          // the lane's points (made for the gate at x -48: east 8 amot from the gate, then to x 30) took him east to 39.3, back west to 30 and
+          // east again - now straight on from the gate toward the corner
+          [(tyt() ? [[g + 1.3, 59.2], [38, 57.5]] : g + 9.3 < 30 ? [[g + 1.3, 64], [g + 9.3, 61.5], [30, 61.5], [38, 57.5]] : [[g + 1.3, 64], [g + 3.3, 61.6], [38, 57.5]]).concat([[38, 52], A(38, 16.2), A(38.3, 15.0 + WZ)]), T.nik, T.corner, "floor", 2.62],
           [[A(38.3, 15.0 + WZ), A(37.8, 17), A(38, 39.5), [38, 57.5], [34, 61.5]], T.bow1 + 0.2, T.end, "floor"]
         ]; };
       const hCache = new Map();
@@ -3135,7 +3149,10 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
       // Nikanor gate stood on the gate's roof (23.6)
       // BIKKURIM_N1: a flat slab lying on the floor (the cover at the altar's south-west corner: 8 cm, over a black frame of 3 cm) is not a floor to walk on - the
       // priest of the waving stood with his feet half on it and half off, and rose and sank as he crossed it; the walkers' floor is the first surface with more than 12 cm of air under it
-      const hAt = (x, z, near) => { const k = Math.round(x * 2) + "," + Math.round(z * 2); let y = hCache.get(k); if (y === undefined) { y = groundAt(x, z, Math.min(near, 21), LV.KOH); for (let i = 0; i < 3 && isFinite(y); i++) { const y2 = groundAt(x, z, y - 0.01, NaN); if (isFinite(y2) && y - y2 < 0.12) y = y2; else break; } hCache.set(k, y); } return y; };
+      // BIKKURIM_FLOOR_430 (the user 25.11.2026: "שוב הכהן באוויר בהדגמת הביכורים"): the demonstration's own figures are not a floor - the ray is
+      // cast with them hidden (the priest's way to the waving was not sampled before the run, and its ray met the bringer's head and the
+      // basket: he stood on them, 3.3 and 2 amot up)
+      const hAt = (x, z, near) => { const k = Math.round(x * 2) + "," + Math.round(z * 2); let y = hCache.get(k); if (y === undefined) { const was = BG.visible; BG.visible = false; y = groundAt(x, z, Math.min(near, 21), LV.KOH); for (let i = 0; i < 3 && isFinite(y); i++) { const y2 = groundAt(x, z, y - 0.01, NaN); if (isFinite(y2) && y - y2 < 0.12) y = y2; else break; } BG.visible = was; hCache.set(k, y); } return y; };
       // OX_IN_B2 (the user's decision 178: "הוא חוזר להקרבה" - the ox goes in with them to the court, a peace offering, and stands at the
       // place of slaughter; the Rambam, Bikkurim 3:12: "וכשם שטעונין תנופה כך טעונין קרבן שלמים"): from the Nikanor gate north-west, north of
       // the altar, to beside the rings (40-altar.js: the label at x 52, z -27); peace offerings are slaughtered anywhere in the court - the spot
@@ -3249,9 +3266,11 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
       const OXC = { t0: 9.2, get pts() {
         if (this._p) return this._p;
         const { gx: g, xb } = BKW.geo(), xe = Math.min(46, Math.max(24, g + 20));   // OX_PLACE_420: x 46 at most - from x 49.5 the court's south-eastern chambers stand (the ox stood in the salt chamber since the gate moved to x 30)
-        if (tyt()) return (this._p = [[g - 0.6, 98], [g - 0.6, 88], [g - 0.5, 83], [g - 0.3, 78], [g - 0.2, 70], [g, 62], [g + 4, 58.5], [g + 14, 57], [(g + 14 + xe) / 2, 57], [xe, 55.5]]);   // STEPS_TYT_420
+        // MOUNT_SEEN_430: from the gate of Chulda (where way A ends) across the mount in sight, a little east of their way, before them
+        const OM = [[OXA.x, OXA.zh], [-0.4, 326], [-0.9, 323], [-2.4, 319], [-3.25, 314], [-3.25, 300], [-3.25, 290]];
+        if (tyt()) return (this._p = OM.concat([[-4.0, 280], [-6.4, 268], [6.6, 230], [20.6, 180], [25.1, 140], [26.1, 108], [g - 0.6, 101]], [[g - 0.6, 98], [g - 0.6, 88], [g - 0.5, 83], [g - 0.3, 78], [g - 0.2, 70], [g, 62], [g + 4, 58.5], [g + 14, 57], [(g + 14 + xe) / 2, 57], [xe, 55.5]]));   // STEPS_TYT_420
         { const { ex, rf } = BKW.geo(), { xT, xf, zi } = rf, zo = zi + 2.3;   // BIKKURIM_WAY_420: the outer lane, before him
-          return (this._p = [[ex - 1.4, 98], [ex - 1.4, 88], [ex - 1.4, 83], [ex - 0.6, 80.2], [ex + 2, 79.3], [xf - 3, 79.3], [xf - 1.6, 78.8], [xf - 0.9, 78], [xf - 0.2, zo + 0.3], [xf + 1.5, zo], [xT, zo], [xT + 2, zo - 0.7], [g - 1.5, 73.5], [g - 0.2, 70], [g, 66], [g + 4, 59.5], [g + 14, 57], [(g + 14 + xe) / 2, 57], [xe, 55.5]]); }
+          return (this._p = OM.concat([[-4.4, 280], [ex - 1.4, 106]], [[ex - 1.4, 98], [ex - 1.4, 88], [ex - 1.4, 83], [ex - 0.6, 80.2], [ex + 2, 79.3], [xf - 3, 79.3], [xf - 1.6, 78.8], [xf - 0.9, 78], [xf - 0.2, zo + 0.3], [xf + 1.5, zo], [xT, zo], [xT + 2, zo - 0.7], [g - 1.5, 73.5], [g - 0.2, 70], [g, 66], [g + 4, 59.5], [g + 14, 57], [(g + 14 + xe) / 2, 57], [xe, 55.5]])); }
         return (this._p = [[g - 0.6, 98], [g - 0.6, 88], [g - 0.5, 83], [g + 0.2, 80.6], [g + 3, 79.1], [g + 8, 79], [xb - 10, 79], [xb - 3, 78.9], [xb, 79], [xb + 1.3, 78.4], [xb + 1.9, 77.1], [xb + 1.3, 75.8], [xb, 75.2], [xb - 10, 75.2], [g + 5, 75.2], [g + 1.4, 74.6], [g + 0.4, 73], [g - 0.2, 70], [g, 66], [g + 4, 59.5], [g + 14, 57], [(g + 14 + xe) / 2, 57], [xe, 55.5]]);
       } };
       const oxGround = (x, z) => { const y = fnc2(SH.floorY) ? SH.floorY(x, 20.5, z) : -Infinity; return isFinite(y) ? y : hAt(x, z, 21); };
@@ -3301,7 +3320,7 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
         if (top15 < 0) top15 = L - 60;
         for (let i = 0; i <= n; i++) {
           const s0 = i * ds;
-          const hh = PC.hAtS(s0); let v = hh < 0.3 ? 14 : hh < 13.3 ? 7 : Z[i] > 66 ? 5 : 8, stp = false;   // BIKKURIM_N9: by the floor - the chel 14, the ramp 7, the gate 5, the court 8
+          const hh = PC.hAtS(s0); let v = Z[i] > 99 ? MOUNT_V : hh < 0.3 ? 14 : hh < 13.3 ? 7 : Z[i] > 66 ? 5 : 8, stp = false;   // BIKKURIM_N9: by the floor - the chel 14, the ramp 7, the gate 5, the court 8
           for (const e of PC.edges) if (Math.abs(e - s0) < 1.2) stp = true;
           if (stp) v = 4.5;
           if (s0 < 0.01) v = 6;
@@ -3323,6 +3342,10 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
             const k = ((T.nik - 0.6) - Tm[iA]) / (Tm[iB] - Tm[iA]), tB = Tm[iB];
             for (let i = iA + 1; i <= iB; i++) { Tm[i] = Tm[iA] + (Tm[i] - Tm[iA]) * k; V[i] /= k; }
             const d1 = Tm[iB] - tB; for (let i = iB + 1; i <= n; i++) Tm[i] += d1;
+            // MOUNT_SEEN_430: and from the gate of Chulda to the chel - from the second way A ends (no hidden time between them), its pace
+            // over the mount the same throughout
+            const tE = Tm[iA], k0 = (tE - tA) / Math.max(1e-6, tE - Tm[0]);
+            if (k0 > 0) for (let i = 0; i < iA; i++) { Tm[i] = tE - (tE - Tm[i]) * k0; V[i] /= k0; }
           }
         }
         // the step's phase through the whole demonstration (dφ/dt - the pace over the stride, at most FMAX) and its breadth (eased)
@@ -3633,7 +3656,7 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
       const placeF = (F, P, t0, t1, kind, t, endYaw, dx, dzz) => {
         const u = clamp2((t - t0) / Math.max(1e-3, t1 - t0), 0, 1), q2 = at2(P, u);
         const yaw = u >= 1 && endYaw != null ? endYaw : q2[2], ox = Math.cos(yaw) * (dx || 0) + Math.sin(yaw) * (dzz || 0), oz = -Math.sin(yaw) * (dx || 0) + Math.cos(yaw) * (dzz || 0);
-        const x = q2[0] + ox, z = q2[1] + oz, y = kind === "ramp" ? RPb.yAt(z) : kind === "mount" ? 0 : hAt(x, z, 30);
+        const x = q2[0] + ox, z = q2[1] + oz, y = kind === "ramp" ? (z > RPb.zf ? hAt(x, z, RPb.yf + 4) : RPb.yAt(z)) : kind === "mount" ? 0 : hAt(x, z, 30);   // BIKKURIM_FLOOR_430: beyond the ramp's foot - the ground there (they stood a man's height in the air)
         F.G.position.set(x, y + (u > 0 && u < 1 ? Math.abs(Math.sin(t * 9)) * 0.035 : 0), z); F.G.rotation.y = yaw; F.G.visible = kind !== "hide";
         return { x, y, z, yaw };
       };
@@ -3726,9 +3749,10 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
           // BIKKURIM_N9: they follow him over the mount to the soreg's opening and wait there, in the chel's outer side, on the mount's level
           // ("יש לו רשות לתתם לעבדו וקרובו בכל הדרך עד שמגיע להר הבית")
           const lag = 0.7 + i * 0.55, tt = t - lag, w = wayNow(Math.min(tt, T.ezn0 - 0.02)) || W[0];
-          if (tt >= T.ezn0) {   // over the mount (unseen) they come to the chel's outer side, south of the soreg, and stand there facing north
-            const u = sm2(clamp2((tt - T.ezn0) / 1.4, 0, 1)), sx = (tyt() ? BKW.geo().gx : BKW.geo().ex) - 4.6 - (i % 2) * 1.8, sz = 90 + Math.floor(i / 2) * 2.2, g0 = tyt() ? BKW.geo().gx : BKW.geo().ex, x0 = g0 + 0.8 + (i % 2 ? 1 : -1) * 1.1 + (i % 2 ? 0 : -3.0);
-            F.G.position.set(lerp2(x0, sx, u), 0, lerp2(98 + i * 0.5, sz, u)); F.G.rotation.y = Math.PI; F.G.visible = true; return;
+          if (tt >= T.ezn0) {   // over the mount they come to the chel's outer side, south of the soreg, and stand there facing north
+            // (MOUNT_SEEN_430: from where the way over the mount left each of them - its end, his side of it)
+            const u = sm2(clamp2((tt - T.ezn0) / 1.4, 0, 1)), sx = (tyt() ? BKW.geo().gx : BKW.geo().ex) - 4.6 - (i % 2) * 1.8, sz = 90 + Math.floor(i / 2) * 2.2, E = mountP()[mountP().length - 1], x0 = E[0] - (i % 2 ? 1 : -1) * 1.1;
+            F.G.position.set(lerp2(x0, sx, u), 0, lerp2(E[1], sz, u)); F.G.rotation.y = Math.PI; F.G.visible = true; return;
           }
           if (w[3] === "hide") { F.G.visible = false; return; }
           placeF(F, w[0], w[1], w[2], w[3], Math.min(tt, w[2]), w[4], (i % 2 ? 1 : -1) * 1.1, 0);
@@ -3737,7 +3761,12 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
         // them; from the Nikanor gate to its place by the rings, where it stands until the end. OX_K: one smooth way (oxPose, above)
         oxPose(d.ox, t);
         // the flute before them up to the mount ("עד שמגיעין להר הבית")
-        { const tt = t + 0.9, w = W[0]; if (t < T.take + 0.6) placeF(d.flute, w[0], w[1], w[2], "ramp", Math.min(tt, w[2]), Math.PI, 0.8, 0); else d.flute.G.visible = false; }
+        // (MOUNT_SEEN_430: at the gate he steps aside, west of the way in, and stands there until they are in the stoa - until now he vanished
+        // where he stood, before the eye)
+        { const tt = t + 0.9, w = W[0];
+          if (tt < w[2]) placeF(d.flute, w[0], w[1], w[2], "ramp", tt, Math.PI, 0.8, 0);
+          else if (t < T.take + 3.2) { const u = sm2(clamp2((tt - w[2]) / 1.1, 0, 1)), x = lerp2(-0.8, -4.4, u), z = lerp2(336, 338.4, u); d.flute.G.position.set(x, RPb.yAt(z), z); d.flute.G.rotation.y = Math.PI; d.flute.G.visible = true; }
+          else d.flute.G.visible = false; }
         // his basket: with the first companion up the ramp; on his own shoulder from the gate; lowered and waved; set down
         const MB = d.myBasket; MB.visible = !!d.bringer.G.visible || t >= T.put; MB.rotation.set(0, 0, 0);
         const c0 = d.comps[0].G;
@@ -3759,11 +3788,17 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
       const keys = () => { const dz = altDzB(), C = [39.4, 13.8 + dz];
         return [
           [0, [22, RPb.yf + 5, RPb.zf + 18], [0, RPb.yf + 1.5, RPb.zf + 2]], [2.2, [20, RPb.yAt(RPb.zf - 12) + 5, RPb.zf - 4], [0, RPb.yAt(RPb.zf - 18) + 1.5, RPb.zf - 18]], [3.4, [20, RPb.yAt(RPb.zf - 28) + 5, RPb.zf - 22], [0, RPb.yAt(RPb.zf - 34) + 1.5, RPb.zf - 36]], [T.gate - 0.4, [12, 6, 352], [0, 2, 338]],
-          [T.take + 0.2, [10, 4, 344], [0, 3, 333]],
+          [T.take + 0.2, [4, 5, 343], [0, 3, 333]],   // (MOUNT_SEEN_430: nearer the gate's middle - the eye goes in through the opening after them, not through the wall beside it)
           // BIKKURIM_N9: the soreg's opening and the ramp (from the south, at the mount's level), the climb, the landing, the gate; then over the south wall onto the lane
           // (every x from the gate's: BKW.gx)
           ...(() => { const { gx: g, xb } = BKW.geo(), x0 = g + 1.3, x1 = 38, bx = (f) => x0 + (x1 - x0) * f;
-            return [[T.take + 1.0, [g + 90, 70, 200], [g + 1, 0, 95]],
+            // MOUNT_SEEN_430: in the stoa, between its columns, before them as they come in; above the stoa's north side as they come out of
+            // it; then over the mount after them, from the south-east and above, to the soreg (until now: one leap from the gate to the soreg)
+            const MP = mountP(), tm0 = T.take + 0.2, tm1 = T.ezn0, Pm = (t) => at2(MP, (t - tm0) / (tm1 - tm0));
+            let Lm = 0, Lx = 0; for (let i = 1; i < MP.length; i++) { const l = Math.hypot(MP[i][0] - MP[i - 1][0], MP[i][1] - MP[i - 1][1]); if (MP[i - 1][1] > 290.5) Lx += l; Lm += l; }
+            const tX = tm0 + (tm1 - tm0) * Lx / Lm, follow = (t, dx, dy, dz, lx, lz) => { const q = Pm(t); return [t, [q[0] + dx, dy, q[1] + dz], [q[0] + lx, 1.5, q[1] + lz]]; };
+            return [[tm0 + 0.9, [-4, 8, 296], [-2.5, 3, 320]], [tX + 0.9, [-12, 24, 252], [-6, 2, 280]],
+              follow(tm0 + (tm1 - tm0) * 0.5, 26, 30, 24, -8, -20), follow(tm1 - 1.5, 22, 22, 20, -5, -14),
               ...(tyt() ? [[T.ezn0, [g + 26, 14, 122], [g + 1, 3, 92]], [T.ezn0 + 1.5, [g + 20, 14, 100], [g + 1, 4, 78]], [T.ezn0 + 5, [g + 16, 20, 100], [g + 1, 6, 74]]]
                 : (() => { const { ex, rf } = BKW.geo(), { xT, xf } = rf;   // BIKKURIM_WAY_420: the soreg's opening, along the chel, the ramp's foot, up the ramp
                   return [[T.ezn0, [ex + 12, 14, 112], [ex, 3, 88]], [T.ezn0 + 1.5, [ex + 22, 16, 104], [ex + 6, 3, 80]], [T.ezn0 + 5, [xf - 2, 18, 104], [xf - 8, 3, 79]], [T.ezn0 + 9, [xf + 12, 22, 104], [xf + 4, 4, 77]], [T.ezn0 + 13, [xf + 34, 24, 104], [xf + 30, 9, 76]], [T.ezn1 - 4, [xT + 4, 26, 102], [xT - 4, 13, 75]]]; })()),
@@ -3781,7 +3816,7 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
         [0, "״והשור הולך לפניהם, וקרניו מצופות זהב, ועטרת של זית בראשו״ (ביכורים ג, ג); ״החליל מכה לפניהם עד שמגיעין להר הבית״ (ג, ד) — עולים בכבש שלפני שער חולדה"],
         [3.6, "״יש לו רשות לתנם לעבדו וקרובו בכל הדרך עד שמגיע להר הבית״ (רמב״ם ביכורים ג, יב)"],   // QUOTES_Q: רמב״ם ביכורים ג, יב (336:53): 'לתנם'
         [T.gate, "״הגיעו להר הבית, אפלו אגריפס המלך נוטל הסל על כתפו ונכנס, עד שמגיע לעזרה״ (ביכורים ג, ד)"],   // QUOTES_Q: ביכורים ג, ד (50:29): 'אפלו'
-        [T.ezn0, "על פני הר הבית אל שער הבכורות שבדרום העזרה — הוא והשור עולים יחד בכבש לבהמות (כבש לבהמות — מפי הגר״ח קניבסקי, כפי שהובא בחלמיש); ״הגוזלות שעל גבי הסלים, היו עולות״ (ביכורים ג, ה)"],
+        [T.take + 2.6, "על פני הר הבית אל שער הבכורות שבדרום העזרה — הוא והשור עולים יחד בכבש לבהמות (כבש לבהמות — מפי הגר״ח קניבסקי, כפי שהובא בחלמיש); ״הגוזלות שעל גבי הסלים, היו עולות״ (ביכורים ג, ה)"],
         [T.nik, "״הגיע לעזרה ודברו הלוים בשיר, ארוממך ה׳ כי דליתני ולא שמחת איבי לי״ (ביכורים ג, ד)"],
         [T.nik + 1.4, "השור נכנס עמם לעזרה ועומד — ״וכשם שטעונין תנופה כך טעונין קרבן שלמים״ (רמב״ם ביכורים ג, יב); הדרך בעזרה, ומקום עמידתו — בחירת מודל"],
         [T.read0, BK.reading === "rj" ? "״עודהו הסל על כתפו, קורא מהגדתי היום לה׳ אלהיך... רבי יהודה אומר עד ארמי אבד אבי״ (ביכורים ג, ו) — לרבי יהודה" : "״עודהו הסל על כתפו, קורא מהגדתי היום לה׳ אלהיך, עד שגומר כל הפרשה״ (ביכורים ג, ו) — לתנא קמא"],
