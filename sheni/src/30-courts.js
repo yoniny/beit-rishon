@@ -1809,7 +1809,74 @@
     const darkMat = new MeshStandardMaterial({ color: 0x2a2622, roughness: 1 });
     // FILL_211 (stage ב, point 40; the user: "אכן למלא אבל עם מחשבה עמוקה ומלאה... אני רוצה ביצוע"): one standing figure at work in a
     // chamber (tm_people; its size and turn exact) - the figures, their places and what they hold: model choices (the cards say so)
-    const fig211 = (x, z, yaw, y, kind, robe, s = 1.4, tone = 1, name = "chamberWorker") => { try { tm_people(ctx2).crowd(g, [[x, z, yaw]], { y, s, pose: "stand", kind, robe, tone: () => tone, exact: true, name }); } catch (_) {} };
+    const fig211 = (x, z, yaw, y, kind, robe, s = 1.4, tone = 1, name = "chamberWorker") => { try { return tm_people(ctx2).crowd(g, [[x, z, yaw]], { y, s, pose: "stand", kind, robe, tone: () => tone, exact: true, name }); } catch (_) { return null; } };   // CHAMBER_HANDS_441: the crowd's handle returned
+    // CHAMBER_HANDS_441 (the user 25.11.2026, of the Parvah and the salt chamber: "הידיים של הכהן לא עושות כלום"): a priest at work whose
+    // hands move - the lotteries' priest (SH.priestKit, 55-payis.js) on a skeleton of his own: the robe in two at the waist (he bows to
+    // his work), two arms (shoulder, elbow, wrist) and the hand closed round what it holds. The crowd's still figure stays as it was until
+    // the eye comes near (35 amot): then the moving priest is built once and takes its place. w.motion(w, sec) sets each frame: w.bend,
+    // w.armR / w.armL = [shoulder forward, shoulder outward, elbow], w.hands = { R, L } (the hand's pose). The motions - model choices
+    const WORK = [];
+    const worker = (x, z, yaw, y, name, tone, motion) => {
+      const cr = fig211(x, z, yaw, y, "kohen", 0xf1ede2, 1.4, tone, name);
+      const w = { x, z, yaw, y, name, crowd: cr && cr.userData && cr.userData.crowd, n: 3 + WORK.length, motion, A: null, bad: false, stat: null, held: { R: null, L: null }, bend: 0, armR: [0.05, 0.08, -0.15], armL: [0.05, 0.08, -0.15], hands: { R: "rest", L: "rest" } };
+      WORK.push(w);
+      return w;
+    };
+    const buildWorker = (w) => {
+      const K = ctx2.shared.priestKit;
+      if (!K || !K.handWr || !K.gRobeLow || !K.gRobeUp) return null;
+      const FS = K.FS, WY = (K.WAIST || 0) * FS, sc = (q) => q.scale(FS, FS, FS), W1 = (q) => K.white(q);
+      const up = K.UP * FS, fo = K.FORE * FS, sx = K.SH_X * FS, sy = K.SH_Y * FS;
+      const gUp = sc(mergeGeometries([W1(K.sph(0.07, 0.07, 0.07, 14, 10)), W1(K.at(new CylinderGeometry(0.07, 0.058, K.UP, 14), 0, -K.UP / 2, 0)), W1(K.at(K.sph(0.058, 0.058, 0.058, 12, 8), 0, -K.UP, 0))]));
+      const gFo = sc(W1(K.at(new CylinderGeometry(0.056, 0.046, K.FORE, 14), 0, -K.FORE / 2, 0)));
+      const g0 = new Group(), S = new Group(), bend = new Group(), U = new Group();
+      g0.name = w.name + "Moving";
+      S.scale.setScalar(FS); g0.add(S);
+      const lo = new Mesh(K.gRobeLow, K.mRobe); lo.castShadow = true; S.add(lo);
+      bend.position.y = WY; g0.add(bend);
+      U.scale.setScalar(FS); U.position.y = -WY; bend.add(U);
+      const hi = new Mesh(K.gRobeUp, K.mRobe); hi.castShadow = true; U.add(hi);
+      U.add(new Mesh(K.at(new CylinderGeometry(0.066, 0.072, 0.09, 12), 0, 1.925, 0), K.mSkin));
+      U.add(new Mesh(K.gSash, K.mSashDyed));
+      const hg = K.headOn(U, K.HEAD_Y, K.mBeards[w.n % K.mBeards.length], w.n); if (K.tefOn) K.tefOn(hg);
+      const hat = new Mesh(K.gHat, K.mHat); hat.position.y = K.HAT_Y; U.add(hat);
+      const arm = (side) => {
+        const sh = new Group(); sh.position.set(side * sx, sy - WY, 0); bend.add(sh);
+        const m1 = new Mesh(gUp, K.mRobe); sh.add(m1);
+        const el = new Group(); el.position.y = -up; sh.add(el);
+        const m2 = new Mesh(gFo, K.mRobe); el.add(m2);
+        const wr = new Group(); wr.position.y = -fo; el.add(wr);
+        const hand = new Mesh(K.handWr(side, "rest"), K.mHand || K.mSkin); wr.add(hand);
+        const grip = new Group(), G = K.handAt ? K.handAt(side, "grip") : new Vector3(0, -0.08, 0.03); grip.position.copy(G); wr.add(grip);
+        for (const m of [m1, m2, hand]) m.castShadow = true;
+        return { sh, el, wr, hand, grip, side, k: "rest" };
+      };
+      const L = arm(1), R = arm(-1);
+      for (const side of [1, -1]) { const f = new Mesh(sc(K.footGeo(side).translate(-side * 0.1, 0, 0)), K.mSkin); f.position.x = side * 0.1 * FS; g0.add(f); }
+      g0.position.set(w.x, w.y, w.z); g0.rotation.y = w.yaw;
+      g0.traverse((o) => { if (o.isMesh) o.userData.noPick = true; });
+      g.add(g0);
+      for (const sd of ["R", "L"]) if (w.held[sd]) { const A2 = sd === "R" ? R : L; A2.grip.add(w.held[sd]); w.held[sd].position.set(0, 0, 0); }
+      return { g0, bend, L, R };
+    };
+    const _wv = new Vector3();
+    if (ctx2.animated) ctx2.animated.push((t) => {
+      const c = ctx2.camera; if (!c || !WORK.length) return;
+      for (const w of WORK) {
+        _wv.set(w.x, w.y + 2, w.z); g.localToWorld(_wv);
+        const near = c.position.distanceTo(_wv) < 35;
+        if (!w.A && (!near || w.bad)) continue;
+        if (!w.A) { w.A = buildWorker(w); if (!w.A) { w.bad = true; continue; } if (w.crowd) { w.crowd.pose(0, new Matrix4().makeScale(0, 0, 0)); w.crowd.done(); }   /* the still figure goes (all its levels and its face) - the moving one stays from now on */ if (w.onBuild) w.onBuild(w); }
+        let vis = true; for (let q = g; q; q = q.parent) if (!q.visible) { vis = false; break; }
+        if (w.still && !w.stillOff) { for (const o of w.still) o.visible = false; w.stillOff = true; }
+        if (!near || !vis) continue;
+        w.motion(w, t / 1000);
+        const A = w.A;
+        A.bend.rotation.x = w.bend;
+        for (const [A2, v] of [[A.R, w.armR], [A.L, w.armL]]) { A2.sh.rotation.set(v[0], 0, A2.side * v[1]); A2.el.rotation.set(v[2], 0, 0); A2.wr.rotation.set(v[3] || 0, 0, 0); }
+        for (const [A2, k] of [[A.R, w.hands.R], [A.L, w.hands.L]]) if (A2.k !== k) { A2.k = k; A2.hand.geometry = ctx2.shared.priestKit.handWr(A2.side, k); }
+      }
+    });
     const ahead211 = (x, z, yaw, d) => [x + Math.sin(yaw) * d, z + Math.cos(yaw) * d];   // a point d in front of a figure
     const wheelAt = (wx, wy, wz, r, px = 1.45) => {   // 1.9.5: px - the posts' distance from the middle   // a wooden wheel standing on two posts, its axle along x (as the laver's mukhni)
       const wheel = new Mesh(new TorusGeometry(r, 0.12, 8, 28), M2.cedar);
@@ -1846,9 +1913,37 @@
       // where the limbs were salted ("הלכו ונתנום מחצי הכבש ולמטה במערבו, ומלחום", Tamid 4:3)
       {
         const yw = Math.atan2(-0.15, 3.0), [bx, bz] = ahead211(cx0 - 0.3, cz - 1.4, yw, 0.5);
-        fig211(cx0 - 0.3, cz - 1.4, yw, y, "kohen", 0xf1ede2, 1.4, 1, "saltPriest");
-        const bowl = (x, yy, z) => { H2.cyl(g, 0.3, 0.2, 0.16, M2.bronze, x, yy, z, 14); H2.cyl(g, 0.24, 0.24, 0.04, saltMat, x, yy + 0.14, z, 14); };
-        bowl(bx, y + 1.2, bz);
+        const bowl = (x, yy, z) => [H2.cyl(g, 0.3, 0.2, 0.16, M2.bronze, x, yy, z, 14), H2.cyl(g, 0.24, 0.24, 0.04, saltMat, x, yy + 0.14, z, 14)];
+        const still = bowl(bx, y + 1.2, bz);
+        // CHAMBER_HANDS_441: he gathers salt from the heap into the bowl ("שם היו נותנים מלח לקרבן", Middot 5:3) - the bowl in his left
+        // hand, a wooden scoop in his right: he bows, thrusts it into the heap, lifts it full and pours it into the bowl, again and again
+        const W = worker(cx0 - 0.3, cz - 1.4, yw, y, "saltPriest", 1, (w, sec) => {
+          const ph = (sec % 3.2) / 3.2, sm = (a, b, x) => { const q = Math.max(0, Math.min(1, (x - a) / (b - a))); return q * q * (3 - 2 * q); };
+          const dip = sm(0.05, 0.3, ph) * (1 - sm(0.45, 0.65, ph)), pour = sm(0.65, 0.78, ph) * (1 - sm(0.88, 1, ph));
+          w.bend = 0.12 + 0.5 * dip;
+          w.armR = [-0.55 - 0.55 * dip - 0.25 * (1 - dip), 0.12 - 0.1 * dip, -0.9 + 0.75 * dip, -0.2 + 0.9 * pour];
+          w.armL = [-0.75 + 0.35 * dip, -0.05, -1.05 + 0.2 * dip, 0.15];
+          w.hands.R = w.hands.L = "grip";
+          if (w.grain) { w.grain.visible = pour > 0.3; w.grain.scale.y = 0.4 + 0.6 * pour; if (w.grain.visible && w.grain.parent) { w.grain.parent.updateWorldMatrix(true, false); w.grain.parent.getWorldQuaternion(w.grain.quaternion).invert(); } }
+        });
+        W.still = still;
+        {
+          const bw = new Group(); bw.add(new Mesh(new CylinderGeometry(0.3, 0.2, 0.16, 14).translate(0, 0.08, 0), M2.bronze)); bw.add(new Mesh(new CylinderGeometry(0.24, 0.24, 0.04, 14).translate(0, 0.16, 0), saltMat));
+          bw.children[0].position.z = 0.22; bw.children[1].position.z = 0.22;   // held at its rim, before the hand
+          W.held.L = bw;
+          // the scoop: built along +y (the handle from the hand up to the cup at its end), then laid along the closed hand's ring (gripAx)
+          const sc = new Group(), sci = new Group(), wood = M2.cedar; sc.add(sci);
+          sci.add(new Mesh(new CylinderGeometry(0.028, 0.03, 0.42, 6).translate(0, 0.12, 0), wood));
+          sci.add(new Mesh(new CylinderGeometry(0.14, 0.1, 0.13, 12, 1, true).rotateZ(HP).translate(0, 0.4, 0.07), wood));   // the cup, open toward the palm's front
+          sci.add(new Mesh(new CircleGeometry(0.1, 12).rotateY(HP).translate(-0.065, 0.4, 0.07), wood));
+          sci.add(new Mesh(new CylinderGeometry(0.115, 0.115, 0.04, 12).rotateZ(HP).translate(0, 0.4, 0.09), saltMat));   // the salt in it
+          const gr = new Mesh(new CylinderGeometry(0.035, 0.06, 0.45, 8).translate(0, -0.22, 0), saltMat); gr.position.set(0.06, 0.4, 0.07); gr.visible = false; sci.add(gr); W.grain = gr;   // the salt poured out (it falls, whatever the hand's turn: set upright each frame)
+          W.held.R = sc;
+          W.onBuild = (w) => {
+            const K = ctx2.shared.priestKit, ax = K.handAt && K.handAt(-1, "gripAx");
+            if (ax && ax.lengthSq() > 1e-6) { sci.quaternion.setFromUnitVectors(new Vector3(0, 1, 0), ax.clone().normalize()); sci.quaternion.premultiply(new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), 1.15)); }   // and leaned forward out of the fist, as a ladle is held
+          };
+        }
         const tx = cx0 - 2.45, tz = cz - 2.6;
         H2.box(g, 1, 0.15, 2.2, M2.marble, tx, y + 1.05, tz); for (const lx of [-0.4, 0.4]) for (const lz of [-0.95, 0.95]) H2.box(g, 0.14, 1.05, 0.14, M2.marble, tx + lx, y, tz + lz);
         for (const dz of [-0.7, 0, 0.7]) bowl(tx, y + 1.2, tz + dz);
@@ -1863,7 +1958,15 @@
       {
         H2.box(g, 1.45, 0.06, 2.35, hideMat, cx + 0.95, y + 0.9, cz + 1.85);
         H2.box(g, 0.9, 0.03, 1.3, whiteMat, cx + 0.85, y + 0.96, cz + 1.7);
-        fig211(cx - 0.45, cz + 1.7, Math.PI / 2, y, "kohen", 0xf1ede2, 1.4, 2, "parvahPriest");
+        // CHAMBER_HANDS_441: he salts the hide ("שם היו מולחין עורות קדשים", Middot 5:3) - bowed over the tub, his left hand holds the hide
+        // flat, his right takes salt from the heap on it and rubs it into the hide, to and fro
+        worker(cx - 0.3, cz + 1.7, Math.PI / 2, y, "parvahPriest", 2, (w, sec) => {
+          const ph = sec * 2 * Math.PI / 1.6, rub = Math.sin(ph), lift = Math.max(0, Math.sin(sec * 2 * Math.PI / 6.4)) ** 6;
+          w.bend = 0.5 - 0.12 * lift;
+          w.armR = [-0.95 - 0.25 * rub - 0.2 * lift, 0.14 + 0.06 * Math.cos(ph), -0.15 - 0.15 * rub - 0.5 * lift, 0.7];
+          w.armL = [-0.85, -0.04, -0.2, 0.9];
+          w.hands.R = lift > 0.4 ? "grip" : "flat"; w.hands.L = "flat";
+        });
         H2.cyl(g, 0.4, 0.33, 0.65, M2.cedar, cx + 1.4, y, cz - 3.6, 12);
         H2.cyl(g, 0.36, 0.36, 0.05, whiteMat, cx + 1.4, y + 0.63, cz - 3.6, 12);
       }
