@@ -37,7 +37,14 @@
     // ב: מעולה ג: V"): the three gates of the south - the Delek in the west as before; the Water Gate opposite the altar's EAST end, a little
     // west of לשכת המדיחין (Tiferet Yisrael, Tzurat Beit HaMikdash 33: "במרחק מעט מלשכת המדיחין לצד מערב היה בחומת העזרה שער המים מול
     // המזבח"; Yachin: "לעומת המזבח"); the Bechorot gate a little west of it ("במרחק מעט לצד מערב משער המים"). Until now 30 and 44
-    gS: { dalk: -78, bech: 54, water: 66 },
+    // DALK_TYT_440 (the user 25.11.2026, after the respondent's answer - "סמוכין למערב" is the gates' order, not the wall's western end):
+    // the Delek gate too as Tiferet Yisrael, 36 (6029 line 83): "במרחק מעט לצד מערב משער הבכורות, היה שער הדלק" - twelve amot, as the
+    // Bechorot from the Water Gate (until now -78, in the west); the Upper gate (37: "למעלה ממנו לצד מערב") - stays at -88
+    // GATES_APART_440 (the user 25.11.2026: "לא הגיוני שהשערים היו ממש מחוברים... עם הפרדה בולטת ממש של אבן ביניהם"; then "23"): between
+    // opening and opening 23 amot of wall - the centres 33 apart (each opening 10). Tiferet Yisrael gives no measure ("במרחק מעט"), so the
+    // number is the user's choice. The Water Gate stays opposite the altar's east end; the Bechorot between the ulam and the altar; the
+    // Delek opposite the ulam (until now 42, 54 - twelve apart, the lintels touching)
+    gS: { dalk: 0, bech: 33, water: 66 },
     xIsraelW: 82.5,
     xKohanimW: 71.5,
     xAltarE: 71.5,

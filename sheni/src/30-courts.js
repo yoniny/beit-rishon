@@ -149,7 +149,7 @@
     // amot; inside each gate twenty steps of half an amah go up from there to the court's floor (16), ten amot deep through the wall and
     // the floor's edge. The podium, the pave under the walls and the court's floor are cut there; in the Rambam's reading (the default)
     // the cuts are filled (ringPlugs) and the gates are as they were. The steps inside the gate - a model choice.
-    const RING_GATES = [[-78, -1], [-78, 1], [-48, -1], [CO.gS.bech, 1], [CO.gS.water, 1]];   // = the loop of the gates below (DALK_X, BECH_X, WATER_X; SOUTH_SMALL_430: CO.gS)
+    const RING_GATES = [[-78, -1], [CO.gS.dalk, 1], [-48, -1], [CO.gS.bech, 1], [CO.gS.water, 1]];   // = the loop of the gates below (DALK_X, BECH_X, WATER_X; SOUTH_SMALL_430: CO.gS)
     const RG_W = 10, RG_D = 10;
     const ringPlugs = new Group(); ringPlugs.name = "ringPlugs"; g.add(ringPlugs);
     const ringIn = new Group(); ringIn.name = "ringGateSteps"; ringIn.visible = false; ringIn.userData.homeParent = g;   // (in the scene only in that reading - 20-mount.js chelSteps)
@@ -273,7 +273,7 @@
       // עשרה מעלות היו שם", Tiferet Yisrael, Yachin Middot 2:23 (819:191) "שהמעלות הללו, לא לבד בין השערים שלמטה ושלמעלה היו, רק היו מקיפים
       // כל הר הבית", and his Tzurat Beit HaMikdash, siman 8 (6029:25) "דכל הששה אמות גובה שסביב בכל הד' רוחות לחומה הפנימית, היה עשוי כולו
       // מדריגות מדריגות"): STEPS again, as until 4.2.0 (4.2.0 made them a ramp, an amah in an amah)
-      stairsR(parent, { width: dp, totalRise: top, steps: n, dir: dx > 0 ? "W" : "E", x: gx + dx * (wL / 2 + n * 0.5), y: 0, z: zc, tread: 0.5 });
+      if (!o.noSteps) stairsR(parent, { width: dp, totalRise: top, steps: n, dir: dx > 0 ? "W" : "E", x: gx + dx * (wL / 2 + n * 0.5), y: 0, z: zc, tread: 0.5 });   // (DALK_TYT_440: noSteps - a landing only)
       return keep;
     };
     // RAMPS_N4 (the user, 24.11.2026: "הכבש לבהמות מיושר ומחובר למדרגות של השער - חלק מדרגות וחלק כבש באותו גרם, עד נחיתת השער"): at the gate of the
@@ -309,11 +309,22 @@
       ctx2.shared.beastRampGeo = { xTop: xa, xFoot: xa + dx * Lr, zIn: zlo, zOut: zlo + RAMP_W, top };   // BIKKURIM_WAY_420: for the firstfruits' way (57-add208.js)
       ctx2.labels.push({ text: "כבש לבהמות — חלק מגרם המדרגות של השער (הגר״ח קניבסקי, כפי שהובא בחלמיש)", x: xa + dx * Lr * 0.45, y: top * 0.55 + 2.5, z: zc + 0.5 * s, size: 1.3, layer: "animalRamps" });
     };
-    for (const [gx, s] of [[-78, -1], [-78, 1], [-48, -1], [BECH_X, 1], [WATER_X, 1]]) {   // 1.3.0: the approaches follow the gates (Rambam 5:4, the western part); 1.8.0: Beit HaMoked's own gate to the chel (north, -18) - by the house, below
-      const joined = (gx === -78 && s > 0) || (gx === -48 && s < 0);   // a small gate's landing joins this one's free end in the readings of thirteen gates
-      const beast = gx === BECH_X, fdx = gx === BECH_X ? -1 : s > 0 ? 1 : -1;   // RAMPS_N4; BEAST_N_OFF_420: the gate of the offering's (north) - cancelled
+    // DALK_TYT_440: the three south gates twelve amot apart (10-core.js CO.gS) - their three flights along the wall would stand in one another;
+    // so ONE landing before the three (x DALK_X-6 .. WATER_X+6, its outer strip under the Delek and the Bechorot - the beasts' way to the
+    // Bechorot gate): the Delek's steps down west, the beasts' ramp beside them (RAMPS_N4 - "חלק מדרגות וחלק כבש באותו גרם, עד נחיתת השער"),
+    // the Water Gate's steps down east (as before); the Bechorot's own - none. A model choice.
+    const SOUTH3 = DALK_X + 12 === BECH_X && BECH_X + 12 === WATER_X;   // GATES_APART_440: no longer (33 apart) - each gate its own landing and flight
+    for (const [gx, s] of [[-78, -1], [DALK_X, 1], [-48, -1], [BECH_X, 1], [WATER_X, 1]]) {   // 1.3.0: the approaches follow the gates (Rambam 5:4, the western part); 1.8.0: Beit HaMoked's own gate to the chel (north, -18) - by the house, below
+      const joined = gx === -48 && s < 0;   // a small gate's landing joins this one's free end in the readings of thirteen gates (DALK_TYT_440: the Upper gate's no longer - it has its own flight)
+      if (SOUTH3 && s > 0) {   // DALK_TYT_440: the one landing
+        if (gx === DALK_X) { chelFlight(g, gx, s, -1, { endRail: false, rampW: RAMP_W }); beastRamp(gx, s, -1, 12, 13.5, 70, 4); }
+        else if (gx === BECH_X) chelFlight(g, gx, s, -1, { endRail: false, rampW: RAMP_W, noSteps: true });
+        else { chelFlight(g, gx, s, 1, { endRail: false }); const n0 = g.children.length; platRail(g, gx - 6.05, gx - 6, 74, 77, 13.5, ["e"]); tagNew(g, n0); for (let i = n0; i < g.children.length; i++) ringHide.push(g.children[i]); }   // (the strip's end, a step down to the Water Gate's landing)
+      } else {
+      const beast = gx === BECH_X, fdx = gx === BECH_X || (gx === DALK_X && s > 0 && DALK_X < BECH_X) ? -1 : s > 0 ? 1 : -1;   // GATES_APART_440: the Delek's steps down WEST (east of it the Bechorot's flight comes down toward it), the beasts' ramp passing beside them on the outer strip   // RAMPS_N4; BEAST_N_OFF_420: the gate of the offering's (north) - cancelled
       chelFlight(g, gx, s, fdx, { endRail: !joined, rampW: beast ? RAMP_W : 0 });
       if (beast) beastRamp(gx, s, fdx, 12, 13.5, 70, 4);
+      }
       // GATE_STEPS_A2 (fix-a2; the user's decision 79, 22.11.2026): the last two and a half amot inside the gate - a step of one amah and
       // three of half an amah, as the Rambam, Beit HaBechirah 6:3 (337:96): "ועולה ממנו לעזרת הכהנים במעלה גבוהה אמה ועליה דוכן יש בו
       // שלש מעלות. רום כל מעלה חצי אמה". Until now five steps of half an amah. The amah step's tread (an amah) - a model choice.
@@ -483,12 +494,12 @@
         for (const d of FAR) { const k = Math.min(5, Math.max(1, cp.distanceTo(d.position) / 110)); d.scale.set(k, 1, k); }
       });
       // the priests' three (Middot 1:1): בית אבטינס (over the Water Gate, Yoma 19a), בית הניצוץ (the upper room over the gate), בית המוקד
-      post(WATER_X, 40.5, 67.5, true); post(-78, 40.5, -67.5, true); post(-18, 45.3, -67.5, true);
+      post(WATER_X - 4.2, 41.2, 69.9, true); post(-78, 41.2, -67.5, true);   // DALK_TYT_440: on the rooms' floors (41.2); Avtinas' guard in its room where it now stands post(-18, 45.3, -67.5, true);
       // the Levites' twenty-one: on the five gates of the mount (1:3), four inner corners of the mount, five gates of the court (Rambam 8:5:
       // the five that are not the priests'), four outer corners of the court, and one in each of לשכת הקרבן, לשכת הפרוכת, אחורי בית הכפורת
       for (const [x, z] of [[CO.harE, 0], [CO.harW, 0], [-4, CO.harN], [-30, CO.harS], [60, CO.harS]]) post(x, 20.5, z, false);
       for (const [x, z] of [[CO.harE - 4, CO.harN + 4], [CO.harE - 4, CO.harS - 4], [CO.harW + 4, CO.harN + 4], [CO.harW + 4, CO.harS - 4]]) post(x, 0, z, false);
-      for (const [x, z] of [[-48, -67.5], [-78, 67.5], [BECH_X, 67.5], [WATER_X, 67.5], [93.5, 0]]) post(x, 40.5, z, false);
+      for (const [x, z] of [[-48, -67.5], [DALK_X, 67.5], [BECH_X, 67.5], [WATER_X + 6.9, 67.5], [93.5, 0]]) post(x, 40.9, z, false);   // (DALK_TYT_440: on the cap, 40.9 - until now 40.5, their feet in it; the Water Gate's east of its bath, not in the room)
       for (const [x, z, y] of [[CO.azE + 3, CO.azN - 6, 0], [CO.azE + 3, CO.azS + 6, 0], [CO.azW - 6, CO.azN - 6, 0], [CO.azW - 6, CO.azS + 6, 0]]) post(x, y, z, false);   // CHEL_211: on the chel's floor (they stood on the podium's ledge)
       post(-48, 13.5, -62, false); post(-30, 13.5, -45, false); post(-92, 13.5, 0, false);   // לשכת הקרבן, לשכת הפרוכת (places: model choices), אחורי בית הכפורת
       // Only the marker bodies/heads are static: batch those by material, keeping each distance-scaled disc in FAR above.
@@ -1372,12 +1383,11 @@
     // small gate of Tiferet Yisrael (x -36) - joined to the Korban gate's; the rejected reading's (x 4) - a landing and a flight of its
     // own; the two of the west - a landing each and a flight along the west wall. In the reading of seven gates the two great gates'
     // landings are closed by a rail at that end.
-    platRail(g7, -84, -72, 70, 74, 13.5, ["w"]);
+    // DALK_TYT_440: the Delek no longer at -78 - nothing to close at -84 in the reading of seven gates
     platRail(g7, -54, -42, -74, -70, 13.5, ["e"]);
     platRail(g13r, -54, -42, -74, -70, 13.5, ["e"]);
     for (const grp of [g13, g13r]) {
-      H2.box(grp, 7, 13.5, 4, M2.stoneSmooth, -87.5, 0, 72).userData.chelFlight = true;
-      platRail(grp, -91, -84, 70, 74, 13.5, ["s", "w"]);
+      chelFlight(grp, -87.5, 1, 1, { landW: 7 });   // DALK_TYT_440: the Upper gate - a landing and a flight of its own, east (until now joined to the Delek's at -78)
       for (const z of SMALL_Z) {
         const sg = Math.sign(z), wt = WEST_T.get(grp), wN0 = wt.children.length;   // WEST2_D: the TYT's west gates' landings and flights
         H2.box(wt, 4, 13.5, 6, M2.stoneSmooth, -98, 0, z);
@@ -1448,7 +1458,7 @@
     // GUARDS_FAR_195). A sign of the model, said in the row's card.
     {
       const FARG = [], mG = new MeshBasicMaterial({ color: 0xe2a400 }), mS = new MeshBasicMaterial({ color: 0xc23b22 }), gD = new CylinderGeometry(2, 2, 0.4, 24);
-      const disc = (grp, x, z, small) => { const d = new Mesh(gD, small ? mS : mG); d.position.set(x, 48, z); d.userData.noPick = true; grp.add(d); FARG.push(d); };
+      const disc = (grp, x, z, small) => { const d = new Mesh(gD, small ? mS : mG); d.position.set(x, x === WATER_X && z === 67.5 ? 51 : 48, z); d.userData.noPick = true; grp.add(d); FARG.push(d); };   // GATES_APART_440: over the Water Gate above Avtinas' upper room (its roof 48.9) - at 48 it stood half in it
       for (const [grp, nx] of [[g13, NASHIM_X], [g13r, SHIR_R_X]]) {
         for (const [, x] of gN) disc(grp, x, -67.5, false);
         disc(grp, MOKED_X, -56, false);                       // the hearth house's gate to the court - the third of the north
@@ -1530,7 +1540,7 @@
     H2.occ(H2.box(g, 6.5, 0.9, 137, M2.stoneLight, 93.5, 40, 0));
     H2.crenellate(g, { x1: -94, z1: -67.5, x2: MW0 - 0.5, z2: -67.5, y: 40.9, mat: M2.stoneLight });
     H2.crenellate(g, { x1: MW1 + 0.5, z1: -67.5, x2: 94, z2: -67.5, y: 40.9, mat: M2.stoneLight });
-    { const cut = [[WATER_X - 6.9, WATER_X + 6.6]];   // AVTINAS_WEST_440: the room and the bath, both on the Water Gate   // SOUTH_SMALL_430: no merlons through Avtinas' upper room and the bath beside it (they stood in both)
+    { const cut = [[WATER_X - 6.9, WATER_X + 7.6]];   // AVTINAS_WEST_440: the room and the bath, both on the Water Gate   // SOUTH_SMALL_430: no merlons through Avtinas' upper room and the bath beside it (they stood in both)
       let x0 = -94; for (const [a, b] of cut) { if (a - x0 > 1.4) H2.crenellate(g, { x1: x0, z1: 67.5, x2: a, z2: 67.5, y: 40.9, mat: M2.stoneLight }); x0 = Math.max(x0, b); }
       H2.crenellate(g, { x1: x0, z1: 67.5, x2: 94, z2: 67.5, y: 40.9, mat: M2.stoneLight }); }
     H2.crenellate(g, { x1: -93.5, z1: -64, x2: -93.5, z2: 64, y: 40.9, mat: M2.stoneLight });
@@ -2321,7 +2331,15 @@
         {
           const iB = new Group(), iR = new Group();
           g.add(iB); g.add(iR); PIS.B.push(iB); PIS.R.push(iR); iR.visible = false;
-          for (const [zw, sz] of [[-54, 1], [65, -1]]) for (const y of [18, 20.5, 23, 25.5, 28.5, 31.5]) H2.box(iB, 0.45, 0.45, 1.6, M2.cedar, 85, y, zw + sz * 0.8);
+          for (const y of [18, 20.5, 23, 25.5, 28.5, 31.5]) H2.box(iB, 0.45, 0.45, 1.6, M2.cedar, 85, y, -54 + 0.8);
+          // DALK_TYT_440 (the checks): in the south the line x 85 runs into לשכת המלח (x 82.5..91, z 55..65) - its beam-ends went through the
+          // chamber's south wall into it, and the top one stood over its roof. In the reading of the room - out of its north face (z 55), as the
+          // north's out of the hall of hewn stone's face, at heights clear of the exedras' overhang (22.5..23.6), corbels and the Bartenura's
+          // roof; in the reading of the tunnel (no room there) - out of the court's wall as until now (ctx2.shared.saltChamber switches them)
+          { const sR = new Group(), sT = new Group(); iB.add(sR); iB.add(sT); sT.visible = false;
+            for (const y of [17.5, 19.5, 26.5, 28.2]) H2.box(sR, 0.45, 0.45, 1.6, M2.cedar, 85, y, 55 - 0.8);
+            for (const y of [18, 20.5, 23, 25.5, 28.5, 31.5]) H2.box(sT, 0.45, 0.45, 1.6, M2.cedar, 85, y, 65 - 0.8);
+            ctx2.shared.pisSouth = { room: sR, tunnel: sT }; }
           const sub = new Group(); sub.rotation.y = HP; sub.position.set(85.25, 0, 0); iR.add(sub);
           lat(sub, -65, 54, 0, 13.5, 0.8);   // local x -> the world's -z: z -54 .. 65
           const PI = { info: "**ראשי פספסין** (מידות ב, ו): ״וראשי פספסין מבדילין בין עזרת ישראל לעזרת הכהנים״. ברטנורא: ״ראשי קורות בולטים ויוצאים מן הכתל להבדיל בין עזרת ישראל לעזרת כהנים״; ולפירוש המשניות לרמב״ם — שבכה נמוכה ברצפה (ראו בבית המוקד). המתג — בתפריט, ״ראשי פספסין — קורות או שבכה ברצפה״.", refs: [["מידות ב, ו", { book: 89, index: 17 }], ["ברטנורא מידות ב, ו", { book: 643, index: 99 }], ["פירוש המשניות לרמב״ם מידות א, ו", { book: 573, index: 10 }]] };
@@ -3622,6 +3640,7 @@
           const t = this.mode === "tunnel";
           roomG.visible = !t; tunG.visible = t;
           if (ctx2.shared.duchanSaltStub) ctx2.shared.duchanSaltStub.visible = t;
+          if (ctx2.shared.pisSouth) { ctx2.shared.pisSouth.room.visible = !t; ctx2.shared.pisSouth.tunnel.visible = t; }   // DALK_TYT_440: the beam-ends of the pespasin
           if (ctx2.requestRender) ctx2.requestRender();
           return this.mode;
         }
@@ -3740,7 +3759,7 @@
       // room as the other chambers (room(): floor, walls, the door to the chel with its leaf, the roof in lishkotCut), and in it the
       // guards' benches and a lamp stand - "שהכהנים שומרים מלמעלה" (Middot 1:5); the furniture - model choices. Until 1.9.2 a solid
       // block 14 x 7.5 x 10 with a roof slab and a door leaf on its north face.
-      room(-78, -67.5, 14, 10, 7.5, 40.5, { dx: 0, dz: -1 }, null, 0, (cx, cz, y) => {
+      room(-78, -67.5, 14, 10, 7.5, 40.9, { dx: 0, dz: -1 }, null, 0, (cx, cz, y) => {   // DALK_TYT_440 (the checks): on the wall's cap (its top 40.9), as Avtinas' - until now from 40.5, its floor in the cap
         H2.box(g, 9, 1, 1.5, M2.cedar, cx, y, cz + 2.9);            // a bench along the court side
         H2.box(g, 1.5, 1, 4.5, M2.cedar, cx - 4.9, y, cz - 0.4);    // and one along the west wall
         H2.cyl(g, 0.14, 0.24, 2.4, M2.cedar, cx + 4.6, y, cz + 2.6);   // a lamp stand

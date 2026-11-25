@@ -2800,7 +2800,7 @@
         });
       }
       const rcX = new Raycaster(), O = new Vector3(), D = new Vector3();
-      const hit = (o, d, max) => { rcX.set(O.set(o[0], o[1], o[2]), D.set(d[0], d[1], d[2])); rcX.far = max; const h = rcX.intersectObjects(cands, false); return h.length ? h[0].point : null; };
+      const hit = (o, d, max) => { rcX.set(O.set(o[0], o[1], o[2]), D.set(d[0], d[1], d[2])); rcX.far = max; const h = rcX.intersectObjects(cands, false); return h.length ? (h[0].object.material === M2.gateGold ? "gate" : h[0].point) : null; };   // DALK_TYT_440: a gate's open leaf (gold) - "gate": the gate with its leaves stays open (until now the overhang wrapped the leaves - short pieces over each)
       // the runs: along x (north and south) or z (west and east); `o` - the ray's start on the other axis, `d` - toward the wall
       const SIDES = [{ run: "x", a0: -90, a1: 90, o: -42, d: -1 }, { run: "x", a0: -90, a1: 90, o: 42, d: 1 },
         { run: "z", a0: -64, a1: 64, o: -85, d: -1 }, { run: "z", a0: -64, a1: 64, o: 87, d: 1 }];
@@ -2813,7 +2813,8 @@
         const F = [];
         for (let a = S.a0; a <= S.a1; a += 1) {
           const o = S.run === "x" ? [a, YP, S.o] : [S.o, YP, a], d = S.run === "x" ? [0, 0, S.d] : [S.d, 0, 0];
-          const p = hit(o, d, 30);
+          const p0 = hit(o, d, 30), p = p0 === "gate" ? null : p0;
+          if (p0 === "gate") { F.push(null); continue; }
           const MF = SH.mesibahFoot;   // SOUTH_SMALL_430: no overhang and no columns where the mesibah stands before the chambers' fronts - it rises through that height
           if (MF && S.run === "x" && S.d > 0 && a >= MF.x0 - 0.5 && a <= MF.x1 + 0.5 && p && p.z >= MF.z0) { F.push(null); continue; }
           if (p && (S.run === "x" ? Math.abs(p.z) > 65.2 : Math.abs(p.x) > 91.6)) { F.push(null); continue; }   // SOUTH_SMALL_430: a ray that went out through an opening (a gate, its curtain at 70.7) - no face there, the gate stays open (it made a stub of the overhang inside the gate)
@@ -3105,7 +3106,7 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
       const mountP = () => { const sg = SH.southGates, g = sg && typeof sg.bech === "number" ? sg.bech : -48, ex = sg && typeof sg.dalk === "number" ? sg.dalk : -78;
         const head = [[0, 333.5], [-1, 329], [-1.05, 326], [-1.5, 323], [-3, 319], [-3.85, 314], [-3.85, 300], [-3.85, 290]];
         return SH.chelSteps && SH.chelSteps.mode === "around" ? head.concat([[-4.6, 280], [-7, 268], [6, 230], [20, 180], [24.5, 140], [25.5, 108]].concat(g > 32 ? [[28.5, 101.6]] : [], [[g + 0.8, 101], [g + 0.8, 98]]))   /* SOUTH_SMALL_430: south of the house of study (x 30..50, z 105..119) to the gate east of it */
-          : head.concat([[-5, 280], [ex - 0.8, 106], [ex - 0.8, 98]]); };
+          : head.concat(ex > 32 ? [[-4.6, 280], [-7, 268], [6, 230], [20, 180], [24.5, 140], [25.5, 108], [28.5, 101.6], [ex - 0.8, 101], [ex - 0.8, 98]] : [[-5, 280], [ex - 0.8, 106], [ex - 0.8, 98]]); };   // DALK_TYT_440: the Delek east, opposite the altar - the TYT way's waypoints round the house of study
       const MOUNT_V = 26;
       const T0R = (() => { const o = Object.assign({}, T0), sh = SH.chelSteps && SH.chelSteps.mode === "around" ? 0 : 7, P = mountP(); let L = 0; for (let i = 1; i < P.length; i++) L += Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]);
         const mt = Math.max(0, Math.round((L / MOUNT_V - (T0.ezn0 - T0.take - 0.2)) * 10) / 10);
@@ -3139,8 +3140,9 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
           : (() => { const ex = BKW.geo().ex; return [[[[ex - 0.8, 98], [ex - 0.8, 88], [ex - 0.8, 83], [ex - 0.3, 79.9]], T.ezn0, T.ezn0 + 1.5, "floor", 0]]; })()),
           // the ramp - his lane the inner one (z 77.9 on the lower run, 76.3 on the upper), the ox's the outer (79.0, 75.2): 1.1 apart; round the turn (centre xb, z 77.1) at radius 0.8
           tyt() ? [[[g + 1.5, 79.9], [g + 1.3, 77], [g + 1.3, 71.5]], T.ezn0 + 1.5, T.ezn1, "floor", Math.PI]   // STEPS_TYT_420: up the twelve steps
-          : (() => { const { ex, rf } = BKW.geo(), { xT, xf, zi } = rf, zl = zi + 1.2;   // BIKKURIM_WAY_420: east along the chel (z 78.6) to the ramp's foot, round onto it, up it to the landing
-              return [[[ex - 0.3, 79.9], [ex + 1.5, 78.6], [xf - 2.5, 78.6], [xf - 1.2, 78.2], [xf - 0.8, 77.3], [xf - 0.4, zl + 0.6], [xf + 0.6, zl], [xT, zl], [xT + 1.5, zi + 0.6], [g + 1.3, 72.6], [g + 1.3, 71.5]], T.ezn0 + 1.5, T.ezn1, "floor", Math.PI]; })(),
+          : (() => { const { ex, rf } = BKW.geo(), { xT, xf, zi } = rf, zl = zi + 0.8;   // RAMP_RAIL_440: was zi + 1.2 - inward with the ox (its lane zi + 1.7)   // BIKKURIM_WAY_420: east along the chel (z 78.6) to the ramp's foot, round onto it, up it to the landing
+              return [(ex > xf ? [[ex - 0.3, 79.9], [ex - 1.5, 78.6], [xf - 1.5, 78.6], [xf - 2.9, 78.2], [xf - 3.5, 77.0], [xf - 3.0, 75.8], [xf - 1.8, zl]]   // DALK_TYT_440: west, past the foot, round inside the ox's turn
+                : [[ex - 0.3, 79.9], [ex + 1.5, 78.6], [xf - 2.5, 78.6], [xf - 1.2, 78.2], [xf - 0.8, 77.3], [xf - 0.4, zl + 0.6], [xf + 0.6, zl]]).concat([[xT, zl], [xT + 1.5, zi + 0.6], [g + 1.3, 72.6], [g + 1.3, 71.5]]), T.ezn0 + 1.5, T.ezn1, "floor", Math.PI]; })(),
           tyt() ? [[[g + 1.3, 71.5], [g + 1.3, 64], [g + 1.3, 59.2]], T.ezn1, T.nik, "floor", Math.PI]   // and the twenty inside the gate, to the court's floor (z 60)
           : [[[g + 1.3, 71.5], [g + 1.3, 69.5], [g + 1.3, 64]], T.ezn1, T.nik, "floor", Math.PI],
           // the south lane (z 61.5) between the priests' court's south wall and the ulam's south side (its end the Parvah, the washers and the salt - the
@@ -3149,7 +3151,7 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
           // the lane's points (made for the gate at x -48: east 8 amot from the gate, then to x 30) took him east to 39.3, back west to 30 and
           // east again - now straight on from the gate toward the corner
           [(tyt() ? [[g + 1.3, 59.2]].concat(g > 40 ? [[39.4, 58.6], [38.3, 58.4], [38.3, 57.5]] : [[38, 57.5]]) : g + 9.3 < 30 ? [[g + 1.3, 64], [g + 9.3, 61.5], [30, 61.5], [38, 57.5]] : g + 3.3 < 38 ? [[g + 1.3, 64], [g + 3.3, 61.6], [38, 57.5]] : [[g + 1.3, 64], [g + 0.8, 60.6], [39.4, 58.6], [38.3, 58.4], [38.3, 57.5]])   /* SOUTH_SMALL_430: the gate east of x 38 - straight west, south of the ramp's foot and of the benches' ends (z 58), then into the gap between two rows (x 37.95..38.7) */.concat([[38.3, 52], A(38.3, 16.2), A(38.3, 15.0 + WZ)]), T.nik, T.corner,   /* SOUTH_SMALL_430: x 38.3 - the middle of the gap between the rows (37.95..38.7); at 38 his shoulder was in the row */ "floor", 2.62],
-          [[A(38.3, 15.0 + WZ), A(38.3, 17), A(38.3, 39.5)].concat(g > 40 ? [[38.3, 57.5], [38.6, 58.6], [42, 60.4]] : [[38, 57.5], [34, 61.5]]), T.bow1 + 0.2, T.end, "floor"]   // SOUTH_SMALL_430: out of the rows, toward his gate (east of x 38)
+          [[A(38.3, 15.0 + WZ), A(38.3, 17), A(38.3, 39.5)].concat(g > 40 ? [[38.3, 57.5], [40, 58.6], [44, 59.4]] : [[38, 57.5], [34, 61.5]]), T.bow1 + 0.2, T.end, "floor"]   /* DALK_TYT_440: north of the ox's stand (38.5, 60.3) */   // SOUTH_SMALL_430: out of the rows, toward his gate (east of x 38)
         ]; };
       const hCache = new Map();
       // STEPS_TYT_420 (the user: "את הדגמת הביכורים בשיטת התפאי - שיעלו על המדרגות, מה הבעיה?"): in Tiferet Yisrael's reading of the chel's twelve
@@ -3172,7 +3174,8 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
       // a model choice
       // SOUTH_SMALL_430: from the gate to where the ox stands - the gate is at x 54 now, east of the ramp's foot: straight on west, south of the
       // foot (55.1), to x 41 (until now from x 30 east along the lane, to x 46 - with the gate at 54 it went east and back); the place - a model choice
-      const oxTail = (g, ty) => (g > 40 ? (ty ? [[g - 0.2, 70], [g, 62], [g - 3, 60.2], [g - 8, 60.5], [41, 61]] : [[g - 0.2, 70], [g, 66], [g - 1.5, 61.5], [g - 7, 60.5], [41, 61]])
+      const oxTail = (g, ty) => (g > 40 ? (ty ? [[g - 0.2, 70], [g, 62], [g - 3, 60.2], [g - 8, 60.3], [38.5, 60.3]] : [[g - 0.2, 70], [g, 66], [g - 1.5, 61.5], [g - 7, 60.3], [38.5, 60.3]])   /* DALK_TYT_440: its stand west of the Delek gate's mouth (its piers x 36.8..47.2 from z 61) - until now (41, 61), in it */
+        : g > 24 ? (ty ? [[g - 0.2, 70], [g, 62], [g + 3, 60.1], [g + 6, 60.1], [g + 9, 60.1]] : [[g - 0.2, 70], [g, 66], [g + 1.5, 61.5], [g + 4.5, 60.1], [g + 9, 60.1]])   /* GATES_APART_440: the gate at 33 - out of its mouth (its piers to x g+5.2 from z 61) east along z 60.1 to x g+9, between it and the Water Gate's mouth (from 60.8) */
         : (() => { const xe = Math.min(46, Math.max(24, g + 20)); return ty ? [[g - 0.2, 70], [g, 62], [g + 4, 58.5], [g + 14, 57], [(g + 14 + xe) / 2, 57], [xe, 55.5]] : [[g - 0.2, 70], [g, 66], [g + 4, 59.5], [g + 14, 57], [(g + 14 + xe) / 2, 57], [xe, 55.5]]; })());
       const OXW = () => { const g = BKW.geo().gx; return [oxTail(g, false).slice(1), T.nik - 0.6, T.nik + 3.8, "floor"]; };   // (SOUTH_SMALL_430: the floor under the ox's way in the court, sampled before the run)
       const prime = () => { wayCheck(); const was = BG.visible; BG.visible = false; for (const [P, , , kind] of SW().concat([OXW()])) if (kind === "floor") { const L = plen2(P); for (let d = 0; d <= L; d += 0.5) { const q = at2(P, d / Math.max(L, 1e-3)); hAt(q[0], q[1], 30); } } BG.visible = was; };
@@ -3286,8 +3289,12 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
         // MOUNT_SEEN_430: from the gate of Chulda (where way A ends) across the mount in sight, a little east of their way, before them
         const OM = [[OXA.x, OXA.zh], [-0.4, 326], [-0.9, 323], [-2.4, 319], [-3.25, 314], [-3.25, 300], [-3.25, 290]];
         if (tyt()) return (this._p = OM.concat([[-4.0, 280], [-6.4, 268], [6.6, 230], [20.6, 180], [25.1, 140], [26.1, 108]].concat(g > 32 ? [[29.2, 102]] : [], [[g - 0.6, 101]]), [[g - 0.6, 98], [g - 0.6, 88], [g - 0.5, 83], [g - 0.3, 78]], oxTail(g, true)));   // SOUTH_SMALL_430: round the house of study, and the new tail   // STEPS_TYT_420
-        { const { ex, rf } = BKW.geo(), { xT, xf, zi } = rf, zo = zi + 2.3;   // BIKKURIM_WAY_420: the outer lane, before him
-          return (this._p = OM.concat([[-4.4, 280], [ex - 1.4, 106]], [[ex - 1.4, 98], [ex - 1.4, 88], [ex - 1.4, 83], [ex - 0.6, 80.2], [ex + 2, 79.3], [xf - 3, 79.3], [xf - 1.6, 78.8], [xf - 0.9, 78], [xf - 0.2, zo + 0.3], [xf + 1.5, zo], [xT, zo], [xT + 2, zo - 0.7], [g - 1.5, 73.5]], oxTail(g, false))); }   // SOUTH_SMALL_430: the new tail
+        { const { ex, rf } = BKW.geo(), { xT, xf, zi } = rf, zo = zi + 1.7;   // RAMP_RAIL_440: was zi + 2.3 - the ox's flank (its box from the lane -0.3 to +1.0) ran through the outer rail (z zi+2.88) on the whole ramp; now its box ends 0.16 short of it   // BIKKURIM_WAY_420: the outer lane, before him
+          const W = ex > xf;   // DALK_TYT_440: the Delek east of the ramp's foot - west along the chel, past the foot, round and up
+          const E = ex > 32;   // GATES_APART_440: the way over the mount by where the opening is (as the bringer's, mountP), the way in the chel by the ramp's foot (W)
+          return (this._p = OM.concat(E ? [[-4.0, 280], [-6.4, 268], [6.6, 230], [20.6, 180], [25.1, 140], [26.1, 108], [29.2, 102], [ex - 1.4, 101]] : [[-4.4, 280], [ex - 1.4, 106]], [[ex - 1.4, 98], [ex - 1.4, 88], [ex - 1.4, 83], [ex - 0.6, 80.2]],
+            W ? [[ex - 2, 79.3], [xf - 1.5, 79.3], [xf - 3.2, 78.9], [xf - 4.2, 77.8], [xf - 3.6, 76.7], [xf - 2, zo]] : [[ex + 2, 79.3], [xf - 3, 79.3], [xf - 1.6, 78.8], [xf - 0.9, 78], [xf - 0.2, zo + 0.3], [xf + 1.5, zo]],
+            [[xT, zo], [xT + 2, zo - 0.7], [g - 1.5, 73.5]], oxTail(g, false))); }   // SOUTH_SMALL_430: the new tail
         return (this._p = [[g - 0.6, 98], [g - 0.6, 88], [g - 0.5, 83], [g + 0.2, 80.6], [g + 3, 79.1], [g + 8, 79], [xb - 10, 79], [xb - 3, 78.9], [xb, 79], [xb + 1.3, 78.4], [xb + 1.9, 77.1], [xb + 1.3, 75.8], [xb, 75.2], [xb - 10, 75.2], [g + 5, 75.2], [g + 1.4, 74.6], [g + 0.4, 73], [g - 0.2, 70], [g, 66], [g + 4, 59.5], [g + 14, 57], [(g + 14 + xe) / 2, 57], [xe, 55.5]]);
       } };
       const oxGround = (x, z) => { const y = fnc2(SH.floorY) ? SH.floorY(x, 20.5, z) : -Infinity; return isFinite(y) ? y : hAt(x, z, 21); };
@@ -3820,7 +3827,8 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
               follow(tm0 + (tm1 - tm0) * 0.5, 26, 30, 24, -8, -20), follow(tm1 - 1.5, 22, 22, 20, -5, -14),
               ...(tyt() ? [[T.ezn0, [g + 26, 14, 122], [g + 1, 3, 92]], [T.ezn0 + 1.5, [g + 20, 14, 100], [g + 1, 4, 78]], [T.ezn0 + 5, [g + 16, 20, 100], [g + 1, 6, 74]]]
                 : (() => { const { ex, rf } = BKW.geo(), { xT, xf } = rf;   // BIKKURIM_WAY_420: the soreg's opening, along the chel, the ramp's foot, up the ramp
-                  return [[T.ezn0, [ex + 12, 14, 112], [ex, 3, 88]], [T.ezn0 + 1.5, [ex + 22, 16, 104], [ex + 6, 3, 80]], [T.ezn0 + 5, [xf - 2, 18, 104], [xf - 8, 3, 79]], [T.ezn0 + 9, [xf + 12, 22, 104], [xf + 4, 4, 77]], [T.ezn0 + 13, [xf + 34, 24, 104], [xf + 30, 9, 76]], [T.ezn1 - 4, [xT + 4, 26, 102], [xT - 4, 13, 75]]]; })()),
+                  const d = ex > xf ? -1 : 1;   // DALK_TYT_440: ahead of him - west when the Delek is east of the foot
+                  return [[T.ezn0, [ex + d * 12, 14, 112], [ex, 3, 88]], [T.ezn0 + 1.5, [ex + d * 22, 16, 104], [ex + d * 6, 3, 80]], [T.ezn0 + 5, [xf - d * 2, 18, 104], [xf - d * 8, 3, 79]], [T.ezn0 + 9, [xf + 12, 22, 104], [xf + 4, 4, 77]], [T.ezn0 + 13, [xf + 34, 24, 104], [xf + 30, 9, 76]], [T.ezn1 - 4, [xT + 4, 26, 102], [xT - 4, 13, 75]]]; })()),
               [T.ezn1 - 2, [g + 18, 26, 102], [g + 5, 12, 75]], [T.ezn1, [g + 14, 24, 96], [g + 2, 14, 72]], [T.steps1, [g + 12, 24, 92], [g + 1.3, 15, 68]], [T.nik, [x0 - 25, 46, 106], [x0, 17, 63]],
               [T.nik + 2.6, [bx(0.3) - 8, 46, 104], [bx(0.3), 17, 61]], [T.nik + 5.2, [bx(0.62) - 8, 46, 104], [bx(0.62), 17, 60]], [T.nik + 7.4, [bx(0.9) - 8, 46, 100], [bx(0.9), 17, 58]]]; })(),
           [T.corner - 0.5, [31.5, 21.5, C[1] + 7], [C[0], 17.2, C[1]]],
