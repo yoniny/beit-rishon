@@ -694,7 +694,7 @@
     const B4 = (c) => [c, GAP_W];
     soregSide("x", sz1, sx1, sx2, [-78, -48, 3.5], [161], [B4(-78), B4(-48), B4(-38.5), B4(-18)]);
     // WATER_GATE_N4: the south openings follow the gates - the Delek -78, the Bechorot 30, the Water Gate 44 (opposite the altar; 30-courts.js)
-    soregSide("x", sz2, sx1, sx2, [-78, 30, 44], [161], [B4(-88), B4(-78), B4(30), B4(44)]);
+    soregSide("x", sz2, sx1, sx2, [CO.gS.dalk, CO.gS.bech, CO.gS.water], [161], [B4(-88), B4(CO.gS.dalk), B4(CO.gS.bech), B4(CO.gS.water)]);   // SOUTH_SMALL_430: opposite the gates where they stand (until now 30, 44)
     soregSide("z", sx2, sz1, sz2, [0], [], [[0, 8], B4(-12), B4(12)]);
     soregSide("z", sx1, sz1, sz2, [0], [], [B4(-20), B4(20)]);
     for (const { w, h, d, matrices } of debrisBatches.values()) {

@@ -1341,18 +1341,23 @@
         for (let i = OUT.N - 1; i >= iDiv; i--) rev.push([OUT.xs[i], OUT.zs[i]]);
         // MIDRASH_AROUND_420 (the user 24.11.2026: "חוזרים דרך ביהמ״ד (חותכים אותו ממש!)"): north past the west of the house of study on the
         // mount (x 30..50, z 105..119; the line went through it at (37, 115)) - by (24.5, 140), (25.5, 108), then east to the soreg's opening
-        const BP = [[OUT.xs[iDiv], OUT.zs[iDiv]], [-3.85, 290], [-4.6, 280], [-7, 268], [6, 230], [20, 180], [24.5, 140], [25.5, 108], [31, 98.5], [39, 94.5], [43.8, 91], [43.8, 84], [43.8, 79],
-          [44.8, 77.4], [48, 76.9], [58, 76.9], [64, 76.9], [66.6, 76.0], [67.6, 74.4], [67.0, 72.8], [65.4, 72.05], [63.5, 72.0], [56, 72.0], [49.5, 72.0],
-          [46.5, 72.0], [44, 72.0]];   // WATER_GATE_N4: the Water Gate now stands at x 44, opposite the altar (30-courts.js; the way from the soreg's opening to the landing as before, 62 amot east)
+        // SOUTH_SMALL_430: the Water Gate moved east (30-courts.js: CO.gS.water, 66; 44 until now) - the way from the soreg's opening before it
+        // to its landing, and the way in, move with it (DWX); from the house of study's south-west corner east along the mount, south of it
+        const DWX = ((SH.southGates && SH.southGates.water) || 44) - 44, WX = (x) => x + DWX;
+        const BP = [[OUT.xs[iDiv], OUT.zs[iDiv]], [-3.85, 290], [-4.6, 280], [-7, 268], [6, 230], [20, 180], [24.5, 140], [25.5, 108], [31, 98.5], [39, 94.5]].concat(DWX > 4 ? [[WX(43.8) - 10, 92]] : [], [[WX(43.8), 91], [WX(43.8), 84], [WX(43.8), 79],
+          [WX(44.8), 77.4], [WX(48), 76.9], [WX(58), 76.9], [WX(64), 76.9], [WX(66.6), 76.0], [WX(67.6), 74.4], [WX(67.0), 72.8], [WX(65.4), 72.05], [WX(63.5), 72.0], [WX(56), 72.0], [WX(49.5), 72.0],
+          [WX(46.5), 72.0], [WX(44), 72.0]]);   // WATER_GATE_N4: the Water Gate now stands at x 44, opposite the altar (30-courts.js; the way from the soreg's opening to the landing as before, 62 amot east)
         const BACK = mkLeg("back", rev.concat(denseOf(BP).slice(1)), FLOOR(sf[0], sf[1], 20));
         // IN: through the gate (its passage x -23..-13), then east between the ulam's steps (their south end at z 51.5) and the laver (its base from
         // z 53, its spouts to about 52.4 - moved north by fix-a: the old way went through it), north of the chambers along the south (from z 54.5),
         // round onto the ramp's foot (z 53.25) and up it
-        const IN = mkLeg("in", denseOf([[44, 72.0], [44, 70.5], [44, 68.5], [44, 66], [44, 63], [44, 58], [45.5, 54.6], [49, 53.2], [53, 52.4], [55.6, 51.6], [57.1, 50.3], [57.4, 48],   // WATER_GATE_N4: straight in from the gate, north of the Madichin (z 55), onto the ramp's foot
-          A2(57.4, 30), A2(57.4, 18.5), A2(57.0, 12.6), A2(50.8, 9.8), A2(46.6, 8.4), sp]), 13.5);
+        // (SOUTH_SMALL_430: from the gate, now east of the ramp's foot, north and then west to it, south of its foot (55.1), and onto it)
+        const IN = mkLeg("in", denseOf((DWX > 4 ? [[WX(44), 72.0], [WX(44), 70.5], [WX(44), 68.5], [WX(44), 66], [WX(44), 63], [WX(43.3), 58.4], [WX(40.5), 56.8], [WX(37.5), 56.2], [WX(35.8), 55.5], [57.4, 52], [57.4, 48]]
+          : [[44, 72.0], [44, 70.5], [44, 68.5], [44, 66], [44, 63], [44, 58], [45.5, 54.6], [49, 53.2], [53, 52.4], [55.6, 51.6], [57.1, 50.3], [57.4, 48]]).concat([   // WATER_GATE_N4: straight in from the gate, north of the Madichin (z 55), onto the ramp's foot
+          A2(57.4, 30), A2(57.4, 18.5), A2(57.0, 12.6), A2(50.8, 9.8), A2(46.6, 8.4), sp])), 13.5);
         const WINE = mkLeg("wine", denseOf([A2(58.8, 43.3), A2(58.8, 41.2), A2(58.8, 30), A2(58.8, 18.5), A2(58.4, 12.8), A2(52, 10.4), A2(47.9, 8.8),
           [sp[0] + 0.9, sp[1]]]), 16);
-        const S_TG = OUT.near(224, 0), S_SOR = OUT.near(241, 0), S_T = OUT.len, U_SOR = BACK.near(43.8, 84);
+        const S_TG = OUT.near(224, 0), S_SOR = OUT.near(241, 0), S_T = OUT.len, U_SOR = BACK.near(WX(43.8), 84);
         const L = { OUT, BACK, IN, WINE, S_TG, S_D: S_TG - 4.2, S_J: S_SOR + 34.6, S_A: S_T - 26, U_R: 26, U_P: U_SOR - 30,
           S_FOOT: IN.near(...A2(57.4, 41.2)), S_CHULDA: OUT.near(-1.0, 334), S_RAMPF: OUT.near(0, RP.zf), U_CHULDA: BACK.near(-1.0, 334), U_SOR };
         // the eye's distance ahead of him on the leg and its height (by his place on it; smooth between the knots)
@@ -1361,8 +1366,9 @@
           [OUT, [[0, 12, 3.6], [S_TG - 12, 12, 5.0], [S_TG + 4, 12, 6.2], [S_SOR, 12, 5.6], [L.S_J - 26, 15, 6.5], [L.S_J + 6, 16, 8], [sO(244, 98) + 15, 20, 11], [sO(-2.5, 276) - 40, 20, 11],
             [sO(-2.5, 276) - 14, 15, 4.8], [L.S_CHULDA + 6, 15, 4.8], [sO(0, 376), 16, 6.5], [L.S_RAMPF + 8, 15, 6.5], [L.S_A - 20, 14, 5.5], [S_T, 10, 3.6]]],
           [BACK, [[0, 10, 3.6], [L.U_R + 4, 15, 6], [BACK.near(0, 376), 16, 6.5], [L.U_CHULDA - 6, 15, 4.8], [sB(-4.6, 280) + 6, 15, 4.8], [sB(20, 180), 20, 10],
-            [L.U_P - 20, 18, 9], [L.U_P + 4, 14, 6], [U_SOR, 10, 4.6], [sB(66.6, 76.0), 9, 4.6], [BACK.len, 9, 4.6]]],
-          [IN, [[0, 6, 4.4], [IN.near(44, 63), 8, 5], [IN.near(49, 53.2), 11, 8.5], [IN.near(57.1, 50.3), 12, 7], [IN.len, 10, 4.5]]]]);   // WATER_GATE_N4: straight in from the gate to the ramp's foot
+            [L.U_P - 20, 18, 9], [L.U_P + 4, 14, 6], [U_SOR, 10, 4.6], [sB(WX(66.6), 76.0), 9, 4.6], [BACK.len, 9, 4.6]]],
+          [IN, DWX > 4 ? [[0, 6, 4.4], [IN.near(WX(44), 63), 8, 5], [IN.near(WX(40.5), 56.8), 11, 8.5], [IN.near(57.4, 52), 12, 7], [IN.len, 10, 4.5]]
+            : [[0, 6, 4.4], [IN.near(44, 63), 8, 5], [IN.near(49, 53.2), 11, 8.5], [IN.near(57.1, 50.3), 12, 7], [IN.len, 10, 4.5]]]]);   // WATER_GATE_N4: straight in from the gate to the ramp's foot
         // PACE_G: the speed along each leg (amot a demonstration second; V_WALK - a man's walk)
         const W = V_WALK, sStoa = sO(-2.5, 276), uStoaN = sB(-4.6, 280), uRampF = BACK.near(0, RP.zf);
         L.pace = new Map([
@@ -1504,7 +1510,7 @@
         const sc = Math.min(rs + A, rl.len), qc = rl.at(sc);
         const wX = (x, a, b) => smooth(clamp((x - a) / 24, 0, 1)) * (1 - smooth(clamp((x - b) / 24, 0, 1)));   // 1 between a + 24 and b, 0 outside a..b + 24
         const capS = lerp(60, 5.2, smooth(clamp((qc[1] - 196) / 82, 0, 1)) * (1 - smooth(clamp((qc[1] - 338) / 10, 0, 1))));   // the royal stoa - all along the south (z 284..335)
-        const capC = lerp(60, 6.5, wX(qc[0], -64, 30) * smooth(clamp((192 - qc[1]) / 82, 0, 1)));   // the court's south wall (z 65-70)
+        const capC = lerp(60, 6.5, wX(qc[0], -64, 30 + Math.max(0, ((SH.southGates && SH.southGates.water) || 44) - 44)) * smooth(clamp((192 - qc[1]) / 82, 0, 1)));   // the court's south wall (z 65-70) (SOUTH_SMALL_430: on to the Water Gate where it stands)
         const H = Math.min(H0 + 1.25 * fast, Math.max(H0, Math.min(capS, capC)));
         let eye = [qc[0], rl.body(sc) + H, qc[1]], look = [q[0], py + 1.9, q[1]];
         const SP = SHL.SP, sy = SP.gy != null ? SP.gy : Y0, B = BOWL();
@@ -1520,7 +1526,7 @@
           // would stand in the gate's open leaves)
           [smooth(clamp((t - T2.decl0 + 2.4) / 2.4, 0, 1)) * (1 - smooth(clamp((t - T2.decl1) / 2.4, 0, 1))), [[213.5, 10.6, 0.8], [223.5, 8.0, 0]]],   // (in line with the gate: the blend out goes through its opening)
           [smooth(clamp((t - T2.rim1 + 2.6) / 2.6, 0, 1)) * (1 - smooth(clamp((t - T2.back0 - 0.2) / 2.8, 0, 1))), [[SP.x + 3.4, sy + 2.0, SP.z - 5.6], [SP.x - 0.4, SP.y - 0.3, SP.z - 0.4]]],
-          [smooth(clamp((t - T2.wg0 + 3) / 3, 0, 1)) * (1 - smooth(clamp((t - T2.in0 + 2.0) / 2.4, 0, 1))), [[41, 16.6, 83.2], [45.5, 14.8, 72.4]]],   // (into the court before he goes: the eye through the gate's opening)   // the Water Gate, near (in line with its opening: the blend into the court goes through it)
+          [smooth(clamp((t - T2.wg0 + 3) / 3, 0, 1)) * (1 - smooth(clamp((t - T2.in0 + 2.0) / 2.4, 0, 1))), [[41 + (((SH.southGates && SH.southGates.water) || 44) - 44), 16.6, 83.2], [45.5 + (((SH.southGates && SH.southGates.water) || 44) - 44), 14.8, 72.4]]],   // SOUTH_SMALL_430: with the gate   // (into the court before he goes: the eye through the gate's opening)   // the Water Gate, near (in line with its opening: the blend into the court goes through it)
           [smooth(clamp((t - T2.top1 + 3.2) / 3.2, 0, 1)), pourV]
         ];
         for (const [w, [E, Lk]] of shots) if (w > 0) { eye = eye.map((v, i) => lerp(v, E[i], w)); look = look.map((v, i) => lerp(v, Lk[i], w)); }
@@ -1580,11 +1586,12 @@
           }
         }
         // the two at the Water Gate, on its landing either side of the way in - there from the start; they blow when he comes
-        for (const [f, x] of [[D2.t5, 40.6], [D2.t6, 47.6]]) {
+        const WGX = (SH.southGates && SH.southGates.water) || 44;   // SOUTH_SMALL_430: the Water Gate where it stands
+        for (const [f, x] of [[D2.t5, WGX - 3.4], [D2.t6, WGX + 3.6]]) {
           f.g.visible = true;
-          if (SHL.wgY == null) SHL.wgY = rayFloor(44, 73.2, 16);
+          if (SHL.wgY == null) SHL.wgY = rayFloor(WGX, 73.2, 16);
           f.g.position.set(x, SHL.wgY, 73.2);
-          f.g.rotation.y = x < 44 ? 0.35 : -0.35;   // their faces out, to the chel, a little toward the way in
+          f.g.rotation.y = x < WGX ? 0.35 : -0.35;   // their faces out, to the chel, a little toward the way in
           const up = smooth(clamp((t - T.blow0 + 0.6) / 0.5, 0, 1)) * (1 - smooth(clamp((t - T.blow1) / 0.5, 0, 1)));
           TRUH.hold(f, up);   // TRUMPET_HANDS_N11
         }
@@ -2807,19 +2814,21 @@
         for (let a = S.a0; a <= S.a1; a += 1) {
           const o = S.run === "x" ? [a, YP, S.o] : [S.o, YP, a], d = S.run === "x" ? [0, 0, S.d] : [S.d, 0, 0];
           const p = hit(o, d, 30);
+          const MF = SH.mesibahFoot;   // SOUTH_SMALL_430: no overhang and no columns where the mesibah stands before the chambers' fronts - it rises through that height
+          if (MF && S.run === "x" && S.d > 0 && a >= MF.x0 - 0.5 && a <= MF.x1 + 0.5 && p && p.z >= MF.z0) { F.push(null); continue; }
           F.push(p ? (S.run === "x" ? p.z : p.x) : null);
         }
         // a door's narrow gap (the ray went into a chamber) takes the face on both its sides
         for (let i = 1; i < F.length - 1; i++) {
           if (F[i - 1] == null) continue;
-          let j = i; while (j < F.length && j - i < 6 && (F[j] == null || Math.abs(F[j] - F[i - 1]) > 0.25)) j++;
-          if (j > i && j < F.length && j - i < 6 && F[j] != null && Math.abs(F[j] - F[i - 1]) <= 0.25) for (let k = i; k < j; k++) F[k] = F[i - 1];
+          let j = i; while (j < F.length && j - i < 5 && (F[j] == null || Math.abs(F[j] - F[i - 1]) > 0.25)) j++;   // SOUTH_SMALL_430: up to four rays (a chamber's door, 2.4..3.6 wide) - a gate between its piers (5.2, five rays) stays open, as said above (until now it was bridged: the overhang crossed the gates' faces)
+          if (j > i && j < F.length && j - i < 5 && F[j] != null && Math.abs(F[j] - F[i - 1]) <= 0.25) for (let k = i; k < j; k++) F[k] = F[i - 1];
         }
         let s0 = null;
         const flush = (i1) => {
           if (s0 == null) return;
           const i0 = s0; s0 = null;
-          if (i1 - i0 < 3) return;   // too short
+          if (i1 - i0 < 4) return;   // too short (SOUTH_SMALL_430: 4 - a gate's pier, 2.6 wide, has no stub of its own)
           const f = F[i0], a0 = S.a0 + i0 - 0.5, a1 = S.a0 + i1 - 1 + 0.5, L = a1 - a0, am = (a0 + a1) / 2;
           const T = Object.assign({}, S, { f });
           const [cx, cz] = P(T, am, DEP / 2), Y = floorAt(cx, cz);
@@ -2890,7 +2899,10 @@
         if (x > 33 && x < 38.6) cut.push([5.5, 21]);       // BENCH_CORNER_420 (the user 24.11.2026: "כהן באוויר - הנפה בשתי הקריאות" - the bikkurim's priest and bringer stood half on a row at the south-west corner): the corner's ground free, where the first fruits are waved and set down
         cut.sort((a, b) => a[0] - b[0]);
         let z = Z0;
-        for (const [c0, c1] of cut.concat([[Z1, Z1]])) {
+        // SOUTH_SMALL_430: east of the altar (x 72 on) the rows end before the mesibah's stair and the chambers of the south (now there, x 72..91,
+        // z 49.3..65): at 34.5 in the altar's frame - 47 in the default reading, 49 in Rashi's (the farthest south)
+        const zEnd = x > 71.6 ? 34.5 : Z1;
+        for (const [c0, c1] of cut.concat([[zEnd, zEnd]])) {
           if (c0 - z > 1) parts.push(new BoxGeometry(RW, RH, c0 - z).translate(x, F + RH / 2, (z + c0) / 2));
           z = Math.max(z, c1);
         }
@@ -3091,7 +3103,7 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
       // going up the ramp): from the soreg on every time is later by the crossing less those 1.8 seconds. The way - a model choice
       const mountP = () => { const sg = SH.southGates, g = sg && typeof sg.bech === "number" ? sg.bech : -48, ex = sg && typeof sg.dalk === "number" ? sg.dalk : -78;
         const head = [[0, 333.5], [-1, 329], [-1.05, 326], [-1.5, 323], [-3, 319], [-3.85, 314], [-3.85, 300], [-3.85, 290]];
-        return SH.chelSteps && SH.chelSteps.mode === "around" ? head.concat([[-4.6, 280], [-7, 268], [6, 230], [20, 180], [24.5, 140], [25.5, 108], [g + 0.8, 101], [g + 0.8, 98]])
+        return SH.chelSteps && SH.chelSteps.mode === "around" ? head.concat([[-4.6, 280], [-7, 268], [6, 230], [20, 180], [24.5, 140], [25.5, 108]].concat(g > 32 ? [[28.5, 101.6]] : [], [[g + 0.8, 101], [g + 0.8, 98]]))   /* SOUTH_SMALL_430: south of the house of study (x 30..50, z 105..119) to the gate east of it */
           : head.concat([[-5, 280], [ex - 0.8, 106], [ex - 0.8, 98]]); };
       const MOUNT_V = 26;
       const T0R = (() => { const o = Object.assign({}, T0), sh = SH.chelSteps && SH.chelSteps.mode === "around" ? 0 : 7, P = mountP(); let L = 0; for (let i = 1; i < P.length; i++) L += Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]);
@@ -3135,7 +3147,7 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
           // BACK_FORTH_430 (the user 25.11.2026: "המביא, בתחילת הגעתו לעזרה עושה הלוך וחזור כמה פעמים"): since the Bechorot gate moved east (x 30)
           // the lane's points (made for the gate at x -48: east 8 amot from the gate, then to x 30) took him east to 39.3, back west to 30 and
           // east again - now straight on from the gate toward the corner
-          [(tyt() ? [[g + 1.3, 59.2], [38, 57.5]] : g + 9.3 < 30 ? [[g + 1.3, 64], [g + 9.3, 61.5], [30, 61.5], [38, 57.5]] : [[g + 1.3, 64], [g + 3.3, 61.6], [38, 57.5]]).concat([[38, 52], A(38, 16.2), A(38.3, 15.0 + WZ)]), T.nik, T.corner, "floor", 2.62],
+          [(tyt() ? [[g + 1.3, 59.2], [38, 57.5]] : g + 9.3 < 30 ? [[g + 1.3, 64], [g + 9.3, 61.5], [30, 61.5], [38, 57.5]] : g + 3.3 < 38 ? [[g + 1.3, 64], [g + 3.3, 61.6], [38, 57.5]] : [[g + 1.3, 64], [g + 0.8, 60.6], [38, 57.5]])   /* SOUTH_SMALL_430: the gate east of x 38 - straight west, south of the ramp's foot */.concat([[38, 52], A(38, 16.2), A(38.3, 15.0 + WZ)]), T.nik, T.corner, "floor", 2.62],
           [[A(38.3, 15.0 + WZ), A(37.8, 17), A(38, 39.5), [38, 57.5], [34, 61.5]], T.bow1 + 0.2, T.end, "floor"]
         ]; };
       const hCache = new Map();
@@ -3157,7 +3169,11 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
       // place of slaughter; the Rambam, Bikkurim 3:12: "וכשם שטעונין תנופה כך טעונין קרבן שלמים"): from the Nikanor gate north-west, north of
       // the altar, to beside the rings (40-altar.js: the label at x 52, z -27); peace offerings are slaughtered anywhere in the court - the spot
       // a model choice
-      const OXW = () => { const g = BKW.geo().gx; return [[[g, 66], [g + 4, 59.5], [g + 40, 57], [Math.max(24, g + 20), 55.5]], T.nik - 0.6, T.nik + 3.8, "floor"]; };
+      // SOUTH_SMALL_430: from the gate to where the ox stands - the gate is at x 54 now, east of the ramp's foot: straight on west, south of the
+      // foot (55.1), to x 41 (until now from x 30 east along the lane, to x 46 - with the gate at 54 it went east and back); the place - a model choice
+      const oxTail = (g, ty) => (g > 40 ? (ty ? [[g - 0.2, 70], [g, 62], [g - 3, 60.2], [g - 8, 60.5], [41, 61]] : [[g - 0.2, 70], [g, 66], [g - 1.5, 61.5], [g - 7, 60.5], [41, 61]])
+        : (() => { const xe = Math.min(46, Math.max(24, g + 20)); return ty ? [[g - 0.2, 70], [g, 62], [g + 4, 58.5], [g + 14, 57], [(g + 14 + xe) / 2, 57], [xe, 55.5]] : [[g - 0.2, 70], [g, 66], [g + 4, 59.5], [g + 14, 57], [(g + 14 + xe) / 2, 57], [xe, 55.5]]; })());
+      const OXW = () => { const g = BKW.geo().gx; return [oxTail(g, false).slice(1), T.nik - 0.6, T.nik + 3.8, "floor"]; };   // (SOUTH_SMALL_430: the floor under the ox's way in the court, sampled before the run)
       const prime = () => { wayCheck(); const was = BG.visible; BG.visible = false; for (const [P, , , kind] of SW().concat([OXW()])) if (kind === "floor") { const L = plen2(P); for (let d = 0; d <= L; d += 0.5) { const q = at2(P, d / Math.max(L, 1e-3)); hAt(q[0], q[1], 30); } } BG.visible = was; };
       // ===== OX_K (fix-k, 23.11.2026 - the user, via the coordinator: "שור עם ראש מורם" - "שילך עם ראש ישר או מעט מושפל"; "קפיצות של השור
       // בעזרה" - "הליכה רציפה במסלול חלק, בלי קפיצה בין פריים לפריים ובלי חדירה לקירות או לאנשים"): THE OX, BUILT AGAIN, AND ITS WAY.
@@ -3268,9 +3284,9 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
         const { gx: g, xb } = BKW.geo(), xe = Math.min(46, Math.max(24, g + 20));   // OX_PLACE_420: x 46 at most - from x 49.5 the court's south-eastern chambers stand (the ox stood in the salt chamber since the gate moved to x 30)
         // MOUNT_SEEN_430: from the gate of Chulda (where way A ends) across the mount in sight, a little east of their way, before them
         const OM = [[OXA.x, OXA.zh], [-0.4, 326], [-0.9, 323], [-2.4, 319], [-3.25, 314], [-3.25, 300], [-3.25, 290]];
-        if (tyt()) return (this._p = OM.concat([[-4.0, 280], [-6.4, 268], [6.6, 230], [20.6, 180], [25.1, 140], [26.1, 108], [g - 0.6, 101]], [[g - 0.6, 98], [g - 0.6, 88], [g - 0.5, 83], [g - 0.3, 78], [g - 0.2, 70], [g, 62], [g + 4, 58.5], [g + 14, 57], [(g + 14 + xe) / 2, 57], [xe, 55.5]]));   // STEPS_TYT_420
+        if (tyt()) return (this._p = OM.concat([[-4.0, 280], [-6.4, 268], [6.6, 230], [20.6, 180], [25.1, 140], [26.1, 108]].concat(g > 32 ? [[29.2, 102]] : [], [[g - 0.6, 101]]), [[g - 0.6, 98], [g - 0.6, 88], [g - 0.5, 83], [g - 0.3, 78]], oxTail(g, true)));   // SOUTH_SMALL_430: round the house of study, and the new tail   // STEPS_TYT_420
         { const { ex, rf } = BKW.geo(), { xT, xf, zi } = rf, zo = zi + 2.3;   // BIKKURIM_WAY_420: the outer lane, before him
-          return (this._p = OM.concat([[-4.4, 280], [ex - 1.4, 106]], [[ex - 1.4, 98], [ex - 1.4, 88], [ex - 1.4, 83], [ex - 0.6, 80.2], [ex + 2, 79.3], [xf - 3, 79.3], [xf - 1.6, 78.8], [xf - 0.9, 78], [xf - 0.2, zo + 0.3], [xf + 1.5, zo], [xT, zo], [xT + 2, zo - 0.7], [g - 1.5, 73.5], [g - 0.2, 70], [g, 66], [g + 4, 59.5], [g + 14, 57], [(g + 14 + xe) / 2, 57], [xe, 55.5]])); }
+          return (this._p = OM.concat([[-4.4, 280], [ex - 1.4, 106]], [[ex - 1.4, 98], [ex - 1.4, 88], [ex - 1.4, 83], [ex - 0.6, 80.2], [ex + 2, 79.3], [xf - 3, 79.3], [xf - 1.6, 78.8], [xf - 0.9, 78], [xf - 0.2, zo + 0.3], [xf + 1.5, zo], [xT, zo], [xT + 2, zo - 0.7], [g - 1.5, 73.5]], oxTail(g, false))); }   // SOUTH_SMALL_430: the new tail
         return (this._p = [[g - 0.6, 98], [g - 0.6, 88], [g - 0.5, 83], [g + 0.2, 80.6], [g + 3, 79.1], [g + 8, 79], [xb - 10, 79], [xb - 3, 78.9], [xb, 79], [xb + 1.3, 78.4], [xb + 1.9, 77.1], [xb + 1.3, 75.8], [xb, 75.2], [xb - 10, 75.2], [g + 5, 75.2], [g + 1.4, 74.6], [g + 0.4, 73], [g - 0.2, 70], [g, 66], [g + 4, 59.5], [g + 14, 57], [(g + 14 + xe) / 2, 57], [xe, 55.5]]);
       } };
       const oxGround = (x, z) => { const y = fnc2(SH.floorY) ? SH.floorY(x, 20.5, z) : -Infinity; return isFinite(y) ? y : hAt(x, z, 21); };
@@ -3336,7 +3352,7 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
         // court long before the bringer. It keeps with him: at the foot of the twelve steps a moment before him, up the steps and through the
         // gate beside him (the time between stretched to his), into the court a little before him
         {   // (BIKKURIM_WAY_420: in both readings - the ramp's way is long too)
-          let iA = -1, iB = -1; for (let i = 0; i <= n; i++) { if (iA < 0 && Z[i] < 80) iA = i; if (iB < 0 && Z[i] < 60) iB = i; }
+          let iA = -1, iB = -1; for (let i = 0; i <= n; i++) { if (iA < 0 && Z[i] < 80) iA = i; if (iB < 0 && Z[i] < 64.5) iB = i; }   // (SOUTH_SMALL_430: into the court - z 64.5; 60 until now - the ox's place, z 61, is never under 60 now)
           if (iA > 0 && iB > iA) {
             const d0 = (T.ezn0 + 1.0) - Tm[iA]; for (let i = 0; i <= n; i++) Tm[i] += d0;
             const k = ((T.nik - 0.6) - Tm[iA]) / (Tm[iB] - Tm[iA]), tB = Tm[iB];
@@ -3897,7 +3913,7 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
       const line = (P, w, h, m, list) => { for (let i = 1; i < P.length; i++) piece(P[i - 1], P[i], w, h, m, list); };
       let built = false, t0 = -1, seeK = false, seeE = false, nK1 = 0;
       const SHI = [40, 24.55], F0 = LV.KOH;   // the shitin (40-altar.js SHITIN_LABEL: mv's frame 40, 12.05 + the altar's 12.5)
-      const EXZ = 300, WALL_E = 356, WALL_W = -150, EZ = 67.5, BATH = [32, 40.2, 67.5];
+      const EXZ = 300, WALL_E = 356, WALL_W = -150, EZ = 67.5, BATH = [((SH.southGates && SH.southGates.water) || 44) - 12, 41.45, 67.5];   // SOUTH_SMALL_430: by the Water Gate where it stands (30-courts.js: WATER_X - 12; 32 until now)
       const R = {};
       const build = () => {
         if (built) return; built = true;

@@ -182,9 +182,9 @@
       // at a man's height, under the exedra's overhang (from above it hides the wheel) and east of the well (the laver comes up beside the
       // eye, not under it), west of the wall of לשכת המדיחין: the toothed wheel, the well, the laver rising and set on its base, and at the
       // kiddush the priest at its west spout. Until now from the north-west, the wheel behind its posts
-      // KIYOR_EYE_430 (the scan, 25.11.2026): since the Bechorot gate stands at x 30 (30-courts.js WATER_GATE_N4) its west pier (x 24.8 - 27.4,
-      // z 61 - 65.6) held the eye at x 26.3 - now 0.6 west of the pier, the same height and the same targets
-      kiyor: () => [[0, [24.2, 20.4, 62.8], [20.6, 17.8, 59.4]], [10.5, [24.2, 20.4, 62.8], [20.6, 17.8, 59.4]], [13.6, [24.2, 20.4, 62.8], [20.2, 19.7, 56.5]], [40, [24.2, 20.4, 62.8], [20.2, 19.6, 56.4]]],   // (the well's mouth seen at first, the eye lifted with the laver)
+      // KIYOR_EYE_430 (the scan, 25.11.2026): with the Bechorot gate at x 30 (WATER_GATE_N4) its west pier (x 24.8 - 27.4, z 61 - 65.6) held
+      // the eye; since SOUTH_SMALL_430 the gate stands at x 54 and the eye is where it was approved, x 26.3
+      kiyor: () => [[0, [26.3, 20.4, 62.8], [20.6, 17.8, 59.4]], [10.5, [26.3, 20.4, 62.8], [20.6, 17.8, 59.4]], [13.6, [26.3, 20.4, 62.8], [20.2, 19.7, 56.5]], [40, [26.3, 20.4, 62.8], [20.2, 19.6, 56.4]]],   // (the well's mouth seen at first, the eye lifted with the laver)
       ihb: () => [[0, [-28, 17, -99], [-42, 1.6, -77.2]], [2.6, [-49, 7.5, -89], [-41.2, 1.5, -76.9]], [6.4, [-49, 7.5, -89], [-41.2, 1.5, -76.9]],
         [11.2, [-80, 6.2, -83], [-71.3, 1.3, -76.7]], [12.0, [-82, 4.6, -80.5], [-71.3, 1.2, -76.6]], [18.6, [-82, 4.6, -80.5], [-71.3, 1.2, -76.6]],
         [19.4, [-79, 3.8, -80.6], [-71.0, 0.8, -76.6]], [25.6, [-79, 3.8, -80.6], [-71.0, 0.8, -76.6]],

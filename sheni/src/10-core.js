@@ -33,6 +33,11 @@
     harN: -167.5,
     harS: 332.5,
     HAR: 500,
+    // SOUTH_SMALL_430 (the user 25.11.2026 - a note sent to him: the chambers of the south touch the ramp's foot; "א מצוין רק שלא יפגע בתכולתן
+    // ב: מעולה ג: V"): the three gates of the south - the Delek in the west as before; the Water Gate opposite the altar's EAST end, a little
+    // west of לשכת המדיחין (Tiferet Yisrael, Tzurat Beit HaMikdash 33: "במרחק מעט מלשכת המדיחין לצד מערב היה בחומת העזרה שער המים מול
+    // המזבח"; Yachin: "לעומת המזבח"); the Bechorot gate a little west of it ("במרחק מעט לצד מערב משער המים"). Until now 30 and 44
+    gS: { dalk: -78, bech: 54, water: 66 },
     xIsraelW: 82.5,
     xKohanimW: 71.5,
     xAltarE: 71.5,
