@@ -905,6 +905,47 @@ body.tm-measuring canvas{cursor:crosshair}
         // plain, or instanced with up to 2000 copies, e.g. the 45 boards of בית יער הלבנון - cached for 4 s; the sky, the terrain and the
         // cloud are not part of the test).
         const OFFS5 = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]], OFFS1 = [[0, 0]], OFFS0 = [];
+        // LISTS_FAST_441: a mesh's world size (of its box, or of its instances' box), kept with the geometry and the 3 x 3 part of its world
+        // matrix it was measured with (a move alone keeps the size); false when it has no box
+        const ui_szBox = new Box3();
+        const ui_sizeOf = (o, out) => {
+          const c = o.userData.__tmSz, e = o.matrixWorld.elements, g = o.geometry;
+          if (c && c.g === g && c.n === (o.isInstancedMesh ? o.count : -1) && c.v === (o.isInstancedMesh && o.instanceMatrix ? o.instanceMatrix.version : -1) && c.e0 === e[0] && c.e1 === e[1] && c.e2 === e[2] && c.e4 === e[4] && c.e5 === e[5] && c.e6 === e[6] && c.e8 === e[8] && c.e9 === e[9] && c.e10 === e[10]) {
+            if (!c.ok) return false;
+            out.set(c.x, c.y, c.z);
+            return true;
+          }
+          let ok = true;
+          try {
+            if (o.isInstancedMesh) { o.computeBoundingBox(); ui_szBox.copy(o.boundingBox); }
+            else { if (!g.boundingBox) g.computeBoundingBox(); ui_szBox.copy(g.boundingBox); }
+            ui_szBox.applyMatrix4(o.matrixWorld).getSize(out);
+          } catch (_) { ok = false; }
+          o.userData.__tmSz = { g, n: o.isInstancedMesh ? o.count : -1, v: o.isInstancedMesh && o.instanceMatrix ? o.instanceMatrix.version : -1, e0: e[0], e1: e[1], e2: e[2], e4: e[4], e5: e[5], e6: e[6], e8: e[8], e9: e[9], e10: e[10], ok, x: out.x, y: out.y, z: out.z };
+          return ok;
+        };
+        // the large plain meshes (6 amot or more in some direction; not the terrain, not the cloud, not the measuring tape) - what can hide the
+        // cloud and the pills; one list for both, made every 4 s (until now each made its own)
+        let ui_bigT = null, ui_bigAt = -1e9;
+        const ui_bigPlain = () => {
+          const now = performance.now();
+          if (ui_bigT && now - ui_bigAt < 4000) return ui_bigT;
+          ui_bigAt = now;
+          const out = [], sz = new Vector3();
+          const walk = (o) => {
+            if (o.name === "tm-kk-cloud" || o.name === "tm-measure") return;
+            if (o.isMesh && !o.isInstancedMesh && o.geometry) {
+              const pa = o.geometry.attributes && o.geometry.attributes.position;
+              if (!(pa && pa.count > 30000) && ui_sizeOf(o, sz) && Math.max(sz.x, sz.y, sz.z) >= 6) out.push(o);
+            }
+            const k = o.children;
+            for (let i = 0; i < k.length; i++) walk(k[i]);
+          };
+          walk(ctx.scene);
+          ui_bigT = out;
+          return out;
+        };
+        ctx.shared.__bigPlain = ui_bigPlain;
         const upRay = new Raycaster(), UPV = new Vector3(0, 1, 0);
         let roofT = null, roofAt = -1e9;
         const roofList = () => {
@@ -912,40 +953,36 @@ body.tm-measuring canvas{cursor:crosshair}
           if (roofT && now - roofAt < 4000) return roofT;
           roofAt = now;
           roofT = [];
-          const bb = new Box3(), sz = new Vector3();
-          if (ctx.root && typeof ctx.root.traverse === "function") {
-            ctx.root.traverse((o) => {
-              if (!o.isMesh || !o.geometry) return;
-              for (let p = o; p; p = p.parent) if (p.name === "tm-kk-cloud") return;
+          const sz = new Vector3();
+          // LISTS_FAST_441 (the user 25.11.2026: "כל ה360 נתקע"): the walk leaves the cloud's branch out at once (until now every mesh looked
+          // up all its parents for it), and a mesh's size is measured again only when its geometry or its turn and scale changed
+          const walk = (o) => {
+            if (o.name === "tm-kk-cloud") return;
+            if (o.isMesh && o.geometry) {
               const pa = o.geometry.attributes && o.geometry.attributes.position;
-              if (pa && pa.count > 30000) return;   // the terrain
-              if (o.isInstancedMesh) {
-                if (o.count > 2000 || typeof o.computeBoundingBox !== "function") return;
-                if (!o.boundingBox) o.computeBoundingBox();
-                bb.copy(o.boundingBox).applyMatrix4(o.matrixWorld).getSize(sz);
-              } else {
-                if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
-                bb.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld).getSize(sz);
+              if (!(pa && pa.count > 30000)) {   // the terrain
+                if (!o.isInstancedMesh || (o.count <= 2000 && typeof o.computeBoundingBox === "function")) {
+                  if (ui_sizeOf(o, sz) && Math.max(sz.x, sz.z) >= 6) roofT.push(o);
+                }
               }
-              if (Math.max(sz.x, sz.z) < 6) return;
-              roofT.push(o);
-            });
-          }
+            }
+            const k = o.children;
+            for (let i = 0; i < k.length; i++) walk(k[i]);
+          };
+          if (ctx.root && Array.isArray(ctx.root.children)) walk(ctx.root);
           return roofT;
+        };
+        const roofHit = (h) => {
+          for (let p = h.object; p; p = p.parent) if (p.visible === false) return false;
+          const m = Array.isArray(h.object.material) ? h.object.material[0] : h.object.material;
+          return !(m && (m.visible === false || (m.transparent && m.opacity < 0.5)));
         };
         const underRoof = (cam) => {
           upRay.set(cam, UPV);
           upRay.near = 0;
           upRay.far = 60;
-          for (const h of ctx.raycast(upRay, roofList())) {
-            let vis = true;
-            for (let p = h.object; p; p = p.parent) if (p.visible === false) { vis = false; break; }
-            if (!vis) continue;
-            const m = Array.isArray(h.object.material) ? h.object.material[0] : h.object.material;
-            if (m && (m.visible === false || (m.transparent && m.opacity < 0.5))) continue;
-            return true;
-          }
-          return false;
+          // LISTS_FAST_441: the nearest hit that counts (ctx.raycast.first - boxes first, nearest first), not all the hits sorted
+          return !!ctx.raycast.first(upRay, roofList(), roofHit);
         };
         //@@slot buildUI.HIDE_GROUPS
         const HIDE_PASS_FLAT = 0.06;
@@ -953,6 +990,12 @@ body.tm-measuring canvas{cursor:crosshair}
         const hidePair = new Map(), hideBlocked = new Set(), hideHits = [], HID = [], hideFlat = new Set(), hideSmall = new Set(), hideDeep = new Set();
         const hideBB = new Box3(), hideSz = new Vector3(), hideN = new Vector3();
         const hideTo = (o) => (hideDeep.has(o) ? HIDE_PASS_FLAT : UI_FADE_OPACITY);   // 1.0.4: how far a hidden mesh fades
+        const hideWalk = (o, cb) => {
+          if (o.name === "tm-kk-cloud" || o.name === "yachinBoaz" || (o.userData && o.userData.noFade)) return;
+          cb(o);
+          const k = o.children;
+          for (let i = 0; i < k.length; i++) hideWalk(k[i], cb);
+        };
         const hideList = () => {
           const now = performance.now();
           if (hideT && now - hideAt < 5000) return hideT;
@@ -963,23 +1006,16 @@ body.tm-measuring canvas{cursor:crosshair}
           hideSmall.clear();
           for (const top of ctx.root && Array.isArray(ctx.root.children) ? ctx.root.children : []) {
             if (HIDE_GROUPS.indexOf(top.name) < 0) continue;
-            top.traverse((o) => {
+            hideWalk(top, (o) => {
               // 1.0.4: an instanced mesh of up to HIDE_INST copies too (Yachin and Boaz in the ulam, whose shafts stopped the orbit round the ulam's tables:
               // the two fade together); not the forest house's 45 columns
               if (!o.isMesh || (o.isInstancedMesh && !(o.count <= HIDE_INST && typeof o.computeBoundingBox === "function")) || !o.geometry || occS.has(o) || o.userData.noPick) return;
               // 1.2.2 (the user: the capital "disappears"): the pillars and their capitals are never faded - the dome of the capital stood between
               // the eye and the target (the capital's centre) and went see-through; also any mesh or group marked userData.noFade
-              for (let p = o; p; p = p.parent) if (p.name === "tm-kk-cloud" || p.name === "yachinBoaz" || (p.userData && p.userData.noFade)) return;
+              // (LISTS_FAST_441: hideWalk leaves those branches out at once - until now every mesh looked up all its parents)
               const pa = o.geometry.attributes && o.geometry.attributes.position;
               if (!pa || pa.count > 30000) return;
-              if (o.isInstancedMesh) {
-                if (!o.boundingBox) o.computeBoundingBox();
-                hideBB.copy(o.boundingBox);
-              } else {
-                if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
-                hideBB.copy(o.geometry.boundingBox);
-              }
-              hideBB.applyMatrix4(o.matrixWorld).getSize(hideSz);
+              if (!ui_sizeOf(o, hideSz)) return;   // LISTS_FAST_441: measured again only when it changed
               //@@slot hideList.hz
               const small = !flat && hideSz.y >= 4 && hz < 5 && hz >= 1;
               if ((hz < 5 && !small) || (!flat && hideSz.y < 4)) return;
@@ -1049,6 +1085,8 @@ body.tm-measuring canvas{cursor:crosshair}
             try { fadeHeld = !!(ctx.shared.fadeHold && ctx.shared.fadeHold.held()); } catch (_) { fadeHeld = false; }
             if (fs.on && !fadeHeld) {
               const cam = ctx.camera.position, tg = ctx.controls.target;
+              // RAYS_MANY_441: the walls' boxes once for all the rays below (ctx.raycast.many), not once a ray
+              const occR = typeof ctx.raycast.many === "function" ? ctx.raycast.many(OCCL) : (r, h) => ctx.raycast(r, OCCL, h);
               let inside = false;
               try { inside = underRoof(cam); } catch (_) { inside = false; }
               dir.subVectors(tg, cam).normalize();
@@ -1063,7 +1101,7 @@ body.tm-measuring canvas{cursor:crosshair}
                 // 1.0.1-K review (ui-3): 3 amot short of the target (was 1): with a far "מרחק טשטוש" these rays reach the target, and the
                 // face of the wall it stands in faded with them (the eastGate view at 400: the gate's own wall); 3 = model choice
                 ray.far = Math.min(L - 3, FADE_DIST);
-                for (const h of ctx.raycast(ray, OCCL)) blocked.add(h.object);
+                for (const h of occR(ray)) blocked.add(h.object);
               }
               // 1.0.16: a wall right in front of the camera (within NEAR amot along the view direction) fades too,
               // even when the orbit target is on this side of it / on the wall itself (e.g. close to a gate).
@@ -1078,13 +1116,13 @@ body.tm-measuring canvas{cursor:crosshair}
                 ray.set(cam, dd.normalize());
                 ray.near = 0;
                 ray.far = NEAR + 2;
-                for (const h of ctx.raycast(ray, OCCL)) blocked.add(h.object);
+                for (const h of occR(ray)) blocked.add(h.object);
               }
               // 1.0.2 (D): the building's walls that hide the target (see above); 1.0.4: and the pass (see above)
               let pass = false;
               try { pass = typeof ctx.camPass === "function" && !!ctx.camPass() && typeof ctx.camPassHit === "function"; } catch (_) { pass = false; }
               if (fs.hide || pass) {
-                const list = hideList();
+                const list = hideList(), hideR = typeof ctx.raycast.many === "function" ? ctx.raycast.many(list) : (r, h) => ctx.raycast(r, list, h);   // RAYS_MANY_441
                 for (const [ox, oy] of inside ? OFFS1 : OFFS5) {
                   to.copy(tg).addScaledVector(right, ox * 1.5).addScaledVector(upv, oy * 1.5);
                   dd.subVectors(to, cam);
@@ -1094,7 +1132,7 @@ body.tm-measuring canvas{cursor:crosshair}
                   ray.near = 0;
                   ray.far = far;
                   hideHits.length = 0;
-                  ctx.raycast(ray, list, hideHits);
+                  hideR(ray, hideHits);
                   for (const h of hideHits) {
                     const o = h.object;
                     if (hideBlocked.has(o) || !hideShown(o)) continue;
@@ -2270,21 +2308,26 @@ body.tm-measuring canvas{cursor:crosshair}
           const m = Array.isArray(o.material) ? o.material[0] : o.material;
           return !m || m.visible === false || (m.transparent ? m.opacity > 0.5 : true);
         };
+        const cHides = (h) => isVis(h.object) && solidEnough(h.object);
         const cloudClear = (cam, d) => {
           const now = performance.now();
-          if (!cTargets || now - cTargetsAt > 4000) {
+          // 1.0.1-H (performance, the user: "נתקע"): only plain meshes of some size can hide the cloud - the walls, ceilings, roofs and
+          // the court walls; instanced meshes (knobs, chains, reliefs, pillars: a raycast tests every instance) and small parts are skipped
+          // (a part smaller than 6 amot in every direction never hides the 30-amah cloud). LISTS_FAST_441: the list shared with the pills
+          // (ctx.shared.__bigPlain), and the nearest hit that counts only
+          const fn = ctx.shared.__bigPlain;
+          if (typeof fn === "function") cTargets = fn();
+          else if (!cTargets || now - cTargetsAt > 4000) {
             cTargets = [];
             cTargetsAt = now;
-            // 1.0.1-H (performance, the user: "נתקע"): only plain meshes of some size can hide the cloud - the walls, ceilings, roofs and
-            // the court walls; instanced meshes (knobs, chains, reliefs, pillars: a raycast tests every instance) and small parts are skipped
             const bb = new Box3(), sz = new Vector3();
             ctx.scene.traverse((o) => {
               if (!o.isMesh || o.isInstancedMesh || !o.geometry || underCloud(o)) return;
               const pa = o.geometry.attributes && o.geometry.attributes.position;
-              if (pa && pa.count > 30000) return; // skip the terrain: it never hides the cloud
+              if (pa && pa.count > 30000) return;
               if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
               bb.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld).getSize(sz);
-              if (Math.max(sz.x, sz.y, sz.z) < 6) return;   // a part smaller than 6 amot in every direction never hides the 30-amah cloud
+              if (Math.max(sz.x, sz.y, sz.z) < 6) return;
               cTargets.push(o);
             });
           }
@@ -2292,10 +2335,7 @@ body.tm-measuring canvas{cursor:crosshair}
           cRay.set(cam, cDir);
           cRay.near = 0;
           cRay.far = Math.max(1, d - 3);
-          for (const h of ctx.raycast(cRay, cTargets)) {
-            if (isVis(h.object) && solidEnough(h.object)) return false;
-          }
-          return true;
+          return !ctx.raycast.first(cRay, cTargets, cHides);
         };
         const kkP = [0, 0, 0];   // 1.0.4: the orbit into the cloud (below)
         let kkAsked = false, kkRel = 0;
@@ -3405,9 +3445,10 @@ body.tm-measuring canvas{cursor:crosshair}
           "אצבע אחת — מסובבת. שתי אצבעות שנפתחות — מקרבות. שתי אצבעות שזזות יחד — מזיזות את התמונה."
         ]);
         sec("עם המקלדת", [
-          "[[↑]] — ללכת קדימה. [[↓]] — ללכת אחורה.",
-          "[[←]] [[→]] — לפנות שמאלה וימינה.",
-          "[[PageUp]] — לעלות. [[PageDown]] — לרדת.",
+          "[[↑]] — להתקרב (ללכת קדימה). [[↓]] — להתרחק (ללכת אחורה).",
+          "[[←]] [[→]] — להזיז את המבט הצידה, שמאלה וימינה.",
+          "[[Shift]] + [[↑]] — לעלות. [[Shift]] + [[↓]] — לרדת. (גם [[PageUp]] ו־[[PageDown]].)",
+          "[[Ctrl]] + [[←]] [[→]] — לפנות שמאלה וימינה. [[Ctrl]] + [[↑]] [[↓]] — להטות את המבט למעלה ולמטה.",
           "[[+]] [[−]] — להתקרב ולהתרחק. [[Esc]] — לסגור כרטיס הסבר."
         ]);
         sec("התפריט שבצד", [
@@ -3422,7 +3463,7 @@ body.tm-measuring canvas{cursor:crosshair}
         ]);
         sec("כלים נוספים", [
           "המצפן (בפינה התחתונה): החץ האדום מראה לאן הצפון. לחיצה על אחת האותיות — מפנה את המבט לכיוון שלה.",
-          "🚶 מצב הליכה: העין בגובה אדם, כאילו אתה הולך במקום. החצים במקלדת — הליכה. [[Esc]] — יציאה.",
+          "🚶 מצב הליכה: העין בגובה אדם, כאילו אתה הולך במקום. החצים במקלדת — הליכה קדימה ואחורה ותזוזה הצידה. [[Esc]] — יציאה.",
           "״חתך״: חותך את הבניין כמו בשרטוט, כדי לראות מה בפנים. הפס שלידו מזיז את מקום החתך.",
           "בתוך ההיכל: כשאתה רחוק — הגרירה מסובבת את המבט סביבך. ליד כלי — הגרירה מסתובבת סביב הכלי.",
           "״מעבר דרך קירות״ (בתפריט, תחת ״תצוגה״) — מרשה לעבור דרך קירות; הם נעשים שקופים בדרך.",
@@ -4083,8 +4124,8 @@ body.tm-measuring canvas{cursor:crosshair}
           nav.appendChild(b);
           return b;
         };
-        mk("⟲", "סובב את המבט שמאלה סביב מרכזו (החזק להמשך). גם: מקש חץ שמאלה, או גרירה במודל.", () => orbitBy(-1), 50);
-        mk("⟳", "סובב את המבט ימינה סביב מרכזו (החזק להמשך). גם: מקש חץ ימינה, או גרירה במודל.", () => orbitBy(1), 50);
+        mk("⟲", "סובב את המבט שמאלה סביב מרכזו (החזק להמשך). גם: Ctrl עם חץ שמאלה, או גרירה במודל.", () => orbitBy(-1), 50);
+        mk("⟳", "סובב את המבט ימינה סביב מרכזו (החזק להמשך). גם: Ctrl עם חץ ימינה, או גרירה במודל.", () => orbitBy(1), 50);
         mk("+", "קרב את המבט (החזק להמשך). גם: גלגלת העכבר, צביטה או גלילה בשתי אצבעות על משטח המגע, ומקש +.", () => zoomBy(0.97));
         mk("−", "הרחק את המבט (החזק להמשך). גם: גלגלת העכבר, צביטה או גלילה בשתי אצבעות על משטח המגע, ומקש −.", () => zoomBy(1.03));
         const sp = document.createElement("span");
@@ -4452,6 +4493,7 @@ body.tm-measuring canvas{cursor:crosshair}
         const oRay = new Raycaster(), oDir = new Vector3();
         let oTargets = null, oTargetsAt = -1e9, frameNo = 0;
         const bigMeshes = () => {
+          if (typeof ctx.shared.__bigPlain === "function") return ctx.shared.__bigPlain();   // LISTS_FAST_441: the list the cloud uses too
           const now = performance.now();
           if (oTargets && now - oTargetsAt < 4000) return oTargets;
           oTargetsAt = now;
@@ -4477,19 +4519,21 @@ body.tm-measuring canvas{cursor:crosshair}
           oRay.set(cam, oDir.multiplyScalar(1 / L));
           oRay.near = 0;
           oRay.far = L - 1.5;
-          for (const hh of ctx.raycast(oRay, bigMeshes())) {
-            const o = hh.object;
-            if (!visUp(o)) continue;
-            const m = Array.isArray(o.material) ? o.material[0] : o.material;
-            // PILL_HOME_211: a wall that the fade shows see-through still hides the pill behind it (the user: the ulam's and the cloud's
-            // pills "יצאו החוצה סתם" in the view of the Nikanor gate) - unless the pill is switched on (wallsToo = false: it must stay
-            // within reach, to be switched off); glass and water never hid a pill
-            if (m && m.visible !== false && m.transparent && m.opacity <= 0.5 && wallsToo && (o.userData.fade || o.userData.tmPass)) return true;
-            if (m && (m.visible === false || (m.transparent && m.opacity <= 0.5))) continue;
-            return true;
-          }
-          return false;
+          // LISTS_FAST_441: the nearest hit that hides (ctx.raycast.first), not all the hits sorted - the answer is the same: is there one
+          return !!ctx.raycast.first(oRay, bigMeshes(), wallsToo ? oHidesW : oHides);
         };
+        // PILL_HOME_211: a wall that the fade shows see-through still hides the pill behind it (the user: the ulam's and the cloud's
+        // pills "יצאו החוצה סתם" in the view of the Nikanor gate) - unless the pill is switched on (wallsToo = false: it must stay
+        // within reach, to be switched off); glass and water never hid a pill
+        const oHide = (hh, wallsToo) => {
+          const o = hh.object;
+          if (!visUp(o)) return false;
+          const m = Array.isArray(o.material) ? o.material[0] : o.material;
+          if (m && m.visible !== false && m.transparent && m.opacity <= 0.5 && wallsToo && (o.userData.fade || o.userData.tmPass)) return true;
+          if (m && (m.visible === false || (m.transparent && m.opacity <= 0.5))) return false;
+          return true;
+        };
+        const oHidesW = (hh) => oHide(hh, true), oHides = (hh) => oHide(hh, false);
         // PILL_SCOPE_N8: a demonstration (ctx.shared.demoStops, the walk too) or the presentation is running; read every 6 frames
         let busyAt = -1e9, busyVal = false;
         const sceneBusy = () => {
@@ -4754,9 +4798,12 @@ body.tm-measuring canvas{cursor:crosshair}
       // Left / right turn the view like the nav buttons, up / down raise or lower it, + / - zoom. Only while the focus is on the page, the
       // model or the nav / compass / pills: a focused panel button, the presentation's controls, a link or a form field keep their keys
       // (the panel scrolls with them); nothing happens while the cloud dialog is open; Ctrl / Alt / Meta combinations are the browser's.
+      // ARROWS_441 (the user 25.11.2026: "חץ ללא כטרל גורר עם כטרל מסובב (לכל הכיונים)"): Ctrl + arrows turn (left / right) and tilt
+      // (up / down); the arrows alone move the view (90-entry.js: sideways, and forward / back), Shift + up / down lift it
       window.addEventListener("keydown", (e) => {
-        if (e.defaultPrevented || e.ctrlKey || e.altKey || e.metaKey) return;
-        const k = e.key;
+        if (e.defaultPrevented || e.altKey || e.metaKey) return;
+        const k = e.key, arrow = k.indexOf("Arrow") === 0;
+        if (e.ctrlKey !== arrow) return;   // Ctrl only with the arrows (a Ctrl combination of another key is the browser's); an arrow only with Ctrl
         const act = k === "ArrowLeft" ? () => orbitBy(-1) : k === "ArrowRight" ? () => orbitBy(1) : k === "ArrowUp" ? () => tiltBy(1)
           : k === "ArrowDown" ? () => tiltBy(-1) : k === "+" || k === "=" ? () => zoomBy(0.94) : k === "-" || k === "_" ? () => zoomBy(1.06) : null;
         if (!act) return;

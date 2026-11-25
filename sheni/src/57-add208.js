@@ -17,13 +17,63 @@
     // the first surface under (x, z) from above, or along a ray - the places of the new pieces follow what the other modules built
     const rc = new Raycaster(), V0 = new Vector3(), V1 = new Vector3();
     const solid = (o) => o.isMesh && o.visible !== false && !(o.material && o.material.transparent && o.material.opacity < 0.5);
-    let mw = false;
+    let mw = false, castIdx = null;
     const castFrom = (from, dir, fallback) => {
       if (!mw) { ctx2.root.updateMatrixWorld(true); mw = true; }   // built this frame: no matrices until updated
       rc.camera = ctx2.camera;   // the labels' sprites need it (TAMID_QA_207)
       rc.set(V0.set(from[0], from[1], from[2]), V1.set(dir[0], dir[1], dir[2]).normalize());
-      const hits = rc.intersectObjects(ctx2.root.children, true).filter((h) => { let o = h.object; while (o) { if (o.visible === false) return false; o = o.parent; } return solid(h.object); });
-      return hits.length ? hits[0].point.clone() : fallback;
+      // CAST_FAST_441 (the user 25.11.2026: "כל ה360 נתקע"; measured: the aqueducts' late build, 4 s after the house is shown, took 0.86 s
+      // in one frame - every one of its ~200 rays went through every object of the model): the same answer - the nearest hit on a visible
+      // solid mesh - from an index made once a frame: the visible solid meshes with their world boxes, in cells of 16 amot by their plan.
+      // A ray straight down tests only the meshes whose plan holds its point (and the few that span the model); any other ray tests the
+      // meshes whose box it crosses.
+      if (!castIdx) {
+        const all = [], cells = new Map(), big = [], C = 16;
+        const walk = (o) => {
+          if (o.visible === false) return;
+          if (solid(o)) {
+            let b = null;
+            try {
+              if (!o.isSkinnedMesh) {
+                if (o.isInstancedMesh) { if (typeof o.computeBoundingBox === "function") { o.computeBoundingBox(); b = o.boundingBox ? o.boundingBox.clone().applyMatrix4(o.matrixWorld) : null; } }
+                else if (o.geometry) { if (!o.geometry.boundingBox) o.geometry.computeBoundingBox(); b = o.geometry.boundingBox.clone().applyMatrix4(o.matrixWorld); }
+              }
+            } catch (_) { b = null; }
+            if (b && !Number.isFinite(b.min.x + b.min.y + b.min.z + b.max.x + b.max.y + b.max.z)) b = null;
+            const e = { o, b };
+            all.push(e);
+            if (!b) big.push(e);
+            else {
+              const x0 = Math.floor(b.min.x / C), x1 = Math.floor(b.max.x / C), z0 = Math.floor(b.min.z / C), z1 = Math.floor(b.max.z / C);
+              if ((x1 - x0 + 1) * (z1 - z0 + 1) > 64) big.push(e);
+              else for (let x = x0; x <= x1; x++) for (let z = z0; z <= z1; z++) { const k = x + "," + z; let a = cells.get(k); if (!a) cells.set(k, a = []); a.push(e); }
+            }
+          }
+          for (const k of o.children) walk(k);
+        };
+        for (const k of ctx2.root.children) walk(k);
+        castIdx = { all, cells, big, C };
+        const clear = () => { castIdx = null; };
+        if (typeof requestAnimationFrame === "function") requestAnimationFrame(clear); else setTimeout(clear, 0);
+      }
+      {
+        rc.near = 0; rc.far = Infinity;
+        const I = castIdx, o0 = rc.ray.origin, d0 = rc.ray.direction, down = Math.abs(d0.x) < 1e-9 && Math.abs(d0.z) < 1e-9 && d0.y < 0;
+        let list;
+        if (down) {
+          const a = I.cells.get(Math.floor(o0.x / I.C) + "," + Math.floor(o0.z / I.C)) || [];
+          list = I.big.concat(a.filter((e) => e.b.min.x <= o0.x && e.b.max.x >= o0.x && e.b.min.z <= o0.z && e.b.max.z >= o0.z && e.b.min.y <= o0.y));
+        } else list = I.all.filter((e) => !e.b || e.b.containsPoint(o0) || rc.ray.intersectsBox(e.b));
+        let best = null;
+        const hs = [];
+        for (const e of list) {
+          if (e.b && best && e.b.distanceToPoint(o0) > best.distance) continue;
+          hs.length = 0;
+          rc.intersectObject(e.o, false, hs);
+          for (const h of hs) if (!best || h.distance < best.distance) best = h;
+        }
+        return best ? best.point.clone() : fallback;
+      }
     };
     const groundAt = (x, z, from, fallback) => { const p = castFrom([x, from, z], [0, -1, 0], null); return p ? p.y : fallback; };
     SH.__add208QA = { groundAt, castFrom };   // for the checks
@@ -2802,6 +2852,8 @@
         });
       }
       const rcX = new Raycaster(), O = new Vector3(), D = new Vector3();
+      const EXR = [];   // EXEDRA_ROOMS_441: the chambers' roofs (over the exedra's height; a door's leaf is not a roof)
+      for (const m of (ctx2.lishkotCut || []).concat(SH.parvahRoof ? [SH.parvahRoof] : [])) { try { const b = new Box3().setFromObject(m); if (b.max.x - b.min.x > 3 && b.max.z - b.min.z > 3 && b.min.y > YP) EXR.push(b); } catch (_) {} }
       const hit = (o, d, max) => { rcX.set(O.set(o[0], o[1], o[2]), D.set(d[0], d[1], d[2])); rcX.far = max; const h = rcX.intersectObjects(cands, false); return h.length ? (h[0].object.material === M2.gateGold ? "gate" : h[0].point) : null; };   // DALK_TYT_440: a gate's open leaf (gold) - "gate": the gate with its leaves stays open (until now the overhang wrapped the leaves - short pieces over each)
       // the runs: along x (north and south) or z (west and east); `o` - the ray's start on the other axis, `d` - toward the wall
       const SIDES = [{ run: "x", a0: -90, a1: 90, o: -42, d: -1 }, { run: "x", a0: -90, a1: 90, o: 42, d: 1 },
@@ -2820,6 +2872,11 @@
           const MF = SH.mesibahFoot;   // SOUTH_SMALL_430: no overhang and no columns where the mesibah stands before the chambers' fronts - it rises through that height
           if (MF && S.run === "x" && S.d > 0 && a >= MF.x0 - 0.5 && a <= MF.x1 + 0.5 && p && p.z >= MF.z0) { F.push(null); continue; }
           if (p && (S.run === "x" ? Math.abs(p.z) > 65.2 : Math.abs(p.x) > 91.6)) { F.push(null); continue; }   // SOUTH_SMALL_430: a ray that went out through an opening (a gate, its curtain at 70.7) - no face there, the gate stays open (it made a stub of the overhang inside the gate)
+          // EXEDRA_ROOMS_441 (found 25.11.2026 looking into לשכת המלח from above: the overhang ran through the room): along the east wall the
+          // rays begin at x 87 - inside the chambers there (the salt chamber, Pinchas', the chavitin makers', the Gazit), so they found the
+          // chamber's own far wall and the exedra was built inside it. No exedra where its middle stands under a chamber's roof
+          if (p && EXR.length) { const f = S.run === "x" ? p.z : p.x, mx = S.run === "x" ? a : f - S.d * DEP / 2, mz = S.run === "x" ? f - S.d * DEP / 2 : a;
+            if (EXR.some((b) => mx > b.min.x && mx < b.max.x && mz > b.min.z && mz < b.max.z)) { F.push(null); continue; } }
           F.push(p ? (S.run === "x" ? p.z : p.x) : null);
         }
         // a door's narrow gap (the ray went into a chamber) takes the face on both its sides
@@ -3152,7 +3209,7 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
           // BACK_FORTH_430 (the user 25.11.2026: "המביא, בתחילת הגעתו לעזרה עושה הלוך וחזור כמה פעמים"): since the Bechorot gate moved east (x 30)
           // the lane's points (made for the gate at x -48: east 8 amot from the gate, then to x 30) took him east to 39.3, back west to 30 and
           // east again - now straight on from the gate toward the corner
-          [(tyt() ? [[g + 1.3, 59.2]].concat(g > 40 ? [[39.4, 58.6], [38.3, 58.4], [38.3, 57.5]] : [[38, 57.5]]) : g + 9.3 < 30 ? [[g + 1.3, 64], [g + 9.3, 61.5], [30, 61.5], [38, 57.5]] : g + 3.3 < 38 ? [[g + 1.3, 64], [g + 3.3, 61.6], [38, 57.5]] : [[g + 1.3, 64], [g + 0.8, 60.6], [39.4, 58.6], [38.3, 58.4], [38.3, 57.5]])   /* SOUTH_SMALL_430: the gate east of x 38 - straight west, south of the ramp's foot and of the benches' ends (z 58), then into the gap between two rows (x 37.95..38.7) */.concat([[38.3, 52], A(38.3, 16.2), A(38.3, 15.0 + WZ)]), T.nik, T.corner,   /* SOUTH_SMALL_430: x 38.3 - the middle of the gap between the rows (37.95..38.7); at 38 his shoulder was in the row */ "floor", 2.62],
+          [(tyt() ? [[g + 1.3, 59.2]].concat(g > 40 ? [[39.4, 58.6], [38.3, 58.4], [38.3, 57.5]] : [[38, 57.5]]) : g + 9.3 < 30 ? [[g + 1.3, 64], [g + 9.3, 61.5], [30, 61.5], [38, 57.5]] : g + 3.3 < 38 ? [[g + 1.3, 64], [g + 1.3, 60.6], [38, 57.5]]   /* DOOR_LEAF_441: straight on north past the open leaves (the east one's free edge at g+2.6, z 61), then to the corner - until now across the leaf */  : [[g + 1.3, 64], [g + 0.8, 60.6], [39.4, 58.6], [38.3, 58.4], [38.3, 57.5]])   /* SOUTH_SMALL_430: the gate east of x 38 - straight west, south of the ramp's foot and of the benches' ends (z 58), then into the gap between two rows (x 37.95..38.7) */.concat([[38.3, 52], A(38.3, 16.2), A(38.3, 15.0 + WZ)]), T.nik, T.corner,   /* SOUTH_SMALL_430: x 38.3 - the middle of the gap between the rows (37.95..38.7); at 38 his shoulder was in the row */ "floor", 2.62],
           [[A(38.3, 15.0 + WZ), A(38.3, 17), A(38.3, 39.5)].concat(g > 40 ? [[38.3, 57.5], [40, 58.6], [44, 59.4]] : [[38, 57.5], [34, 61.5]]), T.bow1 + 0.2, T.end, "floor"]   /* DALK_TYT_440: north of the ox's stand (38.5, 60.3) */   // SOUTH_SMALL_430: out of the rows, toward his gate (east of x 38)
         ]; };
       const hCache = new Map();
@@ -3177,7 +3234,7 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
       // SOUTH_SMALL_430: from the gate to where the ox stands - the gate is at x 54 now, east of the ramp's foot: straight on west, south of the
       // foot (55.1), to x 41 (until now from x 30 east along the lane, to x 46 - with the gate at 54 it went east and back); the place - a model choice
       const oxTail = (g, ty) => (g > 40 ? (ty ? [[g - 0.2, 70], [g, 62], [g - 3, 60.2], [g - 8, 60.3], [38.5, 60.3]] : [[g - 0.2, 70], [g, 66], [g - 1.5, 61.5], [g - 7, 60.3], [38.5, 60.3]])   /* DALK_TYT_440: its stand west of the Delek gate's mouth (its piers x 36.8..47.2 from z 61) - until now (41, 61), in it */
-        : g > 24 ? (ty ? [[g - 0.2, 70], [g, 62], [g + 3, 60.1], [g + 6, 60.1], [g + 9, 60.1]] : [[g - 0.2, 70], [g, 66], [g + 1.5, 61.5], [g + 4.5, 60.1], [g + 9, 60.1]])   /* GATES_APART_440: the gate at 33 - out of its mouth (its piers to x g+5.2 from z 61) east along z 60.1 to x g+9, between it and the Water Gate's mouth (from 60.8) */
+        : g > 24 ? (ty ? [[g - 0.2, 70], [g, 62], [g, 61], [g + 1.2, 60.2], [g + 4.5, 60.1], [g + 9, 60.1]] : [[g - 0.2, 70], [g, 66], [g, 61], [g + 1.2, 60.2], [g + 4.5, 60.1], [g + 9, 60.1]])   /* DOOR_LEAF_441: north between the leaves to z 61, then east */   /* GATES_APART_440: the gate at 33 - out of its mouth (its piers to x g+5.2 from z 61) east along z 60.1 to x g+9, between it and the Water Gate's mouth (from 60.8) */
         : (() => { const xe = Math.min(46, Math.max(24, g + 20)); return ty ? [[g - 0.2, 70], [g, 62], [g + 4, 58.5], [g + 14, 57], [(g + 14 + xe) / 2, 57], [xe, 55.5]] : [[g - 0.2, 70], [g, 66], [g + 4, 59.5], [g + 14, 57], [(g + 14 + xe) / 2, 57], [xe, 55.5]]; })());
       const OXW = () => { const g = BKW.geo().gx; return [oxTail(g, false).slice(1), T.nik - 0.6, T.nik + 3.8, "floor"]; };   // (SOUTH_SMALL_430: the floor under the ox's way in the court, sampled before the run)
       const prime = () => { wayCheck(); const was = BG.visible; BG.visible = false; for (const [P, , , kind] of SW().concat([OXW()])) if (kind === "floor") { const L = plen2(P); for (let d = 0; d <= L; d += 0.5) { const q = at2(P, d / Math.max(L, 1e-3)); hAt(q[0], q[1], 30); } } BG.visible = was; };

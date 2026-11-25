@@ -686,7 +686,9 @@ __BACKGROUND_SVG__
     var allowed = false;
     newsMaybe = function () {
       var note = document.getElementById("uni-note");
-      if (!allowed || seenLs() || current !== "home" || !dlg.hidden || (note && !note.hidden)) return;
+      // NEWS_SHARED_441 (the user 25.11.2026: "מה חדש במסך הבחירה מוצג רק כשיש חדש במשהו משותף לשתי הבתים"): by itself only when this
+      // version's news has a part for both houses (tools/build-unified.mjs: "### בשני הבתים"); a house's own news opens in that house
+      if (!__UNIFIED_NEWS_SHARED__ || !allowed || seenLs() || current !== "home" || !dlg.hidden || (note && !note.hidden)) return;
       show();
     };
     if (seenLs()) return;

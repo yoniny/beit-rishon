@@ -60,6 +60,18 @@
       }
       return ray.intersectObjects(candidates, false, hits);
     };
+    // RAYS_MANY_441: many rays against one list at one moment (the fades' 10 to 15 rays every 140 ms) - the boxes are taken once for
+    // all of them, not once a ray; the same hits, in the same order
+    intersect.many = (objects) => {
+      const boxes = new Array(objects.length);
+      for (let i = 0; i < objects.length; i++) boxes[i] = bounds(objects[i]);
+      const candidates = [];
+      return (ray, hits = []) => {
+        candidates.length = 0;
+        for (let i = 0; i < objects.length; i++) { const box = boxes[i]; if (!box || ray.ray.intersectsBox(box)) candidates.push(objects[i]); }
+        return ray.intersectObjects(candidates, false, hits);
+      };
+    };
     // Floor/roof/zoom queries need only the nearest hit. A floor should not pay for
     // the 96,800 terrain triangles underneath it. Visit boxes near-to-far and stop
     // only once their conservative entry distance exceeds the nearest exact hit.

@@ -2172,6 +2172,42 @@
       houseRoofProxy = new Object3D();
       houseRoofProxy.name = "house-roof-proxy";
       houseRoofProxy.userData.real = roof;
+      // KALA_OREV_441 (the user 25.11.2026: "ובתוס' בשבת הביאו פלוגתא בזה אם היה במקדש ראשון או לאו"; to the proposal "כן"): KALA OREV on the
+      // house's roof, a reading (ctx.shared.kalaOrev, the row "כליא עורב"). The Tosafot (Shabbat 90a, 1907:1145): "וליתא, דבפ"ק דמועד קטן
+      // (דף ט.) מוכח בהדיא שהיה במקדש ראשון כליא עורב" - the default; the Aruch (in the Tosafot, Menachot 107a 1933:1256, Arachin 6a
+      // 1930:95): in the first house no birds flew over it, and there was none. Its form after Rashi (Arachin 6a, 2190:171): "טבלאות של
+      // ברזל אמה על אמה ובהן מסמרות גבוהין אמה קבועין ומחפין בהן ראש הגג של היכל" - iron plates over the roof of the house (the heichal and
+      // the devir, not the ulam), four nails an amah high in each (their number and thickness - model choices). A child of the roof: it goes
+      // with it (the cutaway, the aliyot layer); no shadows, no picking.
+      {
+        const KO = new Group();
+        KO.name = "kalaOrev";
+        roof.add(KO);
+        const ironM = new MeshStandardMaterial({ color: 0x55585e, metalness: 0.55, roughness: 0.55 });
+        const x0 = wx[3] - 0.3, x1 = KE - 0.3, zH = zOut(3) + 0.3;
+        const plate = hei_boxMesh(KO, [{ x0, x1, y0: ROOF, y1: ROOF + 0.12, z0: -zH, z1: zH }], ironM, "kala-orev-plates");
+        plate.castShadow = false;
+        plate.userData.noPick = true;
+        const nx = Math.floor(x1 - x0), nz = Math.floor(2 * zH), pts = [];
+        for (let i = 0; i < nx; i++) for (let k = 0; k < nz; k++) for (const [dx, dz] of [[0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75]]) pts.push([x0 + i + dx, -zH + k + dz]);
+        const nail = new ConeGeometry(0.06, 1, 4);
+        nail.translate(0, 0.5, 0);
+        const im = new InstancedMesh(nail, ironM, pts.length), mt = new Matrix4();
+        pts.forEach(([x, z], i) => im.setMatrixAt(i, mt.makeTranslation(x, ROOF + 0.12, z)));
+        im.instanceMatrix.needsUpdate = true;
+        im.castShadow = false;
+        im.receiveShadow = false;
+        im.userData.noPick = true;
+        im.name = "kala-orev-nails";
+        KO.add(im);
+        ctx.labels.push({ text: "כליא עורב — טבלאות ברזל ובהן מסמרות (רש״י ערכין ו.)", x: -30, y: ROOF + 4, z: 0, size: 1.8, layer: "kalaOrev" });
+        ctx.layers = ctx.layers || {};
+        ctx.layers.kalaOrev = KO;
+        ctx.shared.kalaOrev = {
+          mode: "tosafot",
+          set(m) { this.mode = m === "aruch" ? "aruch" : "tosafot"; KO.visible = this.mode === "tosafot"; if (ctx.requestRender) ctx.requestRender(); return this.mode; }
+        };
+      }
       cut.push(c1w, c1, c1t, goldW, gold, c2w, c2, houseRoofProxy);
       // the three layers named at the EAST end of the ceilings (1.2.3: the section is seen from the east, "פתח את העליות" / "בית דילפא")
       // 1.3.2: the label of the גבים names the vault; Metzudat David 6:9 (checked) instead of the unchecked "גומות לנוי"

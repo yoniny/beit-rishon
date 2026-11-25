@@ -3462,6 +3462,7 @@
       if (ctx2.scene.fog) ctx2.scene.fog.color.copy(SKYC.fogN).lerp(SKYC.fog.setHex(K.fogColor), day);
     };
     const skyAt = (list, i, sec) => {
+      if (SH.__kiddOnly) return 3.0;   // KIDD_DAY_441 (the user 25.11.2026: "קידוש ידיים ורגלים - כהדגמה נפרדת חייב להיות באור יום ממש וללא העלאת המכונני"): the kiddush's own run in full day
       const kB = list.indexOf("barkai");
       if (kB < 0 || i < kB) return 0;
       const st = DATA.stages[list[i]], u = clamp(sec / Math.max(1, st.dur), 0, 1);
@@ -3479,7 +3480,7 @@
       const K = SH.sky, lg = ctx2.scene.getObjectByName("labels");
       // the model's labels are put aside while the demonstration runs (its own tags name the priests); they come back at its end
       saved = { bg: ctx2.scene.background, sunCol: K ? K.sun.color.clone() : null, labels: lg ? lg.visible : null };
-      { const NK = SH.nightKit; saved.night = !!(NK && NK.begin()); }   // TAMID_NIGHT_207
+      { const NK = SH.nightKit; saved.night = !SH.__kiddOnly && !!(NK && NK.begin()); }   // TAMID_NIGHT_207 (KIDD_DAY_441: not in the kiddush's own run)
       if (lg) lg.visible = false;
       if (fnc(SH.stopDemos)) { try { SH.stopDemos("tamid-demo"); } catch (_) {} }   // (TAMID_STOP_209: the others, not itself)
       // SLAUGHTER_HOLD_211: the priests' ways cross the slaughter place as it stands in the usual layout (two rows of pillars, the

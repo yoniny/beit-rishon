@@ -149,7 +149,8 @@
     // tekhelet, argaman ("הצבוע אדום"), tola'at shani, and the white of the linen
     const mSashDyed = mat(0xffffff, { map: weave([["#3d62ab", 4.2], ["#8e1f34", 3.1], ["#c5432b", 1.3], ["#e6e1d3", 1]]), vertexColors: true, roughness: 0.88 });
     const mSashWhite = mat(0xffffff, { map: weave([["#f7f5ee", 4], ["#e0dbcc", 3], ["#ffffff", 2], ["#cfc9b7", 1]]), vertexColors: true, roughness: 0.88 });
-    const mBeards = [0xf4f2ec, 0xbdbab2, 0xeae7df, 0x54402f, 0xa29e96, 0xf0eee8, 0x6d5a48].map((c) => mat(c, { map: texHair, vertexColors: true, roughness: 0.95, side: DoubleSide })), mBeardOld = mBeards[0];
+    // BLOND_441 (the user 25.11.2026: "תעשה את הרוב בלונדינים חוץ מאלו שכבר זקנים"): the two dark ones (3, 6) blond - golden and dark blond; the white and the grey (the elders) as before
+    const mBeards = [0xf4f2ec, 0xbdbab2, 0xeae7df, 0xc29a5b, 0xa29e96, 0xf0eee8, 0xa98250].map((c) => mat(c, { map: texHair, vertexColors: true, roughness: 0.95, side: DoubleSide })), mBeardOld = mBeards[0];
     const SASHES = [];   // every avnet's mesh: dyed in the Rambam's reading, white in "של בוץ"
     // ---------- the head (its middle at HEAD_Y): FACE_E - the skull as before (headR: the hats, the mitznefet, the kippot and the
     // tefillin's strap sit on it), the face, the jaw, the ears, the eyes and the hair of shared/frag/face.js

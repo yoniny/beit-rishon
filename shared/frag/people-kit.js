@@ -96,7 +96,9 @@
     const mHairA = FACE.hairMats(mHair).lo, mHairHi = FACE.hairMats(mHair).hi;   // (the near ones' full face: a soft sheen along the strands)
     const mEyeP = new MeshStandardMaterial({ color: 0xffffff, map: FACE.tex.eye, roughness: 0.14 });
     const mFar = new MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.9 });
-    const TONES = [[0xf4f2ec, 0xe9e6de, 0xfbfaf6, 0xe2dfd6], [0xa8a49b, 0x8e8a82, 0xbab6ad, 0x9a9388], [0x3d2c1f, 0x2e231b, 0x4c3727, 0x36281d], [0x2a1f17, 0x3b2a1c, 0x1f1813, 0x4b3320, 0x5d4129]];
+    // BLOND_441 (the user 25.11.2026: "תעשה את הרוב בלונדינים חוץ מאלו שכבר זקנים"): the dark tones (2 - the judges' black-brown, 3 - the
+    // young) mostly blond now, in several shades - golden, light, dark blond - and one dark among them; the white and the grey (0, 1) as before
+    const TONES = [[0xf4f2ec, 0xe9e6de, 0xfbfaf6, 0xe2dfd6], [0xa8a49b, 0x8e8a82, 0xbab6ad, 0x9a9388], [0xc29a5b, 0xa98250, 0xd4b06e, 0x4c3727], [0xc9a062, 0xb48a4f, 0xdcb978, 0x3b2a1c, 0xa47a45]];
     const SKINS = [0xffffff, 0xf3e7dc, 0xfff3e6, 0xeedccd];
     // ---------- the head (its middle at the origin, the face to +z): an egg, narrower at the chin; the nose and the ears
     const HR = [0.128, 0.16, 0.14], HS = 1.045, YJ = -0.118, OFF = 0.96, HEAD_Y = 2.075;

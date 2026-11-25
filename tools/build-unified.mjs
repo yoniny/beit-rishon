@@ -157,6 +157,8 @@ function shell(standalone, sourcesHtml) {
   s = s.replace('__LICENSE_HTML__', () => licenseHtml(read(path.join(root, 'LICENSE.md'))));
   // the unified plugin's "מה חדש" of this version, on the choice screen: unified/news.md (also README.md's "מה חדש")
   s = s.replace('__UNIFIED_NEWS_HTML__', () => newsHtml(read(path.join(U, 'news.md'))));
+  // NEWS_SHARED_441: the choice screen opens "מה חדש" by itself only when the news has a part for both houses
+  s = s.split('__UNIFIED_NEWS_SHARED__').join(/^###\s*בשני הבתים/m.test(read(path.join(U, 'news.md'))) ? 'true' : 'false');
   s = s.replace('<!--__HOUSE_SOURCES__-->', () => sourcesHtml || '');
   // 2.0.2: the words index (unified/words-index.js, written by tools196/gen_words.py with the houses' own lines): the shell counts with
   // it in which house the words of Otzaria's search field are found. Not in the one-file HTML (no Otzaria there, no search field button).

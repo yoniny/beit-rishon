@@ -1271,6 +1271,7 @@
     // amot (R. Yehuda) - Middot 4:6. A piece hides with what stands under it: the ulam's with the ulam's ceiling (ulamOpenCut), the
     // facade's with the front (ulamFrontCut), the south side's with the house's cutaway (cut). mkRing builds a ring at a height - the
     // roof's (112) and the one over the Abarbanel's twenty amot (132, below).
+    const KO_SETS = [], KO_IRON = new MeshStandardMaterial({ color: 0x55585e, metalness: 0.55, roughness: 0.5 });   // KO_SHAPE_441
     const parTK = new Group(), parRY = new Group();
     g.add(parTK);
     g.add(parRY);
@@ -1297,9 +1298,33 @@
       }
       piece(gF, 17.65, 18.55, -51.05, 51.05).push({ x1: 18.1, z1: -50.6, x2: 18.1, z2: 50.6, y: y0 + h });                             // the facade, whole, with both its corners
       if (spikes) {
-        const sG = new ConeGeometry(0.12, 1, 6);
-        sG.translate(0, 0.5, 0);
-        for (const [grp, sl] of segs) instMesh(grp, sG, M2.gold, spikeMats(sl), false);
+        // KO_SHAPE_441 (the user 25.11.2026, of the shapes of kalah orev: "תעשה גם את 7 הפתוחה"): the reading of its form (the row "צורת
+        // כליא עורב", ctx2.shared.kalaOrevShape): "rambam" (the default) - "וטס של ברזל כמו סיף גבהו אמה על גבי המעקה סביב" (the Rambam,
+        // Beit HaBechirah 4:3, 337:64; the Bartenura, 643:198): an iron blade an amah high along the parapet's top (until now gold spikes there - a model
+        // choice); "rashi" - "טבלאות של ברזל אמה על אמה ובהן מסמרות גבוהין אמה... ומחפין בהן ראש הגג של היכל" (Rashi, Arachin 6a): nails
+        // along the parapet's top too (the Tiferet Yisrael: "כל שטח הגג וראש המעקה"), and the roof's plates (KO_ROOF, below); "aruch" - "עשו
+        // צורה להבריח העופות מגג ההיכל" (the Aruch, in the Tosafot): figures on the roof (KO_ROOF), nothing on the parapet. The blade's
+        // thickness, the nails' spacing and the figures' form - model choices.
+        const bG = new BoxGeometry(1, 1, 0.08), nG = new ConeGeometry(0.05, 1, 4, 1, true);
+        bG.translate(0, 0.5, 0); nG.translate(0, 0.5, 0);
+        for (const [grp, sl] of segs) {
+          const gBl = new Group(), gNa = new Group();
+          gBl.name = "ko-blade"; gNa.name = "ko-nails"; gNa.visible = false;
+          grp.add(gBl, gNa);
+          KO_SETS.push([gBl, "rambam"], [gNa, "rashi"]);
+          const bm = [], nm = [];
+          for (const l of sl) {
+            const dx = l.x2 - l.x1, dz = l.z2 - l.z1, L = Math.hypot(dx, dz);
+            const mm = new Matrix4().makeRotationY(-Math.atan2(dz, dx));
+            mm.scale(new Vector3(L + 0.9, 1, 1));
+            mm.setPosition((l.x1 + l.x2) / 2, l.y, (l.z1 + l.z2) / 2);
+            bm.push(mm);
+            const n = Math.max(2, Math.floor(L / 0.5) + 1);
+            for (let i = 0; i < n; i++) { const t = i / (n - 1); for (const off of [-0.22, 0.22]) { const ox = -dz / (L || 1) * off, oz = dx / (L || 1) * off; nm.push(m4(l.x1 + dx * t + ox, l.y, l.z1 + dz * t + oz)); } }
+          }
+          const ib = instMesh(gBl, bG, KO_IRON, bm, false), inl = instMesh(gNa, nG, KO_IRON, nm, false);
+          ib.userData.noPick = inl.userData.noPick = true;
+        }
       }
       if (lists) {
         cut.push(gS);
@@ -1328,6 +1353,32 @@
     h120.add(h120TK); h120.add(h120RY);
     mkRing(h120TK, 132, 3, true, false);
     mkRing(h120RY, 132, 4, false, false);
+    // KO_ROOF (KO_SHAPE_441): over the roof inside the parapet (the house x -82.95..17.65, z +-35.45; the ulam x 0.95..17.65, z +-50.15),
+    // at its height y - for Rashi iron plates and nails (two to an amah), for the Aruch eight figures (a pole, a round cap and strips of
+    // cloth round its top, the field-guards' kind: "כדרך שעושין עכשיו שומרי זרעים"); in the reading of the parapet (parTK / h120TK) only.
+    const koRoof = (parent, y) => {
+      const gN = new Group(), gA = new Group();
+      gN.name = "ko-roof-nails"; gA.name = "ko-roof-figures"; gN.visible = gA.visible = false;
+      parent.add(gN, gA);
+      KO_SETS.push([gN, "rashi"], [gA, "aruch"]);
+      const rects = [[-82.95, 0.95, -35.45, 35.45], [0.95, 17.65, -50.15, 50.15]];
+      for (const [x0, x1, z0, z1] of rects) { const pl = H2.box(gN, x1 - x0, 0.1, z1 - z0, KO_IRON, (x0 + x1) / 2, y, (z0 + z1) / 2); pl.castShadow = false; pl.userData.noPick = true; }
+      const nG = new ConeGeometry(0.05, 1, 4, 1, true); nG.translate(0, 0.5, 0);
+      const mats = [];
+      for (const [x0, x1, z0, z1] of rects) for (let x = x0 + 0.35; x < x1; x += 0.7) for (let z = z0 + 0.35; z < z1; z += 0.7) mats.push(m4(x, y + 0.1, z));
+      const inl = instMesh(gN, nG, KO_IRON, mats, false); inl.userData.noPick = true;
+      const wood = new MeshStandardMaterial({ color: 0x6b4a2a, roughness: 0.9 }), cloth = new MeshStandardMaterial({ color: 0x7a1f1f, roughness: 0.95, side: DoubleSide });
+      for (const [x, z] of [[-70, -20], [-70, 20], [-45, -20], [-45, 20], [-20, -20], [-20, 20], [9, -38], [9, 38]]) {
+        // (no cross-bar: a pole, a round cap on it and six strips of cloth hanging round its top, each turned its own way)
+        const pole = H2.box(gA, 0.25, 5, 0.25, wood, x, y, z);
+        const cap = new Mesh(new CylinderGeometry(0.9, 0.9, 0.15, 16), wood); cap.position.set(x, y + 5.05, z);
+        pole.userData.noPick = cap.userData.noPick = true; gA.add(cap);
+        for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2 + 0.3, st = new Mesh(new PlaneGeometry(0.3, 1.6), cloth); st.position.set(x + Math.cos(a) * 0.8, y + 4.15, z + Math.sin(a) * 0.8); st.rotation.y = -a; st.userData.noPick = true; gA.add(st); }
+      }
+    };
+    koRoof(parTK, 112);
+    koRoof(h120TK, 132);
+    ctx2.shared.kalaOrevShape = { mode: "rambam", set(m) { this.mode = ["rashi", "aruch"].includes(m) ? m : "rambam"; for (const [o, k] of KO_SETS) o.visible = k === this.mode; if (ctx2.requestRender) ctx2.requestRender(); return this.mode; } };
     const applyTop = () => {
       const ry = ctx2.shared.parapet.mode === "yehuda", hi = h120.visible;
       parTK.visible = !ry && !hi; parRY.visible = ry && !hi;

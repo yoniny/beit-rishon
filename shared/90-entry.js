@@ -609,6 +609,45 @@
   // with the distance of the view (a hall: ~10 amot a second; the mount from afar: faster).
   var ent_walk = { fwd: false, back: false, left: false, right: false, fwdTo: 0, backTo: 0, v: 0, vs: 0, dir: new Vector3(), side: new Vector3() };
   function ent_walkSpeed() { return Math.max(9, Math.min(80, camera.position.distanceTo(controls.target) * 0.35)); }
+  // WALK_WALL_441: the wall test of walk mode (see ent_walkStep); d, the level step, is cut to what the walls let through
+  function ent_walkWall(p, d) {
+    const W = ent_walk, len = d.length();
+    if (len < 1e-6) return;
+    const u = W.u || (W.u = new Vector3()), o = W.o || (W.o = new Vector3()), n = W.n || (W.n = new Vector3()), ray = W.ray || (W.ray = new Raycaster());
+    const list = ent_solids("floor"), fy = Number.isFinite(cam_wf.fy) ? cam_wf.fy : p.y - ent_wm.eye;
+    const wall = (dx, dz, l) => {   // the first wall along (dx, dz) within l and a body's width, or null
+      u.set(dx, 0, dz).divideScalar(l);
+      for (const h of [1.3, Math.max(1.3, p.y - fy - 0.2)]) {
+        ray.near = 0;
+        ray.far = l + 0.33;
+        ray.set(o.set(p.x, fy + h, p.z), u);
+        let hit = null;
+        try { hit = ent_intersect.first(ray, list); } catch (_) { hit = null; }
+        if (!hit) continue;
+        // the floor before the face: a ray down from the hit's height, a hair before the face; within 1.2 under the hit it is a step
+        const y = hit.point.y, hx = hit.point.x - u.x * 0.05, hz = hit.point.z - u.z * 0.05;
+        ray.far = 400;
+        ray.set(o.set(hx, y + 0.01, hz), CAM_DOWN);
+        let f = null;
+        try { f = ent_intersect.first(ray, list); } catch (_) { f = null; }
+        if (f && y - f.point.y <= 1.2) continue;
+        return hit;
+      }
+      return null;
+    };
+    const hit = wall(d.x, d.z, len);
+    if (!hit) return;
+    // along the wall: the step less its part into the wall's face
+    if (hit.face) n.copy(hit.face.normal).transformDirection(hit.object.matrixWorld); else n.set(-u.x, 0, -u.z);
+    n.y = 0;
+    const nl = n.length();
+    d.set(0, 0, 0);
+    if (nl < 0.3) return;
+    n.divideScalar(nl);
+    const sx = (u.x - n.x * (u.x * n.x + u.z * n.z)) * len, sz = (u.z - n.z * (u.x * n.x + u.z * n.z)) * len, sl = Math.hypot(sx, sz);
+    if (sl < len * 0.15 || wall(sx, sz, sl)) return;
+    d.set(sx, 0, sz);
+  }
   function ent_walkStep() {
     const W = ent_walk, now = performance.now(), dt = Math.min(50, ent_view.dt);
     if (flyAnim || ent_load.loading || cam_drag) { W.v = 0; return; }
@@ -633,6 +672,13 @@
     d.normalize();
     W.side.set(-d.z, 0, d.x).multiplyScalar(W.vs * dt / 1000);   // the right-hand side of the view
     d.multiplyScalar(W.v * dt / 1000).add(W.side);
+    // WALK_WALL_441 (the user 25.11.2026: "מצב הליכה נכנס בתוך המדרגות במקום לעלות עליהם", at the stairs of the court's gates on the
+    // north - walking from the chel toward a gate, the eye went into the landing before it, 13.5 amot high, and on under the court's
+    // floor; walk mode had no walls): in walk mode a face across the way is a wall if it stands more than 1.2 over the floor before it (the
+    // rule cam_walkFloor climbs by) - two level rays along the step, at 1.3 over the floor and at the eye's height, a body's width (a third
+    // of an amah) beyond the step. A wall turns the step along it (one walks along a wall), and stops it if the way along is barred too.
+    // A step of a stair (half an amah) and a ramp are climbed as before; the figures are not in the list (noPick).
+    if (ent_wm.on) ent_walkWall(p, d);
     p.add(d);
     q.add(d);
     if (ent_wm.on) cam_walkFloor(dt);   // CAM_219 (4)
@@ -737,16 +783,31 @@
     }, true);
     window.addEventListener("keyup", (e) => { const f = WK[e.key]; if (f) ent_walk[f] = false; }, true);
     //@@slot free-2
+    // ARROWS_441 (the user 25.11.2026: "חץ ללא כטרל גורר עם כטרל מסובב (לכל הכיונים)"; "חץ למעלה ולמטה מקרב ומרחיק (כמו שהיה) עולה ויורד
+    // בלחיצה על שיפט"): ArrowLeft / ArrowRight move the eye and the target together sideways (the walk's side step, ent_walkStep - until
+    // now they turned the view, which is now Ctrl + arrows, 70-ui.js); ArrowUp / ArrowDown walk forward and back as before; Shift + ArrowUp /
+    // ArrowDown lift (as PageUp / PageDown - until now the tilt)
+    const SIDE = { ArrowLeft: "left", ArrowRight: "right" };
+    window.addEventListener("keydown", (e) => {
+      const f = SIDE[e.key];
+      if (!f || e.defaultPrevented || e.ctrlKey || e.altKey || e.metaKey || ent_load.loading) return;
+      if (!free(document.activeElement) || !free(e.target)) return;
+      const cf = document.getElementById("tm-confirm");
+      if (cf && cf.style.display === "flex") return;
+      e.preventDefault();
+      if (flyAnim) cam_flyStop();
+      ent_walk[f] = true;
+    }, true);
+    window.addEventListener("keyup", (e) => { const f = SIDE[e.key]; if (f) ent_walk[f] = false; }, true);
     window.addEventListener("keydown", (e) => {
       const k = KEYS[e.key];
       if (!k || e.defaultPrevented || e.ctrlKey || e.altKey || e.metaKey || ent_load.loading) return;
-      if (e.shiftKey && e.key.indexOf("Arrow") === 0) return;   // Shift + ArrowUp / ArrowDown: the tilt (70-ui.js)
       if (!free(document.activeElement) || !free(e.target)) return;
       const cf = document.getElementById("tm-confirm");   // the cloud's dialog (70-ui.js) is open: its keys
       if (cf && cf.style.display === "flex") return;
       e.preventDefault();
       if (flyAnim) cam_flyStop();   // CAM_219 (2)
-      const walk = e.key.indexOf("Arrow") === 0;   // 1.2.2: the arrows walk, PageUp / PageDown lift
+      const walk = e.key.indexOf("Arrow") === 0 && !e.shiftKey;   // 1.2.2: the arrows walk, PageUp / PageDown lift (ARROWS_441: and Shift + the arrows)
       const S = walk ? ent_walk : ent_lift, a = walk ? "fwd" : "up", b = walk ? "back" : "down";
       if (k > 0) {
         S[a] = true;
@@ -759,8 +820,8 @@
     window.addEventListener("keyup", (e) => {
       const k = KEYS[e.key];
       if (!k) return;
-      const walk = e.key.indexOf("Arrow") === 0;
-      if (walk) { if (k > 0) ent_walk.fwd = false; else ent_walk.back = false; }
+      // ARROWS_441: an arrow let go stops both its walk and its lift (Shift may be let go first)
+      if (e.key.indexOf("Arrow") === 0) { if (k > 0) { ent_walk.fwd = false; ent_lift.up = false; } else { ent_walk.back = false; ent_lift.down = false; } }
       else { if (k > 0) ent_lift.up = false; else ent_lift.down = false; }
     }, true);
     window.addEventListener("blur", () => { ent_lift.up = ent_lift.down = false; ent_walk.fwd = ent_walk.back = ent_walk.left = ent_walk.right = false; });
@@ -1478,16 +1539,38 @@
       for (const b of el.querySelectorAll("button")) b.style.padding = on ? "0.1em 0.42em" : "0.1em 0.55em";
       el.style.background = on ? "transparent" : "rgba(14,17,28,0.78)"; el.style.boxShadow = on ? "none" : "0 0.1rem 0.5rem rgba(0,0,0,0.35)";
     };
+    // BAR_DOCK_441 (the user 25.11.2026, with a picture of the bar over the model: "לא סכמנו שפס ההדגמה עובר לסרגל?" - "פס ההדגמה לא עבר
+    // בכל ההדגמות"): in a window narrower than about 1250 (or with larger letters) the top bar's free left part was narrower than the bar, and
+    // the bar went back to the foot of the picture. Now, in turn: the free part at the left; the bar made compact (the speed's number
+    // hidden, smaller signs) there; the free part at the right, between the buttons and the title; and last - one row just under the top
+    // bar at its left, over the card - never at the foot of the picture
+    const compact = (on) => {
+      if (lR) lR.style.display = on ? "none" : "";
+      for (const b of el.querySelectorAll("button")) b.style.fontSize = on ? "0.85em" : "";
+    };
     const placeTop = () => {
-      const tb = document.getElementById("tm-topbar"), tbn = document.getElementById("tm-topbtns");
+      const tb = document.getElementById("tm-topbar"), tbn = document.getElementById("tm-topbtns"), tbs = document.getElementById("tb-start");
       if (!tb) return false;
-      const r = tb.getBoundingClientRect(), rb = tbn ? tbn.getBoundingClientRect() : null;
+      const r = tb.getBoundingClientRect(), rb = tbn ? tbn.getBoundingClientRect() : null, rs = tbs ? tbs.getBoundingClientRect() : null;
       if (!(r.width > 0 && r.height > 0)) return false;
       dock(true);
-      const w = el.offsetWidth || 240, h = el.offsetHeight || 28;
-      const x0 = r.left + 50, x1 = rb && rb.width > 0 ? rb.left - 6 : r.left + r.width * 0.3;   // (the version's number at the very left)
-      if (x1 - x0 < w) { dock(false); return false; }
-      el.style.left = Math.round(x0) + "px"; el.style.top = Math.round(r.top + (r.height - h) / 2) + "px"; el.style.bottom = "auto";
+      const slots = [[r.left + 50, rb && rb.width > 0 ? rb.left - 6 : r.left + r.width * 0.3]];   // (the version's number at the very left)
+      if (rb && rb.width > 0) slots.push([rb.right + 6, rs && rs.width > 0 ? rs.left - 6 : r.right - 8]);
+      for (const cmp of [false, true]) {
+        compact(cmp);
+        const w = el.offsetWidth || 240, h = el.offsetHeight || 28;
+        for (const [x0, x1] of slots) {
+          if (x1 - x0 < w) continue;
+          el.style.background = "transparent"; el.style.boxShadow = "none"; el.style.padding = "0";
+          el.style.left = Math.round(x0) + "px"; el.style.top = Math.round(r.top + (r.height - h) / 2) + "px"; el.style.bottom = "auto";
+          return true;
+        }
+      }
+      // under the top bar, at its left (one row, on a dark ground - it lies over the picture)
+      const h = el.offsetHeight || 28;
+      el.style.background = "rgba(14,17,28,0.78)"; el.style.boxShadow = "0 0.1rem 0.5rem rgba(0,0,0,0.35)"; el.style.padding = "0.15rem 0.25rem";
+      el.style.left = Math.round(r.left + 8) + "px"; el.style.top = Math.round(r.bottom + 4) + "px"; el.style.bottom = "auto";
+      void h;
       return true;
     };
     const place = () => {

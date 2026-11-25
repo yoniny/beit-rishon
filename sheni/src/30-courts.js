@@ -321,9 +321,15 @@
         else if (gx === BECH_X) chelFlight(g, gx, s, -1, { endRail: false, rampW: RAMP_W, noSteps: true });
         else { chelFlight(g, gx, s, 1, { endRail: false }); const n0 = g.children.length; platRail(g, gx - 6.05, gx - 6, 74, 77, 13.5, ["e"]); tagNew(g, n0); for (let i = n0; i < g.children.length; i++) ringHide.push(g.children[i]); }   // (the strip's end, a step down to the Water Gate's landing)
       } else {
-      const beast = gx === BECH_X, fdx = gx === BECH_X || (gx === DALK_X && s > 0 && DALK_X < BECH_X) ? -1 : s > 0 ? 1 : -1;   // GATES_APART_440: the Delek's steps down WEST (east of it the Bechorot's flight comes down toward it), the beasts' ramp passing beside them on the outer strip   // RAMPS_N4; BEAST_N_OFF_420: the gate of the offering's (north) - cancelled
-      chelFlight(g, gx, s, fdx, { endRail: !joined, rampW: beast ? RAMP_W : 0 });
-      if (beast) beastRamp(gx, s, fdx, 12, 13.5, 70, 4);
+      // BECH_STEPS_EAST_441 (the user 25.11.2026, of the picture: "המדרגות של הבכורות - חסומות ע"י הכבש - אולי שיהיו לצד השני"): the
+      // beasts' ramp, higher than the steps beside it all the way down, shut them in a trench - so the Bechorot's steps go down EAST
+      // (toward the Water Gate; 7.5 amot short of its landing) and the ramp WEST, from the two ends of one landing (until now both west,
+      // side by side - RAMPS_N4). The landing's west end has its rail on the landing only - the ramp goes on from the strip beyond it
+      const bechE = gx === BECH_X && s > 0 && BECH_X - DALK_X > 26;
+      const beast = gx === BECH_X, fdx = bechE ? 1 : gx === BECH_X || (gx === DALK_X && s > 0 && DALK_X < BECH_X) ? -1 : s > 0 ? 1 : -1;   // GATES_APART_440: the Delek's steps down WEST (east of it the Bechorot's flight comes down toward it), the beasts' ramp passing beside them on the outer strip   // RAMPS_N4; BEAST_N_OFF_420: the gate of the offering's (north) - cancelled
+      chelFlight(g, gx, s, fdx, { endRail: !joined && !bechE, rampW: beast ? RAMP_W : 0 });
+      if (bechE) { const n0 = g.children.length; platRail(g, gx - 6, gx - 5.95, 70, 74, 13.5, ["w"]); tagNew(g, n0); for (let k = n0; k < g.children.length; k++) ringHide.push(g.children[k]); }
+      if (beast) beastRamp(gx, s, -1, 12, 13.5, 70, 4);
       }
       // GATE_STEPS_A2 (fix-a2; the user's decision 79, 22.11.2026): the last two and a half amot inside the gate - a step of one amah and
       // three of half an amah, as the Rambam, Beit HaBechirah 6:3 (337:96): "ועולה ממנו לעזרת הכהנים במעלה גבוהה אמה ועליה דוכן יש בו
@@ -1329,9 +1335,18 @@
     g.add(g7);
     g.add(g13);
     g.add(g13r);
-    g13.visible = false;
+    // GATES13_TOSAFOT_441 (the user 25.11.2026, asked whether to Abba Yose ben Chanan there were truly thirteen gates and why they were not
+    // drawn: "בודאי צייר כתוס׳" - the Tosafot's "דלכולי עלמא היו י״ג שערים וז׳ היו גדולים וששה היו קטנים"; and "בטל את האפשרות של שבעה שערים
+    // והעבר את תצוגת הנק׳ לרמבם"): the thirteen gates are the model's default; the Rambam's seven (with the gold discs) a reading in the row.
+    // Abba Yose's names over the great gates of the north and the discs over the thirteen - once the reading is picked in its row
+    // (gates13Pick / gates13Dots), not in every view
+    g7.visible = false;
     g13r.visible = false;
+    const P13 = new Group();
+    P13.visible = false;
+    g.add(P13);
     ctx2.layers = ctx2.layers || {};
+    ctx2.layers.gates13Pick = P13;
     ctx2.layers.gates7 = g7;
     ctx2.layers.gates13 = g13;
     ctx2.layers.gates13r = g13r;
@@ -1415,9 +1430,9 @@
       { text: "שער העליון — שער קטן (אבא יוסי בן חנן)", x: SMALL_X, y: 24.5, z: 71, size: 1.6, layer: "gates13" },
       { text: "שער הנשים — שער קטן (תפארת ישראל)", x: NASHIM_X, y: 26, z: -71, size: 2.6, layer: "gates13" },
       // Abba Yose ben Chanan's names on the north's great gates (Chok Natan, Tiferet Yisrael), under the names of Middot
-      { text: "לאבא יוסי בן חנן: שער יכניה", x: -78, y: 31, z: -71, size: 2, layer: "gates13" },
-      { text: "לאבא יוסי בן חנן: שער הקרבן", x: -48, y: 31, z: -71, size: 2, layer: "gates13" },
-      { text: "לאבא יוסי בן חנן: שער השיר (תפארת ישראל)", x: MOKED_X, y: 31, z: -56, size: 1.6, layer: "gates13" },   // by its gate to the court (the counted one)
+      { text: "לאבא יוסי בן חנן: שער יכניה", x: -78, y: 31, z: -71, size: 2, layers: ["gates13", "gates13Pick"] },
+      { text: "לאבא יוסי בן חנן: שער הקרבן", x: -48, y: 31, z: -71, size: 2, layers: ["gates13", "gates13Pick"] },
+      { text: "לאבא יוסי בן חנן: שער השיר (תפארת ישראל)", x: MOKED_X, y: 31, z: -56, size: 1.6, layers: ["gates13", "gates13Pick"] },   // by its gate to the court (the counted one)
       { text: "שני שערים במערב שלא היה להם שם", x: -97, y: 24.5, z: 0, size: 1.6, layers: ["gates13", "westTyt"] },
       // 1.9.1: the rejected reading (g13r)
       { text: "שער העליון — שער קטן (אבא יוסי בן חנן)", x: SMALL_X, y: 24.5, z: 71, size: 1.6, layer: "gates13r" },
@@ -1458,7 +1473,8 @@
     // GUARDS_FAR_195). A sign of the model, said in the row's card.
     {
       const FARG = [], mG = new MeshBasicMaterial({ color: 0xe2a400 }), mS = new MeshBasicMaterial({ color: 0xc23b22 }), gD = new CylinderGeometry(2, 2, 0.4, 24);
-      const disc = (grp, x, z, small) => { const d = new Mesh(gD, small ? mS : mG); d.position.set(x, x === WATER_X && z === 67.5 ? 51 : 48, z); d.userData.noPick = true; grp.add(d); FARG.push(d); };   // GATES_APART_440: over the Water Gate above Avtinas' upper room (its roof 48.9) - at 48 it stood half in it
+      const D13 = [];   // GATES13_TOSAFOT_441: the discs of the default reading (g13) - shown once it is picked in its row
+      const disc = (grp, x, z, small) => { const d = new Mesh(gD, small ? mS : mG); d.position.set(x, x === WATER_X && z === 67.5 ? 51 : 48, z); d.userData.noPick = true; grp.add(d); FARG.push(d); return d; };   // GATES_APART_440: over the Water Gate above Avtinas' upper room (its roof 48.9) - at 48 it stood half in it
       for (const [grp, nx] of [[g13, NASHIM_X], [g13r, SHIR_R_X]]) {
         for (const [, x] of gN) disc(grp, x, -67.5, false);
         disc(grp, MOKED_X, -56, false);                       // the hearth house's gate to the court - the third of the north
@@ -1472,7 +1488,11 @@
         { const d = FARG[FARG.length - 1]; d.position.set(19, 64, 0); }
         disc(WEST_K.get(grp), -3, 43.5, true);                //   and over the heichal's (inside the ulam)
         { const d = FARG[FARG.length - 1]; d.position.set(-3, 43.5, 0); }
+        if (grp === g13) for (const d of FARG) if (!D13.includes(d) && d.parent && (d.parent === g13 || d.parent.parent === g13)) D13.push(d);
       }
+      for (const d of D13) d.visible = false;
+      // the discs follow the layer gates13Pick (the per-frame hook below) - a layer the presentation records and puts back
+      ctx2.shared.gates13Dots = { get on() { return P13.visible; }, set(on) { P13.visible = !!on; if (ctx2.requestRender) ctx2.requestRender(); } };
       // DOTS7_420 (the user, 24.11.2026: "לקריאת חכמים להוסיף נקו' צבעוניות כמו ב13 שערים"): the seven of the Sages - a gold disc over each,
       // shown once the reading is picked in its row (ctx2.shared.gates7Dots.on, 70-ui slots: the row "שער העליון"), not in every view
       const d7 = new Group(); d7.name = "gates7Dots"; d7.visible = false; g7.add(d7);
@@ -1482,12 +1502,14 @@
       disc(d7, 93.5, 0, false);
       ctx2.shared.gates7Dots = { set(on) { d7.visible = !!on; } };
       if (ctx2.animated) ctx2.animated.push(() => {
-        if (!g13.visible && !g13r.visible && !d7.visible) return;
+        const on13 = P13.visible && g13.visible;
+        if (on13 !== D13[0].visible) for (const d of D13) d.visible = on13;
+        if (!on13 && !g13r.visible && !d7.visible) return;
         const cp = ctx2.camera.position;
         for (const d of FARG) { const k = Math.min(4.5, Math.max(1, cp.distanceTo(d.position) / 110)); d.scale.set(k, 1, k); }
       });
       // the hearth house's name by Abba Yose also over its north face (its label by the gate to the court is hidden from the north)
-      ctx2.labels.push({ text: "לאבא יוסי בן חנן: שער השיר (תפארת ישראל)", x: MOKED_X, y: 51, z: -79, size: 2.6, layer: "gates13" },
+      ctx2.labels.push({ text: "לאבא יוסי בן חנן: שער השיר (תפארת ישראל)", x: MOKED_X, y: 51, z: -79, size: 2.6, layers: ["gates13", "gates13Pick"] },
         { text: "לאבא יוסי בן חנן: שער הנשים — בית המוקד (האפשרות הנדחית)", x: MOKED_X, y: 51, z: -79, size: 2.6, layer: "gates13r" });
     }
     // the Rambam (5:5): "ושער זה הוא הנקרא שער העליון והוא שער ניקנור" - a label on Nikanor's gate, shown by the same row
@@ -1496,7 +1518,7 @@
     g.add(upN);
     ctx2.layers.upperNikanor = upN;
     ctx2.labels.push({ text: "״שער העליון״ — כך קורא הרמב״ם לשער ניקנור", x: 100, y: 44, z: 0, size: 1.8, layer: "upperNikanor" });
-    ctx2.shared.gates13 = { mode: "seven", set(m) { this.mode = ["thirteen", "thirteenR", "nikanor"].includes(m) ? m : "seven"; g13.visible = this.mode === "thirteen"; g13r.visible = this.mode === "thirteenR"; g7.visible = !g13.visible && !g13r.visible; upN.visible = this.mode === "nikanor"; } };
+    ctx2.shared.gates13 = { mode: "thirteen", set(m) { this.mode = ["seven", "thirteenR", "nikanor"].includes(m) ? m : "thirteen"; g13.visible = this.mode === "thirteen"; g13r.visible = this.mode === "thirteenR"; g7.visible = !g13.visible && !g13r.visible; upN.visible = this.mode === "nikanor"; } };   // GATES13_TOSAFOT_441: "thirteen" by default
     boxHoles(g, 5, 7.5, 135, M2.stone, 93.5, 6, 0, [-1, 1].map((sz) => ({ x: 93.5, z: sz * KDEEP.z, w: 5, d: KDEEP.d })));   // KLI_DEEP_211: the instruments' chambers pass under the wall
     H2.wall(g, { axis: "z", length: 135, height: 26.5, thickness: 5, mat: M2.stone, cx: 93.5, cz: 0, y: 13.5, openings: [
       { center: 0, width: 10, height: 20 },
@@ -1727,11 +1749,12 @@
         const dro = doors.find((dr) => dr.dx === nx && dr.dz === nz);
         if (dro) {
           const dof = dro.off || 0;   // CHAMBERS_EAST_N2: the door's middle, off the wall's middle (along the wall)
+          const FC = (opts && opts.frontCut) || null, fc = (m) => { if (FC && m) FC.push(m); return m; };   // FRONT_CUT_441: the door's wall, to be taken away by a card
           for (const [a0, a1] of [[-along / 2, dof - DW / 2], [dof + DW / 2, along / 2]]) {
             const segW = a1 - a0, ctr = (a0 + a1) / 2;
-            if (segW > 1e-3) H2.box(g, nx ? T : segW, h, nx ? segW : T, M2.stoneLight, wx + (nx ? 0 : ctr), y0, wz + (nx ? ctr : 0));
+            if (segW > 1e-3) fc(H2.box(g, nx ? T : segW, h, nx ? segW : T, M2.stoneLight, wx + (nx ? 0 : ctr), y0, wz + (nx ? ctr : 0)));
           }
-          if (h - DH > 0.01) H2.box(g, nx ? T : DW, h - DH, nx ? DW : T, M2.stoneLight, wx + (nx ? 0 : dof), y0 + DH, wz + (nx ? dof : 0));                 // over the door
+          if (h - DH > 0.01) fc(H2.box(g, nx ? T : DW, h - DH, nx ? DW : T, M2.stoneLight, wx + (nx ? 0 : dof), y0 + DH, wz + (nx ? dof : 0)));                 // over the door
           if (opts && opts.noLeaf) return;
           const leafGeo = H2.uvWorldBox(new BoxGeometry(nx ? 0.25 : DW * 0.92, DH - 0.2, nx ? DW * 0.92 : 0.25), nx ? 0.25 : DW * 0.92, DH - 0.2, nx ? DW * 0.92 : 0.25);
           leafGeo.translate(nx ? 0 : DW * 0.46, (DH - 0.2) / 2, nx ? DW * 0.46 : 0);   // hinged at one jamb
@@ -1739,7 +1762,7 @@
           leaf.position.set(wx - nx * (T / 2 + 0.15) - (nx ? 0 : DW / 2) + (nx ? 0 : dof), y0 + 0.3, wz - nz * (T / 2 + 0.15) - (nx ? DW / 2 : 0) + (nx ? dof : 0));
           leaf.rotation.y = (nx ? -nx : nz) * 0.6;   // ajar, into the room
           leaf.castShadow = leaf.receiveShadow = true;
-          g.add(leaf); ctx2.lishkotCut.push(leaf);   // LEAF_CUT_420: the user (24.11.2026, the views from above): the leaf ajar covered the room
+          g.add(leaf); ctx2.lishkotCut.push(leaf); if (opts && opts.frontCut) opts.frontCut.push(leaf);   // LEAF_CUT_420: the user (24.11.2026, the views from above): the leaf ajar covered the room
         } else {
           H2.box(g, nx ? T : along, h, nx ? along : T, M2.stoneLight, wx, y0, wz);
         }
@@ -3593,6 +3616,27 @@
     // priests' court's face toward the court of Israel (x 82.5, z 59.3..61.7, 1.9 high), eight steps down westward, and the tunnel under
     // the priests' court's floor (x 70.5..80.5, z 56.5..64.5, its floor 9.5, its ceiling the court's pave); the duchan runs on to the
     // opening (z 59.3), five amot short of the south wall - in this reading only. The sizes and the places of both - model choices.
+    // FRONT_CUT_441 (the user 25.11.2026: "אני רוצה פרוה ומלח במבט של אדם בדלת כאילו - רק שיראו את כל הלשכה - אולי להסיר את הקירות מצד
+    // העזרה"): the court-side (north) walls of לשכת המלח and לשכת הפרוה, with their doors' leaves, go away while their cards are shown (openFor,
+    // 70-ui slots) - the eye stands in the court before the door and sees the whole room. A button with no pill on the model (as hei-ulam)
+    const SOUTH_FRONT = [];
+    {
+      let on = false;
+      (Array.isArray(ctx2.shared.modelButtons) ? ctx2.shared.modelButtons : (ctx2.shared.modelButtons = [])).push({
+        id: "crt-south-front", label: "פתח את חזית הלשכות", labelOn: "סגור את חזית הלשכות", removal: true, maxDist: 200,
+        title: "מסיר את הכתלים הצפוניים של לשכת המלח ושל לשכת הפרוה, שמצד העזרה, ואת האכסדראות, כדי לראות את כל הלשכה. כלי צפייה בלבד; נסגר מעצמו.",
+        anchor: () => null,
+        get: () => on,
+        set: (v) => {   // (the user: "שלא יהיה מוסתר באכסדראות וכד' מבט נקי כמו בכל לשכה" - the exedras, before the rooms' fronts, go too, and come back as they were)
+          v = !!v; if (v === on) return; on = v;
+          for (const m of SOUTH_FRONT) m.visible = !on;
+          for (const nm of ["exedraRambam", "exedraBartenura"]) {
+            const o = ctx2.root.getObjectByName(nm); if (!o) continue;
+            if (on) { o.userData.sfVis = o.visible; o.visible = false; } else if (o.userData.sfVis !== undefined) { o.visible = o.userData.sfVis; delete o.userData.sfVis; }
+          }
+        }
+      });
+    }
     {
       const roomG = new Group(), tunG = new Group();
       roomG.name = "saltRoom"; tunG.name = "saltTunnel";
@@ -3606,7 +3650,7 @@
         for (let i = l0; i < ctx2.labels.length; i++) if (!ctx2.labels[i].layer && !ctx2.labels[i].layers) ctx2.labels[i].layer = grp.name;
       };
       // the room
-      into(roomG, () => room(86.75, 60, 8.5, 10, 16, LV.AZ, [{ dx: 0, dz: -1 }], "לשכת המלח", 0, F_MELACH, { doorW: 3 }));   // SOUTH_SMALL_430: all of it in the court of Israel (x 82.5..91; until now 79.5..91)
+      into(roomG, () => room(86.75, 60, 8.5, 10, 16, LV.AZ, [{ dx: 0, dz: -1 }], "לשכת המלח", 0, F_MELACH, { doorW: 3, frontCut: SOUTH_FRONT }));   // SOUTH_SMALL_430: all of it in the court of Israel (x 82.5..91; until now 79.5..91)
       H2.box(roomG, SALTH.w, 2.65, SALTH.d, M2.pave, SALTH.x, 13.35, SALTH.z);   // SOUTH_SMALL_430: the priests' court's pave whole there (the Parvah stands on it)
       H2.box(roomG, SALT_T.w, LV.AZ - 0.15, SALT_T.d, M2.stone, SALT_T.x, 0, SALT_T.z);   // the podium whole under it (the tunnel's shaft filled)
       // the tunnel
@@ -3649,7 +3693,7 @@
     // CHAMBERS_EAST_N2: the Parvah (x 77..91, z 45..55; floor 13.5, roof as before - 30; door north, onto the alley) and the Madichin (x 77..91,
     // z 29.4..39.4; roof 29.5 as before; the door to the mesibah in its south wall, near the east end - the pit and the tables are clear of it).
     // Until now both stood on the priests' court's floor (16), opposite the altar and the ramp - the Parvah x 47..61 and the Madichin x 27..41.
-    room(79.75, 60, 5.5, 10, 14, LV.KOH, [{ dx: 0, dz: -1 }], "לשכת הפרוה", 0, F_PARVAH, { T: 0.8, doorW: 2.4 });   // SOUTH_SMALL_430: x 77..82.5 (until now 67.5..79.5); SOUTH_ROW_N4: the door north, to the priests' court
+    room(79.75, 60, 5.5, 10, 14, LV.KOH, [{ dx: 0, dz: -1 }], "לשכת הפרוה", 0, F_PARVAH, { T: 0.8, doorW: 2.4, frontCut: SOUTH_FRONT });   // SOUTH_SMALL_430: x 77..82.5 (until now 67.5..79.5); SOUTH_ROW_N4: the door north, to the priests' court
     room(74.5, 60, 5, 10, 13.5, LV.KOH, [{ dx: 0, dz: -1, off: -0.45 }], "לשכת המדיחין", 0, F_MADICHIN, { floorHole: MPIT, T: 0.8, doorW: 2.4 });   // SOUTH_SMALL_430: x 72..77, its door north to the mesibah (until now x 49.5..61.5, the door east)   // ... its door east, to the mesibah
     // the mesibah from לשכת המדיחין up to the roof of בית הפרוה (Middot 5:3 "ומשם מסבה עולה לגג בית הפרוה"). 1.8.0: as the Bartenura - "בנין
     // אבנים מעלות מגלגלות וסובבות לעלות לגג בית הפרוה" - a winding stair of stone in the gap between the two rooms (x 41..47), up to the
