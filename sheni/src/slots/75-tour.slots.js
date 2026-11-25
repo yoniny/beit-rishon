@@ -377,7 +377,7 @@
               // orders part to the last; the High Priest's garments - with him offering
               setTimeout(() => { try {
                 const TT = ctx.shared.tour, SL = (TT && TT.slides) || slides;
-                let ids = { lamps: ["lamps5", "lamps2"], belt: ["kiyor12"], hp: ["birkat", "haalaah"], kidd: ctx.shared.__kiddOnly ? ["kiyor12"] : ["kiyor", "kiyor12"],   /* KIDD_DAY_441: the kiddush's own run - the twelve only (no laver raised) */ mitz: ["birkat", "haalaah"], ephod: ["birkat", "haalaah"] }[g.k] || null;
+                let ids = { lamps: ["lamps5", "lamps2"], belt: ["kiyor12"], hp: ["birkat", "haalaah"], kidd: ["kiyor", "kiyor12"], mitz: ["birkat", "haalaah"], ephod: ["birkat", "haalaah"] }[g.k] || null;
                 if (g.k === "order" && fnc(T.list)) {
                   // ORDER_PARTS_420: only the parts where the two orders differ (until now from the first difference to the last - 32 of the 39
                   // stages, nearly the whole presentation): the stages common to both in the same sequence (their longest common sequence) are

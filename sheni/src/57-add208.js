@@ -1633,7 +1633,7 @@
             f.g.visible = true;
             placeFig(f, L.OUT, sig, qq[2] + Math.PI * turn, walking ? st.v : 0, st.dist, sd, false);
             const blowK = t < T.walk0 ? smooth(clamp((t - 0.6) / 0.5, 0, 1)) * (1 - smooth(clamp((t - 3.2) / 0.4, 0, 1)))
-              : t < T.decl0 ? 1 - smooth(clamp((t - T.decl0 + 0.5) / 0.5, 0, 1)) : 0;
+              : 1 - smooth(clamp((t - T.decl0) / 0.4, 0, 1));   // BLOW_TO_GATE_441: the trumpets up until they stand in the gate (they came down half a second before it)
             TRUH.hold(f, blowK);   // TRUMPET_HANDS_N11: both hands on the trumpet, walking too
           }
         }
@@ -1863,7 +1863,7 @@
             if (sndT < 0.8 && t >= 0.8) SH.sfx("trumpets");   // the opening, at the Nikanor gate
             // BLOW_WALK_420 (the user: "הכהנים לא תוקעים מהירידה במדרגות עד השער"; Sukkah 5:4 "היו תוקעין והולכין, עד שמגיעין לשער היוצא מזרח"):
             // one drawn blast from where they go down until the eastern gate (as the rejoicing's, TEKIA_LEGATO_G1)
-            if (sndT < T.walk0 && t >= T.walk0) SH.sfx("trumpets", { pattern: "drawn", dur: Math.max(2, (T.out1 - t) * ((SH && SH.demoSlow) || 1.5)) });
+            if (sndT < T.walk0 && t >= T.walk0) SH.sfx("trumpets", { pattern: "drawn", dur: Math.max(2, (T.decl0 + 0.3 - t) * ((SH && SH.demoSlow) || 1.5)) });   // BLOW_TO_GATE_441 (the user 25.11.2026: "תקיעה לא ממשיכה עד השער (ניסוך)"): until they reach the eastern gate (T.decl0) - it was T.out1, which the re-timing had dropped: NaN, and the sound's own default (20 s) ended the blast on the way
             for (const ts of [T.rim1 - 2.4, T.rim1 + 1.5, T.fill0 + 2.5]) if (sndT < ts && t >= ts) { if (SHL.kit) SHL.kit.roar(); }   // SHILOACH_KIT_B2: the kit's roar   // SPRING_ROAR_B2: "נובעים בקול גדול"
             if (sndT < T.fill0 + 0.4 && t >= T.fill0 + 0.4) SH.sfx("water", { dur: 2.2, gain: 0.7 });
             if (sndT < T.blow0 && t >= T.blow0) SH.sfx("trumpets");

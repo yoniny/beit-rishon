@@ -302,7 +302,8 @@
         skin: std(0xc4946c, { roughness: 0.8 }), cap: std(0x2a2520, { roughness: 1 }),
         gold: std(0xe6c05a, { metalness: 0.85, roughness: 0.3, emissive: 0x3a2a06, emissiveIntensity: 0.4 }),
         silver: std(0xd9dee4, { metalness: 0.9, roughness: 0.25, emissive: 0x202428, emissiveIntensity: 0.3 }),
-        bronze: tm_copper(0xb7823e, 0.35, { metalness: 0.8 }),   // COPPER_C (fix-c): the book's copper (shared/frag/copper.js; until now std(0xb7823e)) wood: std(0x7c5130, { roughness: 0.95 }),
+        bronze: tm_copper(0xb7823e, 0.35, { metalness: 0.8 }),   // COPPER_C (fix-c): the book's copper (shared/frag/copper.js; until now std(0xb7823e))
+        wood: std(0x7c5130, { roughness: 0.95 }),   // WOOD_BACK_441 (the user 25.11.2026: "שוב הלפד מוצג כך! 4 פעמים הבטחת שתיקנת" - a white stick): this line was swallowed into COPPER_C's comment above - MAT.wood undefined, and every wooden thing of the morning service (the torches' sticks, the officer's staff, the knife's handle - 19 places) drawn in three's default material: white
         woodNew: std(0xd2a46c, { roughness: 0.9, emissive: 0xff5a10, emissiveIntensity: 0 }),
         ash: std(0x77726c, { roughness: 1 }), wool: std(0xf1ece0, { roughness: 1 }), woolDark: std(0x8c8072, { roughness: 1 }),
         portion: std(0xc79a8c, { roughness: 0.85 }), flour: std(0xf8f5ec, { roughness: 1 }), cake: std(0xd8ad62, { roughness: 0.85 }),
@@ -1622,7 +1623,7 @@
       W.lamb.st = { vis: false, x: 0, y: 0, z: 0, yaw: 0, pose: "stand", ph: 0 };
       for (const id in W.props) { const p = W.props[id]; if (!p.st) p.st = {}; Object.assign(p.st, { vis: false, fig: null, hand: "R", x: 0, y: 0, z: 0, ry: 0, rx: 0 }); }
       Object.assign(N, { kidWater: 0, sleepers: 1, gate: 0, mukhni: 1, lamps: [1, 1, 1, 1, 1, 1, 1], tap: 1, l1: 0, l2: 0, gz: 0, glow: 0, ashGold: 1, coals: 0, smoke: 0,
-        blood: { ne: 0, sw: 0, ys: 0 }, chelG: 0, roofs: false, torches: [0, 0], coalsS: 0, coalsG: 0, teniAsh: 0, kafLid: 1, mizrak: 0, slab: 0, slabKeys: 1, fx: [], night: 1,
+        blood: { ne: 0, sw: 0, ys: 0 }, chelG: 0, roofs: false, torches: [0, 0], coalsS: 0, coalsG: 0, teniAsh: 0, kafLid: 1, mizrak: 0, slab: 0, slabKeys: 1, fx: [], night: 1, ltAimPts: null, ltAimU: -1,
         lanterns: 0, lantA: 0, joltN: 0, joltP: 0, cloakFire: 0, ltorchOut: 0 });   // NIGHT_WATCH_305 //   // NIGHT_COALS_304: night
       N.lamps.fill(1);
       N.cloakCloth = 1;   // CLOAK_S2
@@ -1802,8 +1803,16 @@
       a.pose("ihb", "reachL", 17.6, 18.2);
       a.set("ltorchOut", 1, 18.0);
       a.hold("ihb", "ltorch", "L", 18.0);
-      const pc = [-71.05, -77.0];   // by his west side, the face to the hem of his cloak
+      const pc = [-72.9, -76.25];   // by his west side, the face to the hem of his cloak - TORCH_AIM_441: truly west of him now (it was [-71.05, -77.0], EAST of him: the torch crossed his lap to the hem, its flame hidden in it)
       const hem = [-71.95, 0.78, -75.7];   // the cloak's hem at his west side, by the seat (he sits facing north: yaw PI)
+      // TORCH_AIM_441: where the torch's stick points - ahead of him and up while he carries it (out of the lantern, to the hem, and back), down
+      // to the hem itself while he sets it alight (the flame touches it)
+      // (the point 0.2 before the hem, on his side: the torch's flame just outside the cloak, against it - not hidden inside it)
+      const hl = Math.hypot(pc[0] - hem[0], pc[1] - hem[2]) || 1, hemO = [hem[0] + (pc[0] - hem[0]) / hl * 0.2, hem[1], hem[2] + (pc[1] - hem[2]) / hl * 0.2];
+      a.set("ltAimPts", ["fwd", hemO, "fwd"], 18.0);
+      a.set("ltAimU", 0, 18.0);
+      a.ramp("ltAimU", 0, 1, 19.2, 19.6);
+      a.ramp("ltAimU", 1, 2, 21.0, 21.5);
       a.walk("ihb", ON_CHEL([pl, pc]), 18.3, 19.1, { yaw: faceTo(pc, [hem[0], hem[2]]) });
       a.pose("ihb", "lowerL", 19.2, 20.4);
       a.set("cloakCloth", 0, 19.5);
@@ -3173,6 +3182,7 @@
       }
     };
     const QA = new Quaternion(), QB = new Quaternion(), EU = new Euler();
+    const _taT = new Vector3(), _taP = new Vector3(), _taD = new Vector3(), _taUp = new Vector3(0, 1, 0);   // TORCH_AIM_441
     // HAND_GRIP_A2 (the coordinator, on 53: "באחיזת כלי, האצבעות עוטפות את הידית, בלי לחדור לתוכה ובלי רווח"): a vessel held by its
     // handle (p.handle: { at - a point on the handle's axis where the hand holds it, dir - the handle's way from the hand to the vessel, in
     // the vessel's frame }) lies in the closed hand's ring: the handle's axis through the ring's middle and along its way (the ring as
@@ -3296,6 +3306,21 @@
           }
           o.position.set(p.grip.p[0], p.grip.p[1], p.grip.p[2]);
           o.rotation.set(p.grip.r[0], p.grip.r[1], p.grip.r[2]);
+          // TORCH_AIM_441 (the user 26.11.2026, of the burning of the cloak: "כיון הלפיד הוא לכהן כך שהאש שורפת אותו ולא את בגד הלוי"): the
+          // lantern's torch is not left to the hand's turn (a fixed turn in the grip pointed it back at the officer in one pose or another) -
+          // its stick is aimed, from the hand, at a point of the stage (N.ltAimPts, along N.ltAimU): the lantern, before him on his way, the
+          // cloak's hem, the lantern again
+          if (id === "ltorch" && N.ltAimPts && N.ltAimU >= 0) {
+            // ("fwd": ahead of the holder and up - 1.6 before his face, as he turns: the way he walks with it)
+            const fs = f.st, pt = (q) => (q === "fwd" ? [fs.x + Math.sin(fs.yaw) * 1.6, (fs.y || 0) + 2.1, fs.z + Math.cos(fs.yaw) * 1.6] : q);
+            const P = N.ltAimPts, u = clamp(N.ltAimU, 0, P.length - 1), i0 = Math.min(P.length - 2, Math.floor(u)), k = u - i0, A = pt(P[i0]), B = pt(P[i0 + 1]);
+            _taT.set(lerp(A[0], B[0], k), lerp(A[1], B[1], k), lerp(A[2], B[2], k));
+            W.group.localToWorld(_taT);
+            gp.updateWorldMatrix(true, false);
+            _taP.copy(o.position).applyMatrix4(gp.matrixWorld);
+            _taD.subVectors(_taT, _taP);
+            if (_taD.lengthSq() > 1e-6) { _taD.normalize(); QB.setFromUnitVectors(_taUp, _taD); gp.getWorldQuaternion(QA); o.quaternion.copy(QA.invert()).multiply(QB); }
+          }
           if (p.upright) {   // vessels stay upright whatever the arm does
             gp.getWorldQuaternion(QA);
             EU.set(0, f.g.rotation.y + (p.grip.r[1] || 0), 0);   // MUSICIANS_305: and its own turn
@@ -3462,7 +3487,7 @@
       if (ctx2.scene.fog) ctx2.scene.fog.color.copy(SKYC.fogN).lerp(SKYC.fog.setHex(K.fogColor), day);
     };
     const skyAt = (list, i, sec) => {
-      if (SH.__kiddOnly) return 3.0;   // KIDD_DAY_441 (the user 25.11.2026: "קידוש ידיים ורגלים - כהדגמה נפרדת חייב להיות באור יום ממש וללא העלאת המכונני"): the kiddush's own run in full day
+      if (TM.solo) return 3.0;   // KIDD_DAY_441 (the user 25.11.2026: "קידוש ידיים ורגלים - כהדגמה נפרדת חייב להיות באור יום ממש וללא העלאת המכונני"): the kiddush's own run in full day
       const kB = list.indexOf("barkai");
       if (kB < 0 || i < kB) return 0;
       const st = DATA.stages[list[i]], u = clamp(sec / Math.max(1, st.dur), 0, 1);
@@ -3480,7 +3505,7 @@
       const K = SH.sky, lg = ctx2.scene.getObjectByName("labels");
       // the model's labels are put aside while the demonstration runs (its own tags name the priests); they come back at its end
       saved = { bg: ctx2.scene.background, sunCol: K ? K.sun.color.clone() : null, labels: lg ? lg.visible : null };
-      { const NK = SH.nightKit; saved.night = !SH.__kiddOnly && !!(NK && NK.begin()); }   // TAMID_NIGHT_207 (KIDD_DAY_441: not in the kiddush's own run)
+      { const NK = SH.nightKit; saved.night = !TM.solo && !!(NK && NK.begin()); }   // TAMID_NIGHT_207 (KIDD_DAY_441: not in the kiddush's own run)
       if (lg) lg.visible = false;
       if (fnc(SH.stopDemos)) { try { SH.stopDemos("tamid-demo"); } catch (_) {} }   // (TAMID_STOP_209: the others, not itself)
       // SLAUGHTER_HOLD_211: the priests' ways cross the slaughter place as it stands in the usual layout (two rows of pillars, the
@@ -3649,7 +3674,7 @@
       applyWorld();
       applyProps();
       bloodFx();   // BLOOD_THROW_A2
-      applySky(skyAt(list, i, sec));
+      if (!TM.solo) applySky(skyAt(list, i, sec));   // KIDD_SOLO_441: the kiddush's own demonstration keeps the model's day untouched
       // the moving eye of a stage (CAMK), after the slide's own flight (sec > 0) and never while the viewer holds the presentation
       const ck = CAMK[list[i]];
       if (ck && sec > 0.02 && !tourHeld() && ctx2.camera && ctx2.controls) {
@@ -3758,6 +3783,78 @@
     // play / stop are hung on it and do not take its place: before SOUNDS_300 this object replaced it, and in this house its sounds
     // were silent and every "steps" loop threw (its step calls ctx.shared.sfx("step"))
     SH.sfx = Object.assign(typeof SH.sfx === "function" ? SH.sfx : {}, { play: (name) => sound(name), stop: stopSounds });   // SOUND_211: 55-payis.js sounds the night with it
+    // KIDD_SOLO_441 (the user 25.11.2026: "קידוש כהדגמה - צור הדגמה חדשה לגמרי ולא כחלק מעבודת הבוקר (שים לב, שבעבודת הבוקר, לא מוצג בטעות
+    // אור יום)"): THE KIDDUSH'S OWN DEMONSTRATION - not a run of the presentation of the morning's service (until now: the presentation started
+    // with one stage only, and a flag for its day - which the presentation then carried). Its own clock, its own caption and its own entry
+    // among the demonstrations (pause, again, stop, speed); the twelve at the laver in the day, the model's light untouched (no night, no
+    // dawn); the presentation's flags are not touched, so the morning's service keeps its night and its dawn. The figures and their stage are
+    // the morning's (SC.kiyor12), played by the same engine (play) on an order of one stage ("kidd"). The reading - the row "קידוש ידיים
+    // ורגליים" (TM.kidd) or the two chips under the caption; a change starts it again
+    {
+      DATA.orders.kidd = ["kiyor12"];
+      const KD = { run: false, t0: 0, pausedAt: null, cap: null, txt: null, chips: null, last: "" };
+      const dur = () => (DATA.stages.kiyor12 && DATA.stages.kiyor12.dur) || 20;
+      const slow = () => SH.demoSlow || 1;
+      const capEl = () => {
+        if (KD.cap) return KD.cap;
+        const d = document.createElement("div");
+        d.id = "tm-kidd-cap";
+        d.setAttribute("dir", "rtl");
+        Object.assign(d.style, { position: "fixed", left: "50%", bottom: "64px", transform: "translateX(-50%)", maxWidth: "min(820px, 78vw)",
+          background: "rgba(14,17,28,0.84)", color: "#f4ead0", font: "17px/1.55 var(--font-main, inherit)", padding: "8px 18px",
+          borderRadius: "10px", zIndex: "40", textAlign: "center", userSelect: "none", boxShadow: "0 2px 10px rgba(0,0,0,0.35)", display: "none" });
+        KD.txt = document.createElement("div");
+        KD.chips = document.createElement("div");
+        Object.assign(KD.chips.style, { display: "flex", gap: "0.4rem", justifyContent: "center", marginTop: "0.35rem", font: "13px/1.3 var(--font-main, inherit)" });
+        for (const [k, lab] of [["tk", "תנא קמא והרמב״ם"], ["ryose", "ר׳ יוסי בר׳ יהודה — וחבירו מסייעו"]]) {
+          const b = document.createElement("button");
+          b.type = "button"; b.textContent = lab; b.dataset.k = k;
+          Object.assign(b.style, { background: "rgba(201,168,76,0.16)", color: "#f4ead0", border: "1px solid rgba(201,168,76,0.55)", borderRadius: "0.45em", padding: "0.1em 0.6em", cursor: "pointer" });
+          b.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); TM.kidd = k; start(); });
+          KD.chips.appendChild(b);
+        }
+        d.appendChild(KD.txt); d.appendChild(KD.chips);
+        document.body.appendChild(d);
+        KD.cap = d;
+        return d;
+      };
+      const paintChips = () => { if (KD.chips) for (const b of KD.chips.children) b.style.background = b.dataset.k === TM.kidd ? "rgba(201,168,76,0.55)" : "rgba(201,168,76,0.16)"; };
+      const stop = () => {
+        if (!KD.run) return;
+        KD.run = false;
+        KD.pausedAt = null;
+        if (TM.active && TM.solo) { TM.active = false; leaveWorld(); }
+        TM.solo = false;
+        if (KD.cap) KD.cap.style.display = "none";
+      };
+      const start = () => {
+        if (fnc(SH.stopDemos)) { try { SH.stopDemos("kiddush-demo"); } catch (_) {} }   // the others (the presentation too) - not itself
+        stop();
+        ensure(); applyGarb();
+        TM.solo = true; TM.active = true; W.group.visible = true;
+        enterWorld();
+        KD.t0 = performance.now() - 5000 * slow(); KD.pausedAt = null; KD.run = true; KD.last = "";   // from the stage's fifth second: the twelve are by then at their spouts (their walk there, from wherever the morning's service has them, is the service's)
+        capEl().style.display = "";
+        paintChips();
+        play("kidd", 0, 5);
+      };
+      if (Array.isArray(ctx2.animated)) ctx2.animated.push(() => {
+        if (!KD.run) return;
+        const now = KD.pausedAt != null ? KD.pausedAt : performance.now(), sec = (now - KD.t0) / 1000 / slow(), D = dur();
+        play("kidd", 0, Math.min(sec, D));
+        const caps = (DATA.stages.kiyor12 && DATA.stages.kiyor12.caps) || [];
+        let c = caps.length ? caps[0][1] : "";
+        for (const q of caps) if (q[0] <= sec) c = q[1];
+        if (c !== KD.last) { KD.last = c; if (KD.txt) KD.txt.textContent = c; }
+        if (sec > D + 4) stop();   // the last picture a while, then the model as it was
+      });
+      (SH.demoStops || (SH.demoStops = [])).push({ id: "kiddush-demo", running: () => KD.run, stop,
+        pause: () => { if (KD.run && KD.pausedAt == null) KD.pausedAt = performance.now(); },
+        resume: () => { if (KD.pausedAt == null) return; KD.t0 += performance.now() - KD.pausedAt; KD.pausedAt = null; },
+        paused: () => KD.pausedAt != null,
+        restart: () => start() });
+      SH.kiddushDemo = { start, stop, get on() { return KD.run; }, seek(t) { if (KD.run) KD.t0 = (KD.pausedAt != null ? KD.pausedAt : performance.now()) - t * 1000 * slow(); } };
+    }
     // ---------------------------------------------------------------- the button on the model (over the altar), as the other demonstrations
     {
       const MB = Array.isArray(SH.modelButtons) ? SH.modelButtons : (SH.modelButtons = []);

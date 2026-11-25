@@ -472,7 +472,7 @@
     };
     // 1.4.0 (the user, the reviewer's notes 7-8): the court's parts by their holiness (Kelim 1:8-9; Middot 5:1) - labels and places
     lbl("החיל — עשר אמות", 161, 3.6, -75, 2.2);
-    lbl("עזרת ישראל — י״א אמה", 88, 16.5, 25, 2.2);
+    lbl("עזרת ישראל — י״א אמה", 88, 16.5, 12, 2.2);   // ISRAEL_LABEL_OUT_441: z 12 (25 until 4.5.0 - inside the chavitin chamber, over its oven, in the chamber's view)
     lbl("עזרת כהנים — י״א אמה", 77, 19, 25, 2.2);
     lbl("בין האולם ולמזבח — כ״ב אמה", 28.5, 19.5, -30, 2.2);
     // (the label "דוכן הלויים", over the steps (x 82.5..85), is in the layer of the default reading - above, PISPASIN_COURTS_N2)
@@ -2078,10 +2078,11 @@
           PPc.crowd(chavBake, [[cx - 0.3, cz - 0.7, Math.atan2(ovX - cx + 0.3, ovZ - cz + 0.7)]], { y, s: 1.4, pose: "stand", kind: "kohen", robe: 0xf1ede2, tone: () => 1, name: "chavitinMaker" });
           PPc.crowd(chavFry, [[sx - 1.3, sz - 1.0, Math.atan2(1.3, 1.0)]], { y, s: 1.4, pose: "stand", kind: "kohen", robe: 0xf1ede2, tone: () => 1, name: "chavitinMaker" });
         } catch (_) {}
-        ctx2.labels.push({ text: "1 · אפייה", x: ovX, y: y + 5.6, z: ovZ, size: 0.6, box: true, rim: "#c98a3c", layer: "chavBake" },
+        // BAKE_LABEL_441 (the user 26.11.2026, a picture of it cut at the picture's edge: "תווית האפיה למרכז יותר"): half way from the oven to the room's middle, and low - just over the oven's lip and the maker's head (a high label, seen from above from near, is thrown far out toward the picture's edge: until this fix it stood 5.6 amot high)
+        ctx2.labels.push({ text: "1 · אפייה", x: (ovX + cx) / 2, y: y + 3.0, z: (ovZ + cz) / 2, size: 0.6, box: true, rim: "#c98a3c", layer: "chavBake" },
           { text: "2 · טיגון במחבת", x: sx - 1.5, y: y + 3.9, z: sz, size: 0.6, box: true, rim: "#c98a3c", layer: "chavBake" },
           { text: "1 · טיגון במחבת", x: sx - 1.5, y: y + 3.9, z: sz, size: 0.6, box: true, rim: "#3f9a55", layer: "chavFry" },
-          { text: "2 · אפייה", x: ovX, y: y + 5.6, z: ovZ, size: 0.6, box: true, rim: "#3f9a55", layer: "chavFry" });
+          { text: "2 · אפייה", x: (ovX + cx) / 2, y: y + 3.0, z: (ovZ + cz) / 2, size: 0.6, box: true, rim: "#3f9a55", layer: "chavFry" });
         ctx2.shared.chavitinOrder = { mode: "bake", set(m) { this.mode = m === "fry" ? "fry" : "bake"; chavBake.visible = this.mode === "bake"; chavFry.visible = this.mode === "fry"; return this.mode; } };
       }
       // the marble table and the twelve loaves (KLI_SHIR_211: along the north side, west of the oven - three piles of four; until 2.0.1 a longer
@@ -2308,7 +2309,7 @@
       }
       for (const sz of [-1, 1]) H2.occ(H2.box(g, 12, 1, 1.4, M2.stoneSmooth, X, sz > 0 ? 36 : 33.5, Z + sz * (D / 2 - 0.5)));   // the lintels
       const courtGate = H2.doors(g, { axis: "x", cx: X, cz: Z + D / 2 - 0.5, y: FL, width: 10, height: 20, inward: 1, mat: M2.gateGold, open: 1.0, inset: 0.6 });    // to the court
-      H2.doors(mokedDef, { axis: "x", cx: X, cz: Z - D / 2 + 0.5, y: 13.5, width: 10, height: 20, inward: -1, mat: M2.gateGold, open: 0.25, inset: 0.6 }); // to the chel (the default reading)
+      H2.doors(mokedDef, { axis: "x", cx: X, cz: Z - D / 2 + 0.5, y: 13.5, width: 10, height: 20, inward: 1, mat: M2.gateGold, open: 0.25, inset: 0.6 }); // to the chel (the default reading) - MOKED_LEAVES_IN_441 (the user 26.11.2026, of the lots' demonstration: "תראה מה קורה" - opened, the leaves, twenty amot high, swung out over the landing and the way up to it): they open into the hall, over its inner steps
       {   // R. Yehuda's wicket "בתוך דלת הגדול של השער" (Tiferet Yisrael): a small door in one leaf of the court gate, 1.8 x 3.8 (model choice)
         const wk = new MeshStandardMaterial({ color: 0x8a6420, metalness: 0.6, roughness: 0.4 });
         const leaf = courtGate.children[1];

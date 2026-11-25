@@ -730,7 +730,17 @@
       ray.camera = camera;
       ray.near = 0;
       ray.far = 400;
-      const solids = ent_solids("floor");   // WALK_FLOOR_A2 (1)
+      let solids = ent_solids("floor");   // WALK_FLOOR_A2 (1)
+      // WALK_SHARE_441 (issue #2, R6): the up to 24 samples of one step, and the rays a foot before and behind them, all lie within the
+      // box from the last sample to the eye (half an amah round it, from the highest start down) - the solids are sorted out for it
+      // once, not once a ray
+      if (typeof ent_intersect.near === "function") {
+        const B = F.box || (F.box = new Box3()), x0 = Number.isFinite(F.x) ? Math.min(F.x, p.x) : p.x, x1 = Number.isFinite(F.x) ? Math.max(F.x, p.x) : p.x;
+        const z0 = Number.isFinite(F.z) ? Math.min(F.z, p.z) : p.z, z1 = Number.isFinite(F.z) ? Math.max(F.z, p.z) : p.z;
+        const top = Math.max(p.y, Number.isFinite(F.fy) ? F.fy : -Infinity) + 30;
+        B.min.set(x0 - 0.5, -1e5, z0 - 0.5); B.max.set(x1 + 0.5, top, z1 + 0.5);
+        solids = ent_intersect.near(solids, B);
+      }
       const down = (x, z, from) => {
         try {
           ray.set(F.o.set(x, from, z), CAM_DOWN);
@@ -2187,7 +2197,13 @@
         if (!I.busy) { const T = ctx.shared.tour; I.busy = !!(T && typeof T.state === "function" && T.state().running); }
       } catch (_) { I.busy = false; }
     }
-    if (I.busy) I.last = now;
+    if (I.busy) {
+      I.last = now;
+      // DEMO_WALK_OFF_441 (the user 25.11.2026: "קרה שוב קפיצות של כל הבית באוויר" in the demonstrations): walk mode ends when a
+      // demonstration or the presentation runs - its pointer lock turned the view with every move of the mouse, and its floor-following
+      // moved the eye, against the demonstration's own camera
+      if (ent_wm.on) { try { ent_walkModeSet(false); } catch (_) {} }
+    }
     return now - I.last > 2000 ? 2 : 1;
   }
   renderer.setAnimationLoop((t) => {

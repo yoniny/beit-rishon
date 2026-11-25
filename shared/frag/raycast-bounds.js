@@ -60,6 +60,13 @@
       }
       return ray.intersectObjects(candidates, false, hits);
     };
+    // WALK_SHARE_441 (issue #2, R6): the objects of a list whose box meets a box (or that have no box) - for many rays within that box (the
+    // walk's floor samples, cam_walkFloor); a ray inside it meets nothing that this leaves out
+    intersect.near = (objects, box) => {
+      const out = [];
+      for (let i = 0; i < objects.length; i++) { const b = bounds(objects[i]); if (!b || b.intersectsBox(box)) out.push(objects[i]); }
+      return out;
+    };
     // RAYS_MANY_441: many rays against one list at one moment (the fades' 10 to 15 rays every 140 ms) - the boxes are taken once for
     // all of them, not once a ray; the same hits, in the same order
     intersect.many = (objects) => {

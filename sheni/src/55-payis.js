@@ -863,7 +863,7 @@
       gatesNight(night);
       if (!night) return;
       const cl = (u) => Math.max(0, Math.min(1, u));
-      setOpen(GT.chel, 0.95 * ease(cl((t - S.knock) / 0.9)));
+      setOpen(GT.chel, 1.5 * ease(cl((t - S.knock) / 0.9)));   // MOKED_LEAVES_IN_441: they open inward now - all the way, flat by the passage's walls, not half-way into the hall
       if (GT.wk) { const u = ease(cl((t - S.wicketAt) / 0.7)); GT.wk.hole.visible = u > 0.02; GT.wk.piv.rotation.y = -1.7 * u; }
     };
     const roofsBtn = () => (Array.isArray(SH.modelButtons) ? SH.modelButtons.find((b) => b && b.id === "crt-lishkot-roofs") : null);

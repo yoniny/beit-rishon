@@ -2175,7 +2175,7 @@
       // KALA_OREV_441 (the user 25.11.2026: "ובתוס' בשבת הביאו פלוגתא בזה אם היה במקדש ראשון או לאו"; to the proposal "כן"): KALA OREV on the
       // house's roof, a reading (ctx.shared.kalaOrev, the row "כליא עורב"). The Tosafot (Shabbat 90a, 1907:1145): "וליתא, דבפ"ק דמועד קטן
       // (דף ט.) מוכח בהדיא שהיה במקדש ראשון כליא עורב" - the default; the Aruch (in the Tosafot, Menachot 107a 1933:1256, Arachin 6a
-      // 1930:95): in the first house no birds flew over it, and there was none. Its form after Rashi (Arachin 6a, 2190:171): "טבלאות של
+      // 1930:95): in the first house no birds flew over it, and there was none. Its form (until KO_TOSAFOT_FORM_441, below) after Rashi (Arachin 6a, 2190:171): "טבלאות של
       // ברזל אמה על אמה ובהן מסמרות גבוהין אמה קבועין ומחפין בהן ראש הגג של היכל" - iron plates over the roof of the house (the heichal and
       // the devir, not the ulam), four nails an amah high in each (their number and thickness - model choices). A child of the roof: it goes
       // with it (the cutaway, the aliyot layer); no shadows, no picking.
@@ -2183,24 +2183,29 @@
         const KO = new Group();
         KO.name = "kalaOrev";
         roof.add(KO);
-        const ironM = new MeshStandardMaterial({ color: 0x55585e, metalness: 0.55, roughness: 0.55 });
+        // KO_TOSAFOT_FORM_441 (the user 26.11.2026: "עיצוב הכליא עורב בבית ראשון חייב להיות כשיטת התוס' ולא כרשי"): its form - the one the
+        // Tosafot bring in Arachin 6a (1930:95), from the Aruch: "עשו צורה להבריח העופות מגג ההיכל... וזו צורה כדרך שעושין עכשיו שומרי
+        // זרעים" (in Menachot 107a, 1933:1256, they bring Rashi's two forms and the Aruch's, without deciding). Until this fix: Rashi's iron
+        // plates with their nails. As the Aruch's form in the second house (sheni 50-heichal.js, koRoof): a pole, a round cap on it and six
+        // strips of cloth hanging round its top; six of them over the house (the heichal and the devir, not the ulam) - their number, size
+        // and colours model choices
         const x0 = wx[3] - 0.3, x1 = KE - 0.3, zH = zOut(3) + 0.3;
-        const plate = hei_boxMesh(KO, [{ x0, x1, y0: ROOF, y1: ROOF + 0.12, z0: -zH, z1: zH }], ironM, "kala-orev-plates");
-        plate.castShadow = false;
-        plate.userData.noPick = true;
-        const nx = Math.floor(x1 - x0), nz = Math.floor(2 * zH), pts = [];
-        for (let i = 0; i < nx; i++) for (let k = 0; k < nz; k++) for (const [dx, dz] of [[0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75]]) pts.push([x0 + i + dx, -zH + k + dz]);
-        const nail = new ConeGeometry(0.06, 1, 4);
-        nail.translate(0, 0.5, 0);
-        const im = new InstancedMesh(nail, ironM, pts.length), mt = new Matrix4();
-        pts.forEach(([x, z], i) => im.setMatrixAt(i, mt.makeTranslation(x, ROOF + 0.12, z)));
-        im.instanceMatrix.needsUpdate = true;
-        im.castShadow = false;
-        im.receiveShadow = false;
-        im.userData.noPick = true;
-        im.name = "kala-orev-nails";
-        KO.add(im);
-        ctx.labels.push({ text: "כליא עורב — טבלאות ברזל ובהן מסמרות (רש״י ערכין ו.)", x: -30, y: ROOF + 4, z: 0, size: 1.8, layer: "kalaOrev" });
+        const woodM = new MeshStandardMaterial({ color: 0x6b4a2a, roughness: 0.9 }), clothM = new MeshStandardMaterial({ color: 0x7a1f1f, roughness: 0.95, side: DoubleSide });
+        const poleG = new BoxGeometry(0.25, 5, 0.25); poleG.translate(0, 2.5, 0);
+        const capG = new CylinderGeometry(0.9, 0.9, 0.15, 16), stripG = new PlaneGeometry(0.3, 1.6);
+        for (const fx of [0.17, 0.5, 0.83]) for (const fz of [-0.55, 0.55]) {
+          const x = x0 + (x1 - x0) * fx, z = zH * fz;
+          const pole = new Mesh(poleG, woodM); pole.position.set(x, ROOF, z);
+          const cap = new Mesh(capG, woodM); cap.position.set(x, ROOF + 5.05, z);
+          KO.add(pole, cap);
+          for (let k = 0; k < 6; k++) {
+            const a = (k / 6) * Math.PI * 2 + 0.3, st = new Mesh(stripG, clothM);
+            st.position.set(x + Math.cos(a) * 0.8, ROOF + 4.15, z + Math.sin(a) * 0.8); st.rotation.y = -a;
+            KO.add(st);
+          }
+        }
+        KO.traverse((m) => { if (m.isMesh) { m.castShadow = false; m.receiveShadow = false; m.userData.noPick = true; } });
+        ctx.labels.push({ text: "כליא עורב — צורה להבריח העופות, ״כדרך שעושין עכשיו שומרי זרעים״ (הערוך, בתוספות ערכין ו.)", x: -30, y: ROOF + 7, z: 0, size: 1.8, layer: "kalaOrev" });
         ctx.layers = ctx.layers || {};
         ctx.layers.kalaOrev = KO;
         ctx.shared.kalaOrev = {
