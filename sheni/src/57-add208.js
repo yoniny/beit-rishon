@@ -3916,7 +3916,7 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
       const line = (P, w, h, m, list) => { for (let i = 1; i < P.length; i++) piece(P[i - 1], P[i], w, h, m, list); };
       let built = false, t0 = -1, seeK = false, seeE = false, nK1 = 0;
       const SHI = [40, 24.55], F0 = LV.KOH;   // the shitin (40-altar.js SHITIN_LABEL: mv's frame 40, 12.05 + the altar's 12.5)
-      const EXZ = 300, WALL_E = 356, WALL_W = -150, EZ = 67.5, BATH = [((SH.southGates && SH.southGates.water) || 44) - 12, 41.45, 67.5];   // SOUTH_SMALL_430: by the Water Gate where it stands (30-courts.js: WATER_X - 12; 32 until now)
+      const EXZ = 300, WALL_E = 356, WALL_W = -150, EZ = 67.5, BATH = [((SH.southGates && SH.southGates.water) || 44) + 4, 41.45, 67.5], RX = BATH[0] + 1.7;   // AVTINAS_WEST_440: the bath on the gate's eastern half (30-courts.js: WATER_X + 4); it rises at RX - in the wall past the gate's opening (its side at WATER_X + 5), into the bath's rim   // SOUTH_SMALL_430: by the Water Gate where it stands (30-courts.js: WATER_X - 12; 32 until now)
       const R = {};
       const build = () => {
         if (built) return; built = true;
@@ -3973,15 +3973,15 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
         { const yAt = (x) => { for (let i = 1; i < OUT.length; i++) { const a = OUT[i - 1], b = OUT[i]; if (x <= b[0] || i === OUT.length - 1) { const k = Math.max(0, Math.min(1, (x - a[0]) / ((b[0] - a[0]) || 1))); return a[1] + (b[1] - a[1]) * k; } } return OUT[0][1]; };
           AQ.add(tm_waterRibbon(OUT.map((q) => [q[0], q[2]]), { width: () => 0.3, ground: (x) => yAt(x) + 0.2, lift: 0.03, edge: 1, speed: 1.4, scale: 0.35 })); }
         const yW = OUT[OUT.length - 1][1];
-        const E2 = [[WALL_W - 2, yW, EZ], [WALL_W + 7, Math.min(yW, -2.5), EZ], [BATH[0] - 3, -2.5, EZ], [BATH[0], -2.5, EZ]];
+        const E2 = [[WALL_W - 2, yW, EZ], [WALL_W + 7, Math.min(yW, -2.5), EZ], [RX - 3, -2.5, EZ], [RX, -2.5, EZ]];
         line(E2, 1.0, 0.8, stoneM, XRE);
         // up INSIDE the court's wall (30-courts.js: centred on z 67.5, 5 thick, from 13.5 to 40) to the bath on the Water Gate - Rashi, Yoma 19a:
         // "בעובי החומה מתוקן בית טבילת חול ומעיין משוך שם באמה מעין עיטם"; seen only through it, and with it a pale slice of the wall's thickness
         // round it, so that it reads as within the wall (the user's correction of the first picture: "נראית כמו עמוד דק שעומד לפני שער המים")
-        piece([BATH[0], -2.5, EZ], [BATH[0], BATH[1] - 0.2, EZ], 1.0, 0.8, capM, XRE);
-        piece([BATH[0], -2.2, EZ], [BATH[0], BATH[1] - 0.25, EZ], 0.34, 0.34, waterM, XRE);
+        piece([RX, -2.5, EZ], [RX, BATH[1] - 0.2, EZ], 1.0, 0.8, capM, XRE);
+        piece([RX, -2.2, EZ], [RX, BATH[1] - 0.25, EZ], 0.34, 0.34, waterM, XRE);
         { const slM = new MeshBasicMaterial({ color: 0xa9cbe6, transparent: true, opacity: 0.3, depthWrite: false, depthTest: true, depthFunc: GreaterDepth });
-          const slG = new BoxGeometry(3.4, 40 - 0.2, 4.4), sl = new Mesh(slG, slM); sl.position.set(BATH[0], 20 - 0.1, EZ); sl.visible = false; sl.renderOrder = 29; sl.userData.noPick = true; sl.raycast = () => {}; AQ.add(sl); XRE.push(sl);
+          const slG = new BoxGeometry(2.0, 40 - 0.2, 4.4), sl = new Mesh(slG, slM); sl.position.set(RX, 20 - 0.1, EZ); sl.visible = false; sl.renderOrder = 29; sl.userData.noPick = true; sl.raycast = () => {}; AQ.add(sl); XRE.push(sl);
           const ed = new LineSegments(new EdgesGeometry(slG), new LineBasicMaterial({ color: 0x3a6f9a, transparent: true, opacity: 0.85, depthWrite: false, depthTest: true, depthFunc: GreaterDepth })); ed.position.copy(sl.position); ed.visible = false; ed.renderOrder = 31; ed.raycast = () => {}; AQ.add(ed); XRE.push(ed); }   // its edges: the wall's 5 amot of thickness
         // the sign at the western edge: "לעין עיטם — מי נפתוח (רש״י)", the arrow to the west
         { const w0 = OUT[0], cv = document.createElement("canvas"); cv.width = 512; cv.height = 192; const c2 = cv.getContext("2d");

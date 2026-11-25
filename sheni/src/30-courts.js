@@ -1530,7 +1530,7 @@
     H2.occ(H2.box(g, 6.5, 0.9, 137, M2.stoneLight, 93.5, 40, 0));
     H2.crenellate(g, { x1: -94, z1: -67.5, x2: MW0 - 0.5, z2: -67.5, y: 40.9, mat: M2.stoneLight });
     H2.crenellate(g, { x1: MW1 + 0.5, z1: -67.5, x2: 94, z2: -67.5, y: 40.9, mat: M2.stoneLight });
-    { const cut = [[WATER_X - 12 - 2.9, WATER_X - 12 + 2.9], [WATER_X - 6.3, WATER_X + 6.3]].sort((a, b) => a[0] - b[0]);   // SOUTH_SMALL_430: no merlons through Avtinas' upper room and the bath beside it (they stood in both)
+    { const cut = [[WATER_X - 6.9, WATER_X + 6.6]];   // AVTINAS_WEST_440: the room and the bath, both on the Water Gate   // SOUTH_SMALL_430: no merlons through Avtinas' upper room and the bath beside it (they stood in both)
       let x0 = -94; for (const [a, b] of cut) { if (a - x0 > 1.4) H2.crenellate(g, { x1: x0, z1: 67.5, x2: a, z2: 67.5, y: 40.9, mat: M2.stoneLight }); x0 = Math.max(x0, b); }
       H2.crenellate(g, { x1: x0, z1: 67.5, x2: 94, z2: 67.5, y: 40.9, mat: M2.stoneLight }); }
     H2.crenellate(g, { x1: -93.5, z1: -64, x2: -93.5, z2: 64, y: 40.9, mat: M2.stoneLight });
@@ -3685,21 +3685,25 @@
     // לשכות היו לו לכהן גדול... אחת בצפון ואחת בדרום"; "ובצד לשכתו" - the first immersion of Yom Kippur was on the Water Gate beside it,
     // Yoma 19a, 31a; Boaz on Middot 1:2: both were upper rooms on the gate). An upper room on the wall over the gate (x -18), where the house of
     // Avtinas compounded the incense (Yoma 38a) - a mortar and jars inside; the bath beside it on the wall. Sizes - model choices.
-    room(WATER_X, 67.5, 12, 9, 8, 40.9, { dx: 1, dz: 0 }, "עליית בית אבטינס — מפטמי הקטורת", 51.5, (cx, cz, y) => {
-      H2.cyl(g, 0.7, 0.5, 0.9, M2.stoneSmooth, cx - 2, y, cz); const pst = H2.cyl(g, 0.08, 0.08, 1.4, M2.cedar, cx - 1.8, y + 0.5, cz); pst.rotation.z = 0.5;
-      for (const [dx, dz] of [[1.5, -2.5], [2.6, -1.2], [2.2, 1.8]]) H2.cyl(g, 0.45, 0.35, 1.1, clay, cx + dx, y, cz + dz);
+    // AVTINAS_WEST_440 (the user 25.11.2026, "1. להזיז"): Tiferet Yisrael, Tzurat Beit HaMikdash 34 (6029 line 79): "בגג שער זה היו ב׳ לשכות, א׳ לשכת
+    // בית אבטינס... והב׳ בית הטבילה לכה״ג ביוה״כ... ומסתבר שלשכת בית אבטינס... בצד מערב היתה, סמוך למקום הקודש" - the room on the gate's
+    // western half (x WATER_X-6.6..-1.4), its door east, to the bath on the eastern half (until now the room over the whole gate and the bath
+    // twelve amot west of it - over the Bechorot gate); its size - a model choice
+    room(WATER_X - 4, 67.5, 8, 9, 8, 40.9, { dx: 1, dz: 0 }, "עליית בית אבטינס — מפטמי הקטורת", 51.5, (cx, cz, y) => {
+      H2.cyl(g, 0.7, 0.5, 0.9, M2.stoneSmooth, cx - 1.6, y, cz); const pst = H2.cyl(g, 0.08, 0.08, 1.4, M2.cedar, cx - 1.4, y + 0.5, cz); pst.rotation.z = 0.5;
+      for (const [dx, dz] of [[0.6, -2.7], [1.7, -2.3], [1.2, 2.5]]) H2.cyl(g, 0.45, 0.35, 1.1, clay, cx + dx, y, cz + dz);
       // FILL_211: one of the house of Avtinas at the mortar ("בית אבטינס על מעשה הקטרת", Shekalim 5:1; priests - "ומן בני הכהנים רקחי
       // המרקחת לבשמים", I Chr 9:30), and by the door the young guards - "בית אבטינס ובית הניצוץ היו עליות, והרובים שומרים שם" (Tamid
       // 1:1; the Rosh there: "ילדים... שלא הגיעו לעבודה והם זריזים לעלות בעליות")
-      fig211(cx - 2, cz - 1.15, 0, y, "kohen", 0xf1ede2, 1.4, 2, "avtinasMaker");
-      fig211(cx + 3.8, cz + 2.8, -Math.PI / 2, y, "student", 0xd9cfb8, 1.15, 3, "roveh");
-      fig211(cx + 3.6, cz - 2.7, -Math.PI / 2, y, "student", 0xcfc4a8, 1.15, 3, "roveh");
-      ctx2.labels.push({ text: "״והרובים שומרים שם״ (תמיד א, א)", x: cx + 3.7, y: y + 5.8, z: cz, size: 0.8, far: 140 });
-    });
+      fig211(cx - 1.6, cz - 1.15, 0, y, "kohen", 0xf1ede2, 1.4, 2, "avtinasMaker");
+      fig211(cx + 2.3, cz + 2.4, -Math.PI / 2, y, "student", 0xd9cfb8, 1.15, 3, "roveh");
+      fig211(cx + 2.3, cz - 1.6, -Math.PI / 2, y, "student", 0xcfc4a8, 1.15, 3, "roveh");
+      ctx2.labels.push({ text: "״והרובים שומרים שם״ (תמיד א, א)", x: cx + 2.4, y: y + 5.8, z: cz, size: 0.8, far: 140 });
+    }, { T: 0.8 });
     // SOUTH_SMALL_430: the room and the bath ON the wall's cap (its top 40.9) - until now from 40, in the cap: the bath was seen only when the cap faded, and the floor, the mortar and the figures were sunk in it
-    H2.ring(g, 2.1, 0.5, M2.stoneSmooth, WATER_X - 12, 41.35, 67.5);   // the bath on the Water Gate, beside the chamber (Yoma 31a)
-    H2.cyl(g, 1.6, 1.6, 0.12, water, WATER_X - 12, 41.25, 67.5);
-    lbl("בית הטבילה שעל גבי שער המים — הטבילה הראשונה ביום הכיפורים", WATER_X - 12, 43.5, 67.5, 1.1);
+    H2.ring(g, 1.8, 0.45, M2.stoneSmooth, WATER_X + 4, 41.3, 67.5);   // the bath on the Water Gate, beside the chamber (Yoma 31a) - AVTINAS_WEST_440: on the gate's eastern half, before the room's door
+    H2.cyl(g, 1.35, 1.35, 0.12, water, WATER_X + 4, 41.2, 67.5);
+    lbl("בית הטבילה שעל גבי שער המים — הטבילה הראשונה ביום הכיפורים", WATER_X + 4, 43.5, 67.5, 1.1);
     // 1.4.0: לשכת העץ - the wood chamber, "לשכת כהן גדול... אחורי שתיהן, וגג שלשתן שוה" (Middot 5:4): behind the two northern chambers,
     // outside the court's wall, its roof level with theirs; the high priest's chamber (Abba Shaul) = לשכת פרהדרין (Yoma 1:1; Yoma 19a)
     {
