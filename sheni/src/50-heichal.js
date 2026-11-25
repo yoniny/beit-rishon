@@ -162,8 +162,50 @@
       { const f = new Mesh(mergeGeometries(frames), M2.stoneSmooth); f.castShadow = true; f.userData.noPick = true; UWG.add(f); ulamFrontCut.push(f); }
       ctx2.labels.push({ text: "חלונות של זכוכית ״במחיצה בהירה וזכה״ (מצודת דוד, יחזקאל מא, כו) — ״בחלונות עליות האולם״ (רבינו שמעיה, מידות ג, ח)", x: X + 2, y: 101, z: -32, size: 1.8, layer: "ulamWindows" });
     }
+    // AMALTERA_430 (the user 25.11.2026, of a note sent to him: "באמלתרא יש מחלוקת בגמרא איך היתה נראת אם קינים או פסי עץ ובתוך השיטה שהיה
+    // קינים יש שתי ביאורים בערוך" - "כן"): THE FIVE MALTERAOT OVER THE ULAM'S DOOR (Middot 3:7: "וחמש מלתראות של מילת היו על גביו...") in three
+    // readings (ctx2.shared.amaltera.set): Eruvin 3a "מאי אמלתרא? רב חמא בריה דרבה בר אבוה אמר: קיני. כי אתא רב דימי אמר, אמרי במערבא:
+    // פסקי דארזא" - "kinim": Rashi "כגון קיני עופות היו בולטין מתחת האולם למעלה מן הפתח", R. Chananel and the Aruch "קורה ועליה כמין קיני
+    // העופות לקנן עליהן" - the beam, and on it forms of birds' nests; "boards": the Aruch's other explanation "קיני הן לוחים שעשויין תחת הקורה
+    // ועשויין כצורת הקן עושין להם פתחים קטנים" - boards under the beam in the form of a nest, with small openings; "cedar": Rashi "כלונסות של
+    // ארז ארוכין תחובין בכותל", the Aruch - drawn on until the door's side - long cedar poles set into the wall. The widths as the Mishnah
+    // (the lowest 22, the top 30) and the course of stones between them, as before; the beams of the first two of "מילה" wood (Rashi: "עץ שגדילין
+    // בו מילין"). The forms, the sizes, the spacing and the colours - model choices. Until now: five plain cedar beams in every reading.
     const beamW = [22, 24, 26, 28, 30];
-    for (let i = 0; i < 5; i++) ulamFrontCut.push(H2.box(g, 0.8, 1, beamW[i], M2.cedar, 17.6, 62.5 + i * 2, 0));
+    {
+      const AG = { kinim: new Group(), boards: new Group(), cedar: new Group(), painted: new Group() };
+      for (const k of Object.keys(AG)) { AG[k].name = "amaltera_" + k; g.add(AG[k]); }
+      const milaM = new MeshStandardMaterial({ color: 0x6b4a2e, roughness: 0.82 }), twigM = new MeshStandardMaterial({ color: 0x8c6c48, roughness: 0.95 }), holeM = new MeshStandardMaterial({ color: 0x140c06, roughness: 1 });
+      const FX = 17.2;   // the beams' back (in the facade), their front at 18.0
+      for (const k of ["kinim", "boards"]) for (let i = 0; i < 5; i++) ulamFrontCut.push(H2.box(AG[k], 0.8, 1, beamW[i], milaM, 17.6, 62.5 + i * 2, 0));
+      // "kinim": on each beam's top, at its front, a row of nests (open bowls of twigs), one every amah and a half
+      { const nestG = new LatheGeometry([[0.001, 0], [0.16, 0.01], [0.27, 0.08], [0.33, 0.2], [0.34, 0.27], [0.3, 0.27], [0.27, 0.16], [0.18, 0.08], [0.001, 0.07]].map(([r, y]) => new Vector2(r, y)), 14);
+        const M = []; for (let i = 0; i < 5; i++) { const n = Math.floor((beamW[i] - 1) / 1.5); for (let j = 0; j < n; j++) M.push(m4(17.78, 63.5 + i * 2, -((n - 1) * 1.5) / 2 + j * 1.5)); }
+        ulamFrontCut.push(instMesh(AG.kinim, nestG, twigM, M)); }
+      // "boards": under each beam (under the lowest - only where it lies on the wall, past the door's sides), a row of small wooden boxes in
+      // the form of a nest, each with a small round opening in its front
+      { const boxG = new BoxGeometry(0.55, 0.62, 0.9), holeG = new CylinderGeometry(0.11, 0.11, 0.08, 14); holeG.rotateZ(Math.PI / 2);   // (the opening: a dark disc set into the front, half in it - a flat one drowned in the face)
+        const MB = [], MH = [];
+        for (let i = 0; i < 5; i++) { const n = Math.floor(beamW[i] / 1.1), y = 62.5 + i * 2 - 0.31;
+          for (let j = 0; j < n; j++) { const z = -((n - 1) * 1.1) / 2 + j * 1.1; if (i === 0 && Math.abs(z) < 10.5) continue; MB.push(m4(FX + 0.3 + 0.275, y, z)); MH.push(m4(FX + 0.3 + 0.55 + 0.01, y - 0.05, z)); } }
+        ulamFrontCut.push(instMesh(AG.boards, boxG, milaM, MB)); ulamFrontCut.push(instMesh(AG.boards, holeG, holeM, MH, false)); }
+      // "cedar": round cedar poles, half in the wall, each the beam's length
+      { const M = []; for (let i = 0; i < 5; i++) M.push(m4(17.55, 63 + i * 2, 0, Math.PI / 2, 0, 0, 1, beamW[i], 1));
+        ulamFrontCut.push(instMesh(AG.cedar, new CylinderGeometry(0.46, 0.46, 1, 16), M2.cedar, M)); }
+      // "painted": the Bartenura (Middot 3:7) - "קורות מצוירות ומכוירות" of "מילת" wood: the beams as until now, painted and carved (a band of
+      // rosettes between two carved grooves, along each beam's face); the paint and the carving - model choices
+      { const cv = document.createElement("canvas"); cv.width = 256; cv.height = 128; const c = cv.getContext("2d");
+        c.fillStyle = "#6b4a2e"; c.fillRect(0, 0, 256, 128);
+        c.fillStyle = "rgba(40,22,10,0.55)"; c.fillRect(0, 14, 256, 8); c.fillRect(0, 106, 256, 8);   // the carved grooves
+        c.fillStyle = "#c9a44a"; c.fillRect(0, 24, 256, 4); c.fillRect(0, 100, 256, 4);
+        for (const x of [64, 192]) { c.fillStyle = "#8c2a22"; c.beginPath(); c.arc(x, 64, 30, 0, Math.PI * 2); c.fill(); c.fillStyle = "#c9a44a"; for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4; c.beginPath(); c.ellipse(x + Math.cos(a) * 17, 64 + Math.sin(a) * 17, 9, 5, a, 0, Math.PI * 2); c.fill(); } c.fillStyle = "#2c4a7a"; c.beginPath(); c.arc(x, 64, 8, 0, Math.PI * 2); c.fill(); }
+        c.fillStyle = "#2c4a7a"; for (const x of [0, 128, 256]) { c.beginPath(); c.moveTo(x, 40); c.lineTo(x + 18, 64); c.lineTo(x, 88); c.lineTo(x - 18, 64); c.closePath(); c.fill(); }
+        const t = new CanvasTexture(cv); t.wrapS = t.wrapT = RepeatWrapping; t.colorSpace = SRGBColorSpace; t.repeat.set(0.5, 1); t.anisotropy = 8;   // (the box's uv in amot: a tile every two)
+        const pm = new MeshStandardMaterial({ map: t, roughness: 0.7 });
+        for (let i = 0; i < 5; i++) ulamFrontCut.push(H2.box(AG.painted, 0.8, 1, beamW[i], pm, 17.6, 62.5 + i * 2, 0)); }
+      ctx2.shared.amaltera = { mode: "kinim", set(k) { this.mode = AG[k] ? k : "kinim"; for (const q of Object.keys(AG)) AG[q].visible = q === this.mode; return this.mode; } };
+      ctx2.shared.amaltera.set("kinim");
+    }
     const pilG = H2.uvWorldBox(new BoxGeometry(0.5, 76, 1.6), 0.5, 76, 1.6);
     const pilMats = [];
     for (const zz of [34.5, 39.5, 44.5, 49]) {
