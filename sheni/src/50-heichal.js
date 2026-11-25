@@ -3922,6 +3922,11 @@
             roll.position.set(0, -left - r * 0.6, 0);
             ties.visible = e > 0.25;
             for (const tie of ties.children) { const len = left + r * 1.7; tie.scale.y = len; tie.position.y = -len / 2; tie.position.z = tie.userData.sz * (r + 0.03); }
+            // SHADOW_STILL_441 (issue #2, R4; measured: turning round the court, a parochet rolled up and down as the eye's line crossed its
+            // opening, and the sun's shadow map - 1,300 draws - was drawn anew on almost every second frame): a parochet casts its shadow
+            // only at rest, spread or raised; while it rolls it casts none, and the map is drawn twice, when it starts and when it stops
+            const still = o.u < 1e-3 || o.u > 1 - 1e-3;
+            if (panel.castShadow !== still) { panel.castShadow = still; roll.castShadow = still; }
           };
           o.pose();
           GC.push(o);

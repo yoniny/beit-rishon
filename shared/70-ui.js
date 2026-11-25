@@ -907,9 +907,9 @@ body.tm-measuring canvas{cursor:crosshair}
         const OFFS5 = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]], OFFS1 = [[0, 0]], OFFS0 = [];
         // LISTS_FAST_441: a mesh's world size (of its box, or of its instances' box), kept with the geometry and the 3 x 3 part of its world
         // matrix it was measured with (a move alone keeps the size); false when it has no box
-        const ui_szBox = new Box3();
+        const ui_szBox = new Box3(), ui_szMap = new WeakMap();   // (a WeakMap, not userData: a mesh's userData is copied by JSON when it is cloned)
         const ui_sizeOf = (o, out) => {
-          const c = o.userData.__tmSz, e = o.matrixWorld.elements, g = o.geometry;
+          const c = ui_szMap.get(o), e = o.matrixWorld.elements, g = o.geometry;
           if (c && c.g === g && c.n === (o.isInstancedMesh ? o.count : -1) && c.v === (o.isInstancedMesh && o.instanceMatrix ? o.instanceMatrix.version : -1) && c.e0 === e[0] && c.e1 === e[1] && c.e2 === e[2] && c.e4 === e[4] && c.e5 === e[5] && c.e6 === e[6] && c.e8 === e[8] && c.e9 === e[9] && c.e10 === e[10]) {
             if (!c.ok) return false;
             out.set(c.x, c.y, c.z);
@@ -921,7 +921,7 @@ body.tm-measuring canvas{cursor:crosshair}
             else { if (!g.boundingBox) g.computeBoundingBox(); ui_szBox.copy(g.boundingBox); }
             ui_szBox.applyMatrix4(o.matrixWorld).getSize(out);
           } catch (_) { ok = false; }
-          o.userData.__tmSz = { g, n: o.isInstancedMesh ? o.count : -1, v: o.isInstancedMesh && o.instanceMatrix ? o.instanceMatrix.version : -1, e0: e[0], e1: e[1], e2: e[2], e4: e[4], e5: e[5], e6: e[6], e8: e[8], e9: e[9], e10: e[10], ok, x: out.x, y: out.y, z: out.z };
+          ui_szMap.set(o, { g, n: o.isInstancedMesh ? o.count : -1, v: o.isInstancedMesh && o.instanceMatrix ? o.instanceMatrix.version : -1, e0: e[0], e1: e[1], e2: e[2], e4: e[4], e5: e[5], e6: e[6], e8: e[8], e9: e[9], e10: e[10], ok, x: out.x, y: out.y, z: out.z });
           return ok;
         };
         // the large plain meshes (6 amot or more in some direction; not the terrain, not the cloud, not the measuring tape) - what can hide the
@@ -1054,6 +1054,7 @@ body.tm-measuring canvas{cursor:crosshair}
             c.needsUpdate = true;
           }
           m.material = clone;
+          if (ctx.shared.sectionDirty) ctx.shared.sectionDirty();   // SECTION_DIRTY_441: a new material - the section cuts it at once
           const st = { m, orig, clone, base, cur: 1, tgt: 1 };
           ud.fade = st;
           HID.push(st);
@@ -1186,6 +1187,7 @@ body.tm-measuring canvas{cursor:crosshair}
             if (Math.abs(st.cur - st.tgt) < 4e-3) {
               if (st.tgt >= 1) {
                 st.m.material = st.orig;
+                if (ctx.shared.sectionDirty) ctx.shared.sectionDirty();   // SECTION_DIRTY_441
                 hideDrop(i);
               }
               continue;

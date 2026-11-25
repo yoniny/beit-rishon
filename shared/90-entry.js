@@ -401,7 +401,18 @@
     return true;
   }
   var cam_in = { dir: new Vector3(), walls: [] };
+  // KEEP_SAME_441 (issue #2, R2 - "מניעת קרני אילוץ חוזרות בחדר שלא השתנה"): the same eye, the same target, the same list of the solids
+  // (ent_solids, made anew every second - a door that turned is in the next one) and the same section as at the last test - the answer is
+  // the same, and the ray is not cast again; any move of either, a new list or a new section - tested at once
   function cam_keepInside(p, q) {
+    const K = cam_in.k || (cam_in.k = { p: new Vector3(1e9, 0, 0), q: new Vector3(), t: -1, sec: "" });
+    ent_solids(false);
+    const sec = ent_sec.on ? ent_sec.axis + ":" + ent_sec.v : "-";
+    if (K.t === ent_sol.t && K.sec === sec && K.p.equals(p) && K.q.equals(q)) return;
+    cam_keepInside1(p, q);
+    K.p.copy(p); K.q.copy(q); K.t = ent_sol.t; K.sec = sec;
+  }
+  function cam_keepInside1(p, q) {
     try {
       const v = cam_in.dir.copy(p).sub(q), L = v.length();
       if (!(L > 0.6)) return;
@@ -889,8 +900,14 @@
     if (Array.isArray(o.material)) { for (const m of o.material) ent_sectionMaterial(m); }
     else ent_sectionMaterial(o.material);
   }
-  function ent_sectionApply() {
+  // SECTION_DIRTY_441 (issue #2, R3 - "חתך יציב ללא סריקה מלאה"): while the section is on, the model is walked for materials not yet cut
+  // every fourth frame, and at once when something marked a change - a wall's material swapped by the fade (70-ui.js hideStart:
+  // ctx.shared.sectionDirty) or a module's ctx.requestRender(); until now every frame (30,000 objects)
+  var ent_secN = 0;
+  function ent_sectionApply(force) {
     if (!ent_sec.on || !ctx || !ctx.root) return;
+    if (!force && !ent_sec.dirty && (++ent_secN & 3)) return;
+    ent_sec.dirty = false;
     ctx.root.traverse(ent_sectionObject);
   }
   function ent_sectionSet(on, axis, v) {
@@ -902,7 +919,7 @@
     if (on !== ent_sec.on) {
       ent_sec.on = on;
       renderer.localClippingEnabled = on || renderer.localClippingEnabled;
-      if (on) ent_sectionApply();
+      if (on) ent_sectionApply(true);
       else {
         for (const [m, side] of ent_sec.sides) {
           if (m.clippingPlanes && m.clippingPlanes.indexOf(P) >= 0) m.clippingPlanes = null;
@@ -2146,8 +2163,36 @@
       scene.matrixWorldAutoUpdate = autoWorld;
     }
   }
+  // IDLE_THROTTLE_441 (issue #2, R1 - "רינדור רק כשהמצב דורש אותו"; the user 25.11.2026: "תתחיל גם עם הR לפי הסדר"): when nothing has
+  // moved or been asked for two seconds - the camera and its target still, no input, no flight, no walk, no demonstration and no
+  // presentation running - the frame is drawn every other refresh (30 a second instead of 60); the fire's flicker, the water and the
+  // figures go on, at half the rate. Any input, a move of the camera, or ctx.requestRender() (a module's change) - full rate at once.
+  var ent_idle = { last: -1e9, p: new Vector3(1e9, 0, 0), q: new Quaternion(), tg: new Vector3(), n: 0, busyAt: -1e9, busy: false, skipped: 0 };
+  function ent_idleMark() { ent_idle.last = performance.now(); }
+  for (const ev of ["pointerdown", "pointermove", "pointerup", "wheel", "keydown", "keyup", "touchstart", "touchmove", "resize"]) {
+    try { window.addEventListener(ev, ent_idleMark, { capture: true, passive: true }); } catch (_) {}
+  }
+  function ent_idleStride() {
+    const I = ent_idle, now = performance.now();
+    if (I.p.distanceToSquared(camera.position) > 1e-10 || I.tg.distanceToSquared(controls.target) > 1e-10 || Math.abs(I.q.dot(camera.quaternion)) < 1 - 1e-12) {
+      I.p.copy(camera.position); I.tg.copy(controls.target); I.q.copy(camera.quaternion); I.last = now;
+    }
+    const W = ent_walk;
+    if (flyAnim || cam_drag || W.v || W.vs || W.fwd || W.back || W.left || W.right) I.last = now;
+    if (now - I.busyAt > 400) {
+      I.busyAt = now;
+      I.busy = false;
+      try {
+        I.busy = (ctx.shared.demoStops || []).some((d) => { try { return !!(d && typeof d.running === "function" && d.running()); } catch (_) { return false; } });
+        if (!I.busy) { const T = ctx.shared.tour; I.busy = !!(T && typeof T.state === "function" && T.state().running); }
+      } catch (_) { I.busy = false; }
+    }
+    if (I.busy) I.last = now;
+    return now - I.last > 2000 ? 2 : 1;
+  }
   renderer.setAnimationLoop((t) => {
     if (ent_load.loading || !ent_isVisible()) return;   // nothing is drawn behind the loading overlay or by a hidden house/tab
+    if (ent_idleStride() > 1 && (++ent_idle.n & 1)) { ent_idle.skipped++; return; }   // IDLE_THROTTLE_441
     if (flyAnim) {
       // DEMO_PAUSE_FLY_420 (the scan of 4.2.0: the doors' demonstration paused while its camera was flying - the flight went on to its end):
       // while a demonstration is paused, the flight in progress holds where it is, and goes on from there with the demonstration
@@ -2233,9 +2278,11 @@
     document.documentElement.style.setProperty("--primary", "#c9a84c");
     initModules().catch((e) => console.error(e));
   }
+  ctx.requestRender = () => { ent_idleMark(); ent_sec.dirty = true; };   // IDLE_THROTTLE_441: a module that changed something asks for the full rate (and SECTION_DIRTY_441: the section looks at once)
+  ctx.shared.sectionDirty = () => { ent_sec.dirty = true; };
   ctx.camReset = camResetImpl;   // CAM_RESET_N8: assigned once ctx exists (the arrow itself is defined earlier)
   window.__ctx = ctx;
-  window.__ent360 = { cam, decide: cam_decide, roofed: ent_roofed, solids: ent_solids, floorY: cam_floorY, lift: ent_lift, lookEnd: cam_lookEnd };   // 1.2.0: for the headless tests
+  window.__ent360 = { idle: ent_idle, cam, decide: cam_decide, roofed: ent_roofed, solids: ent_solids, floorY: cam_floorY, lift: ent_lift, lookEnd: cam_lookEnd };   // 1.2.0: for the headless tests
   window.__renderer = renderer;
   window.__shc = shc;   // SHADOW_CACHE_302: QA (frames walked, maps drawn)
   window.__hq = ent_hq;   // HQ_302: QA
