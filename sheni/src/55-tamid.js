@@ -1535,7 +1535,7 @@
     const BLK = [[-83, 1.5, -35.6, 35.6], [1, 17.9, -51.6, 51.6], [17.5, 33.9, -50.4, 50.4],
       ...[[-65, -28.5], [-19.5, -14.6], [-9.4, -5.6], [5.6, 9.4], [14.6, 19.5], [28.5, 65]].map(([z0, z1]) => [89.6, 91.4, z0 - 0.4, z1 + 0.4]),
       // CHAMBERS_EAST_N2: the chambers of the court of Israel (30-courts.js): Pinchas's, the chavitin makers', the Madichin, the Parvah, the salt
-      [82, 91.7, -28.9, -19.1], [82, 91.7, 19.1, 28.9], [76.5, 91.7, 29, 39.8], [76.5, 91.7, 44.6, 55.4], [79, 91.7, 54.6, 65.7],
+      [82, 91.7, -28.9, -19.1], [82, 91.7, 19.1, 28.9], [71.5, 91.7, 54.6, 65.7], [73.4, 81.2, 48.9, 55],   // SOUTH_SMALL_430: the three of the south in their row (x 72..91) and the mesibah's stair with its landing before them (until now the column of CHAMBERS_EAST_N2)
       // NORTH_CHAMBERS_N2: the three northern chambers, one building (30-courts.js): the Gazit hall x 76..91, the Golah and the Etz x 70.8..76
       [70.3, 91.7, -80.5, -53.4]];
     const inBlk = (p) => BLK.some(([x0, x1, z0, z1]) => p[0] > x0 && p[0] < x1 && p[1] > z0 && p[1] < z1);
