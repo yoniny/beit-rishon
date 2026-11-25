@@ -231,12 +231,14 @@
     // user's word: in the court. MODEL CHOICE: a small chamber against the court's south wall, south of the house, between the third
     // southern gate (x -25..-11) and the ulam's corner, its door to the north; its size as the other small chambers here.
     {
-      const chG = grp("chashaim", true);
-      const yC = groundAt(3, 63, 60, LV.KOH);
-      const wallHit = castFrom([3, yC + 2.5, 52], [0, 0, 1], null);
+      // GATES_APART_440: the Delek gate now stands at x 0 (opening -5..5) - the chamber (until now x -1..7, its wall found by a ray through
+      // what is now the gate's mouth: it stood in the gate) goes west of it, x -16..-8, still between the southern gates and the house
+      const chG = grp("chashaim", true), CX = -12;
+      const yC = groundAt(CX, 63, 60, LV.KOH);
+      const wallHit = castFrom([CX, yC + 2.5, 52], [0, 0, 1], null);
       const zW = wallHit && wallHit.z > 58 && wallHit.z < 72 ? wallHit.z - 0.02 : 66.8;
-      chamber(chG, -1, 7, zW - 7.5, zW, yC, "n", "לשכת חשאים (שקלים ה, ו) — מקומה: בחירת מודל");
-      SH.chashaim = { at: [3, yC, zW - 3.75], group: chG };
+      chamber(chG, CX - 4, CX + 4, zW - 7.5, zW, yC, "n", "לשכת חשאים (שקלים ה, ו) — מקומה: בחירת מודל");
+      SH.chashaim = { at: [CX, yC, zW - 3.75], group: chG };
     }
 
     // ---------- 8. THE ULAM'S COURSES IN THE RAMBAM'S READING (his commentary, Middot 3:6; Beit HaBechirah 4:9; the Meiri) ----------
