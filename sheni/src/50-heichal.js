@@ -173,7 +173,7 @@
     // בו מילין"). The forms, the sizes, the spacing and the colours - model choices. Until now: five plain cedar beams in every reading.
     const beamW = [22, 24, 26, 28, 30];
     {
-      const AG = { kinim: new Group(), boards: new Group(), cedar: new Group(), painted: new Group() };
+      const AG = { kinim: new Group(), boards: new Group(), cedar: new Group(), planks: new Group(), painted: new Group(), stepped: new Group() };
       for (const k of Object.keys(AG)) { AG[k].name = "amaltera_" + k; g.add(AG[k]); }
       const milaM = new MeshStandardMaterial({ color: 0x6b4a2e, roughness: 0.82 }), twigM = new MeshStandardMaterial({ color: 0x8c6c48, roughness: 0.95 }), holeM = new MeshStandardMaterial({ color: 0x140c06, roughness: 1 });
       const FX = 17.2;   // the beams' back (in the facade), their front at 18.0
@@ -202,7 +202,19 @@
         c.fillStyle = "#2c4a7a"; for (const x of [0, 128, 256]) { c.beginPath(); c.moveTo(x, 40); c.lineTo(x + 18, 64); c.lineTo(x, 88); c.lineTo(x - 18, 64); c.closePath(); c.fill(); }
         const t = new CanvasTexture(cv); t.wrapS = t.wrapT = RepeatWrapping; t.colorSpace = SRGBColorSpace; t.repeat.set(0.5, 1); t.anisotropy = 8;   // (the box's uv in amot: a tile every two)
         const pm = new MeshStandardMaterial({ map: t, roughness: 0.7 });
-        for (let i = 0; i < 5; i++) ulamFrontCut.push(H2.box(AG.painted, 0.8, 1, beamW[i], pm, 17.6, 62.5 + i * 2, 0)); }
+        for (let i = 0; i < 5; i++) ulamFrontCut.push(H2.box(AG.painted, 0.8, 1, beamW[i], pm, 17.6, 62.5 + i * 2, 0));
+        // AMALTERA_440 (the user 25.11.2026: "עיין שם במשנה ובמפרשיה לראות אם יש תוספת"): "stepped" - the Rambam (commentary on the Mishnah,
+        // Middot 3:7; 573 line 42): "הקורה המפותחת שבה חופרין צורות ודמיונות", and "היתה ג"כ כל אחת יוצאת על האחרת ולא היו כולם בשטח אחד" -
+        // each beam stands out before the one under it; and the course of stones over each - flush with it (Chok Natan, 6026 line 75: "שלא היה
+        // בולט אלא מלמטה אבל מלמעלה היה בנין של אבנים שעליו שוה לו"). How far each stands out (0.4) - a model choice.
+        { const ST = 0.4;
+          for (let i = 0; i < 5; i++) { const d = 0.8 + ST * i;
+            ulamFrontCut.push(H2.box(AG.stepped, d, 1, beamW[i], pm, FX + d / 2, 62.5 + i * 2, 0));
+            if (i < 4) ulamFrontCut.push(H2.box(AG.stepped, d, 1, beamW[i], M2.marble, FX + d / 2, 63.5 + i * 2, 0)); } } }
+      // AMALTERA_440: "planks" - R. Chananel (Eruvin 3a; 2133 line 15) and the Aruch, its first explanation (ערך אמלתרא; 5814 line 440):
+      // "פיסקי דארזא פיר' לוח ארז רחבה ארבעה טפחים" - five cedar boards, four handbreadths (two thirds of an amah) high, each the Mishnah's
+      // length; their thickness and how far out of the wall - model choices
+      for (let i = 0; i < 5; i++) ulamFrontCut.push(H2.box(AG.planks, 0.6, 2 / 3, beamW[i], M2.cedar, 17.55, 63 + i * 2 - 1 / 3, 0));
       ctx2.shared.amaltera = { mode: "kinim", set(k) { this.mode = AG[k] ? k : "kinim"; for (const q of Object.keys(AG)) AG[q].visible = q === this.mode; return this.mode; } };
       ctx2.shared.amaltera.set("kinim");
     }
