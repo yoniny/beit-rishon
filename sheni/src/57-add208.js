@@ -1157,13 +1157,20 @@
         DG.add(fwater);
         // the silver trumpets (Numbers 10:2), one for each of the two, from his mouth forward and up
         const silver = new MeshStandardMaterial({ color: 0xe6e6ea, metalness: 0.85, roughness: 0.25, side: DoubleSide });
+        const tm_trumpetGeo = (L) => {   // TRUMPET_REAL_441: along +y, from the mouthpiece (0) to the bell's rim (L)
+          const P = [], at = (r, y) => P.push(new Vector2(r, y * L));
+          at(0.004, 0); at(0.028, 0.0); at(0.03, 0.012); at(0.018, 0.03); at(0.012, 0.045);   // the mouthpiece's cup and throat
+          for (const k of [0.33, 0.6]) { at(0.012, k - 0.02); at(0.024, k - 0.01); at(0.026, k); at(0.024, k + 0.01); at(0.012, k + 0.02); }   // the two knobs
+          for (let i = 0; i <= 10; i++) { const u = i / 10, y = 0.78 + u * 0.22; at(0.013 + 0.1 * Math.pow(u, 3.2), y); }   // the bell, flaring at the end
+          return new LatheGeometry(P, 18);
+        };
         for (const f of [t1, t2, t3, t4, t5, t6]) {
           const tr = new Group();
-          const tube = new Mesh(new CylinderGeometry(0.022, 0.026, 1.25, 10), silver);
-          tube.position.y = 0.625;
-          const bell = new Mesh(new CylinderGeometry(0.16, 0.03, 0.26, 16, 1, true), silver);
-          bell.position.y = 1.36;
-          tr.add(tube, bell);
+          // TRUMPET_REAL_441 (the user 25.11.2026: "החצוצרות לא חצוצרות"): a trumpet as the silver trumpets were drawn (the Arch of Titus;
+          // Numbers 10:2 "מקשה תעשה אותם"): a long straight thin tube, the mouthpiece's small cup at the lips, two knobs along it, and a bell
+          // flaring out at its end - one hollow piece (a lathe). Until now a rod and a wide funnel (it read as a ladle or a mace). Its
+          // proportions - model choices
+          tr.add(new Mesh(tm_trumpetGeo(1.5), silver));
           tr.position.set(0, K.HEAD_Y * K.FS - 0.17, 0.14);
           tr.rotation.x = 1.25;
           tr.traverse((m) => { if (m.isMesh) { m.castShadow = true; m.userData.noPick = true; } });

@@ -1395,6 +1395,11 @@
         }
         for (let k = 0; k < 40; k++) { const z = (rn() - 0.5) * 11.5, x = (rn() - 0.4) * 1.4; g.add(mesh(new SphereGeometry(0.025 + rn() * 0.02, 5, 3), mS, x, -SL * z + 0.02, z)); }
         return g; })());
+      // LIBATION_441 (the user 25.11.2026: "אין ניסוך אמיתי"): the wine seen poured - a dark red stream from the jug into the eastern bowl,
+      // and (Rashi's reading: "חוטם אחד בספל... ויורדין דרך החוטמין על גב המזבח") a thin stream from its spout down into the hole in the top
+      { const mW = std(0x5e0b16, { roughness: 0.15, metalness: 0.1, transparent: true, opacity: 0.9 });
+        prop("wineFall", mesh(new CylinderGeometry(0.022, 0.03, 1.15, 8, 1, true).translate(0, 0.575, 0), mW), null, false);
+        prop("wineSpout", mesh(new CylinderGeometry(0.012, 0.016, 0.18, 6, 1, true).translate(0, 0.09, 0), mW), null, false); }
       // SALT_STAGE_S2: each of the nine's pinch of salt, in his right hand while he salts (SC.melach)
       for (let i = 1; i <= 9; i++) prop("saltH" + i, (() => { const g = new Group(); for (const [x, y, z] of [[0, 0, 0], [0.06, 0.035, 0.02], [-0.05, 0.03, -0.03], [0.01, 0.07, -0.01]]) g.add(mesh(new SphereGeometry(0.05, 6, 4), MAT.salt, x, y, z)); return g; })());
       // MAARACHOT2_211 (stage ב; the user: the arrangements in detail): the limbs and the fats not consumed from the evening - charred, on the
@@ -1458,7 +1463,13 @@
         blood.fx = { drops, pour };
       }
       // the trumpets, the cymbals, the flags, the lyres
-      const trumpet = () => { const g = new Group(); g.add(mesh(new CylinderGeometry(0.03, 0.03, 1.6, 8).rotateX(HP), MAT.silver, 0, 0, 0.7)); g.add(mesh(new ConeGeometry(0.13, 0.3, 12, 1, true).rotateX(HP), MAT.silver, 0, 0, 1.55)); return g; };
+      const trumpet = () => {   // TRUMPET_REAL_441 (the user: "החצוצרות לא חצוצרות"): the long straight tube, the mouthpiece, two knobs, the flared bell - along +z
+        const P = [], L = 1.6, at = (r, y) => P.push(V2(r, y * L));
+        at(0.004, 0); at(0.03, 0.0); at(0.032, 0.012); at(0.02, 0.03); at(0.014, 0.045);
+        for (const k of [0.33, 0.6]) { at(0.014, k - 0.02); at(0.026, k - 0.01); at(0.028, k); at(0.026, k + 0.01); at(0.014, k + 0.02); }
+        for (let i = 0; i <= 10; i++) { const u = i / 10; at(0.015 + 0.11 * Math.pow(u, 3.2), 0.78 + u * 0.22); }
+        const m2 = MAT.silver.clone(); m2.side = DoubleSide;
+        const g = new Group(); g.add(mesh(new LatheGeometry(P, 18).rotateX(HP), m2, 0, 0, -0.05)); return g; };
       prop("tru1", trumpet(), { p: [0, 0, 0], r: [-1.1, 0, 0] }, false);
       prop("tru2", trumpet(), { p: [0, 0, 0], r: [-1.1, 0, 0] }, false);
       prop("cymL", mesh(new CylinderGeometry(0.28, 0.28, 0.03, 16).rotateZ(HP), MAT.bronze), { p: [0, -0.05, 0.05], r: [0, 0, 0] }, false);
@@ -2733,6 +2744,9 @@
       a.walk("tr2", [[tb[0], tb[1] + 0.38], ...route(sw2, [ba[0] - 0.2, ba[1] + 1.8])], 10.4, 20.4, { hold: true, yaw: -HP });
       a.pose("s13", "pour", 13, 17);
       a.fx("pour", 13.3);   // SOUND_211: the wine
+      { const wb = A(43.95, 9.4), ws = A(43.95, 9.4 + 0.86);   // LIBATION_441: into the wine's bowl (40-altar.js BX[1], BZ), and out by its spout to the hole (HZ)
+        a.put("wineFall", wb[0], TOP0 + 0.1, wb[1], 13.8); a.gone("wineFall", 16.6);
+        if (!SH.sfalim || SH.sfalim.mode !== "tosafot") { a.put("wineSpout", ws[0], TOP0 + 0.0, ws[1], 14.2); a.gone("wineSpout", 17.0); } }
       a.pose("sg", "wave", 13.4, 17);
       a.pose("ba", "cymbal", 13.8, 15);
       a.fx("cymbal", 14);
