@@ -1863,7 +1863,12 @@
       let CHG = null;
       const buildChannel = () => {
         const P = chProf(); if (!P) return null;
-        if (CHG) { g.remove(CHG); CHG.traverse((o) => { if (o.geometry) o.geometry.dispose(); }); }
+        // CHANNEL_LIFE_R7 (issue #2 R7): the same profile - nothing rebuilt; another - the old group's geometries, instance buffers and its
+        // private water material released (the shared stone material and the water's texture stay)
+        const sig = [P.a[0], P.a[1], P.b[0], P.b[1], P.n].concat(P.W, P.gmin).map((v) => Math.round(v * 1000)).join(",");
+        if (CHG && ML.chSig === sig) return ML.channel;
+        ML.chSig = sig;
+        if (CHG) { g.remove(CHG); CHG.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.isInstancedMesh && typeof o.dispose === "function") o.dispose(); }); if (ML.chWater) { ML.chWater.dispose(); ML.chWater = null; } }
         CHG = new Group(); CHG.name = "shiloachChannel1"; g.add(CHG);
         const st = [], wa = [], half = CHP.wIn / 2 + CHP.wall / 2;
         for (let i = 0; i < P.n; i++) {
@@ -1875,7 +1880,7 @@
         }
         instBoxes(CHG, st, ML.chStone || (ML.chStone = new MeshStandardMaterial({ color: 0x8f7e62, roughness: 0.95 })), "shiloachChannelStone");   // a darker stone than the sand round it
         if (!ML.chTex) { const cv = document.createElement("canvas"); cv.width = 64; cv.height = 16; const c2 = cv.getContext("2d"); c2.fillStyle = "#3f86c8"; c2.fillRect(0, 0, 64, 16); for (let k = 0; k < 9; k++) { c2.fillStyle = "rgba(220,240,255," + (0.18 + 0.2 * Math.random()) + ")"; c2.fillRect(Math.random() * 64, Math.random() * 16, 10 + Math.random() * 16, 1.2); } ML.chTex = new CanvasTexture(cv); ML.chTex.wrapS = ML.chTex.wrapT = RepeatWrapping; }
-        const wm = tm_water(new MeshStandardMaterial({ color: 0x9fc4e2, map: ML.chTex, transparent: true, opacity: 0.86, roughness: 0.08, metalness: 0.05 }), { mode: "flow", flow: [P.ux * 0.45, P.uz * 0.45], scale: 0.35 });   // WATER_420: its ripples go with it, slowly
+        const wm = ML.chWater = tm_water(new MeshStandardMaterial({ color: 0x9fc4e2, map: ML.chTex, transparent: true, opacity: 0.86, roughness: 0.08, metalness: 0.05 }), { mode: "flow", flow: [P.ux * 0.45, P.uz * 0.45], scale: 0.35 });   // WATER_420: its ripples go with it, slowly
         const wim = instBoxes(CHG, wa, wm, "shiloachChannelWater"); wim.castShadow = false; wim.renderOrder = 2;
         CHG.traverse((o) => { if (o.isMesh) o.userData.noPick = true; });
         ML.channel = P;
@@ -2161,7 +2166,7 @@
         } catch (e) { console.warn("[parallels] ir david view limits", e && e.message); }
         return IR.visible;
       };
-      ctx.shared.irDavid = { get on() { return IR.visible; }, set: setLayer, millo: MILLO_C, ground: (x, z) => ridgeH(x, z), buildChannel: () => buildChannel(), channel: () => ML.channel || null, drawnH: (x, z) => drawnH(x, z), poly: () => IR_C.poly, stats: () => ({ houses: ML.cityCount || 0, terraces: ML.terraceCount || 0, courts: ML.courtCount || 0, flights: ML.stepFlights || 0, check: ML.chk || null, milloCheck: ML.milloChk || null, millo: !!ML.parts, err: ML.err, errC: ML.errC, buildMs: ML.buildMs }) };
+      ctx.shared.irDavid = { get on() { return IR.visible; }, set: setLayer, millo: MILLO_C, ground: (x, z) => ridgeH(x, z), buildChannel: () => buildChannel(), rebuildChannel: () => { ML.chSig = null; return buildChannel(); }, channel: () => ML.channel || null, drawnH: (x, z) => drawnH(x, z), poly: () => IR_C.poly, stats: () => ({ houses: ML.cityCount || 0, terraces: ML.terraceCount || 0, courts: ML.courtCount || 0, flights: ML.stepFlights || 0, check: ML.chk || null, milloCheck: ML.milloChk || null, millo: !!ML.parts, err: ML.err, errC: ML.errC, buildMs: ML.buildMs }) };
       ctx.shared.millo = {
         get form() { return ML.form; }, get time() { return ML.time; },
         setForm(f) { ML.form = f === "tel" ? "tel" : "plaza"; applyMillo(); return ML.form; },
