@@ -2330,6 +2330,13 @@
       a.set("torches", [1, 0], 9.5);
       a.pose("b1", "offer", 18, 22.5);
       a.tag("s1", "השוחט", 1);
+      // LAVER_LEAVE_451 (the user 26.11.2026, a picture of priests standing by the laver: "הם לא עושים קידוש"): when the twelve have
+      // sanctified (kiyor12) they no longer stand at its spouts all through this stage, as if waiting to sanctify - they go on to their
+      // places: the six to the place of slaughter north of the altar and the two after them (where SC.tobeit sets them; until now they
+      // walked there only in the next stage), the two of the keys to the hall's steps (SC.keys). Model choice
+      ["s5", "s6", "s7", "s8", "s9", "s10"].forEach((k, i) => a.go(k, [45.2 + (i % 3) * 1.4, -37.2 - Math.floor(i / 3) * 1.4], 1.5 + i * 0.4, 13 + i * 0.4, { yaw: Math.PI * 0.85 }));
+      ["s11", "s12"].forEach((k, i) => a.go(k, [45.2 + i * 1.4, -40.2], 4 + i * 0.4, 15.5 + i * 0.4, { yaw: Math.PI * 0.85 }));
+      a.go("s3", [11.6, -1.6], 2, 12, { yaw: -HP }); a.go("s4", [11.6, 1.6], 2.4, 12.4, { yaw: -HP });
     };
     SC.tobeit = (a) => {
       a.gone("cup", 0); a.gone("torch1", 0); a.set("torches", [0, 0], 0);
