@@ -61,7 +61,7 @@
   // LOAD_SLICE_R10 (issue #2 R10): the long tasks while loading (over 50 ms each, the browser's own count) - their number, the longest and
   // their sum go into the "[load]" table, so the slicing can be measured on a weak computer
   var ent_long = { n: 0, max: 0, sum: 0 };
-  try { new PerformanceObserver((l) => { if (!ent_load.loading) return; for (const e of l.getEntries()) { ent_long.n++; ent_long.max = Math.max(ent_long.max, e.duration); ent_long.sum += e.duration; } }).observe({ type: "longtask", buffered: true }); } catch (_) {}
+  try { new PerformanceObserver((l) => { if (!ent_load.loading) return; for (const e of l.getEntries()) { (window.__longTasks || (window.__longTasks = [])).push([Math.round(e.startTime), Math.round(e.duration)]); ent_long.n++; ent_long.max = Math.max(ent_long.max, e.duration); ent_long.sum += e.duration; } }).observe({ type: "longtask", buffered: true }); } catch (_) {}
   function ent_mark(step, ms, note) {
     ent_load.rows.push({ step, ms: Math.round(ms * 10) / 10, at: Math.round(performance.now()), note: note || "" });
   }
@@ -1750,8 +1750,11 @@
     ctx.shared.demoPaused = () => live().some(isPaused);
     // TIMERS_HIDDEN_R12 (issue #2 R12): the bar's check (its buttons, its place - a layout read) only while the house is seen; when it is
     // seen again, at once
-    setInterval(() => { if (!document.hidden && window.__tmHouseVisible !== false) paint(); }, 300);
-    document.addEventListener("visibilitychange", () => { if (!document.hidden && window.__tmHouseVisible !== false) paint(); });
+    // BAR_HIDDEN_FIX_451 (the user 26.11.2026, a picture from Otzaria: the bar's buttons all pale, "נעלמו לגמרי"): Otzaria's WebView says
+    // document.hidden while the model is in view (see the background loop below), so the check never ran there - only the house's own
+    // visibility counts, as in ent_isVisible
+    setInterval(() => { if (window.__tmHouseVisible !== false) paint(); }, 300);
+    window.addEventListener("resize", () => { if (window.__tmHouseVisible !== false) paint(); });
     // a press on the model: a running demonstration pauses (the presentation's own press is the presentation's)
     try {
       renderer.domElement.addEventListener("pointerdown", () => {
