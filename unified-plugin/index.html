@@ -142,11 +142,11 @@
      Otzaria (the switch writes the plugin's storage; the button's `when` in the manifest reads it, and Otzaria hides or shows it at once,
      the plugin open or not - no permission is touched). In the one-file HTML - "בדיקת עדכונים" (unified/update-check.js; until 2.0.17 at
      the end of each house's menu). Elsewhere (the plugin's page in a browser) - no bar. */
-  :root{--uni-bar-h:2.9rem}
+  :root{--uni-bar-h:2.05rem}   /* BAR_NARROW_460 (the user 26.11.2026: "תצר קצת את הסרגל - לא נשאר מקום לסרגל הבחירה"): was 2.9rem */
   #uni-bar{position:absolute;left:0;right:0;bottom:0;z-index:3;min-height:var(--uni-bar-h);
     background:var(--color-surface-container-high);border-top:1px solid var(--color-outline);box-shadow:0 -1px 0 var(--color-primary-subtle);
-    color:var(--color-on-surface);font-family:var(--font-ui);font-size:min(0.72rem,2.4vh,3vw);line-height:1.4;
-    display:flex;align-items:center;justify-content:center;gap:0.5em 1.4em;flex-wrap:wrap;padding:0.45em 1em;user-select:none}
+    color:var(--color-on-surface);font-family:var(--font-ui);font-size:min(0.64rem,2.1vh,2.7vw);line-height:1.25;
+    display:flex;align-items:center;justify-content:center;gap:0.5em 1.4em;flex-wrap:wrap;padding:0.18em 0.8em;user-select:none}
   #uni-bar[hidden],#uni-bar .grp[hidden]{display:none}
   #uni-bar .grp{display:flex;align-items:center;gap:0.4em 1.2em;flex-wrap:wrap;justify-content:center}
   #uni-bar .lbl{font-weight:600;color:var(--color-on-surface-variant)}
@@ -207,7 +207,7 @@
 </head>
 <body>
 <div id="home">
-  <header class="topbar"><div class="title">בית המקדש</div><div class="tb-l"><button type="button" id="news-btn" aria-haspopup="dialog" aria-controls="news">מה חדש בגרסה 4.5.3</button><span id="version">v4.5.3</span></div></header>
+  <header class="topbar"><div class="title">בית המקדש</div><div class="tb-l"><button type="button" id="news-btn" aria-haspopup="dialog" aria-controls="news">מה חדש בגרסה 4.6.0</button><span id="version">v4.6.0</span></div></header>
   <div id="scene">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
   <defs>
@@ -398,11 +398,14 @@
       </ul>
       <div class="foot"><span>ההודעה הזאת מוצגת פעם אחת.</span><button type="button" id="uni-note-ok">הבנתי</button></div>
     </div>
-    <div id="news" role="dialog" aria-modal="true" aria-label="מה חדש בגרסה 4.5.3" hidden>
-      <h2>מה חדש בגרסה 4.5.3</h2>
+    <div id="news" role="dialog" aria-modal="true" aria-label="מה חדש בגרסה 4.6.0" hidden>
+      <h2>מה חדש בגרסה 4.6.0</h2>
       <div class="body"><h3>בשני הבתים</h3>
+<div class="big"><b>בבית ראשון הזהב אינו אחיד — כל מקום בגוון של סוג הזהב שלו, לפי המקורות. זה מכוון, ואינו תקלה:</b> הכסא — ״זהב מופז״ (בהיר וזוהר); הצינות והמגינים — ״זהב שחוט״ (צהוב בלי אדמומית); הכלים, המנורות וכלי בית יער הלבנון — ״זהב סגור״ (צהוב עמוק); ההיכל — ״זהב פרוים״ (אדום); הדביר — ״זהב סגור״, לפי השיטה שבשורה ״דביר — מחיצה או קודש הקדשים״; הארון, הכרובים, השולחנות ומזבח הזהב — ״זהב״.</div>
 <ul>
-<li>בגרסה זו השינויים הם בכל בית בנפרד — בית ראשון: סוגי הזהב ומנורת כסא שלמה; בית שני: הדגמת הכיור. הפירוט ב״מה חדש״ שבתוך כל בית.</li>
+<li><b>פס ההדגמה באוצריא</b> — בגרסה 4.5.1 כפתורי פס ההדגמה נעלמו מן הסרגל העליון באוצריא. עכשיו הם מופיעים שוב, בכל ההדגמות.</li>
+<li><b>פס ההדגמה — בצבעי הסרגל</b> — הכפתורים והכיתוב של פס ההדגמה צבועים עכשיו בצבעי הסרגל העליון. עד עכשיו, בחלק מן ההדגמות, הפס היה בהיר כל כך שלא ראו אותו.</li>
+<li><b>סרגל מסך הבחירה — צר יותר</b> — הכפתורים שבתחתית מסך הבחירה (״כפתורים באוצריא״) קצרים וקטנים יותר, כדי שיישאר מקום לבחירת הבית.</li>
 </ul></div>
       <div class="foot"><span>אפשר לפתוח שוב בכפתור ״מה חדש״ שבסרגל העליון.</span><button type="button" id="news-close">סגירה</button></div>
     </div>
@@ -475,8 +478,8 @@
   <footer id="uni-bar" hidden>
     <div class="grp" id="uni-bar-otz" hidden>
       <span class="lbl">כפתורים באוצריא:</span>
-      <label class="sw" title="הכפתור שבסרגל העליון של ספר — במלכים, בדברי הימים, במידות, ברמב״ם ובעוד ספרים — שפותח את התוסף במקום שבו לומדים"><input type="checkbox" id="set-reader" checked><span class="knob" aria-hidden="true"></span><span>״פתח בתוסף בית המקדש״ — בסרגל הספר</span></label>
-      <label class="sw na" title="אוצריא מאפשרת לתוסף להסתיר את הכפתור הזה רק מגרסה 0.9.99 שלה. המתג יופעל בעדכון של התוסף שאחריה."><input type="checkbox" id="set-search" checked disabled><span class="knob" aria-hidden="true"></span><span>״בית המקדש — המקום במודל״ — בשדה החיפוש <small>(יתאפשר מאוצריא 0.9.99)</small></span></label>
+      <label class="sw" title="״פתח בתוסף בית המקדש״: הכפתור שבסרגל העליון של ספר — במלכים, בדברי הימים, במידות, ברמב״ם ובעוד ספרים — שפותח את התוסף במקום שבו לומדים"><input type="checkbox" id="set-reader" checked><span class="knob" aria-hidden="true"></span><span>בסרגל הספר</span></label>
+      <label class="sw na" title="״בית המקדש — המקום במודל״, הכפתור שבשדה החיפוש. אוצריא מאפשרת לתוסף להסתיר את הכפתור הזה רק מגרסה 0.9.99 שלה. המתג יופעל בעדכון של התוסף שאחריה."><input type="checkbox" id="set-search" checked disabled><span class="knob" aria-hidden="true"></span><span>בשדה החיפוש <small>(מאוצריא 0.9.99)</small></span></label>
     </div>
     <div class="grp" id="uni-bar-web" hidden></div>
   </footer>
@@ -586,7 +589,7 @@
 (function () {
   "use strict";
   // ---------- configuration (written by tools/build-unified.mjs) ----------
-  var CFG = {"standalone":false,"houses":{"rishon":{"name":"בית ראשון","version":"2.3.2","page":"rishon/index.html","items":["open-beit-rishon"],"books":[10,39,3345,3673,3540,3206,3394,3645,3449,3574,3662,3318,6049,3232,3522,3737,3364,3025,244,3441,3560,6050,3875,3619,3639,275,3509,240,3248,3396,282,247,7715,276,259,3770,5851,3627,268,7558,3295,3705,3406,3058,7556,262,7910,7915,5994,3084,7914,3900,124,257,3698,3023,265,7553,7909,3119,3260,697,3432,3510,285,5850],"base":[{"id":10,"t":"מלכים א","w":[[186,377],[388,393]]},{"id":39,"t":"דברי הימים ב","w":[[39,198],[418,515],[633,633]]}]},"sheni":{"name":"בית שני","version":"3.5.2","page":"sheni/index.html","items":["open-beit-sheni"],"books":[89,337,5474,4260,4304,819,5308,4095,643,948,1210,645,7163,5029,7001,1074,3167,750,130,4606,1145,2,3886,5069,1342,138,4466,573,7007,7027,3,4305,3263,340,1329,7165,341,5252,3877,7079,338,7100,2982,3797,4303,1268,3891,4173,344,6797,2988,5664,4,5,1202,5822,7021,2985,7178,944,4767,4531,8404,127,106,7225,6029,3791,8423,6030,154,7040,2494,2885,7554,156,2989],"base":[{"id":89,"t":"משנה מדות","w":[[2,39]]},{"id":337,"t":"משנה תורה, הלכות בית הבחירה","w":[[3,146]]}]}},"common":{"107":"sheni","131":"sheni","155":"sheni","3190":"sheni","3258":"rishon","3684":"sheni","7414":"sheni","7549":"sheni","7576":"sheni","7577":"sheni","7582":"sheni"}};
+  var CFG = {"standalone":false,"houses":{"rishon":{"name":"בית ראשון","version":"2.4.0","page":"rishon/index.html","items":["open-beit-rishon"],"books":[10,39,3345,3673,3540,3206,3394,3645,3449,3574,3662,3318,6049,3232,3522,3737,3364,3025,244,3441,3560,6050,3875,3619,3639,275,3509,240,3248,3396,282,247,7715,276,259,3770,5851,3627,268,7558,3295,3705,3406,3058,7556,262,7910,7915,5994,3084,7914,3900,124,257,3698,3023,265,7553,7909,3119,3260,697,3432,3510,285,5850],"base":[{"id":10,"t":"מלכים א","w":[[186,377],[388,393]]},{"id":39,"t":"דברי הימים ב","w":[[39,198],[418,515],[633,633]]}]},"sheni":{"name":"בית שני","version":"3.6.0","page":"sheni/index.html","items":["open-beit-sheni"],"books":[89,337,5474,4260,4304,819,5308,4095,643,948,1210,645,7163,5029,7001,1074,3167,750,130,4606,1145,2,3886,5069,1342,138,4466,573,7007,7027,3,4305,3263,340,1329,7165,341,5252,3877,7079,338,7100,2982,3797,4303,1268,3891,4173,344,6797,2988,5664,4,5,1202,5822,7021,2985,7178,944,4767,4531,8404,127,106,7225,6029,3791,8423,6030,154,7040,2494,2885,7554,156,2989],"base":[{"id":89,"t":"משנה מדות","w":[[2,39]]},{"id":337,"t":"משנה תורה, הלכות בית הבחירה","w":[[3,146]]}]}},"common":{"107":"sheni","131":"sheni","155":"sheni","3190":"sheni","3258":"rishon","3684":"sheni","7414":"sheni","7549":"sheni","7576":"sheni","7577":"sheni","7582":"sheni"}};
   var HOUSES = ["rishon", "sheni"];
   var OTZ = typeof window.Otzaria !== "undefined" && !!window.Otzaria && typeof window.Otzaria.on === "function";
   var ROUTED = { "reader.toolbar_item_clicked": 1, "plugin.page_opened": 1 };
@@ -985,7 +988,7 @@
   // Opened by the top bar's button; and once per version by itself, on the choice screen, when the one-time note is not showing.
   var newsMaybe = null;
   (function () {
-    var KEY = "tm.unified.news.seen", VER = "4.5.3";
+    var KEY = "tm.unified.news.seen", VER = "4.6.0";
     var dlg = document.getElementById("news"), btn = document.getElementById("news-btn"), x = document.getElementById("news-close");
     if (!dlg || !btn || !x) return;
     var seenLs = function () { try { return localStorage.getItem(KEY) === VER; } catch (_) { return false; } };
