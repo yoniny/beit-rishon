@@ -1372,6 +1372,9 @@
     const mkGold = (extra) => (goldTex && typeof goldStd === "function" ? goldStd(goldTex, extra) : Object.assign(M.gold.clone(), extra || {}));
     const shieldGold = goldKind(mkGold({ roughness: 0.26, side: DoubleSide }), "shachut");   // GOLD_KINDS_452: "צנה זהב שחוט ... מגנים זהב שחוט" (10:16-17)
     const vesselGold = goldKind(mkGold({ roughness: 0.24, side: DoubleSide }), "sagur");    // GOLD_KINDS_452: "וכל כלי בית יער הלבנון זהב סגור" (10:21)
+    // (the user 26.11.2026: "כלי המשקה היו גם זהב סגור" - the tables of vessels below stand for both, 10:21) - but the king's crown, his
+    // figure's gold, the scroll's rollers and the spice vessels by the throne are no vessels of the forest house: plain gold (GOLD_KINDS_452)
+    const plainGold = mkGold({ roughness: 0.24, side: DoubleSide });
     const plankMat = M.cedar.clone();
     plankMat.color.set(0xC99868);                   // cedar floor planks (7:7), light (model choice)
     const jointMat = new MeshStandardMaterial({ color: 0x3A2A1C, roughness: 1 });   // the dark bed under the planks: the joints read as lines
@@ -2156,7 +2159,7 @@
       midr.add(lid);
       const scroll = new Group();
       try { const tg = pal_torahGroup(); tg.scale.setScalar(1.0 / 1.14); scroll.add(tg); }   // TORAH_B2: the upright scroll in its mantle - an amah high (the user: "בערך 1.0 אמה")
-      catch (_) { const sg = pal_scrollGeos(); scroll.add(new Mesh(sg.rollers, vesselGold), new Mesh(sg.parchment, linen)); }
+      catch (_) { const sg = pal_scrollGeos(); scroll.add(new Mesh(sg.rollers, plainGold), new Mesh(sg.parchment, linen)); }
       scroll.name = "throneScroll";
       midr.add(scroll);
       const SCR_HOME = [ARK.x, ARK.y + 0.045, ARK.z], SCR_LAP = [X, sTop + 0.37, zKing + 0.36], SCR_TILT = 0.2, SCR_ROLL = -0.07, SCR_UP = 1.1;   // TORAH_B2: its foot on his thighs, its head leaning forward and a little out, away from his beard (the user: "ראשו נוטה קדימה, הרחק מהזקן"), in every version; SCR_UP - the dove over its top   // in the ark; on the seat, the king's lap ("לתוך חיקו"; "על ברכיו"; "בידוי")
@@ -2201,7 +2204,7 @@
       const kingEnsure = () => {
         if (kingBuilt) return;
         kingBuilt = true;
-        try { const KF = pal_kingFig(vesselGold, sTop - (top + DH)); silStand.add(KF.stand); silSeat.add(KF.seat); }
+        try { const KF = pal_kingFig(plainGold, sTop - (top + DH)); silStand.add(KF.stand); silSeat.add(KF.seat); }
         catch (_) { const a = new Mesh(silS.geo(), silMat), b = new Mesh(silH.geo(), silMat); a.renderOrder = b.renderOrder = 5; silStand.add(a); silSeat.add(b); }
       };
       sil.visible = false;
@@ -2483,7 +2486,7 @@
         put(grp, pal_vineVaultGeo(24, 3.3, 613.1, 616.7, 5.4), gold, X, top, 0, 0, 1, "throneVines");
         d.greatEagle = eagleAt(grp, X + 1.9, top, 613.1, -HP, 1.2, "throneGreatEagle");
         d.crownHome = [X + 1.9, top, 613.75]; d.crownHead = [X, sTop + PAL_KING.HEAD - 0.1, zCrown];   // KING_211: on the king's head (the silhouette's: sTop + 2.4)   // 1.0.1-L: at the great eagle's feet, no stand (the midrash has none); on the head's very place (throne.head)
-        d.crown = put(grp, pal_crownGeo(), vesselGold, d.crownHome[0], d.crownHome[1], d.crownHome[2], 0, 1, "throneCrown");
+        d.crown = put(grp, pal_crownGeo(), plainGold, d.crownHome[0], d.crownHome[1], d.crownHome[2], 0, 1, "throneCrown");
         const sprW = mkSpray(grp, 50, X - 2.75, top + 0.63, 615.75, 0.35, 1), sprE = mkSpray(grp, 50, X + 2.75, top + 0.63, 615.75, -0.35, 1);
 
         // -- the ascent, 1.0.1-L (Part 7, P2, the user: "עשית שם שטויות"), line by line against the midrash (the library's 3237:15): "ומשים ית ריגלא על דרגא קדמיתא תורא דדהבא. פשיט ידיה על דרגא תיניינא": he stands on the first step and the golden ox, lying
@@ -2602,7 +2605,7 @@
         sc.rod(0.014, 0.014, X, scY + 0.3, dvZ + 0.232, X, crY + 0.16, dvZ + 0.232, 5);   // the link from the beak's tip (the dove's scale 1: y 0.245, x 0.232) to the crown's rim
         put(grp, sc.geo(), gold, 0, 0, 0, 0, 1, "throneSceptre");
         put(grp, beastGeo("dove"), gold, X, scY + 0.06, dvZ, -HP, 1, "throneSceptreDove");
-        put(grp, pal_crownGeo(), vesselGold, X, crY, dvZ + 0.42, 0, 1, "throneCrown");
+        put(grp, pal_crownGeo(), plainGold, X, crY, dvZ + 0.42, 0, 1, "throneCrown");
         // Panim Acherim: "ושני אריות של זהב היו עומדים על מעלה ראשונה, ושני עמודים של שיש היו עומדים על ראש האריות, ושני גפנים של זהב עומדות משני צדי
         // הכסא, ומצילות על ראשי העמודים, ושני אריות של זהב חלולים היו עומדות כנגד הראשון, והיו מלאים כל מיני בשמים, שהיו זולפים בשמים, כשהיה המלך שלמה
         // עולה": two lions of their own at the first step's ends with the pillars on their heads, two vines from the body's sides over the capitals,
@@ -2728,14 +2731,14 @@
         d.armLions = [lionAt(grp, X - 2.75, top, zD + 0.5, -HP, 0.72), armL];
         pillarsAt(grp, 2.75, zD + 0.5, top + 1.17 * 0.72, 2.9);
         d.crownHome = [X + 3.45, top + 0.75, 615.6]; d.crownHead = [X, sTop + PAL_KING.HEAD - 0.1, zCrown];   // KING_211   // on a low stand within reach of the east arm lion's left paw (model choice)
-        d.crown = put(grp, pal_crownGeo(), vesselGold, d.crownHome[0], d.crownHome[1], d.crownHome[2], 0, 1, "throneCrown");
+        d.crown = put(grp, pal_crownGeo(), plainGold, d.crownHome[0], d.crownHome[1], d.crownHome[2], 0, 1, "throneCrown");
         H.box(grp, 0.5, 0.75, 0.5, gold, X + 3.45, top, 615.6).name = "throneCrownStand";
         d.beasts = pairsAt(grp, [["ox", "lion"], ["wolf", "lamb"], ["leopard", "kid"], ["bear", "deer"], ["eagle", "bird"]]);
         gemsAt(grp, ["pearl", "saffron", "glass"]);
         palmsAt(grp, d);
         // "ושני אבנים של זהב היו על שני צידי הכסא, והיו מלאים מכל מיני בשמים": two golden vessels on the body's top (their form and place: model choice)
         const vg = once("spiceBowl", () => pal_vesselGeos().bowl);
-        for (const s of [-1, 1]) put(grp, vg, vesselGold, X + s * 4.3, top, 616.3, 0, 1.4, "throneSpiceVessel");
+        for (const s of [-1, 1]) put(grp, vg, plainGold, X + s * 4.3, top, 616.3, 0, 1.4, "throneSpiceVessel");
         d.doveHome = [X, backTop, backZ];
         d.dove = put(grp, beastGeo("dove"), gold, d.doveHome[0], d.doveHome[1], d.doveHome[2], -HP, 1, "throneDove");
         // "ועל כל קתדרא וקתדרא שני אריות ושני נשרים, ומכוונים אחד כנגד אחד, ועומדין על רגליהן": two small lions on the arm-rests and two eagles on the back's top
