@@ -1366,6 +1366,24 @@ body.tm-measuring canvas{cursor:crosshair}
             }
             hidePanelOnPhone();
           });
+          // SIDE_IN_BTN_441 (the user's decision, 25.11.2026: the arrow "הצד השני" inside each reading's button, not a button of its own): row.side =
+          // [label, tip, fn] - a small arrow at the button's end; a press on it chooses this reading (if it is not the one shown) without its own
+          // flight, and then goes to the other side (fn)
+          if (Array.isArray(row.side) && row.side.length >= 3) {
+            const ar = document.createElement("span");
+            ar.className = "tm-side";
+            ar.textContent = row.side[0];
+            ar.title = row.side[1] || "";
+            ar.setAttribute("role", "button");
+            ar.style.cssText = "display:inline-block;margin-inline-start:.4em;padding:0 .3em;border-radius:.3em;border:1px solid currentColor;font-size:.85em;line-height:1.3;cursor:pointer;opacity:.85";
+            ar.addEventListener("click", (ev) => {
+              ev.preventDefault(); ev.stopPropagation();
+              if (row.cur !== key) { mark(key); try { row.onPick(key); } catch (_) {} }
+              try { row.side[2](key); } catch (_) {}
+              hidePanelOnPhone();
+            });
+            b.appendChild(ar);
+          }
           bb.appendChild(b);
           bts.push({ key, el: b });
         }
@@ -1624,6 +1642,14 @@ body.tm-measuring canvas{cursor:crosshair}
               pickFromCard(row, key, typeof keep === "function" ? !!keep() : !!keep);   // CHIP_KEEPS_DEMO_T
               if (onPicked) onPicked(row, key);
             });
+            if (Array.isArray(row.side) && row.side.length >= 3) {   // SIDE_IN_BTN_441: the arrow inside the chip too
+              const ar = document.createElement("span");
+              ar.textContent = " " + row.side[0];
+              ar.title = row.side[1] || "";
+              ar.style.cssText = "cursor:pointer;opacity:.85;font-weight:bold";
+              ar.addEventListener("click", (ev) => { ev.preventDefault(); ev.stopPropagation(); if (row.cur !== key) { try { if (typeof row.mark === "function") row.mark(key); else row.cur = key; row.onPick(key); } catch (_) {} } try { row.side[2](key); } catch (_) {} });
+              a.appendChild(ar);
+            }
             g.appendChild(a);
           }
           for (const [lab, tip, fn] of Array.isArray(row.extra) ? row.extra : []) {   // SIDES_430

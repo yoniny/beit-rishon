@@ -2304,11 +2304,11 @@
           onPick: (k) => { if (ctx.shared.parochetArt && typeof ctx.shared.parochetArt.set === "function") ctx.shared.parochetArt.set({"o0": "rashi", "o1": "yer1", "o2": "yer2", "o3": "rambam", "o4": "plain"}[k] || "rashi"); },
           // SIDES_430 (the user 25.11.2026: "איך רואים את הצד השני?" - "להוסיף"): at once to the other face - from the heichal's to the Holy of
           // Holies' (through the cloud's question, as every view inside it), and back; the pause of the reading's own flight is cancelled
-          extra: [["⇄ הצד השני", "מעבר מיד לצד השני של הפרוכות: מן הצד שלפני ההיכל אל הצד שלפני קודש הקדשים, וחזרה", () => {
+          side: ["⇄", "הצד השני: מעבר מיד לצד השני של הפרוכות, מן הצד שלפני ההיכל אל הצד שלפני קודש הקדשים, וחזרה", () => {   // SIDE_IN_BTN_441: inside each reading's button (until now a button of its own, "⇄ הצד השני")
             ctx.__sidesTok = (ctx.__sidesTok || 0) + 1;
             const c = ctx.camera && ctx.camera.position, west = !!(c && c.x < -44.5 && c.x > -66 && Math.abs(c.z) < 12), to = west ? parEast(12, 14) : parWest(12, 14);
             fly(to[0], to[1]);
-          }]],
+          }],
           fly: (k) => { fly2(parEast(12, 14), parWest(12, 14)); }   // PAROCHET_VIEWS_G6: both faces - the east one, then the west one from inside the Holy of Holies (the figures differ, or are the same mirrored)
         });
         opRow({
