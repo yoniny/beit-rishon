@@ -2452,7 +2452,7 @@
         // עולם ... לוי, קהת, עמרם, משה, ואהרן, אלדד ומידד, וחגי הנביא ביניהם"): each name written along its branch (pal_menorahGeo: branch i of
         // side s at x s*(0.22+0.1i), upright from y 0.67+0.22(6-i) to 2.3), front and back. Model choices: the fathers on the -x side, the
         // pious on the +x; inner to outer in the Targum's order; "ביניהם" - Iyov and Chaggai on the middle branch; Eldad and Medad on one branch
-        { const NAMES = { "-1": ["אדם הראשון", "נח", "שם הגדול", "איוב", "אברהם", "יצחק", "יעקב"], "1": ["לוי", "קהת", "עמרם", "חגי הנביא", "משה", "אהרן", "אלדד ומידד"] };
+        { const NAMES = { "-1": ["אדם הראשון", "נח", "שם הגדול", "איוב", "אברהם", "יצחק", "יעקב"].reverse(), "1": ["לוי", "קהת", "עמרם", "חגי הנביא", "משה", "אהרן", "אלדד ומידד"].reverse() };   // (the user 26.11.2026: "כסדר התרגום, כשהחיצוני הוא הראשון" - the lists in the Targum's order, outer to inner; reversed for i inner to outer)
           const BAND = 0.07;
           for (const sd of [-1, 1]) NAMES[sd].forEach((nm, i) => {
             const bx = PAL_MEN.LX[i], by0 = PAL_MEN.ROOT[i], bh = PAL_MEN.TOP - by0, blen = Math.hypot(bx, bh), ang = Math.atan2(bx, bh);   /* MENORAH_TEMPLE_452: along the straight branch, between its knob and its cups */

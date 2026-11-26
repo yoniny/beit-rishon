@@ -296,13 +296,16 @@
       if (v) {
         f.vis++; if (f.firstVis < 0) f.firstVis = t; f.lastVis = t;
         const cx = (bx.b.min.x + bx.b.max.x) / 2, cz = (bx.b.min.z + bx.b.max.z) / 2, feet = bx.b.min.y;
-        let fl = null; try { fl = S.floorUnder(cx, feet + 1.4, cz, bx.ids); } catch (_) {}
+        // SEATED_452: a seated figure (the throne's king: a visible part named ...Seated) has its seat, not the floor, under its box's middle -
+        // its feet are not checked against it (the ascent demo's "under the floor" was the seat under him)
+        let seated = false; o.traverse((q) => { if (!seated && /seated/i.test(q.name || '') && q.visible !== false && ancVis(q)) seated = true; });
+        let fl = null; if (!seated) try { fl = S.floorUnder(cx, feet + 1.4, cz, bx.ids); } catch (_) {}
         if (fl != null) {
           const dy = feet - fl;
           if (dy < -0.55 && f.under.length < 4) f.under.push({ t, dy: r2(dy), at: [r2(cx), r2(feet), r2(cz)] });
           else if (dy > 0.8 && f.hover.length < 4) f.hover.push({ t, dy: r2(dy), at: [r2(cx), r2(feet), r2(cz)] });
           if (dy < -0.55) f.nUnder = (f.nUnder || 0) + 1; if (dy > 0.8) f.nHover = (f.nHover || 0) + 1;
-        } else if (f.under.length < 4) { f.noFloor = (f.noFloor || 0) + 1; }
+        } else if (!seated && f.under.length < 4) { f.noFloor = (f.noFloor || 0) + 1; }
         // the figure's chest inside a solid
         if (f.vis % 4 === 1) {
           const ch = new V3(cx, feet + (bx.b.max.y - feet) * 0.6, cz); const ins = S.inside(ch, 0.9, bx.ids);
