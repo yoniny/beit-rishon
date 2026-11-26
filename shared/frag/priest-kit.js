@@ -150,7 +150,7 @@
     const mSashDyed = mat(0xffffff, { map: weave([["#3d62ab", 4.2], ["#8e1f34", 3.1], ["#c5432b", 1.3], ["#e6e1d3", 1]]), vertexColors: true, roughness: 0.88 });
     const mSashWhite = mat(0xffffff, { map: weave([["#f7f5ee", 4], ["#e0dbcc", 3], ["#ffffff", 2], ["#cfc9b7", 1]]), vertexColors: true, roughness: 0.88 });
     // BLOND_441b (the user 26.11.2026: most of the priests blond, true blond; elders few): five of the seven blond - honey-gold, taken from the user's own picture (26.11.2026: "איכס איזה צבע! תחפש באינטרנט" - its hair #a57a52..#c69368) and measured on the screen: the hair's light and sheen wash a colour out, so the colours here are more saturated than what is seen; 0 white and 4 grey (the elders)
-    const mBeards = [0xf4f2ec, 0xffb850, 0xf0a040, 0xffc468, 0xbdbab2, 0xe08a30, 0xf4a848].map((c) => mat(c, { map: texHair, vertexColors: true, roughness: 0.95, side: DoubleSide })), mBeardOld = mBeards[0];
+    const mBeards = [0xf4f2ec, 0xffc078, 0xffb868, 0xffcc90, 0xbdbab2, 0xf0a860, 0xffc484].map((c) => mat(c, { map: texHair, vertexColors: true, roughness: 0.95, side: DoubleSide })), mBeardOld = mBeards[0];
     const SASHES = [];   // every avnet's mesh: dyed in the Rambam's reading, white in "של בוץ"
     // ---------- the head (its middle at HEAD_Y): FACE_E - the skull as before (headR: the hats, the mitznefet, the kippot and the
     // tefillin's strap sit on it), the face, the jaw, the ears, the eyes and the hair of shared/frag/face.js
