@@ -3555,7 +3555,7 @@
       if (m && m.lampK) for (let i = 0; i < 7; i++) m.lampK[i] = clamp(N.lamps[i], 0, 1);
       if (SH.greatGate && fnc(SH.greatGate.pose)) { try { SH.greatGate.pose(N.gate); } catch (_) {} }
       chelGate(N.chelG);   // CHEL_GATE_215
-      if (SH.mukhni && fnc(SH.mukhni.pose)) { try { SH.mukhni.pose(5.6 * N.mukhni, null); } catch (_) {} }
+      if (SH.mukhni && fnc(SH.mukhni.pose)) { try { SH.mukhni.pose(TM.solo ? 0 : 5.6 * N.mukhni, null); } catch (_) {} }   // KIDD_SOLO_UP_441 (the scan of 4.5.0): in the kiddush's own demonstration the laver stands up on its base, the well covered - it was left sunk in the well (the night's state), and the lid off
       {   // KIYOR_A2: 1 - the west spout (the winner), 12 - all twelve; built again when the laver's size changed
         const sz = SH.kiyorSize ? SH.kiyorSize.mode : "", want = N.kidWater >= 12 ? "all" : N.kidWater > 0 ? "one" : "";
         if (want && (!W.kidWater || W.kidWater.userData.k !== want + sz)) {
