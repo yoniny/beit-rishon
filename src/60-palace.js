@@ -1037,20 +1037,58 @@
   }
   // the menorah on the throne's head (Targum Sheni "ועל מרישי כורסיא קיימא מנרתא דדהבא... שבעת אבהת עלמא... שבעא חסידי עלמא"): a stem
   // 2.3 high with seven branches a side, the bowl of oil on top (בזיכא), the great basin at its foot (אגנתא) and the two sheaves out of it
+  // MENORAH_TEMPLE_452 (the user 26.11.2026: "מנורה אחת בעלת 15 קנים, רק מבנה הקנים והמנורה (מבחינת כפתורים, גביעים, פרחים) צריך להיות
+  // כמנורת בית המקדש"): built as the heichal's menorah (55-interior.js menorahGeo) - the base and its three feet, the lowest flower at the
+  // shaft's foot, the cup, knob and flower of the 6th tefach, every branch going out straight from its own knob on the shaft, and under
+  // every lamp three cups, a knob and a flower - but seven branches a side. PAL_MEN gives the branches' line (the names, its throne code)
   function pal_menorahGeo() {
-    const f = pal_fig();
-    f.rod(0.06, 0.05, 0, 0, 0, 0, 2.3, 0, 8);
-    f.ell(0.5, 0.12, 0.5, 0, 0.06, 0, 0, 0, 0, 16, 6);
-    for (const s of [-1, 1]) {
-      for (let i = 0; i < 7; i++) {
-        const h = 0.55 + (6 - i) * 0.22, out = s * (0.22 + i * 0.1);   // the outermost (i = 6) leaves the stem lowest, as a menorah's arms
-        f.rod(0.035, 0.03, 0, h, 0, out, h + 0.12, 0, 6).rod(0.03, 0.03, out, h + 0.12, 0, out, 2.3, 0, 6).ell(0.07, 0.05, 0.07, out, 2.34, 0, 0, 0, 0, 7, 4);
+    const f = pal_fig(), UP = new Vector3(0, 1, 0), O = 0.42;   // O: the ornaments' scale against the heichal's
+    const lathe = (prof, seg) => new LatheGeometry(prof.map((p) => new Vector2(p[0] * O, p[1])), seg);
+    const cup = (h) => lathe([[0, 0], [0.026, 0], [0.026, h * 0.3], [0.042, h * 0.6], [0.068, h * 0.92], [0.076, h], [0.06, h], [0.034, h * 0.7], [0.018, h * 0.42], [0, h * 0.4]], 10);
+    const knob = (h, r) => { const g = new SphereGeometry(1, 10, 7); g.scale(r * O, h / 2, r * O); g.translate(0, h / 2, 0); return g; };
+    const flower = (h, sc = 1) => {
+      const g = lathe([[0, 0], [0.04 * sc, 0], [0.042 * sc, h * 0.4], [0.082 * sc, h * 0.8], [0.105 * sc, h], [0.09 * sc, h], [0.062 * sc, h * 0.78], [0.044 * sc, h * 0.5], [0, h * 0.48]], 18);
+      const p = g.attributes.position;
+      for (let i = 0; i < p.count; i++) {
+        const x = p.getX(i), y = p.getY(i), z = p.getZ(i), t = Math.min(1, Math.max(0, (y / h - 0.35) / 0.65)), c = Math.cos(6 * Math.atan2(x, z));
+        p.setXYZ(i, x * (1 + 0.26 * t * c), y + 0.14 * h * t * (c - 1) / 2, z * (1 + 0.26 * t * c));
       }
-      f.rod(0.02, 0.035, s * 0.35, 0.1, 0.1, s * 0.55, 0.75, 0.18, 5).ell(0.06, 0.12, 0.05, s * 0.58, 0.85, 0.2);
+      g.computeVertexNormals();
+      return g;
+    };
+    const at = (g, x, y, z, q) => { if (q) g.applyQuaternion(q); g.translate(x, y, z); f.add(g); };
+    const group3 = (top, up, q) => {   // under a lamp: three cups, a knob, a flower (the heichal's 0.5 scaled by O)
+      const put = (d, g) => at(g, top.x - up.x * d * O, top.y - up.y * d * O, top.z - up.z * d * O, q);
+      for (let i = 0; i < 3; i++) put(0.5 - 0.095 * i, cup(0.095 * O));
+      put(0.215, knob(0.125 * O, 0.07));
+      put(0.09, flower(0.09 * O));
+    };
+    const { TOP, LX, ROOT } = PAL_MEN;
+    // the base "כמין תבה" on three feet, the lowest flower, the shaft
+    for (let i = 0; i < 3; i++) { const a = i * Math.PI * 2 / 3 + Math.PI / 2; f.rod(0.03, 0.035, Math.cos(a) * 0.16, 0, Math.sin(a) * 0.09, Math.cos(a) * 0.16, 0.05, Math.sin(a) * 0.09, 8); }
+    f.box(0.46, 0.1, 0.26, 0, 0.1, 0);
+    at(flower(0.11, 1.35), 0, 0.15, 0);
+    f.rod(0.024, 0.024, 0, 0.15, 0, 0, TOP, 0, 10);
+    at(cup(0.1), 0, 0.42, 0); at(knob(0.1, 0.1), -0.05, 0.42, 0); { const g = flower(0.07, 0.7); g.rotateZ(-Math.PI / 2); at(g, 0.016, 0.47, 0); }   // the 6th tefach: cup, knob and flower
+    group3(new Vector3(0, TOP, 0), UP, null);
+    for (let i = 0; i < 7; i++) {
+      at(knob(0.075, 0.09), 0, ROOT[i] - 0.0375, 0);   // the knob each pair goes out of
+      for (const s of [-1, 1]) {
+        const top = new Vector3(s * LX[i], TOP, 0), up = top.clone().sub(new Vector3(0, ROOT[i], 0)), len = up.length();
+        up.normalize();
+        const q = new Quaternion().setFromUnitVectors(UP, up);
+        f.rod(0.016, 0.016, 0, ROOT[i], 0, top.x, TOP, 0, 6);
+        group3(top, up, q);
+      }
     }
-    f.ell(0.12, 0.07, 0.12, 0, 2.36, 0, 0, 0, 0, 10, 6);
+    for (let i = -7; i <= 7; i++) f.rod(0.04, 0.026, i ? Math.sign(i) * LX[Math.abs(i) - 1] : 0, TOP, 0, i ? Math.sign(i) * LX[Math.abs(i) - 1] : 0, TOP + 0.06, 0, 8);   // the fifteen lamps
+    // (Targum Sheni) the two golden ears of corn out of the great basin at its foot, and the bowl of oil (בזיכא) on its head
+    for (const s of [-1, 1]) f.rod(0.02, 0.035, s * 0.35, 0.1, 0.1, s * 0.55, 0.75, 0.18, 5).ell(0.06, 0.12, 0.05, s * 0.58, 0.85, 0.2);
+    f.ell(0.12, 0.07, 0.12, 0, TOP + 0.1, 0, 0, 0, 0, 10, 6);
     return f.geo();
   }
+  // the branches' line: lamps along x at TOP, the i-th (inner to outer) out at LX[i], going out of the shaft at ROOT[i] - the outer the lower
+  const PAL_MEN = { TOP: 2.26, LX: [0, 1, 2, 3, 4, 5, 6].map((i) => 0.117 * (i + 1)), ROOT: [0, 1, 2, 3, 4, 5, 6].map((i) => 1.78 - i * 0.19) };
   // 1.0.1-L (L.81): one vine leaf about 0.5 long, hanging from its stalk at the origin along -y, its faces toward +-z, lobed and folded along the midrib; both
   // windings (the solids' gold is one-sided), flat normals and empty uvs, so it merges with the solids (low-resolution ellipsoids read as rows of bright hexagons)
   function pal_vineLeafGeo() {
@@ -2415,23 +2453,25 @@
         // side s at x s*(0.22+0.1i), upright from y 0.67+0.22(6-i) to 2.3), front and back. Model choices: the fathers on the -x side, the
         // pious on the +x; inner to outer in the Targum's order; "ביניהם" - Iyov and Chaggai on the middle branch; Eldad and Medad on one branch
         { const NAMES = { "-1": ["אדם הראשון", "נח", "שם הגדול", "איוב", "אברהם", "יצחק", "יעקב"], "1": ["לוי", "קהת", "עמרם", "חגי הנביא", "משה", "אהרן", "אלדד ומידד"] };
-          const BAND = 0.085;
+          const BAND = 0.07;
           for (const sd of [-1, 1]) NAMES[sd].forEach((nm, i) => {
-            const y1 = 2.26, y0 = Math.max(0.55 + (6 - i) * 0.22 + 0.14, y1 - 0.46), L = y1 - y0,   /* from the branch's top down (below, the vines hide it) */ W = Math.max(96, Math.round(96 * L / BAND));
+            const bx = PAL_MEN.LX[i], by0 = PAL_MEN.ROOT[i], bh = PAL_MEN.TOP - by0, blen = Math.hypot(bx, bh), ang = Math.atan2(bx, bh);   /* MENORAH_TEMPLE_452: along the straight branch, between its knob and its cups */
+            const t1 = blen - 0.2, t0 = Math.max(0.07, t1 - 0.5), L = t1 - t0, W = Math.max(96, Math.round(96 * L / BAND));
             const cv = document.createElement("canvas"); cv.width = W; cv.height = 96;
             const c2 = cv.getContext("2d");
-            c2.fillStyle = "#e9c75a"; c2.fillRect(0, 0, W, 96);
+            // the name only, on the branch (no plate): dark letters with a light rim
             c2.fillStyle = "#3b2405"; c2.textAlign = "center"; c2.textBaseline = "middle"; c2.direction = "rtl";
             let fs = 78; c2.font = "bold " + fs + "px 'David','Frank Ruhl Libre','Times New Roman',serif";
-            while (fs > 20 && c2.measureText(nm).width > W * 0.74) { fs -= 4; c2.font = "bold " + fs + "px 'David','Frank Ruhl Libre','Times New Roman',serif"; }
-            c2.fillText(nm, W * 0.6, 52);   /* (toward the branch top: the vines cross its lower end) */
+            while (fs > 20 && c2.measureText(nm).width > W - 24) { fs -= 4; c2.font = "bold " + fs + "px 'David','Frank Ruhl Libre','Times New Roman',serif"; }
+            c2.textAlign = "right"; c2.lineWidth = 10; c2.strokeStyle = "rgba(255,236,170,0.95)"; c2.strokeText(nm, W - 8, 52); c2.fillText(nm, W - 8, 52);   /* (toward the branch top: the vines cross its lower end) */
             const tex = new CanvasTexture(cv); tex.colorSpace = SRGBColorSpace; tex.anisotropy = 4;
-            const mat = new MeshBasicMaterial({ map: tex });
+            const mat = new MeshBasicMaterial({ map: tex, transparent: true, alphaTest: 0.25, depthWrite: false });
             for (const fz of [1, -1]) {
               const pl = new Mesh(new PlaneGeometry(L, BAND), mat);
               pl.name = "throneMenorahName";
-              pl.position.set(sd * (0.22 + i * 0.1), (y0 + y1) / 2, fz * 0.032);
-              pl.rotation.set(0, fz > 0 ? 0 : Math.PI, Math.PI / 2);
+              const tm = (t0 + t1) / 2 / blen;
+              pl.position.set(sd * bx * tm, by0 + bh * tm, fz * 0.026);
+              pl.rotation.set(0, fz > 0 ? 0 : Math.PI, fz > 0 ? Math.PI / 2 - sd * ang : Math.PI / 2 + sd * ang);   /* the text's head toward the lamp, from both faces */
               pl.userData.noPick = true;
               menM.add(pl);
             }
