@@ -1109,7 +1109,7 @@
         g.add(mesh(new BoxGeometry(0.012, 0.5, 0.075), std(0xc9cdd3, { metalness: 0.45, roughness: 0.3 }), 0, -0.33, 0.004));
         return g;
       })(), { p: [0, 0.02, 0.0], r: [0, 0, 0] }, false);
-      prop("cup", mesh(new LatheGeometry([V2(0.001, 0), V2(0.07, 0.01), V2(0.06, 0.08), V2(0.09, 0.2)], 12), MAT.gold), { p: [0, -0.1, 0.08], r: [0, 0, 0] });
+      prop("cup", mesh(new LatheGeometry([V2(0.001, 0), V2(0.1, 0.012), V2(0.085, 0.11), V2(0.13, 0.27), V2(0.12, 0.27)], 16), MAT.gold), { p: [0, -0.12, 0.1], r: [0, 0, 0] });   // LAMB_CUP_451: larger (0.2 tall, 0.09 wide until now), and closed at its lip
       const torch = (k) => {   // "ושתי אבוקות של אור בידם" (1:3)
         const g = new Group();
         g.add(mesh(new CylinderGeometry(0.05, 0.04, 1.3, 6), MAT.wood, 0, 0.45, 0));
@@ -1373,7 +1373,7 @@
         else if (i === 8) o = (() => { const g = new Group(); g.add(mesh(new CylinderGeometry(0.34, 0.34, 0.06, 14), MAT.silver)); for (let k = 0; k < 5; k++) g.add(mesh(new CylinderGeometry(0.12, 0.12, 0.05, 10), MAT.cake, Math.cos(k * 1.26) * 0.18, 0.06, Math.sin(k * 1.26) * 0.18)); return g; })();
         else if (i === 9) o = (() => { const g = new Group(); g.add(mesh(new LatheGeometry([V2(0.001, 0), V2(0.16, 0.02), V2(0.19, 0.2), V2(0.1, 0.42), V2(0.12, 0.5)], 12), MAT.gold)); return g; })();
         else o = LIMB[i]();
-        prop("p" + i, o, { p: [0, -0.16, 0.24], r: [0, 0, 0] });
+        prop("p" + i, o, i === 9 ? { p: [0, 0.02, 0], r: [0, 0, 0] } : { p: [0, -0.16, 0.24], r: [0, 0, 0] });   // JUG_IN_HAND_451 (the user 26.11.2026, a picture of the wine: the jug hung in the air before his hand): the jug by its neck in the hand; the limbs and the trays before the hands, as they were
       }
       // SALT_RAMP_441 (the user 25.11.2026: "זה לא מליחה... האבר באוויר והמלח כדור, המלח צריך להיות על הכבש ומערים בתוכו את האברים"):
       // the salt lies spread ON THE RAMP, on its lower half, on its west side - Tamid 4:3 "ונתנום מחצי הכבש ולמטה במערבו, ומלחום"; Middot
@@ -2320,7 +2320,11 @@
       a.fx("bleat", 8.2); a.fx("bleat", 15.4);   // SOUND_211
       a.go("s2", [-15.4, -49.6], 0, 9, { yaw: -HP * 0.7 });
       a.hold("s2", "cup", "R", 9);
-      a.pose("s2", "offer", 13, 16.5);
+      // LAMB_CUP_451 (the user 26.11.2026, a picture: "אין פה דלי של זהב והכהן לא משקה את הטלה"): "משקין את התמיד בכוס של זהב" (Tamid 3:4) -
+      // when the lamb has stopped, the one with the golden cup comes to its head, his face to it, and holds the cup at its mouth (until now he
+      // stood two amot away and offered the air). Where he stands - model choice
+      a.go("s2", [-15.3, -51.45], 12.5, 13.4, { yaw: -HP });   // (the lamb stops at -17.4 facing east - 10-core.js lambKit: the head at +z, 0.68 out; its muzzle at about -16.5)
+      a.pose("s2", "water", 13.5, 17.5);
       a.go("b1", [-16.6, -53.8], 0, 9.5, { yaw: -HP });
       a.hold("b1", "torch1", "R", 9.5);
       a.set("torches", [1, 0], 9.5);
@@ -2779,7 +2783,7 @@
       stand: [[0.05, 0.08, -0.15], [0.05, 0.08, -0.15], 0], hold: [[-0.55, 0.05, -1.0], [0.05, 0.08, -0.15], 0], carry: [[-0.5, -0.12, -1.15], [-0.5, -0.12, -1.15], 0],
       fingers: [[-1.25, 0.05, -0.45], [0.05, 0.08, -0.15], 0], knock: [[-1.4, 0.05, -1.3], [0.05, 0.08, -0.15], 0.05], wash: [[-0.95, -0.12, -0.55], [-0.95, -0.12, -0.55], 0.18],
       scoop: [[-0.95, 0.05, -0.35], [-0.95, 0.05, -0.35], 0.42], rub: [[-0.35, 0.06, -0.12], [-0.35, 0.06, -0.12], 0], shovel: [[-0.85, -0.1, -0.5], [-0.75, -0.25, -0.7], 0.3], place: [[-0.9, -0.1, -0.4], [-0.9, -0.1, -0.4], 0.35],
-      pour: [[-1.15, 0.05, -0.35], [0.05, 0.08, -0.15], 0.22], offer: [[-1.0, -0.05, -0.6], [-0.6, -0.1, -0.8], 0.15], point: [[-1.7, 0.1, -0.05], [0.05, 0.08, -0.15], 0],
+      pour: [[-1.15, 0.05, -0.35], [0.05, 0.08, -0.15], 0.22], offer: [[-1.0, -0.05, -0.6], [-0.6, -0.1, -0.8], 0.15], water: [[-0.75, 0.12, -0.35], [-0.35, -0.1, -0.5], 0.42],   /* LAMB_CUP_451: stooping, the cup low at the lamb's mouth */ point: [[-1.7, 0.1, -0.05], [0.05, 0.08, -0.15], 0],
       reach: [[-1.95, -0.05, -0.55], [-1.65, -0.08, -0.7], 0], raise: [[-2.53, -0.17, -0.04], [-2.43, -0.17, -0.04], 0], raiseHP: [[-1.82, -0.15, -0.04], [-1.78, -0.15, -0.04], 0], greet: [[-0.6, 0.05, -1.2], [-0.6, 0.05, -1.2], 0.12],
       trumpet: [[-1.5, -0.25, -1.45], [-1.45, -0.3, -1.55], 0], cymbal: [[-1.0, 0.5, -1.2], [-1.0, 0.5, -1.2], 0], wave: [[-2.6, 0.35, -0.2], [0.05, 0.08, -0.15], 0],
       play: [[-0.75, -0.15, -1.15], [-0.2, -0.12, -1.35], 0], throw: [[-1.5, 0.05, -0.2], [0.05, 0.08, -0.15], 0.1], prostrate: [[-2.9, 0.4, 0], [-2.9, 0.4, 0], 1.48],
