@@ -413,7 +413,7 @@
     ctx.root.add(g);
     ctx.layers.kelim = g;
 
-    const gold = M2.gold.clone();        // the one gold recipe; both faces, the vessels are open shells
+    const gold = goldKind(M2.gold.clone(), "sagur");   // the one gold recipe; both faces, the vessels are open shells. GOLD_KINDS_452: 7:49-50 "זהב סגור"
     gold.side = DoubleSide;
     const bronze = vsl_bronze(M2, 0xB8683A, 0.3);
     bronze.side = DoubleSide;

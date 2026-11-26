@@ -1353,7 +1353,7 @@
     // ---- materials (clones; the First Temple walls are hewn stone, I Kings 7:9-11: "אבנים יקרת כמדות גזית מגררות במגרה") ----
     const cedarFloor = M.cedar.clone();
     cedarFloor.color.set(0xB8865A);                 // cedar flooring, a little lighter than the beams (model choice): the base of deckMat below
-    const gold = M.gold.clone();                    // the throne: ivory overlaid with gold (I Kings 10:18)
+    const gold = goldKind(M.gold.clone(), "mufaz");   // the throne: ivory overlaid with gold (I Kings 10:18 "ויצפהו זהב מופז"; GOLD_KINDS_452)
     const groove = new MeshStandardMaterial({ color: 0x5A4A38, roughness: 1 }); // joints between the big foundation stones
     const sill = M.stoneLight;                      // the foundation course of big stones (I Kings 7:10)
     // light cedar (pal_lightWoodTex): the 45 boards and the boards of the other reading (the book draws them pale), the thin boards and
@@ -1370,8 +1370,8 @@
     // "זהב סגור" (10:21) polished; DoubleSide because the צינה is a thin shell and the cups are open
     const goldTex = typeof TEX !== "undefined" && TEX && TEX.gold ? TEX.gold : null;
     const mkGold = (extra) => (goldTex && typeof goldStd === "function" ? goldStd(goldTex, extra) : Object.assign(M.gold.clone(), extra || {}));
-    const shieldGold = mkGold({ roughness: 0.26, side: DoubleSide });
-    const vesselGold = mkGold({ roughness: 0.24, side: DoubleSide });
+    const shieldGold = goldKind(mkGold({ roughness: 0.26, side: DoubleSide }), "shachut");   // GOLD_KINDS_452: "צנה זהב שחוט ... מגנים זהב שחוט" (10:16-17)
+    const vesselGold = goldKind(mkGold({ roughness: 0.24, side: DoubleSide }), "sagur");    // GOLD_KINDS_452: "וכל כלי בית יער הלבנון זהב סגור" (10:21)
     const plankMat = M.cedar.clone();
     plankMat.color.set(0xC99868);                   // cedar floor planks (7:7), light (model choice)
     const jointMat = new MeshStandardMaterial({ color: 0x3A2A1C, roughness: 1 });   // the dark bed under the planks: the joints read as lines

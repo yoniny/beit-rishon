@@ -398,6 +398,46 @@
   function goldStd(tex, extra) {
     return std(tex, Object.assign({}, GOLD_OPTS, extra || {}));
   }
+  // GOLD_KINDS_452 (the user 26.11.2026: "בכסא היה זהב מופז שמבהיק כמרגליות שהוא יותר טוב מהזהב שהיה במגינים ... ובצנה היה זהב שחוט שהוא יותר
+  // טוב מזהב סגור ... שהוא יותר טוב מהזהב הפשוט שהיה בהיכל ... חפש בכל מקום שיש זהב - איזה סוג זהב היה שם"; his order of worth, from the
+  // best: מופז, שחוט, סגור, then plain gold; Yoma 44b-45a: "זהב מופז שדומה לפז", "זהב שחוט שנטוה כחוט" - the user: "דומה לשחיטה, שהוציאו
+  // ממנו את אדמומיתו", "זהב סגור בשעה שנפתח כל החנויות נסגרות"): a gold material is turned into its kind IN PLACE, relative to its own
+  // recipe (each place keeps its lighting tune): מופז - toward white and pearl-bright (smoother, more of the environment, a pale glow);
+  // שחוט - its redness taken out (toward a clean yellow); סגור - a deep, full gold; plain - as it was. The tints: model choices
+  var GOLD_KIND_OPTS = {
+    mufaz: { toward: 0xFFF0A8, by: 0.5, rough: 0.45, env: 1.6, glow: 0x8a6a18, glowAdd: 0.18 },
+    shachut: { toward: 0xFFF59A, by: 0.62, rough: 0.72, env: 1.25, glow: 0x625a12, glowAdd: 0.05 },
+    sagur: { toward: 0xE0A838, by: 0.6, rough: 0.85, env: 1.12, glow: 0x7a460a, glowAdd: 0.08 },
+    // the heichal (the user: "היכל - תעשה זהב פרוים"; II Chr 3:6 "והזהב זהב פרוים"; Yoma 45a "שדומה לדם הפרים"): a red gold
+    parvayim: { toward: 0xE88850, by: 0.5, rough: 0.9, env: 1.05, glow: 0x7a2a08, glowAdd: 0.06 }
+  };
+  function goldKind(mat, kind) {
+    const k = GOLD_KIND_OPTS[kind];
+    if (!mat || !k || (mat.userData && mat.userData.goldKind === kind)) return mat;
+    if (mat.color) mat.color.lerp(new Color(k.toward), k.by);
+    if (typeof mat.roughness === "number") mat.roughness *= k.rough;
+    if (typeof mat.envMapIntensity === "number") mat.envMapIntensity *= k.env;
+    if (mat.emissive) { mat.emissive.lerp(new Color(k.glow), 0.6); mat.emissiveIntensity = (mat.emissiveIntensity || 0) + k.glowAdd; }
+    mat.userData = Object.assign(mat.userData || {}, { goldKind: kind });
+    mat.needsUpdate = true;
+    return mat;
+  }
+  // a material that changes kind with a reading: back to its own recipe, then (kind) that kind; only the tuned values move, so what
+  // other code set on it (an environment map, a side) stays
+  function goldKindSet(mat, kind) {
+    if (!mat) return;
+    const u = mat.userData || (mat.userData = {});
+    if (!u.goldBase) u.goldBase = { c: mat.color && mat.color.getHex(), r: mat.roughness, e: mat.envMapIntensity, g: mat.emissive && mat.emissive.getHex(), gi: mat.emissiveIntensity };
+    const b = u.goldBase;
+    if (mat.color && b.c != null) mat.color.setHex(b.c);
+    mat.roughness = b.r; mat.envMapIntensity = b.e;
+    if (mat.emissive && b.g != null) mat.emissive.setHex(b.g);
+    mat.emissiveIntensity = b.gi;
+    delete u.goldKind;
+    if (kind) goldKind(mat, kind); else mat.needsUpdate = true;
+  }
+  // a copy of a gold material in another kind (for a place that shares its recipe with plain-gold places)
+  function goldKindCopy(mat, kind) { const c = mat.clone(); c.userData = {}; return goldKind(c, kind); }
   //@@include copper
   //@@include water
   var M = {

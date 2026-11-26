@@ -1106,6 +1106,7 @@
     // scaled to their height (review H2-CARVE-3) - the heichal leaves 5 x 19.8 take two registers (the cell 5 x 9.9), the devir leaves
     // 3 x 11.8 two registers (3 x 5.9). The doors' gold "זהב מישר על המחקה" (6:35): the same carving, a little less polished. goldStd (K 0.4).
     const goldCarved = int_carvedMat(INT_CARVE_U, INT_CARVE_V);
+    const goldCarvedPlain = goldCarved.clone();   // GOLD_KINDS_452: the devir's skins start from the plain recipe (the heichal's turns פרוים below)
     // 1.0.1-L (L.47, the user: "הקיר השמאלי בהיכל קצת יותר כהה משאר הקירות - תקן"): WHY - every material here reflects the scene's environment
     // (90-entry.js: PMREM of three's RoomEnvironment), and that room is lopsided: its large bright panel (light4, 43 x 4.4 x 5.4) hangs on its
     // +z side and only a small dim one (light5, 20 x 2.5 x 2) on its -z side. The house's walls are lined with polished gold (metalness 0.5,
@@ -1153,11 +1154,14 @@
     goldCarvedEast.color.multiplyScalar(2.2);
     goldCarvedEast.emissiveIntensity += 0.25;
     const goldCarvedDoor = int_carvedMat(INT_CARVE_U, INT_HEI_DOOR_H / 2 - 0.1, { roughness: 0.36 });
+    // GOLD_KINDS_452 (the user 26.11.2026: "היכל - תעשה זהב פרוים"; II Chr 3:6 "ויצף את הבית אבן יקרה לתפארת והזהב זהב פרוים"): the
+    // heichal's walls, doors and floor in red gold; the partition (goldCarvedEnd) follows the reading of "הדביר" (devirGold below)
+    for (const mt of [goldCarved, goldCarvedSouth, goldCarvedEast, goldCarvedDoor]) goldKind(mt, "parvayim");
     const goldCarvedDoorSouth = southFaced(goldCarvedDoor);           // 1.0.1-L (L.47): the south leaf of the heichal's doors
     const goldCarvedDevirDoor = int_carvedMat(3 * INT_CARVE_U / 5, (INT_DEVIR_DOOR_H - 0.2) / 2, { roughness: 0.36 });
     const goldCarvedDevirDoorSouth = southFaced(goldCarvedDevirDoor);  // 1.0.1-L (verifier of L.47): the south leaf of the devir's doors - it read as dark as the south wall had
     // the house floor: gold over cypress boards whose joints show faintly (int_floorTex; 6:15, 6:30 - FIXES K.5.4)
-    const goldFloor = goldStd(int_floorTex(false), { roughness: 0.36, bumpScale: 0.5 });
+    const goldFloor = goldKind(goldStd(int_floorTex(false), { roughness: 0.36, bumpScale: 0.5 }), "parvayim");   // GOLD_KINDS_452: the house's floor (6:30)
     // 1.0.1-K (K.4): the materials of the rebuilt vessels, the parochet and the cherubim (gold = M.gold or goldStd, FIXES K 0.4)
     const breadMat = std(int_speckleTex("bread", "#a2612d", ["rgba(206,150,84,0.36)", "rgba(196,138,76,0.3)", "rgba(92,48,18,0.38)"], 170, 8), { roughness: 0.78 });   // the baked loaves (a darker crust, as the book draws them)
     breadMat.side = DoubleSide;   // SHOWBREAD_SHAPE_211: the boat loaf is a shell
@@ -1168,7 +1172,7 @@
     // than M.gold's cream and a little more warm glow, so a gold vessel reads as gold, not cream or brown, in the closed house (compared in
     // pictures: M.gold, 0xFFE7A8, 0xFFE09A, 0xFFD873 - review K.4; the user: "מזבח הזהב אינו מוצג אצלך כזהב")
     const vesselGold = goldStd(TEX.gold, { color: 0xFFDC86, roughness: 0.3, emissive: 0x6b4a10, emissiveIntensity: 0.55 });
-    const menorahGold = goldStd(int_almondTex(), { color: 0xFFDC86, roughness: 0.3, emissive: 0x6b4a10, emissiveIntensity: 0.55, bumpScale: 0.06 });   // 1.0.1-L (verifier of L.73): the same gold, its ornaments "משקדים"
+    const menorahGold = goldKind(goldStd(int_almondTex(), { color: 0xFFDC86, roughness: 0.3, emissive: 0x6b4a10, emissiveIntensity: 0.55, bumpScale: 0.06 }), "sagur");   // 1.0.1-L (verifier of L.73): the same gold, its ornaments "משקדים"
     const tableGold = vesselGold;                                                 // the tables and their vessels (I Kings 7:48 "זהב")
     const goldAltar = goldStd(TEX.gold, { color: 0xFFDC86, roughness: 0.26, emissive: 0x6b4a10, emissiveIntensity: 0.55 });   // the golden altar: polished
     const fretMat = goldStd(int_fretTex(), { alphaTest: 0.5, side: DoubleSide, roughness: 0.25 });   // its crown (Ex 30:3)
@@ -2888,13 +2892,17 @@
       }
       // the skins carved like the heichal's: 6:29 "מלפנים ולחיצון" - Rashi: "לבית הכפרת הפנימי ולהיכל החיצון" (1.0.1-K: world uvs, two
       // registers of 10 from the floor to the ceiling at 20)
+      // GOLD_KINDS_452 (the user 26.11.2026: "דביר - לרש״י זו המחיצה ולרד״ק זה קה״ק"; I Kings 6:20 "ולפני הדביר ... ויצפהו זהב סגור"): the
+      // devir's own skins get their own gold, which turns סגור in Radak's reading (the room); in Rashi's the partition's (goldCarvedEnd)
+      const devGold = goldCarvedPlain.clone(), devGoldS = southFaced(goldCarvedPlain);
+      devGold.name = "goldCarvedDevir"; devGoldS.name = "goldCarvedDevirSouth";
       const dn = [], ds = [], dw = [];
       int_uvBox(dn, XDW, XDE, F, F + DH, -HW, -HW + SKIN, faceUV(XDW, 0));   // north skin
-      mergedMesh(dn, goldCarved, g);
+      mergedMesh(dn, devGold, g);
       int_uvBox(ds, XDW, XDE, F, F + DH, HW - SKIN, HW, faceUV(XDE, 0));     // south skin -> cutaway
-      cut.push(mergedMesh(ds, goldCarvedSouth, g));                     // 1.0.1-L (L.47): the mirrored environment
+      cut.push(mergedMesh(ds, devGoldS, g));                     // 1.0.1-L (L.47): the mirrored environment
       int_uvBox(dw, XDW, XDW + SKIN, F, F + DH, -HW, HW, faceUV(0, HW));     // west skin (u = 10 - z)
-      mergedMesh(dw, goldCarved, g);
+      mergedMesh(dw, devGold, g);
       // DEVIR_CARVED_UP - 1.3.7 (the user, 11.11.2026 18:31, of the reading that the devir is thirty high - Bava Batra 98b and the
       // Tosafot there: "לתוספות צריך להיות את אותם ציורים של למטה, אין הבדל. זה הכוונה כולו זהב"): the upper ten amot of the three
       // walls carry the same carved gold - a third register of the same cell (as the kodesh's three), the same uvs, so the pattern runs
@@ -2905,13 +2913,23 @@
           const yA = F + DH, yB = F + KH - 0.05;
           const un = [], us = [], uw = [];
           int_uvBox(un, XDW, XDE, yA, yB, -HW, -HW + SKIN, faceUV(XDW, 0));
-          mergedMesh(un, goldCarved, hg);
+          mergedMesh(un, devGold, hg);
           int_uvBox(us, XDW, XDE, yA, yB, HW - SKIN, HW, faceUV(XDE, 0));
-          cut.push(mergedMesh(us, goldCarvedSouth, hg));
+          cut.push(mergedMesh(us, devGoldS, hg));
           int_uvBox(uw, XDW, XDW + SKIN, yA, yB, -HW, HW, faceUV(0, HW));
-          mergedMesh(uw, goldCarved, hg);
+          mergedMesh(uw, devGold, hg);
         }
       }
+      // the reading of "הדביר" that the סגור gold of 6:20 is on: "rashi" - the partition (the traksin), "radak" - the holy of holies itself
+      ctx.shared.devirGold = {
+        mode: "rashi",
+        set(m) {
+          this.mode = m === "radak" ? "radak" : "rashi";
+          for (const mt of [devGold, devGoldS].concat(ctx.shared.devirGoldMats || [])) goldKindSet(mt, this.mode === "radak" ? "sagur" : null);
+          goldKindSet(goldCarvedEnd, this.mode === "rashi" ? "sagur" : "parvayim");
+        }
+      };
+      ctx.shared.devirGold.set("rashi");
       // even shetiya - Mishnah Yoma 5:2 (53b): "משנטל הארון, אבן היתה שם מימות נביאים ראשונים, ושתיה היתה נקראת, גבוהה מן הארץ שלש אצבעות,
       // ועליה היה נותן" - in the west of the devir (Rambam Beit HaBechira 4:1 "אבן היתה בקדש הקדשים במערבו שעליה היה הארון מנח"): a flat rock
       // ~2 (x, east-west) x 3 (z, north-south) (research: "3 על 2"; the irregular outline: model choice), so that the whole footprint of the

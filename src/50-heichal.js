@@ -2153,7 +2153,7 @@
         geo.computeBoundingSphere();
         return geo;
       };
-      const gold = new Mesh(vaultUnder(VX0, KE - 0.2, 0.05), hei_cofferGold);
+      const gold = new Mesh(vaultUnder(VX0, KE - 0.2, 0.05), goldKindCopy(hei_cofferGold, "parvayim"));   // GOLD_KINDS_452: the heichal's ceiling - פרוים
       gold.receiveShadow = true;
       gold.name = "house-ceiling-gold";
       gold.userData.tmFlat = true;
@@ -2226,7 +2226,8 @@
       // Bava Batra 98b-99a measure the 20 from the cherubim's wing-line - DEV note) with a gold underside (II Chr 3:9 "והעליות חפה זהב");
       // the room above it (y 33..42) is the devir's עלייה: empty, gold-lined.
       const dc = H.box(g, DE - DW, 1, 20, M.gold, (DE + DW) / 2, F + CO.DEVIR_H, 0);   // 1.2.4: the devir's גבים slab gold (as the house's)
-      const dg = H.box(g, DE - (DW + 0.2), 0.05, 19.6, hei_cofferGold, (DE + DW + 0.2) / 2, F + CO.DEVIR_H - 0.05, 0);   // 1.2.3: the devir's גבים (the user)
+      const devCoffer = hei_cofferGold.clone(); (ctx.shared.devirGoldMats = ctx.shared.devirGoldMats || []).push(devCoffer);   // GOLD_KINDS_452: the devir's own (55-interior.js devirGold)
+      const dg = H.box(g, DE - (DW + 0.2), 0.05, 19.6, devCoffer, (DE + DW + 0.2) / 2, F + CO.DEVIR_H - 0.05, 0);   // 1.2.3: the devir's גבים (the user)
       const dt = H.box(g, DE - DW, 0.05, 20, M.gold, (DE + DW) / 2, F + CO.DEVIR_H + 1, 0);
       cut.push(dc, dg, dt);
       const aY = F + CO.DEVIR_H + 1.05, aH = CEIL - 0.05 - aY;               // the aliyah's gold lining: on its floor (dt), under the gold ceiling

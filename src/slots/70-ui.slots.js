@@ -650,7 +650,7 @@
         kodesh: ["kodeshLayout", "kodeshOpinion"], menorot: ["kodeshLayout", "kodeshOpinion"], shulchanot: ["kodeshLayout", "kodeshOpinion", "breadShape"],
         shulchanMoshe: ["kodeshLayout", "kodeshOpinion", "breadShape"], ulamTables: ["ulamTables", "breadShape"],   // SHOWBREAD_SHAPE_211
         devirDoor: ["devirDoor", "potot"], heichalDoor: ["potot"], cherubim: ["cherubPose"],   // 1.3.3: potot
-        kodeshHakodashim: ["devirHeight"],   // 1.3.7: the devir's height
+        kodeshHakodashim: ["devirHeight", "devirGold"],   // 1.3.7: the devir's height
         slaughterPlace: ["slaughterLayout"], slaughterPlaceClose: ["slaughterLayout"],
         forestInside: ["forestHouse"], forestRoof: ["forestHouse"], forestAv: ["forestHouse"], forestAlam: ["forestHouse"], forestUpper: ["forestHouse"],
         throne: ["throneVersion"], throneSteps: ["throneVersion"],
@@ -669,7 +669,7 @@
         "ארון יהוידע אצל המזבח — לתקלין חדתין": ["yehoyadaChests"], "ארון יהוידע שבשער — לתקלין עתיקין": ["yehoyadaChests"],   // YEHOYADA_ONE_211
         "לשכת הגזית": ["sanhedrinRows"], "לשכת הגזית — מקורות מבית שני": ["sanhedrinRows"],   // 1.3.5
         "שתי הסנהדראות הקטנות": ["lesserPlace", "sanhedrinRows"],   // 1.3.7
-        "עליית קודש הקדשים — מעל הדביר": ["devirHeight"], "קודש הקדשים — הדביר": ["devirHeight", "d6"], "אמה טרקסין": ["d6"],   // TRAKSIN_130_D: d6   // 1.3.7
+        "עליית קודש הקדשים — מעל הדביר": ["devirHeight"], "קודש הקדשים — הדביר": ["devirHeight", "devirGold", "d6"], "אמה טרקסין": ["d6", "devirGold"],   // TRAKSIN_130_D: d6   // 1.3.7
         "שערי חצר הכהנים": ["eastSteps"],   // 1.3.7: the east gate's steps - two readings
         "בית יער הלבנון — שלוש שיטות (רש״י / מלבי״ם ורלב״ג / מצודת דוד)": ["forestHouse"],
         "הכבשים הקטנים — השלמה מן הגמרא": ["altarRamps"],   // 1.0.2 add-on
@@ -2909,6 +2909,23 @@
             current: ctx.shared.devirHeight.mode,
             onPick: (k) => { ctx.shared.devirHeight.set(k); },
             fly: () => fly([-46.3, 19.5, 6], [-60, 30.5, -4])   // one eye for the three readings, its target under the ceiling at 20
+          });
+        }
+        // GOLD_KINDS_452 (the user 26.11.2026: "דביר - לרש״י זו המחיצה ולרד״ק זה קה״ק"): which "דביר" the "זהב סגור" of 6:20 overlays -
+        // ctx.shared.devirGold (55-interior.js); the rest of the house is "זהב פרוים" (II Chr 3:6)
+        if (ctx.shared.devirGold) {
+          const DG_V = "הפסוק: 'ולפני הדביר עשרים אמה ארך ועשרים אמה רחב ועשרים אמה קומתו ויצפהו זהב סגור' (מלכים א ו, כ). ובדברי הימים (ב ג, ו): 'ויצף את הבית אבן יקרה לתפארת, והזהב זהב פרוים' — ולכן שאר הבית מוצג בזהב פרוים, האדום.\n";
+          opRow({
+            id: "devirGold", short: "הזהב הסגור — במחיצה או בקודש הקדשים", cardFly: true, chips: { rashi: "רש״י: המחיצה", radak: "רד״ק: קודש הקדשים" },
+            cap: "הזהב הסגור — במחיצה או בקודש הקדשים",
+            refs: [["מלכים א ו, כ", V(10, 6, 20)], ["ו, טז", V(10, 6, 16)], ["דברי הימים ב ג, ו", "II_Chronicles.3.6"], ["יומא מד:", "Yoma.44b"]],
+            options: [
+              ["rashi", "רש״י — ״הדביר״ היא המחיצה; היא בזהב סגור", DG_V + "רש״י (ו, טז): 'לפנים ממחיצת אמה טרקסין המפסקת בין ארבעים לעשרים, ואותה מחיצה קרויה דביר'. לפי זה הזהב הסגור הוא על המחיצה (אמה טרקסין), וקירות קודש הקדשים — בזהב."],
+              ["radak", "רד״ק — ״הדביר״ הוא קודש הקדשים; כולו בזהב סגור", DG_V + "לפי הרד״ק ״הדביר״ הוא קודש הקדשים עצמו, ולכן קירותיו ותקרתו בזהב סגור, והמחיצה — בזהב פרוים כשאר הבית."]
+            ],
+            current: ctx.shared.devirGold.mode,
+            onPick: (k) => { ctx.shared.devirGold.set(k); },
+            fly: () => fly([-46.3, 19.5, 6], [-60, 30.5, -4])
           });
         }
         // 8. the House of the Forest of Lebanon (I Kings 7:2-6) - ctx.shared.forestHouse (60-palace.js)
