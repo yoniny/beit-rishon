@@ -1804,7 +1804,7 @@
       const stepY = (k) => YT + k * SR, stepZ = (k) => zF - (k - 0.5) * ST;   // the top and the tread's middle of step k (1..6)
       // ---- materials of the versions (model choices) ----
       const silver = new MeshStandardMaterial({ color: 0xE8EBF0, metalness: 0.45, roughness: 0.32, emissive: 0x3a3d44, emissiveIntensity: 0.6 });   // "תנין של כסף" (at higher metalness it read black in the closed hall)
-      const ivory = new MeshStandardMaterial({ color: 0xF2EADB, roughness: 0.55 });                         // "טווסין של שן"
+      const ivory = new MeshStandardMaterial({ color: 0xFAFAF5, roughness: 0.5, emissive: 0x3a3a36, emissiveIntensity: 0.3 });   // "טווסין של שן" - white (the user 26.11.2026: "שן של פיל היא לבנה")
       const marble = new MeshStandardMaterial({ color: 0xE9E3D8, roughness: 0.6 });                         // "עמודים של שיש"
       const linen = new MeshStandardMaterial({ color: 0xF7F3EA, roughness: 0.9 });                          // "בגדי שש לבן"
       const frondMat = new MeshStandardMaterial({ color: 0x4F8034, roughness: 0.9, emissive: 0x20361A, emissiveIntensity: 0.9 });   // 1.0.1-L: with the plain leaf green their undersides read black
@@ -1824,6 +1824,29 @@
       // ---- the base of every version ----
       H.box(g, BW, top - YT, BD, gold, X, YT, (bZ0 + bZ1) / 2).name = "throneBody";
       for (let k = 1; k <= 6; k++) H.box(g, SW, k * SR, ST, gold, X, YT, stepZ(k)).name = "throneStep";
+      // THRONE_LAYERS_460 (the user 26.11.2026: "תוסיף שכבות לכסא שיראו שהיה משן פיל ומצופה זהב (בדומה לשכבות בהיכל)"; I Kings 10:18
+      // "ויעש המלך כסא שן גדול ויצפהו זהב מופז"): on the body's east side, beside the steps, a window where the gold is cut back - the ivory
+      // core inside, the gold overlay's cut edge around it; an on-model button shows and hides it. Its place and size: model choices
+      {
+        const exG = new Group(); exG.name = "throneLayers"; exG.visible = false; g.add(exG);
+        ctx.layers.throneLayers = exG;
+        const ivoryCore = new MeshStandardMaterial({ color: 0xFCFCF8, roughness: 0.38, emissive: 0x8c8c86, emissiveIntensity: 0.6 });   // (the user: "שן של פיל היא לבנה")   // cream: in the side's shade a plain white read grey
+        const xF = X + BW / 2, zc = (bZ0 + bZ1) / 2, W = 2.8, Hh = 1.9, y0 = YT + 0.55, T = 0.07, B = 0.16;
+        H.box(exG, 0.02, Hh, W, ivoryCore, xF + 0.011, y0, zc).name = "throneLayerIvory";                       // the ivory, bared
+        for (const yy of [y0 - B, y0 + Hh]) H.box(exG, T, B, W + 2 * B, gold, xF + T / 2, yy, zc);              // the gold's cut edge
+        for (const sz of [-1, 1]) H.box(exG, T, Hh, B, gold, xF + T / 2, y0, zc + sz * (W / 2 + B / 2));
+        const L2 = (text, x, y, z, size) => { const l = { text, x: x + THDX, y, z: z + THDZ, size, layers: ["palace", "throneLayers"] }; palLabels.push(l); ctx.labels.push(l); };
+        L2("שן — ״כסא שן גדול״ (מלכים א י, יח)", xF + 0.6, y0 + Hh * 0.6, zc, 0.32);
+        L2("זהב מופז — ״ויצפהו זהב מופז״", xF + 0.6, y0 + Hh + 0.35, zc, 0.3);
+        const MB = Array.isArray(ctx.shared.modelButtons) ? ctx.shared.modelButtons : (ctx.shared.modelButtons = []);
+        MB.push({
+          id: "throne-layers", label: "הצג את שכבות הכסא", labelOn: "הסתר את שכבות הכסא", maxDist: 60,
+          title: "חלון בצד הכסא: בפנים — שן, ועליה ציפוי של זהב מופז (מלכים א י, יח). מקום החלון וגודלו — בחירת מודל.",
+          anchor: () => { const v = new Vector3(xF + 1.2, y0 + Hh + 1.0, zc); g.localToWorld(v); return [v.x, v.y, v.z]; },
+          get: () => exG.visible,
+          set: (on) => { exG.visible = !!on; }
+        });
+      }
       const zD = bZ0 + 2.2, DR = 1.75, DH = 0.6;      // the round seat-place (Rashi): centre z 614.7
       const drum = new Mesh(new CylinderGeometry(DR, DR, DH, 40), gold);
       drum.position.set(X, top + DH / 2, zD);
@@ -2210,7 +2233,10 @@
       sil.visible = false;
       midr.add(sil);
       const FOOT_Z = 0.2, HAND_Y = PAL_KING.HAND_Y, HAND_X = PAL_KING.HAND_X, silAt = (k) => [X, stepY(k), stepZ(k) + FOOT_Z], HAND_Z = PAL_KING.HAND_Z, handAt = (k) => [X, stepY(k) + HAND_Y, stepZ(k) + FOOT_Z + HAND_Z];   // the hand: the very middle of the step, where he stands
-      const silStart = [X, YT + 0.25, zF + 1.2], silFront = [X, top + DH, zD + 1.25], silSeated = [X, sTop, zKing];   // KING_REST_B2: zHead until 22.11.2026
+      const silStart = [X, YT + 0.25, zF + 1.2], silFront = [X, top + DH, zD + 1.25], silSeated = [X, sTop, zKing];
+      // LEAD_460 (the user 26.11.2026: "הישענות המלך על הכסא צריכה להיות שהחיה מובילה אותו ממעלה למעלה בכל השיטות של המדרשים"): where his hand is
+      // BEFORE a step - the creatures of step k take it there and lead him up (followHand), not wait for him at the step's middle
+      const handBefore = (k) => (k === 1 ? [X, silStart[1] + HAND_Y, silStart[2] + HAND_Z] : handAt(k - 1));   // KING_REST_B2: zHead until 22.11.2026
       // the scroll's end per version: on the knees or in the hands
       const SCR_KNEES = SCR_LAP, SCR_HANDS = SCR_LAP;   // TORAH_B2 (the user: in every version the scroll stands on his thighs and leans on him, his hands on the arms); until 22.11.2026 on his knees / in his hands
       const mkSpray = (grp, n, x, y, z, dx, dz) => {
@@ -2449,7 +2475,11 @@
         // young hawk ("ועל ריש כורסיא קיימא יונה דדהבא אחידא בר נצא בידה"; "ויונא דדהבא הוה נחתא מן עמודא" - the menorah's stem is read as the
         // pillar: model choice); the twenty-four golden vines as a vault over the seat, open at the front; the crown on a stand and the great
         // eagle, which takes it to the king's head ("הוה הדר גישרא רבא ונטיב כיסרא דמלכותא ויהיב ית כיסרא ברישיה דמלכא שלמה")
-        const menM = put(grp, pal_menorahGeo(), gold, X, backTop - 0.05, backZ, 0, 0.8, "throneMenorah");   // top 1.1 under the name "כסא שלמה", under the vines' ridge
+        // MENORAH_BESIDE_460 (the user 26.11.2026: "מי אמר שהמנורה עמדה ממש על המשענת?"; "מנורה ליד הכסא - אין הגיון שלא ראו מה היה חרוט
+        // עליה, ולפי המודל היום היא מוסתרת"; "ומרישי כורסיא" - on the throne's head, its top, where the king sits): beside the seat, on the
+        // body's top west of the arm's lion, facing the hall - until 4.5.3 on the back, behind the vines. Its side: model choice
+        const MEN_X = X - 5.1, MEN_Z = bZ1 - 0.8, MEN_S = 1;   // at the body's west front corner, clear of the vines' stems
+        const menM = put(grp, pal_menorahGeo(), gold, MEN_X, top, MEN_Z, 0, MEN_S, "throneMenorah");
         // MENORAH_NAMES_452 (the user 26.11.2026: "תצייר שמות על הקנים"; Targum Sheni, his Hebrew: "מול צד אחד של המנורה עומדים שבעה קנים של
         // זהב שעליהם מצוירים שבעת אבות העולם ... אדם הראשון, נח, שם הגדול, אברהם, יצחק, ויעקב, ואיוב ביניהם. ומול הצד השני ... שבעה חסידי
         // עולם ... לוי, קהת, עמרם, משה, ואהרן, אלדד ומידד, וחגי הנביא ביניהם"): each name written along its branch (pal_menorahGeo: branch i of
@@ -2479,7 +2509,7 @@
               menM.add(pl);
             }
           }); }
-        d.doveHome = [X, backTop + 0.1, backZ + 0.2];
+        d.doveHome = [MEN_X, top + (PAL_MEN.TOP + 0.17) * MEN_S, MEN_Z + 0.2];   // MENORAH_BESIDE_460: on the menorah's head (the stem = "עמודא"), where it moved
         d.dove = put(grp, beastGeo("dove"), gold, d.doveHome[0], d.doveHome[1], d.doveHome[2], -HP, 0.9, "throneDove");
         // 1.0.1-L: the bird in its hand is a child of the dove, so it goes where the dove goes ("אחידא בר נצא בידה"; an eagle, as the Hebrew translation "האוחזת נשר בידה"; A25)
         { const held = new Mesh(beastGeo("eagle"), gold); held.position.set(0.3, -0.02, 0); held.scale.setScalar(0.35); held.castShadow = true; held.name = "throneHeldEagle"; d.dove.add(held); }
@@ -2628,7 +2658,8 @@
           const a = (k - 1) * SP, sp = d.stepParts[k], h = handAt(k);
           // 1.0.1-L (the user: "הידים ... צריכות להיות לפני עליית הצללית ולא לאחריה"): the wheel and the limbs first, then the climb on them
           tr.push(T.gear(k, a, a + 2.1), T.glow(k, a, a + SP), T.move(sil, k === 1 ? silStart : silAt(k - 1), silAt(k), a + 2.8, a + 3.8, 0.3));
-          tr.push(T.reachTo(sp.paw, a, a + 2.6, T.handOf(sp.paw, h)), T.reachTo(sp.wing, a, a + 2.6, T.handOf(sp.wing, h)), T.reachBack(sp.paw, a + 4.8, a + 6, T.handOf(sp.paw, h)), T.reachBack(sp.wing, a + 4.8, a + 6, T.handOf(sp.wing, h)));   // KING_211
+          const hb = handBefore(k);   // LEAD_460: the paw and the wing take his hands where he stands, lead him up (2.8..3.8), and let go at the step
+          tr.push(T.reachTo(sp.paw, a, a + 2.6, T.handOf(sp.paw, hb)), T.reachTo(sp.wing, a, a + 2.6, T.handOf(sp.wing, hb)), T.followHand(sp.paw, sil, a + 2.8, a + 3.8), T.followHand(sp.wing, sil, a + 2.8, a + 3.8), T.reachBack(sp.paw, a + 4.8, a + 6, T.handOf(sp.paw, h)), T.reachBack(sp.wing, a + 4.8, a + 6, T.handOf(sp.wing, h)));   // KING_211
           tr.push(T.lean(a + 3.3, a + 3.9, true), T.lean(a + 4.6, a + 5.3, false));   // KING_LEAN_211: he comes up leaning on them, and straightens as they go back
           // 1.3.7, the awe (T.bow): the step's figures that stretch nothing - the outer lion and eagle and the lying pair - while he stands there
           const li = (k - 1) * 2;
@@ -2766,7 +2797,8 @@
           const a = (k - 1) * SP, f = d.stepFigs[k], odd = k % 2 === 1, D = odd ? f.lE : f.lW, h = handAt(k);
           tr.push(T.move(sil, k === 1 ? silStart : silAt(k - 1), silAt(k), a + 5.5, a + 6.4, 0.3), T.glow(k, a, a + SP));   // 1.0.1-L: the climb comes after the tablets and the limbs
           for (const l of [f.lE, f.lW]) tr.push(T.tablet(l, a, a + 1, true), T.reachTo(l.paw, a, a + 1, l.tablet.hand), T.tablet(l, a + 3.2, a + 4, false), T.reachBack(l.paw, a + 3.2, a + 4, l.tablet.hand));
-          tr.push(T.gear(k, a + 4, a + 6), T.reachTo(D.paw, a + 4, a + 5.4, T.handOf(D.paw, h)), T.reachTo(f.wing, a + 4, a + 5.4, T.handOf(f.wing, h)), T.reachBack(D.paw, k < 6 ? a + 7.3 : a + 6.6, k < 6 ? a + 8 : a + 7, T.handOf(D.paw, h)), T.reachBack(f.wing, k < 6 ? a + 7.3 : a + 6.6, k < 6 ? a + 8 : a + 7, T.handOf(f.wing, h)));   // KING_211 (KING_LEAN_211: they stay under his hands a while; on the sixth the wheel comes)
+          const hb = handBefore(k);   // LEAD_460: they take his hands where he stands and lead him up (5.5..6.4)
+          tr.push(T.gear(k, a + 4, a + 6), T.reachTo(D.paw, a + 4, a + 5.4, T.handOf(D.paw, hb)), T.reachTo(f.wing, a + 4, a + 5.4, T.handOf(f.wing, hb)), T.followHand(D.paw, sil, a + 5.5, a + 6.4), T.followHand(f.wing, sil, a + 5.5, a + 6.4), T.reachBack(D.paw, k < 6 ? a + 7.3 : a + 6.6, k < 6 ? a + 8 : a + 7, T.handOf(D.paw, h)), T.reachBack(f.wing, k < 6 ? a + 7.3 : a + 6.6, k < 6 ? a + 8 : a + 7, T.handOf(f.wing, h)));   // KING_211 (KING_LEAN_211: they stay under his hands a while; on the sixth the wheel comes)
           tr.push(T.lean(a + 5.6, a + 6.2, true), k < 6 ? T.lean(a + 7.2, a + 7.8, false) : T.lean(a + 6.5, a + 7, false));   // KING_LEAN_211: he comes up leaning on them, stands leaning, and straightens
           // 1.3.7, the awe (T.bow): the eagle that stretches no wing and the lying pair of the step, as he comes up to it
           { const li = (k - 1) * 2, eO = d.eagles[li].L === f.wing || d.eagles[li].R === f.wing ? d.eagles[li + 1] : d.eagles[li];

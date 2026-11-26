@@ -142,11 +142,11 @@
      Otzaria (the switch writes the plugin's storage; the button's `when` in the manifest reads it, and Otzaria hides or shows it at once,
      the plugin open or not - no permission is touched). In the one-file HTML - "בדיקת עדכונים" (unified/update-check.js; until 2.0.17 at
      the end of each house's menu). Elsewhere (the plugin's page in a browser) - no bar. */
-  :root{--uni-bar-h:2.9rem}
+  :root{--uni-bar-h:2.05rem}   /* BAR_NARROW_460 (the user 26.11.2026: "תצר קצת את הסרגל - לא נשאר מקום לסרגל הבחירה"): was 2.9rem */
   #uni-bar{position:absolute;left:0;right:0;bottom:0;z-index:3;min-height:var(--uni-bar-h);
     background:var(--color-surface-container-high);border-top:1px solid var(--color-outline);box-shadow:0 -1px 0 var(--color-primary-subtle);
-    color:var(--color-on-surface);font-family:var(--font-ui);font-size:min(0.72rem,2.4vh,3vw);line-height:1.4;
-    display:flex;align-items:center;justify-content:center;gap:0.5em 1.4em;flex-wrap:wrap;padding:0.45em 1em;user-select:none}
+    color:var(--color-on-surface);font-family:var(--font-ui);font-size:min(0.64rem,2.1vh,2.7vw);line-height:1.25;
+    display:flex;align-items:center;justify-content:center;gap:0.5em 1.4em;flex-wrap:wrap;padding:0.18em 0.8em;user-select:none}
   #uni-bar[hidden],#uni-bar .grp[hidden]{display:none}
   #uni-bar .grp{display:flex;align-items:center;gap:0.4em 1.2em;flex-wrap:wrap;justify-content:center}
   #uni-bar .lbl{font-weight:600;color:var(--color-on-surface-variant)}
@@ -251,8 +251,8 @@ __BACKGROUND_SVG__
   <footer id="uni-bar" hidden>
     <div class="grp" id="uni-bar-otz" hidden>
       <span class="lbl">כפתורים באוצריא:</span>
-      <label class="sw" title="הכפתור שבסרגל העליון של ספר — במלכים, בדברי הימים, במידות, ברמב״ם ובעוד ספרים — שפותח את התוסף במקום שבו לומדים"><input type="checkbox" id="set-reader" checked><span class="knob" aria-hidden="true"></span><span>״פתח בתוסף בית המקדש״ — בסרגל הספר</span></label>
-      <label class="sw na" title="אוצריא מאפשרת לתוסף להסתיר את הכפתור הזה רק מגרסה 0.9.99 שלה. המתג יופעל בעדכון של התוסף שאחריה."><input type="checkbox" id="set-search" checked disabled><span class="knob" aria-hidden="true"></span><span>״בית המקדש — המקום במודל״ — בשדה החיפוש <small>(יתאפשר מאוצריא 0.9.99)</small></span></label>
+      <label class="sw" title="״פתח בתוסף בית המקדש״: הכפתור שבסרגל העליון של ספר — במלכים, בדברי הימים, במידות, ברמב״ם ובעוד ספרים — שפותח את התוסף במקום שבו לומדים"><input type="checkbox" id="set-reader" checked><span class="knob" aria-hidden="true"></span><span>בסרגל הספר</span></label>
+      <label class="sw na" title="״בית המקדש — המקום במודל״, הכפתור שבשדה החיפוש. אוצריא מאפשרת לתוסף להסתיר את הכפתור הזה רק מגרסה 0.9.99 שלה. המתג יופעל בעדכון של התוסף שאחריה."><input type="checkbox" id="set-search" checked disabled><span class="knob" aria-hidden="true"></span><span>בשדה החיפוש <small>(מאוצריא 0.9.99)</small></span></label>
     </div>
     <div class="grp" id="uni-bar-web" hidden></div>
   </footer>

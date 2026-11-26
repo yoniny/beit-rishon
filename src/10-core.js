@@ -404,20 +404,23 @@
   // ממנו את אדמומיתו", "זהב סגור בשעה שנפתח כל החנויות נסגרות"): a gold material is turned into its kind IN PLACE, relative to its own
   // recipe (each place keeps its lighting tune): מופז - toward white and pearl-bright (smoother, more of the environment, a pale glow);
   // שחוט - its redness taken out (toward a clean yellow); סגור - a deep, full gold; plain - as it was. The tints: model choices
+  // KINDS_HSL_460 (the user 26.11.2026, of 4.5.3: the partition and the holy of holies "לא השתנה הזהב", the devir's ceiling went brown):
+  // a kind sets the colour's HUE and SATURATION and caps its lightness - it no longer pulls toward a dark colour, so a textured gold (the
+  // coffers) keeps its light, and the kinds stand apart: מופז pale and shining, שחוט clean yellow, סגור deep full gold, פרוים red
   var GOLD_KIND_OPTS = {
-    mufaz: { toward: 0xFFF0A8, by: 0.5, rough: 0.45, env: 1.6, glow: 0x8a6a18, glowAdd: 0.18 },
-    shachut: { toward: 0xFFF59A, by: 0.62, rough: 0.72, env: 1.25, glow: 0x625a12, glowAdd: 0.05 },
-    sagur: { toward: 0xE0A838, by: 0.6, rough: 0.85, env: 1.12, glow: 0x7a460a, glowAdd: 0.08 },
-    // the heichal (the user: "היכל - תעשה זהב פרוים"; II Chr 3:6 "והזהב זהב פרוים"; Yoma 45a "שדומה לדם הפרים"): a red gold
-    parvayim: { toward: 0xE88850, by: 0.5, rough: 0.9, env: 1.05, glow: 0x7a2a08, glowAdd: 0.06 }
+    mufaz: { h: 0.135, s: 0.85, l: 0.84, rough: 0.45, env: 1.6, glowAdd: 0.18 },
+    shachut: { h: 0.155, s: 0.95, l: 0.74, rough: 0.7, env: 1.25, glowAdd: 0.06 },
+    sagur: { h: 0.118, s: 1.0, l: 0.66, rough: 0.8, env: 1.3, glowAdd: 0.1 },
+    parvayim: { h: 0.055, s: 0.9, l: 0.66, rough: 0.9, env: 1.05, glowAdd: 0.06 }
   };
   function goldKind(mat, kind) {
     const k = GOLD_KIND_OPTS[kind];
     if (!mat || !k || (mat.userData && mat.userData.goldKind === kind)) return mat;
-    if (mat.color) mat.color.lerp(new Color(k.toward), k.by);
+    const hsl = { h: 0, s: 0, l: 0 };
+    if (mat.color) { mat.color.getHSL(hsl); mat.color.setHSL(k.h, k.s, Math.min(hsl.l, k.l)); }
     if (typeof mat.roughness === "number") mat.roughness *= k.rough;
     if (typeof mat.envMapIntensity === "number") mat.envMapIntensity *= k.env;
-    if (mat.emissive) { mat.emissive.lerp(new Color(k.glow), 0.6); mat.emissiveIntensity = (mat.emissiveIntensity || 0) + k.glowAdd; }
+    if (mat.emissive) { mat.emissive.getHSL(hsl); mat.emissive.setHSL(k.h, Math.max(hsl.s, 0.75), hsl.l); mat.emissiveIntensity = (mat.emissiveIntensity || 0) + k.glowAdd; }
     mat.userData = Object.assign(mat.userData || {}, { goldKind: kind });
     mat.needsUpdate = true;
     return mat;

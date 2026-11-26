@@ -2925,8 +2925,13 @@
         mode: "rashi",
         set(m) {
           this.mode = m === "radak" ? "radak" : "rashi";
-          for (const mt of [devGold, devGoldS].concat(ctx.shared.devirGoldMats || [])) goldKindSet(mt, this.mode === "radak" ? "sagur" : null);
-          goldKindSet(goldCarvedEnd, this.mode === "rashi" ? "sagur" : "parvayim");
+          // KINDS_LUL_460: the lul's cut (50-heichal.js) gives the meshes it crosses CLONES of their materials (the same names) - so every
+          // material by its name, the originals and their clones alike
+          const dev = new Set([devGold, devGoldS].concat(ctx.shared.devirGoldMats || [])), part = new Set([goldCarvedEnd]);
+          const DEV_N = new Set(["goldCarvedDevir", "goldCarvedDevirSouth", "devirCoffer"]);
+          ctx.root.traverse((o) => { const m = o.isMesh && o.material; if (!m || Array.isArray(m)) return; if (DEV_N.has(m.name)) dev.add(m); else if (m.name === "goldCarvedEnd") part.add(m); });
+          for (const mt of dev) goldKindSet(mt, this.mode === "radak" ? "sagur" : null);
+          for (const mt of part) goldKindSet(mt, this.mode === "rashi" ? "sagur" : "parvayim");
         }
       };
       ctx.shared.devirGold.set("rashi");
