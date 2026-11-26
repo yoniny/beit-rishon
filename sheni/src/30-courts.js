@@ -1973,7 +1973,7 @@
         H2.box(g, 0.9, 0.03, 1.3, whiteMat, cx + 0.85, y + 0.96, cz + 1.7);
         // CHAMBER_HANDS_441: he salts the hide ("שם היו מולחין עורות קדשים", Middot 5:3) - bowed over the tub, his left hand holds the hide
         // flat, his right takes salt from the heap on it and rubs it into the hide, to and fro
-        worker(cx - 0.3, cz + 1.7, Math.PI / 2, y, "parvahPriest", 2, (w, sec) => {
+        worker(cx - 0.45, cz + 1.7, Math.PI / 2, y, "parvahPriest", 2, (w, sec) => {   // (his toes clear of the tub: 0.3 until the scan of 4.5.0)
           const ph = sec * 2 * Math.PI / 1.6, rub = Math.sin(ph), lift = Math.max(0, Math.sin(sec * 2 * Math.PI / 6.4)) ** 6;
           w.bend = 0.5 - 0.12 * lift;
           w.armR = [-0.95 - 0.25 * rub - 0.2 * lift, 0.14 + 0.06 * Math.cos(ph), -0.15 - 0.15 * rub - 0.5 * lift, 0.7];

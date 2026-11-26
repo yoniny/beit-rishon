@@ -3257,11 +3257,11 @@
           const u = cl((t - K[i][0]) / Math.max(1e-6, K[i + 1][0] - K[i][0]), 0, 1), P = (j) => K[Math.max(0, Math.min(K.length - 1, j))][1];
           return K.length < 3 ? lerp3(K[0][1], K[1][1], u) : crc(i ? P(i - 1) : lerp3(P(0), P(1), -0.3), P(i), P(i + 1), i + 2 < K.length ? P(i + 2) : lerp3(P(i), P(i + 1), 1.3), u);
         };
-        const WEST = [-32.5, F0 + 5.4, -64.9];   // the hall's west end, over the bench: his place, his brothers, the chamber's door
+        const WEST = [-30.5, F0 + 5.2, -64.9];   // the hall's west end, over the bench: his place, his brothers, the chamber's door (EYE_ROVDIN_441, the scan of 4.5.0: the eye stood inside the stone rovdin along the west wall - 2 amot east, 0.2 lower; it was -32.5, F0 + 5.4)
         const sC = 15.97;                          // (on his way B: where he is round the corner, in the tunnel west)
         const tC = t4 + 12.0 / 1.35;               // the cut from the tunnel south to the tunnel west
         const SHOTS = [
-          [0, T.a1 - 1.2, keys([[0, WEST], [T.a1 - 1.2, [-31.9, F0 + 5.0, -65.6]]]), null],
+          [0, T.a1 - 1.2, keys([[0, WEST], [T.a1 - 1.2, [-30.0, F0 + 5.0, -65.6]]]), null],
           // TEVILA_CAM_N8 (the user, 24.11.2026: "המצלמה לא עוקבת אחרי הכהן היורד לבית הטבילה, וחוזרת רק אחרי כמה שניות מבפנים"): until now the eye
           // stood over the mouth of the stair, outside the shaft, while he went down its first turn and a half out of sight, and only at the cut
           // (T.s2) came in at the bottom. Now it comes down the shaft WITH him: from the chamber's air east of the mouth, over its edge (the
@@ -3283,7 +3283,7 @@
           [tE2 + 1.0, tT4, keys([[tE2 + 1.0, [-103.6, M.YF + 4.0, -55.4]], [tP1, [-103.4, M.YF + 3.7, -55.8]], [tP3, [-103.5, M.YF + 3.9, -55.5]], [tT4, [-103.3, M.YF + 4.0, -55.6]]]),
             (t, o) => (t >= tD0 - 0.4 && t <= tD1 + 0.6 ? [xP, M.WATER - 0.4, -58.0] : head(o, 2.2))],
           [tT4, tF2, keys([[tT4, [-94.4, M.YF + 3.4, -58.8]], [tF2, [-94.6, M.YF + 3.45, -58.85]]]), (t, o) => (t > tF1 - 0.5 ? [M.FIRE.x, M.YF + 1.2, M.FIRE.z] : head(o, 2.2))],
-          [tF2, tEnd, keys([[tF2, WEST], [tEnd, [-32.2, F0 + 5.2, -65.3]]]), (t, o) => (t < tU1 + 0.3 ? [-25.0, F0 + 1.8, -69.8] : head(o, 2.3))]
+          [tF2, tEnd, keys([[tF2, WEST], [tEnd, [-30.3, F0 + 5.0, -65.3]]]), (t, o) => (t < tU1 + 0.3 ? [-25.0, F0 + 1.8, -69.8] : head(o, 2.3))]
         ];
         const CAPS = [[0, "״ארע קרי לאחד מהן, יוצא והולך לו במסבה ההולכת תחת הבירה״ (תמיד א, א)"],
           [T.a1 - 1.2, "״צפונית מערבית, בה יורדים לבית הטבילה״ (מידות א, ו)"],
