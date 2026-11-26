@@ -188,6 +188,31 @@
     return shc_render.call(this, lights, scn, cam);
   };
   renderer.domElement.addEventListener("webglcontextrestored", () => { shc.force = true; });
+  // WEBGL_LOST_441 (the user 25.11.2026: black screens in the water-drawing celebration, the lighting of the lamps and the morning service,
+  // gone after a refresh): when the graphics context is lost (the system took it back - memory, a sleeping display), three.js waits for it
+  // to come back. Then the shadows are drawn again (above) and the frame redrawn. If it has not come back in 4 seconds, a notice over the
+  // model says so plainly, with a button that reloads the plugin - instead of a black screen with nothing to say why
+  {
+    let lostT = 0, note = null;
+    const hideNote = () => { if (note) { note.remove(); note = null; } };
+    renderer.domElement.addEventListener("webglcontextlost", (ev) => {
+      try { ev.preventDefault(); } catch (_) {}
+      const my = ++lostT;
+      setTimeout(() => {
+        if (my !== lostT || note) return;
+        try {
+          note = document.createElement("div");
+          note.id = "tm-gl-lost";
+          note.setAttribute("role", "alert");
+          note.style.cssText = "position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:99999;background:rgba(10,8,6,.82);color:#f3e9d2;font:1.05rem/1.6 inherit;direction:rtl;text-align:center";
+          note.innerHTML = '<div style="max-width:28rem;padding:1.4rem;border:1px solid #c9a24a;border-radius:.6rem;background:#1c1712">התצוגה נעצרה, כי המחשב לקח בחזרה את משאבי הגרפיקה (למשל, אחרי שינה או כשהזיכרון מלא).<br>אפשר לטעון את התוסף מחדש, והכול יחזור לעבוד.<br><button type="button" style="margin-top:.9rem;padding:.4rem 1.2rem;font:inherit;cursor:pointer">טען מחדש</button></div>';
+          note.querySelector("button").addEventListener("click", () => { try { location.reload(); } catch (_) {} });
+          document.body.appendChild(note);
+        } catch (_) {}
+      }, 4000);
+    });
+    renderer.domElement.addEventListener("webglcontextrestored", () => { lostT++; hideNote(); try { if (ctx && typeof ctx.requestRender === "function") ctx.requestRender(); } catch (_) {} });
+  }
   var camera = new PerspectiveCamera(48, viewWH[0] / viewWH[1], 0.5, 6e3);
   camera.position.set(430, 190, 240);
   //@@slot after-camera-note
