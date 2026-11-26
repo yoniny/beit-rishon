@@ -1071,7 +1071,7 @@
           list.push([x + (rr() - 0.5) * 2, z, sd > 0 ? Math.PI : 0]);
         }
         const yEn = groundY(150, 8, 10);
-        PP.crowd(watch, men, { y: isFinite(yEn) ? yEn : LV.EZN, s: 1.4, pose: "stand", kind: "worker", robe: ROBES[1], tone: (i) => i % 4, name: "shiloachWatcher" });
+        PP.crowd(watch, men, { y: isFinite(yEn) ? yEn : LV.EZN, s: 1.4, pose: "stand", kind: "worker", robe: ROBES[1], tone: (i) => [1, 2, 3, 1, 2, 3, 0, 1][i % 8], name: "shiloachWatcher" });
         PP.crowd(watch, boys, { y: isFinite(yEn) ? yEn : LV.EZN, s: 1.0, pose: "stand", kind: "worker", robe: ROBES[4], tone: (i) => (i + 1) % 4, name: "shiloachBoy" });
         // the procession with torches (pp. 12, 14): men and boys behind the priest, from the gate of Chulda to the spring and back
         const torchM = new MeshStandardMaterial({ color: 0x5b3a1e, roughness: 0.8 });
@@ -1090,7 +1090,7 @@
         for (let i = 0; i < 104; i++) {
           const G = new Group(); G.visible = false; DG.add(G);
           const kid = KIDS.includes(i), boy = !kid && i % 5 === 3;
-          PP.crowd(G, [[0, 0, 0]], { y: 0, s: kid ? 0.8 : boy ? 1.05 : 1.4, pose: "stand", kind: kid || boy ? "student" : "worker", robe: COL[(i * 5) % COL.length], tone: () => i % 4, exact: true, name: "shiloachProcession" });
+          PP.crowd(G, [[0, 0, 0]], { y: 0, s: kid ? 0.8 : boy ? 1.05 : 1.4, pose: "stand", kind: kid || boy ? "student" : "worker", robe: COL[(i * 5) % COL.length], tone: () => [1, 2, 3, 1, 2, 3, 0, 1][i % 8], exact: true, name: "shiloachProcession" });
           let fl = null;
           if (!kid) {
             const T0 = new Group(); T0.position.set(boy ? -0.27 : -0.36, boy ? 0.98 : 1.3, 0.3); T0.rotation.x = 0.15; G.add(T0);
@@ -1122,7 +1122,7 @@
         const duch = new Group(); DG.add(duch); duch.visible = false;
         const LZ = [3.6, 6.0, 8.4, 10.8, 13.2, 15.6, 18.0], flutes = [1, 3, 5];   // CHAMBERS_EAST_N2: z 20.4 (the eighth) stood where the chavitin makers' chamber is now (z 19.5..28.5)
         const yD = groundY(86.3, 6, 20);
-        PP.crowd(duch, LZ.map((z) => [86.3, z, -Math.PI / 2]), { y: isFinite(yD) ? yD : 15.5, s: 1.4, pose: "stand", kind: "levi", robe: 0xe9e3d3, tone: (i) => i % 4, name: "shiloachDuchan" });
+        PP.crowd(duch, LZ.map((z) => [86.3, z, -Math.PI / 2]), { y: isFinite(yD) ? yD : 15.5, s: 1.4, pose: "stand", kind: "levi", robe: 0xe9e3d3, tone: (i) => [1, 2, 3, 1, 2, 3, 0, 1][i % 8], name: "shiloachDuchan" });
         const reed = new MeshStandardMaterial({ color: 0xc8b07a, roughness: 0.6 });
         for (const i of flutes) {
           const fm = new Mesh(new CylinderGeometry(0.026, 0.034, 0.62, 8), reed);   // from his mouth forward and down (he faces west, -x)
@@ -2248,7 +2248,7 @@
         // ---- the dancers: "חסידים ואנשי מעשה" - elders, grey and white; each a figure of his own, with a torch (two of them throw four)
         for (let i = 0; i < NDANCE; i++) {
           const G = new Group(); DG.add(G);
-          PP.crowd(G, [[0, 0, 0]], { y: 0, s: 1.4, pose: "stand", kind: "worker", robe: [0x2e3038, 0x3a3226, 0x2c3444][i % 3], tone: () => (i % 3 === 0 ? 0 : 1), exact: true, name: "simchaDancer" });
+          PP.crowd(G, [[0, 0, 0]], { y: 0, s: 1.4, pose: "stand", kind: "worker", robe: [0x2e3038, 0x3a3226, 0x2c3444][i % 3], tone: () => (i % 3 === 0 ? 0 : 4), exact: true, name: "simchaDancer" });
           const d = { G, ph: (i / NDANCE) * Math.PI * 2, hop: i * 0.37, tor: [] };
           if (i === 3 || i === 10) {   // "בארבע אבוקות... זורק זו ומקבל את זו" (the Bartenura)
             for (let k = 0; k < 4; k++) { const t = torch(k === 0, 1.9); G.add(t); d.tor.push(t); }
@@ -2727,7 +2727,7 @@
             for (let i = 0; i < n; i++) {
               const G = new Group(); G.visible = false; AG.add(G);
               const rc = Array.isArray(robe) ? robe[i % robe.length] : robe;
-              PP.crowd(G, [[0, 0, 0]], { y: 0, s: 1.4, pose: "stand", kind, robe: rc, tone: () => i % 4, exact: true, avnet: kind === "kohen" ? undefined : false, name, arms: AK ? false : undefined });
+              PP.crowd(G, [[0, 0, 0]], { y: 0, s: 1.4, pose: "stand", kind, robe: rc, tone: () => [1, 2, 3, 1, 2, 3, 0, 1][i % 8], exact: true, avnet: kind === "kohen" ? undefined : false, name, arms: AK ? false : undefined });
               if (AK) {
                 const sm3 = sleeveOf[rc] || (sleeveOf[rc] = new MeshStandardMaterial({ color: rc, vertexColors: true, roughness: 0.9 }));
                 if (israel) G.userData.hold = AK.four(G, sm3);
@@ -3733,7 +3733,7 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
         // the Levites on the duchan (Arachin 2:3 and the Mishnah's "ודברו הלוים בשיר"), their faces to the people (east)
         const lev = new Group(); BG.add(lev); lev.visible = false;
         { const yD = groundAt(86.3, 6, 20, 15.5), LZ = [-10.8, -8.4, -6, -3.6, 3.6, 6, 8.4, 10.8];
-          PP.crowd(lev, LZ.map((z) => [86.3, z, Math.PI / 2]), { y: yD, s: 1.4, pose: "stand", kind: "levi", robe: 0xe9e3d3, tone: (i) => i % 4, name: "bikkurimLevites" }); }
+          PP.crowd(lev, LZ.map((z) => [86.3, z, Math.PI / 2]), { y: yD, s: 1.4, pose: "stand", kind: "levi", robe: 0xe9e3d3, tone: (i) => [1, 2, 3, 1, 2, 3, 0, 1][i % 8], name: "bikkurimLevites" }); }
         D = { bringer, myBasket, comps, flute, priest, lev, ox };
         return D;
       };

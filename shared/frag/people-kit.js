@@ -98,7 +98,10 @@
     const mFar = new MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.9 });
     // BLOND_441 (the user 25.11.2026: "תעשה את הרוב בלונדינים חוץ מאלו שכבר זקנים"): the dark tones (2 - the judges' black-brown, 3 - the
     // young) mostly blond now, in several shades - golden, light, dark blond - and one dark among them; the white and the grey (0, 1) as before
-    const TONES = [[0xf4f2ec, 0xe9e6de, 0xfbfaf6, 0xe2dfd6], [0xa8a49b, 0x8e8a82, 0xbab6ad, 0x9a9388], [0xc29a5b, 0xa98250, 0xd4b06e, 0x4c3727], [0xc9a062, 0xb48a4f, 0xdcb978, 0x3b2a1c, 0xa47a45]];
+    // BLOND_441b (the user 26.11.2026: "רוב הכהנים בלונדינים... גוון בלונדיני אמיתי"; the shades of 25.11 came out light brown - the strands'
+    // texture darkens a colour by about a quarter): 1 - the crowds' default - is blond now (light gold, gold, flax, honey); 2 and 3 brighter
+    // blond, one dark among them; the grey moved to 4 - only for the elders (the judges of the Sanhedrin, the dancing elders). 0 white
+    const TONES = [[0xf4f2ec, 0xe9e6de, 0xfbfaf6, 0xe2dfd6], [0xf6d67c, 0xefc35a, 0xf8e298, 0xe4ae4c], [0xf0c45e, 0xe4b04e, 0xf6d888, 0x6b4a2e], [0xf4d47e, 0xeabd58, 0xf8e092, 0x5a3e26, 0xe0a848], [0xa8a49b, 0x8e8a82, 0xbab6ad, 0x9a9388]];
     const SKINS = [0xffffff, 0xf3e7dc, 0xfff3e6, 0xeedccd];
     // ---------- the head (its middle at the origin, the face to +z): an egg, narrower at the chin; the nose and the ears
     const HR = [0.128, 0.16, 0.14], HS = 1.045, YJ = -0.118, OFF = 0.96, HEAD_Y = 2.075;
@@ -664,7 +667,7 @@
       return [p[0], p[1], Math.atan2(nx, nz)];
     });
     // the beards along a row of n judges: white by the one in the middle, grey further, black-brown at the two ends
-    const age = (n) => (i) => { const d = Math.abs(i - (n - 1) / 2) / ((n - 1) / 2); return d < 0.34 ? 0 : d < 0.67 ? 1 : 2; };
+    const age = (n) => (i) => { const d = Math.abs(i - (n - 1) / 2) / ((n - 1) / 2); return d < 0.34 ? 0 : d < 0.67 ? 4 : 2; };   // BLOND_441b: the elders' grey is 4 now
     return (ctx.__tmPeople = { crowd, facing, age, rig, legLine });   // MUMIN_W: legLine
   }
   // ===== PEOPLE_KIT_204 END

@@ -656,7 +656,7 @@
             for (let i = 0; i < n; i++) {
               const G = new Group(); G.visible = false; AG.add(G);
               const rc = Array.isArray(robe) ? robe[i % robe.length] : robe;
-              PP.crowd(G, [[0, 0, 0]], { y: 0, s: 1.4, pose: "stand", kind, robe: rc, tone: () => i % 4, exact: true, avnet: kind === "kohen" ? undefined : false, name, arms: AK ? false : undefined });
+              PP.crowd(G, [[0, 0, 0]], { y: 0, s: 1.4, pose: "stand", kind, robe: rc, tone: () => [1, 2, 3, 1, 2, 3, 0, 1][i % 8], exact: true, avnet: kind === "kohen" ? undefined : false, name, arms: AK ? false : undefined });
               if (AK) {
                 const sm3 = sleeveOf[rc] || (sleeveOf[rc] = new MeshStandardMaterial({ color: rc, vertexColors: true, roughness: 0.9 }));
                 if (israel) G.userData.hold = AK.four(G, sm3);
@@ -1068,7 +1068,7 @@
             list.push([x + (rr() - 0.5) * 2, z, sd > 0 ? Math.PI : 0]);
           }
           const yOC = ctx.shared.newCourt ? ctx.shared.newCourt.y : 3;
-          PP.crowd(watch, men, { y: yOC, s: 1.4, pose: "stand", kind: "worker", robe: ROBES[1], tone: (i) => i % 4, name: "shiloachWatcher1" });
+          PP.crowd(watch, men, { y: yOC, s: 1.4, pose: "stand", kind: "worker", robe: ROBES[1], tone: (i) => [1, 2, 3, 1, 2, 3, 0, 1][i % 8], name: "shiloachWatcher1" });
           PP.crowd(watch, boys, { y: yOC, s: 1.0, pose: "stand", kind: "worker", robe: ROBES[4], tone: (i) => (i + 1) % 4, name: "shiloachBoy1" });
           // the procession with torches: men and boys round the priest, out and back
           const torchM = new MeshStandardMaterial({ color: 0x5b3a1e, roughness: 0.8 });
@@ -1082,7 +1082,7 @@
           for (let i = 0; i < 104; i++) {
             const G = new Group(); G.visible = false; DG.add(G);
             const kid = KIDS.includes(i), boy = !kid && i % 5 === 3;
-            PP.crowd(G, [[0, 0, 0]], { y: 0, s: kid ? 0.8 : boy ? 1.05 : 1.4, pose: "stand", kind: kid || boy ? "student" : "worker", robe: COL[(i * 5) % COL.length], tone: () => i % 4, exact: true, name: "shiloachProcession1" });
+            PP.crowd(G, [[0, 0, 0]], { y: 0, s: kid ? 0.8 : boy ? 1.05 : 1.4, pose: "stand", kind: kid || boy ? "student" : "worker", robe: COL[(i * 5) % COL.length], tone: () => [1, 2, 3, 1, 2, 3, 0, 1][i % 8], exact: true, name: "shiloachProcession1" });
             let fl = null;
             if (!kid) {
               const T0 = new Group(); T0.position.set(boy ? -0.27 : -0.36, boy ? 0.98 : 1.3, 0.3); T0.rotation.x = 0.15; G.add(T0);
@@ -1111,7 +1111,7 @@
           const duch = new Group(); duch.visible = false;
           const agd = altarG(); (agd || DG).add(duch);
           const LZ = [-8.4, -6.0, -3.6, -1.2, 1.2, 3.6, 6.0, 8.4], flutes = [1, 3, 5], LX = ACX + 17;   // x 72 (the place: x 69..77)
-          PP.crowd(duch, LZ.map((z) => [LX, z, Math.PI / 2]), { y: AZ, s: 1.4, pose: "stand", kind: "levi", robe: 0xe9e3d3, tone: (i) => i % 4, name: "shiloachLevites1" });
+          PP.crowd(duch, LZ.map((z) => [LX, z, Math.PI / 2]), { y: AZ, s: 1.4, pose: "stand", kind: "levi", robe: 0xe9e3d3, tone: (i) => [1, 2, 3, 1, 2, 3, 0, 1][i % 8], name: "shiloachLevites1" });
           const reed = new MeshStandardMaterial({ color: 0xc8b07a, roughness: 0.6 });
           for (const i of flutes) {
             const fm = new Mesh(new CylinderGeometry(0.026, 0.034, 0.62, 8), reed);   // from the mouth forward and down (he faces east, +x)
@@ -1795,7 +1795,7 @@
           let q = 15011; const rr = () => (q = (q * 1664525 + 1013904223) >>> 0) / 4294967296;
           for (let i = 0; i < 18; i++) { const x = C.x + (rr() - 0.5) * (C.w - 6), z = C.z + (rr() - 0.5) * (C.d - 6); (i % 3 ? ptsS : ptsG).push([x, z, rr() * 6.28]); }
           const COLS = [0x6b5a3e, 0x4a4f5a, 0x5c4a3a, 0x3e4a5e, 0x7a6a50];
-          PPm.crowd(pilgrims, ptsS, { y: gy + 0.25, s: 1.4, pose: "stand", kind: "worker", robe: COLS[1], tone: (i) => i % 4, name: "milloPilgrims" });
+          PPm.crowd(pilgrims, ptsS, { y: gy + 0.25, s: 1.4, pose: "stand", kind: "worker", robe: COLS[1], tone: (i) => [1, 2, 3, 1, 2, 3, 0, 1][i % 8], name: "milloPilgrims" });
           PPm.crowd(pilgrims, ptsG, { y: gy + 0.25, s: 1.4, pose: "ground", kind: "worker", robe: COLS[3], tone: (i) => (i + 2) % 4, name: "milloPilgrimsSit" });
         } catch (e) { console.warn("[parallels] millo pilgrims", e && e.message); }
         // after Solomon: the houses for her servants - on the square in two rows (and the square fenced, as the Malbim), on the mound in a grid

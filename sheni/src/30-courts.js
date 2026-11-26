@@ -1818,7 +1818,7 @@
     const WORK = [];
     const worker = (x, z, yaw, y, name, tone, motion) => {
       const cr = fig211(x, z, yaw, y, "kohen", 0xf1ede2, 1.4, tone, name);
-      const w = { x, z, yaw, y, name, crowd: cr && cr.userData && cr.userData.crowd, n: 3 + WORK.length, motion, A: null, bad: false, stat: null, held: { R: null, L: null }, bend: 0, armR: [0.05, 0.08, -0.15], armL: [0.05, 0.08, -0.15], hands: { R: "rest", L: "rest" } };
+      const w = { x, z, yaw, y, name, crowd: cr && cr.userData && cr.userData.crowd, n: [1, 3, 5, 6, 2][WORK.length % 5], motion, A: null, bad: false, stat: null, held: { R: null, L: null }, bend: 0, armR: [0.05, 0.08, -0.15], armL: [0.05, 0.08, -0.15], hands: { R: "rest", L: "rest" } };
       WORK.push(w);
       return w;
     };
