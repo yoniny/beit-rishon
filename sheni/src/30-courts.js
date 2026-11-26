@@ -2492,6 +2492,19 @@
           ctx2.labels.push(Object.assign({ text: "ראשי פספסין — בין עזרת ישראל לעזרת כהנים (ברטנורא מידות ב, ו)", x: 85, y: 33, z: 60, size: 1.1, layer: "pisIB" }, PI),
             Object.assign({ text: "פשפש — שבכה ברצפה בין עזרת ישראל לעזרת כהנים (הרמב״ם)", x: 86.5, y: 15.6, z: 40, size: 1.0, layer: "pisIR" }, PI));
           ctx2.layers.pisIB = iB; ctx2.layers.pisIR = iR;
+          // PIS_YELLOW_441 (the user 26.11.2026: "תסמן בצבע צהוב ל15 שניות"): PIS.glow(on, all) - the pispasin painted yellow for a while (the
+          // card's view, 15 s): those between the courts, or with `all` those of Beit HaMoked too; off - their own material back
+          const mY = new MeshStandardMaterial({ color: 0xffd21f, emissive: 0x7a5a00, emissiveIntensity: 0.9, roughness: 0.5 }), sw = new Map();
+          let glowUntil = 0;
+          ctx2.animated.push(() => { if (glowUntil && performance.now() > glowUntil) { glowUntil = 0; PIS.glow(false); } });
+          PIS.glow = (on, all, ms) => {
+            glowUntil = on && ms ? performance.now() + ms : 0;   // (the model's clock: a timer of its own, ended by any later call)
+            const roots = all ? [iB, iR, pB, pR] : [iB, iR];
+            for (const r of roots) r.traverse((o) => { if (!o.isMesh) return; if (on) { if (!sw.has(o)) sw.set(o, o.material); o.material = mY; } else if (sw.has(o)) { o.material = sw.get(o); sw.delete(o); } });
+            if (!on) for (const [o, m] of sw) { o.material = m; sw.delete(o); }
+            if (typeof ctx2.requestRender === "function") ctx2.requestRender();
+            return !!on;
+          };
         }
         const PM = { info: "**ראשי פספסין** (מידות א, ו): ״וראשי פספסין מבדילין בין קדש לחל״. ברטנורא: ״ראשי קורות יוצאים מן הכתל עד המקום שהוא קדש״; פירוש המשניות לרמב״ם: ״עשו בקרקעיתם ממעל שבכות להבדיל קרקע השתים של הקדש מקרקע שתים של חול״. המתג — בתפריט, ״ראשי פספסין — קורות או שבכה ברצפה״.", refs: [["מידות א, ו", { book: 89, index: 7 }], ["ברטנורא מידות א, ו", { book: 643, index: 36 }], ["פירוש המשניות לרמב״ם מידות א, ו", { book: 573, index: 10 }]] };
         ctx2.labels.push(Object.assign({ text: "ראשי פספסין — מכאן לדרום קודש, לצפון חול", x: X, y: 32.5, z: -65.2, size: 1.1, layer: "pisB" }, PM),
@@ -2519,9 +2532,12 @@
           arrow(aB, [bx, 24.2, -57], [bx, 24.2, -63.6]); arrow(aB, [bx, 24.2, -73.4], [bx, 24.2, -66.8]);   // the beam-ends, from the holy side and from the profane
           { const gx = X + sx * 3; arrow(aR, [gx, FL + 3.2, -59.5], [gx, FL + 0.45, -64.4]); arrow(aR, [gx, FL + 3.2, -70.9], [gx, FL + 0.45, -66.0]); }   // the floor grating in the aisle - GRATE_ARROWS_420 (the user 24.11.2026: "חצים ממוקדים לשבכה"; until now at x ±10, at the lattice hidden in the chambers' walls)
         }
-        for (const zz of [-52, 63]) { arrow(iaB, [77, 24, zz], [83.6, 24, zz]); arrow(iaB, [93, 24, zz], [86.4, 24, zz]); }   // the beam-ends between the courts
+        // (in the south: the beam-ends out of לשכת המלח's north face in the reading of the room, out of the court's wall in the tunnel's -
+        // PIS_ARROWS_ROOM_441: the arrows go with them; until now they pointed at the wall behind the chamber)
+        const iaS = { room: new Group(), tunnel: new Group() }; iaB.add(iaS.room, iaS.tunnel);
+        for (const [par, zz] of [[iaB, -52], [iaS.room, 53.6], [iaS.tunnel, 63]]) { arrow(par, [77, 24, zz], [83.6, 24, zz]); arrow(par, [93, 24, zz], [86.4, 24, zz]); }   // the beam-ends between the courts
         arrow(iaR, [77, 15.4, 10], [83.6, 14.6, 10]); arrow(iaR, [93, 15.4, 10], [86.4, 14.6, 10]);
-        PIS2.arrows = (on) => { pArr.visible = on !== false; return pArr.visible; };
+        PIS2.arrows = (on) => { const ps = ctx2.shared.pisSouth; if (ps) { iaS.room.visible = ps.room.visible; iaS.tunnel.visible = !ps.room.visible; } pArr.visible = on !== false; return pArr.visible; };
         ctx2.layers.pisArrows = pArr;
       }
       lbl("בית המוקד", X, 13.5 + Hh + 7.5, Z, 3);

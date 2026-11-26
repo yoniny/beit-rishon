@@ -1399,7 +1399,7 @@
       // and (Rashi's reading: "חוטם אחד בספל... ויורדין דרך החוטמין על גב המזבח") a thin stream from its spout down into the hole in the top
       { const mW = std(0x5e0b16, { roughness: 0.15, metalness: 0.1, transparent: true, opacity: 0.9 });
         prop("wineFall", mesh(new CylinderGeometry(0.022, 0.03, 1.15, 8, 1, true).translate(0, 0.575, 0), mW), null, false);
-        prop("wineSpout", mesh(new CylinderGeometry(0.012, 0.016, 0.18, 6, 1, true).translate(0, 0.09, 0), mW), null, false); }
+        prop("wineSpout", mesh(new CylinderGeometry(0.010, 0.014, 0.1, 6, 1, true).translate(0, 0.01, 0), mW), null, false); }   // SPOUT_SHORT_441 (the user 26.11.2026, "ב"): shorter, and down into the hole (0.04 under the top, 0.06 over it)
       // SALT_STAGE_S2: each of the nine's pinch of salt, in his right hand while he salts (SC.melach)
       for (let i = 1; i <= 9; i++) prop("saltH" + i, (() => { const g = new Group(); for (const [x, y, z] of [[0, 0, 0], [0.06, 0.035, 0.02], [-0.05, 0.03, -0.03], [0.01, 0.07, -0.01]]) g.add(mesh(new SphereGeometry(0.05, 6, 4), MAT.salt, x, y, z)); return g; })());
       // MAARACHOT2_211 (stage ב; the user: the arrangements in detail): the limbs and the fats not consumed from the evening - charred, on the
@@ -2744,7 +2744,7 @@
       a.walk("tr2", [[tb[0], tb[1] + 0.38], ...route(sw2, [ba[0] - 0.2, ba[1] + 1.8])], 10.4, 20.4, { hold: true, yaw: -HP });
       a.pose("s13", "pour", 13, 17);
       a.fx("pour", 13.3);   // SOUND_211: the wine
-      { const wb = A(43.95, 9.4), ws = A(43.95, 9.4 + 0.86);   // LIBATION_441: into the wine's bowl (40-altar.js BX[1], BZ), and out by its spout to the hole (HZ)
+      { const wb = A(43.95, 9.4), ws = A(43.95, 9.4 + 0.69);   // SPOUT_SHORT_441: the hole (40-altar.js HZ)   // LIBATION_441: into the wine's bowl (40-altar.js BX[1], BZ), and out by its spout to the hole (HZ)
         a.put("wineFall", wb[0], TOP0 + 0.1, wb[1], 13.8); a.gone("wineFall", 16.6);
         if (!SH.sfalim || SH.sfalim.mode !== "tosafot") { a.put("wineSpout", ws[0], TOP0 + 0.0, ws[1], 14.2); a.gone("wineSpout", 17.0); } }
       a.pose("sg", "wave", 13.4, 17);

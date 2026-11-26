@@ -820,7 +820,7 @@
       // התפאי" - Tiferet Yisrael on Middot 3:1: two holes from the top to the shitin); ONE_HOLE (one for both, the two spouts turned to it)
       // is kept for the other reading of Rashi's "נקב"
       const ONE_HOLE = false;
-      const HZ = BZ + 0.86;
+      const HZ = BZ + 0.69;   // SPOUT_SHORT_441 (the user 26.11.2026, "ב" - the spouts shorter and turned more down): the hole just beyond the shorter spout's mouth (0.86 until then)
       const rimM = new MeshStandardMaterial({ color: 0xD8D0BF, roughness: 0.85, metalness: 0 });
       const holes = ONE_HOLE ? [[(BX[0] + BX[1]) / 2, HZ, 0.1]] : BX.map((x, i) => [x, HZ, i ? 0.09 : 0.07]);   // the wine's hole the wider
       for (const [hx, hz, hr] of holes) {
@@ -834,7 +834,7 @@
         const h = new Vector3(hole[0] - x, 0, hole[1] - BZ);
         const dh = h.length();
         h.normalize();
-        const tilt = 0.2, y0 = TOP + 0.05 + 0.13, r0 = 0.27, len = (dh - r0 - 0.12) / Math.cos(tilt);
+        const tilt = 0.35, y0 = TOP + 0.05 + 0.13, r0 = 0.27, len = (dh - r0 - 0.06) / Math.cos(tilt);   // SPOUT_SHORT_441: 0.36 out and 0.13 down (was 0.2 rad, 0.47 out)
         const d = new Vector3(h.x * Math.cos(tilt), -Math.sin(tilt), h.z * Math.cos(tilt));
         const rB = i ? 0.075 : 0.055, rT = i ? 0.058 : 0.042;   // the wine's spout the thicker ("נקב היין עבה ושל המים דק", Bartenura)
         const sp = new Mesh(new CylinderGeometry(rT, rB, len, 14), sil);
