@@ -1613,6 +1613,13 @@
       el.style.gap = on ? "0.12rem" : "0.2rem"; el.style.padding = on ? "0" : "0.2rem 0.3rem";
       for (const b of el.querySelectorAll("button")) b.style.padding = on ? "0.1em 0.42em" : "0.1em 0.55em";
       el.style.background = on ? "transparent" : "rgba(14,17,28,0.78)"; el.style.boxShadow = on ? "none" : "0 0.1rem 0.5rem rgba(0,0,0,0.35)";
+      // BAR_COLORS_451 (the user 26.11.2026: "פס ההדגמה נמצא אך הוא בהיר ולא נראה כלל עשה אותו בצבעי הסרגל (כולל צבע הגופן)"): in the top bar
+      // its buttons take the bar's own buttons' colours (index.html .tm-topbtn: the theme's primary, its pale tint, the text of the surface) -
+      // the light letters on the pale gold were meant for the dark box over the picture
+      for (const b of el.querySelectorAll("button")) Object.assign(b.style, on
+        ? { background: "var(--color-primary-subtle, rgba(201,168,76,0.16))", color: "var(--color-on-surface, #2b2416)", border: "0.07em solid var(--color-primary, #c9a84c)", fontWeight: "600" }
+        : { background: "rgba(201,168,76,0.16)", color: "#f4ead0", border: "0.07em solid rgba(201,168,76,0.55)", fontWeight: "" });
+      if (lR) lR.style.color = on ? "var(--color-on-surface, #2b2416)" : "#f4ead0";
     };
     // BAR_DOCK_441 (the user 25.11.2026, with a picture of the bar over the model: "לא סכמנו שפס ההדגמה עובר לסרגל?" - "פס ההדגמה לא עבר
     // בכל ההדגמות"): in a window narrower than about 1250 (or with larger letters) the top bar's free left part was narrower than the bar, and
