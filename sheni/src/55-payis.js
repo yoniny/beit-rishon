@@ -524,7 +524,24 @@
         for (let i = 0; i <= n; i++) { const u = i / n, x = xa + (xb - xa) * u; out.push([ta + (tb - ta) * u, x, stairsY(x0, x), z]); }
         return out;
       };
-      if (!adj) {
+      // MOKED_TYT_WAY_451 (the user, 26.11.2026: "אביי כשמוגדר תפאי מראש" - "הם לא עולים"): in Tiferet Yisrael's reading of the chel's
+      // steps (one flight round the walls, 20-mount.js chelSteps "around") the gate's sill is at six amot and twenty steps go up inside
+      // it (30-courts.js MOKED_TYT_420) - the way here: up the twelve steps before the house (MOKED_TYT_WAY_451) or the steps round the
+      // courts (the Rosh's gate), through the gate and up the steps inside it
+      const tyt = !!(SH.chelSteps && SH.chelSteps.mode === "around"), S6 = 6;
+      if (tyt && !adj) {
+        const FZ = -78.65;
+        const way = (lag, xe, ze) => [[0.6 + lag, 3.9, 0, -87], [1.7 + lag, 3.9, 0, -80.9], [2.1 + lag, 3.2, 0, -79.2], [2.4 + lag, 2.0, 0, FZ], [3.1 + lag, -5.6, 0, FZ], [4.5 + lag, -12.1, S6, FZ], [6.6 + lag, xe, S6, ze]];
+        S.knock = 7.1;
+        track(MEM, way(0, -18.9, -78.5), [-18.9, -70]);
+        track(T1, way(0.45, -16.9, -78.75));
+        cam(5.8, camMokedN[0], camMokedN[1]);
+      } else if (tyt) {
+        const way = (lag, dz) => [[0.6 + lag, 3.9 + dz, 0, -87], [1.7 + lag, 3.9 + dz, 0, -80.9], [2.4 + lag, 6.5 + dz, 0, -77.2], [4.6 + lag, 6.5 + dz, S6, -70.6], [5.4 + lag, 3.6, S6, -71.6 - dz], [6.4 + lag, 0.5, S6, -73.3 + dz]];
+        S.knock = 7.1;
+        track(MEM, way(0, 0).concat([[7.4, -2.4, S6, -73.3], [8.95, -12.3, Y, -73.3]]), [-18, -67.5]);   // through the Rosh's eastern gate and up the twenty steps inside it
+        track(T1, way(0.45, 1.4).concat([[7.75, -2.4, S6, -72.0], [9.05, -11.8, Y, -72.0]]));
+      } else if (!adj) {
         const FZ = -78.65;   // the flight's middle line
         const way = (lag, xe, ze) => [[0.6 + lag, 3.9, 0, -87], [1.7 + lag, 3.9, 0, -80.9], [2.1 + lag, 3.2, 0, -79.2], [2.4 + lag, 2.0, 0, FZ]]
           .concat(flight(1.5, 1.75, -11.75, FZ, 2.5 + lag, 5.5 + lag, 6).slice(0, 7))
@@ -545,8 +562,8 @@
       // into the house, round the hearth, up to its holy half
       // (FLOOR_211: the house is one floor, at the court's level - five steps inside each gate come up to it from the landing)
       // PAYIS_STAIRS_212: from the landing (13.5) through the gate and up the five steps inside it (z -76.5..-74, to the floor's 16)
-      const inMem = adj ? [[-7.5, Y, -73.3], [-7.6, Y, -69.2], [-12.6, Y, -68.4], [-13.4, Y, -67]] : [[-18.9, YM, -78.5], [-18.9, YM, -76.6], [-19.4, Y, -74.0], [-22.6, Y, -72.6], [-22.6, Y, -68.2], [-22.4, Y, -67]];
-      const inTor = adj ? [[-7.0, Y, -71.6], [-7.2, Y, -68.6], [-12.2, Y, -67.6], [-13.9, Y, -66.6]] : [[-16.9, YM, -78.75], [-17.2, YM, -76.6], [-16.6, Y, -74.0], [-13.9, Y, -72.6], [-13.9, Y, -68.2], [-13.9, Y, -67]];
+      const inMem = tyt ? (adj ? [[-12.3, Y, -73.3], [-12.6, Y, -68.4], [-13.4, Y, -67]] : [[-18.9, S6, -78.5], [-18.9, S6, -77.6], [-18.9, Y, -67.4], [-22.4, Y, -67]]) : adj ? [[-7.5, Y, -73.3], [-7.6, Y, -69.2], [-12.6, Y, -68.4], [-13.4, Y, -67]] : [[-18.9, YM, -78.5], [-18.9, YM, -76.6], [-19.4, Y, -74.0], [-22.6, Y, -72.6], [-22.6, Y, -68.2], [-22.4, Y, -67]];
+      const inTor = tyt ? (adj ? [[-11.8, Y, -72.0], [-12.2, Y, -67.6], [-13.9, Y, -66.6]] : [[-16.9, S6, -78.75], [-17.2, S6, -77.6], [-16.6, Y, -67.4], [-13.9, Y, -67]]) : adj ? [[-7.0, Y, -71.6], [-7.2, Y, -68.6], [-12.2, Y, -67.6], [-13.9, Y, -66.6]] : [[-16.9, YM, -78.75], [-17.2, YM, -76.6], [-16.6, Y, -74.0], [-13.9, Y, -72.6], [-13.9, Y, -68.2], [-13.9, Y, -67]];
       const walkIn = (o, pts, end, t0, d) => {
         const n = pts.length;
         track(o, pts.map((p, i) => [t0 + d * 0.8 * i / (n - 1), p[0], p[1], p[2]]).concat([[t0 + d, end[0], end[1], end[2]]]));
@@ -567,8 +584,13 @@
         cap(0, "״נטל את המפתח ופתח את הפשפש, ונכנס מבית המוקד לעזרה, ונכנסו אחריו ושתי אבוקות של אור בידם״ (תמיד א, ג)");
       } else {
         if (!adj) {   // they open for him and he goes in (PAYIS_STAIRS_212: up the five steps inside the gate, to the floor's 16)
+          if (tyt) {   // MOKED_TYT_WAY_451: up the twenty steps inside the gate
+            track(MEM, [[7.6, -18.9, S6, -78.5], [8.1, -18.9, S6, -77.6], [8.95, -18.9, Y, -67.4]]);
+            track(T1, [[7.75, -16.9, S6, -78.75], [8.2, -17.2, S6, -77.6], [8.98, -17.2, Y, -67.4]]);
+          } else {
           track(MEM, [[7.6, -18.9, YM, -78.5], [8.1, -18.9, YM, -76.6], [8.75, -18.9, Y, -74.0], [8.95, -18.9, Y, -73.6]]);
           track(T1, [[7.75, -16.9, YM, -78.75], [8.2, -17.2, YM, -76.6], [8.8, -17.2, Y, -74.0], [8.98, -17.2, Y, -73.6]]);
+          }
         }
         t = 9;
         cap(0, "״ומבלשין את כל העזרה״ (רמב״ם) — ״ושתי אבוקות של אור בידם״ (תמיד א, ג)");

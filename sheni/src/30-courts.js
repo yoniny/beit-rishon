@@ -2342,7 +2342,7 @@
       const mtUpd = () => {
         const tyt = !!(ctx2.shared.chelSteps && ctx2.shared.chelSteps.mode === "around"), rosh = !!(ctx2.shared.mokedGates && ctx2.shared.mokedGates.mode === "adjacent");
         mtShow(mtG.plugD, !(tyt && !rosh)); mtShow(mtG.inD, tyt && !rosh);
-        mtShow(mtG.plugR, !(tyt && rosh)); mtShow(mtG.inR, tyt && rosh); if (mtG.roshIn5) mtShow(mtG.roshIn5, !(tyt && rosh));
+        mtShow(mtG.plugR, !(tyt && rosh)); mtShow(mtG.inR, tyt && rosh); if (mtG.roshIn5) mtShow(mtG.roshIn5, !(tyt && rosh)); if (mtG.wayD) { mtShow(mtG.wayD, tyt && !rosh); mtShow(mtG.wayR, tyt && rosh); }   // MOKED_TYT_WAY_451
         if (typeof ctx2.shared.solidsChanged === "function") ctx2.shared.solidsChanged();
       };
       ctx2.shared.__mokedTyt = mtG; ctx2.shared.__mokedTytUpd = mtUpd;
@@ -2356,6 +2356,20 @@
         H2.box(landR, 5, 13.5, 5, M2.stoneSmooth, X + W / 2 + 2.5, 0, -73.3);
         platRail(landR, X + W / 2, X + W / 2 + 5, -75.8, -70.8, 13.5, ["n"]);
         stairsR(landR, { width: 5, totalRise: 13.5, steps: 27, dir: "W", x: X + W / 2 + 5 + 13.5, y: 0, z: -73.3, tread: 0.5 });
+        // MOKED_TYT_WAY_451 (the user, 26.11.2026, of the lots' demonstration in Tiferet Yisrael's reading of the chel's steps: "הם לא עולים"):
+        // in the one flight round the walls the house's gate to the chel has its sill at six amot - but the steps round the courts do not
+        // pass before the house (it stands out into the chel), so nothing led up to it. A model choice: before the north gate a landing at
+        // six amot (where the old landing was) and twelve steps up to it westwards, along the house's face (as the old flight, to six only);
+        // before the Rosh's eastern gate a landing at six amot only - the steps round the courts come up to its south edge.
+        const tytD = new Group(), tytR = new Group(); tytD.name = "mokedTytWayD"; tytR.name = "mokedTytWayR";
+        for (const q of [tytD, tytR]) { g.add(q); q.userData.homeParent = g; }
+        H2.box(tytD, 12, 6, z1 - z0, M2.stoneSmooth, X, 0, (z0 + z1) / 2);
+        platRail(tytD, X - 6, X + 6, z0, z1, 6, ["n", "w"]);
+        stairsR(tytD, { width: z1 - z0, totalRise: 6, steps: 12, dir: "W", x: X + 6 + 6, y: 0, z: (z0 + z1) / 2, tread: 0.5 });
+        H2.box(tytR, 5, 6, 5, M2.stoneSmooth, X + W / 2 + 2.5, 0, -73.3);
+        platRail(tytR, X + W / 2, X + W / 2 + 5, -75.8, -70.8, 6, ["n", "e"]);
+        Object.assign(ctx2.shared.__mokedTyt, { wayD: tytD, wayR: tytR });
+        if (ctx2.shared.__mokedTytUpd) ctx2.shared.__mokedTytUpd();
       }
       // FLOOR_211: the northern half's floor, level with the court's pave (which is the southern half's) - less the stairwell inside
       // the gate to the chel, the stairwell inside the Rosh's eastern gate (in his reading only) and the mouth of the way down in
