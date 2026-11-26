@@ -1097,7 +1097,7 @@
     const STAFF_PRESS = 0.3, STAFF_BULGE = 0.28;   // 1.0.1-L (L.54): the staffs 0.3 longer, into the curtain's swelling, 0.28 high (model choices)
     // ARK_GATES_208 (58-ark.js, the demonstration "דבקו שערים"): the ark's own pieces - its body, the kaporet with its cherubim, the rings
     // (body), the two staffs and their two swellings in the curtain - so that the demonstration can hide them while it carries a copy
-    const ARK_PARTS = ctx.shared.arkParts = { body: [], staffs: [], swell: [], x: ARK_X, y0: F + ROCK_H, w: ARK_W, l: ARK_L, h: ARK_H,
+    const ARK_PARTS = ctx.shared.arkParts = { body: [], staffs: [], swell: [], x: ARK_X, x0: ARK_X /* ARK_COPY_451: the pieces' built line - 58-ark.js places its copy by it (since ARK_PLACE_D the ark may stand elsewhere, and its copy was carried 4.5 amot before its staffs) */, y0: F + ROCK_H, w: ARK_W, l: ARK_L, h: ARK_H,
       staffZ: STAFF_Z, staffX0: STAFF_X0, staffLen: STAFF_LEN + STAFF_PRESS, staffMat: null };
 
     // ---- materials ----

@@ -2262,7 +2262,7 @@
     const undo = (b) => {
       if (b.done) return; b.done = true;
       try { if (b.mesh.parent) b.mesh.parent.remove(b.mesh); b.mesh.geometry.dispose(); } catch (_) {}
-      for (const it of b.parts) it.o.layers.mask = it.mask;
+      for (const it of b.parts) { it.o.layers.mask = it.mask; delete it.o.clone; }
       B.undone++; B.merged -= b.parts.length; B.parts -= 0;
       try { if (ctx && typeof ctx.requestRender === "function") ctx.requestRender(); } catch (_) {}
     };
@@ -2302,7 +2302,10 @@
           mesh.name = "tmBatch"; mesh.userData.tmBatch = true; mesh.userData.noFade = true;   // (not a wall to fade or to hold the eye: its parts were none)
           par.add(mesh);
           const b = { mesh, parts: L.map((o) => ({ o, s: snap(o), mask: o.layers.mask })), done: false };
-          for (const it of b.parts) it.o.layers.set(HIDE_LAYER);
+          // BATCH_CLONE_451 (the user 26.11.2026, the ark's demonstration: "הארון נחצה לשניים (חצי נעלם)"): a demonstration that copies the
+          // model's pieces (58-ark.js: the ark's copy) copied their hidden layer too - the merged pieces of the copy were not drawn. A merged
+          // part's copy gets the part's own layers back
+          for (const it of b.parts) { it.o.layers.set(HIDE_LAYER); const m0 = it.mask; it.o.clone = function (rec) { const c = Object3D.prototype.clone.call(this, rec); c.layers.mask = m0; return c; }; }
           B.batches.push(b); B.merged += L.length;
         } catch (e) { for (const q of geos) try { q.dispose(); } catch (_) {} console.warn("[batch] group:", e && e.message); }
       }
