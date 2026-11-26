@@ -1109,7 +1109,7 @@
         g.add(mesh(new BoxGeometry(0.012, 0.5, 0.075), std(0xc9cdd3, { metalness: 0.45, roughness: 0.3 }), 0, -0.33, 0.004));
         return g;
       })(), { p: [0, 0.02, 0.0], r: [0, 0, 0] }, false);
-      prop("cup", mesh(new LatheGeometry([V2(0.001, 0), V2(0.1, 0.012), V2(0.085, 0.11), V2(0.13, 0.27), V2(0.12, 0.27)], 16), MAT.gold), { p: [0, -0.12, 0.1], r: [0, 0, 0] });   // LAMB_CUP_451: larger (0.2 tall, 0.09 wide until now), and closed at its lip
+      prop("cup", mesh(new LatheGeometry([V2(0.001, 0), V2(0.1, 0.012), V2(0.085, 0.11), V2(0.13, 0.27), V2(0.12, 0.27)], 16), (() => { const m = MAT.gold.clone(); m.side = 2; if (m.metalness != null) m.metalness = Math.min(m.metalness, 0.55); if (m.roughness != null) m.roughness = Math.max(m.roughness, 0.35); if (m.emissive) m.emissive.setHex(0x3a2806); return m;   /* CUP_BOTH_451: seen as gold at night too, inside and out */ })()), { p: [0, -0.12, 0.1], r: [0, 0, 0] });   // LAMB_CUP_451: larger (0.2 tall, 0.09 wide until now), and closed at its lip
       const torch = (k) => {   // "ושתי אבוקות של אור בידם" (1:3)
         const g = new Group();
         g.add(mesh(new CylinderGeometry(0.05, 0.04, 1.3, 6), MAT.wood, 0, 0.45, 0));
@@ -2323,7 +2323,7 @@
       // LAMB_CUP_451 (the user 26.11.2026, a picture: "אין פה דלי של זהב והכהן לא משקה את הטלה"): "משקין את התמיד בכוס של זהב" (Tamid 3:4) -
       // when the lamb has stopped, the one with the golden cup comes to its head, his face to it, and holds the cup at its mouth (until now he
       // stood two amot away and offered the air). Where he stands - model choice
-      a.go("s2", [-15.3, -51.45], 12.5, 13.4, { yaw: -HP });   // (the lamb stops at -17.4 facing east - 10-core.js lambKit: the head at +z, 0.68 out; its muzzle at about -16.5)
+      a.go("s2", [-15.3, -51.2], 12.5, 13.4, { yaw: -HP });   // (the lamb stops at -17.4 facing east - 10-core.js lambKit: the head at +z, 0.68 out; its muzzle at about -16.5)
       a.pose("s2", "water", 13.5, 17.5);
       a.go("b1", [-16.6, -53.8], 0, 9.5, { yaw: -HP });
       a.hold("b1", "torch1", "R", 9.5);
@@ -2790,7 +2790,7 @@
       stand: [[0.05, 0.08, -0.15], [0.05, 0.08, -0.15], 0], hold: [[-0.55, 0.05, -1.0], [0.05, 0.08, -0.15], 0], carry: [[-0.5, -0.12, -1.15], [-0.5, -0.12, -1.15], 0],
       fingers: [[-1.25, 0.05, -0.45], [0.05, 0.08, -0.15], 0], knock: [[-1.4, 0.05, -1.3], [0.05, 0.08, -0.15], 0.05], wash: [[-0.95, -0.12, -0.55], [-0.95, -0.12, -0.55], 0.18],
       scoop: [[-0.95, 0.05, -0.35], [-0.95, 0.05, -0.35], 0.42], rub: [[-0.35, 0.06, -0.12], [-0.35, 0.06, -0.12], 0], shovel: [[-0.85, -0.1, -0.5], [-0.75, -0.25, -0.7], 0.3], place: [[-0.9, -0.1, -0.4], [-0.9, -0.1, -0.4], 0.35],
-      pour: [[-1.15, 0.05, -0.35], [0.05, 0.08, -0.15], 0.22], offer: [[-1.0, -0.05, -0.6], [-0.6, -0.1, -0.8], 0.15], water: [[-0.75, 0.12, -0.35], [-0.35, -0.1, -0.5], 0.42],   /* LAMB_CUP_451: stooping, the cup low at the lamb's mouth */ point: [[-1.7, 0.1, -0.05], [0.05, 0.08, -0.15], 0],
+      pour: [[-1.15, 0.05, -0.35], [0.05, 0.08, -0.15], 0.22], offer: [[-1.0, -0.05, -0.6], [-0.6, -0.1, -0.8], 0.15], water: [[-0.35, -0.1, -0.5], [0.05, 0.08, -0.15], 0.42],   /* LAMB_CUP_451: stooping, the cup low at the lamb's mouth */ point: [[-1.7, 0.1, -0.05], [0.05, 0.08, -0.15], 0],
       reach: [[-1.95, -0.05, -0.55], [-1.65, -0.08, -0.7], 0], raise: [[-2.53, -0.17, -0.04], [-2.43, -0.17, -0.04], 0], raiseHP: [[-1.82, -0.15, -0.04], [-1.78, -0.15, -0.04], 0], greet: [[-0.6, 0.05, -1.2], [-0.6, 0.05, -1.2], 0.12],
       trumpet: [[-1.5, -0.25, -1.45], [-1.45, -0.3, -1.55], 0], cymbal: [[-1.0, 0.5, -1.2], [-1.0, 0.5, -1.2], 0], wave: [[-2.6, 0.35, -0.2], [0.05, 0.08, -0.15], 0],
       play: [[-0.75, -0.15, -1.15], [-0.2, -0.12, -1.35], 0], throw: [[-1.5, 0.05, -0.2], [0.05, 0.08, -0.15], 0.1], prostrate: [[-2.9, 0.4, 0], [-2.9, 0.4, 0], 1.48],
