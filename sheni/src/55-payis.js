@@ -22,6 +22,7 @@
   // Rambam as R. Sheshet - so the figures wear the mitznefet the baraita speaks of); who names the number (Rashi and the Bartenura:
   // the appointed one; the Rambam: they agree on it; the Ritva after Tosafot: an elder or another priest); the count's direction
   // (Yerushalmi Yoma 2:1); R. Eliezer ben Yaakov, who has no fourth lottery (Tamid 5:2).
+  //@@include omanin
   async function buildPayis(ctx2) {
     const { M: M2, LV } = ctx2;
     const SH = ctx2.shared;
@@ -215,6 +216,17 @@
       };
       ctx2.animated.push(() => { if (SF.on) place(); });
     }
+    // OMANIN_461 (the user 26.11.2026, of the First Temple's demonstration: "תוסיף גם לבית שני"): the craftsmen lowered in boxes through
+    // a lul of the upper storey into the Holy of Holies (shared/frag/omanin.js; Middot 4:5 is this house's own mishnah). The demonstration's
+    // lul stands near the east end of the north wall (model choice); the storey's three lulin over the middle (50-heichal.js) stay as they are
+    omaninSetup(ctx2, { x: -48.2, floor: LV.HEI, devirHeight: false,
+      lastCap: "״ויבאו הכהנים לפנימה בית ה׳ לטהר ויוציאו את כל הטומאה״ (דברי הימים ב כט, טז) — הפסוק שמביאה התוספתא",
+      fig: () => {
+        const f = figure(mRobe, true, 6);
+        if (f.parent) f.parent.remove(f);
+        const U = f.userData, arm = f.children.find((c) => c.isGroup && c !== U.hat && c !== U.arrow && c.children.length >= 3);
+        return { g: f, work: (on, t) => { U.hand.visible = !!on; if (on && arm) arm.rotation.x += 0.16 * Math.sin(t * 5.2); } };
+      } });
     await tm_yield();
     const T1 = torch(), T2 = torch(), T3 = torch(), T4 = torch();
     // TORCHES_HELD_N3 (fix-n3, 24.11.2026 - the user, of a picture where a priest stood beside a torch and did not carry it; Tamid 1:3, 88:? "ונכנסו אחריו ושתי אבוקות של אור

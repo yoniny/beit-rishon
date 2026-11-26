@@ -1966,6 +1966,10 @@
       };
       return goldStd(worldTex(makeTex(512, draw, { bump, bumpSize: 512 }), 4), { roughness: 0.34, bumpScale: 3.6 });
     })();
+    // ZFIGHT_461 (the user 26.11.2026, of the craftsmen's demo: "החלק הזה מרצד"): the coffered gold lies 0.05 under the ceiling's gold -
+    // seen low across it, the two flickered; drawn a little nearer (it and its copies: the heichal's, the devir's, the aliyot's)
+    Object.assign(hei_cofferGold, { polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 });
+    for (const k of ["map", "bumpMap"]) if (hei_cofferGold[k]) { hei_cofferGold[k].anisotropy = 8; hei_cofferGold[k].needsUpdate = true; }   // the coffers seen low across: less shimmer
     // 1.3.7 (the user, 11.11.2026 18:09: "תוסיף רד"ק. חשוב מאוד, את האבן יקרה תעשה נורמלי, לא כמו האבנים בכיסא שלמה"): THE FACING OF
     // PRECIOUS STONE of the Radak's reading of the devir's height (I Kings 6:20; book 3540, line 369): "כי עשרים אמה בגובה צפה
     // הקירות זהב והעשר אמות העליונות צפה באבן יקרה בלשם שבו ושוהם וספיר ודומיהם מן האבנים הטובות". A wall facing of polished
