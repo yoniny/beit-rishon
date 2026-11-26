@@ -229,7 +229,7 @@
       return K0.filter((k) => k[0] < sec0).concat([at(sec0), [sec0 + 0.8, E, T], [sec1 - 0.8, E, T], at(sec1)], K0.filter((k) => k[0] > sec1));
     };
     { const k0 = CAMK.kiyor; if (k0) CAMK.kiyor = (o) => kidSide(6, 15.2, 20.2, k0(o)); }
-    { const v12 = VIEW.kiyor12; CAMK.kiyor12 = () => { const v = v12(); return kidSide(6, 8.2, 15.8, [[0, v[0], v[1]], [30, v[0], v[1]]]); }; }
+    { const v12 = VIEW.kiyor12; CAMK.kiyor12 = () => { const v = v12(); return kidSide(TM.kidd === "ryose" ? 0 : 6, 8.2, 15.8, [[0, v[0], v[1]], [30, v[0], v[1]]]); }; }   // KIDD_HELP_T_441: in R. Yose's reading the eye at the upper spout (s1 and his fellow)
     const camKey = (K, sec) => {
       let j = 0;
       while (j < K.length - 1 && K[j + 1][0] <= sec) j++;
@@ -2004,7 +2004,16 @@
       a.pose("t", "kiddush", 15.8, 19.6);
       a.set("kidWater", 1, 16.4); a.set("kidWater", 0, 19.0);
       a.fx("water", 16.4);   // SOUND_211
-      a.tag("t", "מסובב את הגלגל ומעלה את הכיור; ואחר כך מקדש — יד ימין על רגל ימין ויד שמאל על רגל שמאל, שוחה ומקדש (זבחים יט:)", 9.6, 19.6);
+      if (TM.kidd === "ryose") {
+        // KIDD_HELP_T_441 (the user 25.11.2026: "קידוש - ר' יוסי לא רואים כהן מסייע"): in Rabbi Yose b. R. Yehuda's reading the first one too -
+        // his hands one on the other over his feet, one foot on the other - is held by a fellow ("וחבירו מסייעו", Zevachim 19b): b1, at his side
+        // away from the laver, his face to him, his hands on his side and back (as at the twelve). Where he comes from - model choice
+        const side = [W8.p[0] - Math.cos(W8.yaw) * 0.55 - Math.sin(W8.yaw) * 0.45, W8.p[1] + Math.sin(W8.yaw) * 0.55 - Math.cos(W8.yaw) * 0.45];
+        a.go("b1", side, 9.0, 15.2, { yaw: faceTo(side, W8.p) });
+        a.pose("b1", "support", 15.8, 19.6);
+        a.tag("t", "מסובב את הגלגל ומעלה את הכיור; ואחר כך מקדש — ״מניח שתי ידיו זו על גב זו, ועל גבי שתי רגליו זו על גבי זו״, ״וחבירו מסייעו״ (זבחים יט:)", 9.6, 19.6);
+        a.tag("b1", "״וחבירו מסייעו״ — לרבי יוסי ברבי יהודה", 15.8, 19.6);
+      } else a.tag("t", "מסובב את הגלגל ומעלה את הכיור; ואחר כך מקדש — יד ימין על רגל ימין ויד שמאל על רגל שמאל, שוחה ומקדש (זבחים יט:)", 9.6, 19.6);
     };
     // KIYOR_A2 (the user's decision 83): THE TWELVE AT ONCE - "כדי שיהיו שנים עשר אחיו הכהנים העסוקין בתמיד מקדשין ידיהן ורגליהן בבת
     // אחת. תנא: שחרית במילואו — מקדש ידיו ורגליו מן העליון" (Yoma 37a, 107:888): s1 at the upper spout, s2..s12 at the eleven. In R. Yose
@@ -2023,8 +2032,8 @@
         // decision 120 b, via the coordinator: "חבר אחד בלבד, אצל הכהן שבדד העליון. שאר האחד עשר מקדשים בלי חבר מצויר") - until now a
         // fellow for each of the twelve. Who he is and where he stands - model choices
         {
-          const q = KID.flatSpot(0), side = [q.p[0] - Math.cos(q.yaw) * 0.72, q.p[1] + Math.sin(q.yaw) * 0.72];
-          a.go("b1", side, 0.4, 7.6, { yaw: q.yaw + HP });
+          const q = KID.flatSpot(0), side = [q.p[0] - Math.cos(q.yaw) * 0.55 - Math.sin(q.yaw) * 0.45, q.p[1] + Math.sin(q.yaw) * 0.55 - Math.cos(q.yaw) * 0.45];   // KIDD_HELP_T_441: a little behind him, not between him and the eye
+          a.go("b1", side, 0.4, 7.6, { yaw: faceTo(side, q.p) });   // KIDD_HELP_T_441: his face to the one he holds
           a.pose("b1", "support", 8.4, 15.4);
         }
         a.tag("b1", "״וחבירו מסייעו״ (זבחים יט:) — לרבי יוסי ברבי יהודה", 8.6, 15.4);
@@ -2674,7 +2683,7 @@
       // reaches (kidReach) - until 2.1.2 the whole figure leaned from the ankles (0.5), as falling. The arms below: only where there is
       // no waist (the high priest's body) - there the old lean, a little less.
       kiddush: [[-0.3, 0.14, 0], [-0.3, 0.14, 0], 0.4],
-      support: [[-0.95, -0.16, -0.5], [-0.95, -0.16, -0.5], 0.2],   // KIDDUSH_RYOSE_A2: the fellow's hands on the side and back of the one who sanctifies
+      support: [[-1.15, -0.1, -0.35], [-1.15, -0.1, -0.35], 0.42],   // KIDD_HELP_T_441: bowed to the bowed back, his arms forward on it   // KIDDUSH_RYOSE_A2: the fellow's hands on the side and back of the one who sanctifies
       // NIGHT_WATCH_305: "שלום עליך" - the right hand raised before him; the blow of the staff or the pakia (applyFig); woken; up from
       // the stone; the left hand to the lantern and down to the cloak; the herald's two hands about his mouth (callArms)
       hail: [[-1.25, 0.12, -0.75], [0.05, 0.08, -0.15], 0.04], strike: [[-0.85, 0.05, -0.15], [0.05, 0.08, -0.15], 0.1],
@@ -3076,7 +3085,7 @@
           // as low as it reached (kidReach, KB)
           // KIDDUSH_RYOSE_A2 (the user's decision 82 c): in Rabbi Yose b. R. Yehuda's reading the twelve stand on the left foot, the right
           // laid on it, and the hands one on the other above (the kit's kidHands "ryose"); the one at the upper spout held by his fellow (SC.kiyor12)
-          const md = TM.kidd === "ryose" && /^s\d+$/.test(f.id) ? "ryose" : "tk";
+          const md = TM.kidd === "ryose" && /^(s\d+|t)$/.test(f.id) ? "ryose" : "tk";   // KIDD_HELP_T_441: the first one (t) too
           const u = smooth(clamp(t / 0.8, 0, 1)), H = SH.priestKit.kidHands(f, setArm, md), mix = (q, w) => [lerp(q[0], w[0], u), lerp(q[1], w[1], u), lerp(q[2], w[2], u)];
           R = mix(POSES.stand[0], H.arm[-1]); Lv = mix(POSES.stand[1], H.arm[1]); lean = 0; bendA = H.th * u; kidU = u; kidH = H;
           if (SH.priestKit.kidBody) { SH.priestKit.kidBody(f, H, u); headA = -H.lift * u; f.kBowed = true; }   // HANDS_K (KIDDUSH_CROUCH_K): the hips down and back, the kutonet over bent knees, the head up

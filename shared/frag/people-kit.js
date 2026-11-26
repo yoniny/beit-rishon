@@ -101,7 +101,7 @@
     // BLOND_441b (the user 26.11.2026: "רוב הכהנים בלונדינים... גוון בלונדיני אמיתי"; the shades of 25.11 came out light brown - the strands'
     // texture darkens a colour by about a quarter): 1 - the crowds' default - is blond now (light gold, gold, flax, honey); 2 and 3 brighter
     // blond, one dark among them; the grey moved to 4 - only for the elders (the judges of the Sanhedrin, the dancing elders). 0 white
-    const TONES = [[0xf4f2ec, 0xe9e6de, 0xfbfaf6, 0xe2dfd6], [0xf6d67c, 0xefc35a, 0xf8e298, 0xe4ae4c], [0xf0c45e, 0xe4b04e, 0xf6d888, 0x6b4a2e], [0xf4d47e, 0xeabd58, 0xf8e092, 0x5a3e26, 0xe0a848], [0xa8a49b, 0x8e8a82, 0xbab6ad, 0x9a9388]];
+    const TONES = [[0xf4f2ec, 0xe9e6de, 0xfbfaf6, 0xe2dfd6], [0xffb850, 0xf0a040, 0xffc468, 0xe08a30], [0xf0a040, 0xe08a30, 0xffb850, 0x6b4a2e], [0xffb850, 0xf0a040, 0xe09040, 0x5a3e26, 0xf4a848], [0xa8a49b, 0x8e8a82, 0xbab6ad, 0x9a9388]];
     const SKINS = [0xffffff, 0xf3e7dc, 0xfff3e6, 0xeedccd];
     // ---------- the head (its middle at the origin, the face to +z): an egg, narrower at the chin; the nose and the ears
     const HR = [0.128, 0.16, 0.14], HS = 1.045, YJ = -0.118, OFF = 0.96, HEAD_Y = 2.075;

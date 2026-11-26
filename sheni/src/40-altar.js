@@ -2096,8 +2096,8 @@
       for (let k = 0; k < 7; k++) { const c = new Mesh(new TorusGeometry(0.34, 0.045, 6, 16), coilM); c.position.z = -PZ + 0.3 + k * ((2 * PZ - 0.6) / 6); wheelG.add(c); }   // the rope wound on it
       // the toothed wheel (south, outside the post) and its teeth
       const GZ = PZ + 0.38;
-      const gw = new Mesh(new CylinderGeometry(0.62, 0.62, 0.16, 28), pulMat); gw.rotation.x = Math.PI / 2; gw.position.z = GZ; wheelG.add(gw);
-      const tg = new BoxGeometry(0.14, 0.2, 0.16), ti = new InstancedMesh(tg, pulMat, 20), m4t = new Matrix4(), qt = new Quaternion(), et = new Euler(), pt = new Vector3(), st = new Vector3(1, 1, 1);
+      const gw = new Mesh(new CylinderGeometry(0.62, 0.62, 0.16, 28), M2.gold); gw.rotation.x = Math.PI / 2; gw.position.z = GZ; wheelG.add(gw);   // GEAR_GOLD_441 (the user 25.11.2026: "צבע גלגל השינים במוכני - זהב"): the toothed wheel and its teeth golden
+      const tg = new BoxGeometry(0.14, 0.2, 0.16), ti = new InstancedMesh(tg, M2.gold, 20), m4t = new Matrix4(), qt = new Quaternion(), et = new Euler(), pt = new Vector3(), st = new Vector3(1, 1, 1);
       for (let k = 0; k < 20; k++) { const a = (k * Math.PI * 2) / 20; et.set(0, 0, a); qt.setFromEuler(et); pt.set(-Math.sin(a) * 0.7, Math.cos(a) * 0.7, GZ); m4t.compose(pt, qt, st); ti.setMatrixAt(k, m4t); }
       wheelG.add(ti);
       // the crank (north, outside the post): its arm and handle
