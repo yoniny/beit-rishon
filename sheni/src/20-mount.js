@@ -158,6 +158,7 @@
       if (gate) ewGate[k] = w;
       return w;
     };
+    await tm_yield();   // LOAD_SLICE_R10
     ewPiece("rambam", -165, -10, WH); ewPiece("rambam", 10, 330, WH); ewPiece("rambam", -10, 10, 23, true);
     ewPiece("tiferet", -165, 330, 23, true);
     ewPiece("piskei", -165, -10, 6); ewPiece("piskei", 10, 330, 6); ewPiece("piskei", -10, 10, 23, true);
@@ -285,6 +286,7 @@
         }
       };
     }
+    await tm_yield();   // LOAD_SLICE_R10
     gateTrim({ axis: "x", gx: 55, gz: CO.harN, arched: false, inward: 1, wl: wallN, leaves: false });
     // TADI_ONE_S1 (the user's decision on scan 1, finding 17: "להוריד את האפשרות 'אבנים זקופות — לא מאומת'"): Tadi's top in the one
     // reading that has a source - "שתי אבנים מטות זו על גב זו" (Middot 2:3). Until now (1.5.0) a toggle also drew "אבנים זקופות" (the
@@ -454,6 +456,7 @@
     // OLIVES_B2: THE LINE OF SIGHT - the priest on the Mount of Olives' top, his face to the heichal, and the line from his eye to its door
     // (a feature of the place "הר המשחה — קו הראייה", untimed; while it is shown the parochot of the openings are raised - Nikanor's, the
     // ulam's and the heichal's would stand in the line). The line's target on the door: as high as the gate of the women's court lets it.
+    await tm_yield();   // LOAD_SLICE_R10
     {
       const SG = new Group(); SG.name = "parahSight"; SG.visible = false; g.add(SG); ctx2.layers.parahSight = SG;
       const yTop = terrainH(OLV.x, OLV.z), E = yTop + 3.2, DX = 1.65, k = (231 - DX) / (OLV.x - DX);
@@ -549,6 +552,7 @@
       H2.box(g, 2.5, 9.5, 15.5, M2.stoneLight, ex, 26.8, 307.5);
     }
     // 1.2.0: the roofs of the royal stoa and of the porticos have their own list and their own pill on the model (not the heichal's cutaway)
+    await tm_yield();   // LOAD_SLICE_R10
     ctx2.stoaCut = [naveRoof, aisleN, aisleS, roofE, roofW, roofN];
     {
       const MB = Array.isArray(ctx2.shared.modelButtons) ? ctx2.shared.modelButtons : (ctx2.shared.modelButtons = []);
@@ -695,6 +699,7 @@
     soregSide("x", sz1, sx1, sx2, [-78, -48, 3.5], [161], [B4(-78), B4(-48), B4(-38.5), B4(-18)]);
     // WATER_GATE_N4: the south openings follow the gates - the Delek -78, the Bechorot 30, the Water Gate 44 (opposite the altar; 30-courts.js)
     soregSide("x", sz2, sx1, sx2, [CO.gS.dalk, CO.gS.bech, CO.gS.water], [161], [B4(-88), B4(CO.gS.dalk), B4(CO.gS.bech), B4(CO.gS.water)]);   // SOUTH_SMALL_430: opposite the gates where they stand (until now 30, 44)
+    await tm_yield();   // LOAD_SLICE_R10
     soregSide("z", sx2, sz1, sz2, [0], [], [[0, 8], B4(-12), B4(12)]);
     soregSide("z", sx1, sz1, sz2, [0], [], [B4(-20), B4(20)]);
     for (const { w, h, d, matrices } of debrisBatches.values()) {
@@ -808,6 +813,7 @@
     // it is seen). The courts themselves stay open (Boaz, Middot 2:1, 1329 line 9: the four chambers of the Women's Court were not
     // roofed, "וכ"ש העזרה שחוצה לה"; against the Shiltei HaGiborim). ctx2.shared.harRoof = { mode: "sides" | "all", set(m) }.
     // MODEL CHOICES: its height (the side colonnades'), the rings and their columns. (How far in it reached: ROOF_CHEL_211, below.)
+    await tm_yield();   // LOAD_SLICE_R10
     {
       const RG = new Group();
       RG.name = "harRoofAll";
@@ -937,6 +943,7 @@
     // היה דירת כל הט"ו ממונים של הר הבית... והשאר היו בהר הבית רובם בדרום". Thirty chambers in a row before the porticos - thirteen in the
     // south, nine in the east, five in the north, three in the west (most in the south, then by the Mishnah's order); each 12 by 10, 9
     // high, its door toward the courts; the ways from the gates left open. Their number on each side, size, form and places - model choices.
+    await tm_yield();   // LOAD_SLICE_R10
     {
       const CG = new Group(); CG.name = "harChambers30"; CG.visible = false; g.add(CG); ctx2.layers.harChambers30 = CG;
       const tmp = new Group(), dark = new MeshBasicMaterial({ color: 0x1d1610 });
@@ -1092,6 +1099,7 @@
     };
     // SYN_FURNISH_420 (the user, 24.11.2026: "בית הכנסת הוספת ספסלים ושלחנות"): the synagogue on the mount - an open roof as the house of
     // study's, and four rows of benches and tables in two columns, facing south (the door in the north). Their number and form - model choices
+    await tm_yield();   // LOAD_SLICE_R10
     const synFurnish = (SY, X, Z) => {
       const tmp = new Group(), FL = 0.22, wd = M2.cedar, wd2 = new MeshStandardMaterial({ color: 0x6a4a2c, roughness: 0.8 }), paper = new MeshStandardMaterial({ color: 0xeee6cf, roughness: 0.8 });
       const bx = (w, h, d, mat, x, y, z) => H2.box(tmp, w, h, d, mat, X + x, y, Z + z);
@@ -1182,6 +1190,7 @@
     );
     // 1.5.0: the doors of the five gates of the Mount (Middot 1:3) - gold leaves (2:3), ajar into the Mount; Tadi's between its two leaning
     // stones. Huldah x 0 and 110 (south), Kiponus (west), Tadi x 55 (north), Shushan (east, z 0).
+    await tm_yield();   // LOAD_SLICE_R10
     for (const x of [0, 110]) H2.doors(g, { axis: "x", cx: x, cz: CO.harS, y: 0, width: 10, height: 20, inward: -1, mat: M2.gateGold, open: 1.0, inset: 2 });
     // 1.9.5 (a remark sent on to the user, 11.11.2026: "בשער טדי לכאו' הדלת הסתיימה באלכסון כמו השער - לא ממקורות אלא מהעובדה כי זה הי'
     // שער הכניסה לעיר מצפון"; the user: "8. תשנה"): TADI'S LEAVES END ASLANT, as the gate's head - each leaf as high as the jamb at

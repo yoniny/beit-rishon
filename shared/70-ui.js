@@ -933,7 +933,7 @@ body.tm-measuring canvas{cursor:crosshair}
           ui_bigAt = now;
           const out = [], sz = new Vector3();
           const walk = (o) => {
-            if (o.name === "tm-kk-cloud" || o.name === "tm-measure") return;
+            if (o.name === "tm-kk-cloud" || o.name === "tm-measure" || o.name === "tmBatch") return;   // BATCH_R15: a batch of small parts is not one of the large ones
             if (o.isMesh && !o.isInstancedMesh && o.geometry) {
               const pa = o.geometry.attributes && o.geometry.attributes.position;
               if (!(pa && pa.count > 30000) && ui_sizeOf(o, sz) && Math.max(sz.x, sz.y, sz.z) >= 6) out.push(o);
@@ -957,7 +957,7 @@ body.tm-measuring canvas{cursor:crosshair}
           // LISTS_FAST_441 (the user 25.11.2026: "כל ה360 נתקע"): the walk leaves the cloud's branch out at once (until now every mesh looked
           // up all its parents for it), and a mesh's size is measured again only when its geometry or its turn and scale changed
           const walk = (o) => {
-            if (o.name === "tm-kk-cloud") return;
+            if (o.name === "tm-kk-cloud" || o.name === "tmBatch") return;   // BATCH_R15
             if (o.isMesh && o.geometry) {
               const pa = o.geometry.attributes && o.geometry.attributes.position;
               if (!(pa && pa.count > 30000)) {   // the terrain
@@ -1070,21 +1070,27 @@ body.tm-measuring canvas{cursor:crosshair}
           HID[i] = HID[HID.length - 1];
           HID.pop();
         };
-        let last = -1e9;
+        let last = -1e9, fadeSig = "", fadeSame = 0;
         ctx.animated.push(function(t) {
           if (t - last > 140) {
             last = t;
-            const blocked = new Set();
-            hideBlocked.clear();
-            hideDeep.clear();
-            const FADE_DIST = typeof fs.dist === "number" && fs.dist > 0 ? fs.dist : 120;   // a wall fades only within this many amot of the camera
             // 1.2.2 (the user's recording: the eye left the heichal through its wall while orbiting the menorot): hideList() marks the
             // buildings' walls and ceilings userData.tmPass, and 90-entry.js's cam_keepInside holds the eye in the room by those marks -
             // but it ran only in the modes "גם קיר מסתיר" / "מעבר דרך קירות", so in the default mode no wall was marked. Now every tick (cached 5 s).
             try { hideList(); } catch (_) {}
             //@@slot buildUI.fadeHeld
             try { fadeHeld = !!(ctx.shared.fadeHold && ctx.shared.fadeHold.held()); } catch (_) { fadeHeld = false; }
-            if (fs.on && !fadeHeld) {
+            // FADE_STILL_R14 (issue #2 R14): the eye and its target where they were, the fade's settings the same - the rays of the last tick
+            // stand (a wall that moves is seen within a second: every seventh tick they are cast anyway)
+            let fadeSkip = false;
+            { const cp0 = ctx.camera.position, tg0 = ctx.controls.target;
+              let ps = false; try { ps = typeof ctx.camPass === "function" && !!ctx.camPass(); } catch (_) {}
+              const sig = fs.on && !fadeHeld ? cp0.x + "," + cp0.y + "," + cp0.z + "," + tg0.x + "," + tg0.y + "," + tg0.z + "," + fs.dist + "," + !!fs.hide + "," + ps : "off";
+              if (sig === fadeSig && sig !== "off" && ++fadeSame < 7) fadeSkip = true; else { fadeSig = sig; fadeSame = 0; } }
+            const blocked = new Set();
+            if (!fadeSkip) { hideBlocked.clear(); hideDeep.clear(); }
+            const FADE_DIST = typeof fs.dist === "number" && fs.dist > 0 ? fs.dist : 120;   // a wall fades only within this many amot of the camera
+            if (fs.on && !fadeHeld && !fadeSkip) {
               const cam = ctx.camera.position, tg = ctx.controls.target;
               // RAYS_MANY_441: the walls' boxes once for all the rays below (ctx.raycast.many), not once a ray
               const occR = typeof ctx.raycast.many === "function" ? ctx.raycast.many(OCCL) : (r, h) => ctx.raycast(r, OCCL, h);
@@ -4528,7 +4534,7 @@ body.tm-measuring canvas{cursor:crosshair}
           oTargets = [];
           const bb = new Box3(), sz = new Vector3();
           ctx.scene.traverse((o) => {
-            if (!o.isMesh || o.isInstancedMesh || !o.geometry) return;
+            if (!o.isMesh || o.isInstancedMesh || !o.geometry || o.name === "tmBatch") return;   // BATCH_R15
             for (let p = o; p; p = p.parent) if (p.name === "tm-kk-cloud" || p.name === "tm-measure") return;
             const pa = o.geometry.attributes && o.geometry.attributes.position;
             if (pa && pa.count > 30000) return;   // the terrain
@@ -4539,7 +4545,19 @@ body.tm-measuring canvas{cursor:crosshair}
           });
           return oTargets;
         };
+        // PILL_STILL_R13 (issue #2 R13): while the eye stands still, a pill's "is it hidden" is asked again only every 12 frames (a door that
+        // moves over it is seen within a fraction of a second); any move of the eye, of the pill's place or of the walls' fade asks at once
+        const occC = new Map();
         const occluded = (a, wallsToo) => {
+          const cam = ctx.camera.position, ck = a[0] + "," + a[1] + "," + a[2] + (wallsToo ? "w" : ""), fsN = ctx.shared.fadeState ? (ctx.shared.fadeState.on ? 1 : 0) + ":" + ctx.shared.fadeState.dist : "";
+          const oc = occC.get(ck);
+          if (oc && oc.x === cam.x && oc.y === cam.y && oc.z === cam.z && oc.fs === fsN && frameNo - oc.f < 12) return oc.r;
+          const r = occluded0(a, wallsToo);
+          if (occC.size > 400) occC.clear();
+          occC.set(ck, { x: cam.x, y: cam.y, z: cam.z, fs: fsN, f: frameNo, r });
+          return r;
+        };
+        const occluded0 = (a, wallsToo) => {
           const cam = ctx.camera.position;
           oDir.set(a[0] - cam.x, a[1] - cam.y, a[2] - cam.z);
           const L = oDir.length();

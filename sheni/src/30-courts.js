@@ -155,6 +155,7 @@
     const ringIn = new Group(); ringIn.name = "ringGateSteps"; ringIn.visible = false; ringIn.userData.homeParent = g;   // (in the scene only in that reading - 20-mount.js chelSteps)
     ctx2.shared.ringGates = { plugs: ringPlugs, steps: ringIn };
     boxHoles(g, 189.5, LV.AZ - 0.15, 140, M2.stone, (CO.azW - 2.5 + CO.azE) / 2, 0, 0, RING_GATES.map(([x, sz]) => ({ x, z: sz * (70 - RG_D / 2), w: RG_W, d: RG_D })).concat([KPIT, SALT_T]).concat([-1, 1].map((sz) => ({ x: (KDEEP.x0 + CO.azE) / 2, z: sz * KDEEP.z, w: CO.azE - KDEEP.x0, d: KDEEP.d }))));   // the court's podium; CHEL_211: to the walls' outer faces (x -96, z ±70)
+    await tm_yield();   // LOAD_SLICE_R10
     ctx2.shared.stepsPlace = { mode: "inside", set() {} };
     (ctx2.shared.ringHide = ctx2.shared.ringHide || []).push(stairsR(g, { width: 14, totalRise: 6, steps: 12, dir: "W", x: 237, y: 0, z: 0, tread: 0.5 }));   // inside the chel (x 231..237); RAILS_211; ONE_FLIGHT_420: in the reading of one flight round the walls it is part of that flight
     ctx2.labels.push({ text: "מעקות במדרגות — בחירת מודל", x: 236, y: 4.2, z: -8.6, size: 1.1 });
@@ -285,6 +286,7 @@
     // BEAST_N_OFF_420 (the user, 24.11.2026, of the north one: "ביטול הכבש"; "המעקה והכבש יוצא מחוץ לסורג!"): the gate of the offering's
     // ramp is gone - 54 amot long, it ran before the landing of the Nitzotz gate, out through the soreg at the north-west corner, and the
     // night's watchmen of the morning's service stood in it (55-tamid.js). Only the gate of the firstborn's (south) stays.
+    await tm_yield();   // LOAD_SLICE_R10
     const rampG = new Group(); rampG.name = "animalRamps"; g.add(rampG); ctx2.layers.animalRamps = rampG;
     rampG.userData.chelFlight = true;   // RING_MERGE_420
     (ctx2.shared.ringHide = ctx2.shared.ringHide || []).push(rampG);   // BEAST_TYT_420: no beasts' ramp in Tiferet Yisrael's reading - all steps
@@ -383,6 +385,7 @@
     // a bima for the Levites against its west face (16 long, 2 deep, an amah and a half high) with three steps before it, and at its two
     // ends three steps of half an amah up to the priests' court. The chamber's width (6), the bima and the places of the steps - model
     // choices. It stands opposite the altar's DEFAULT place (it does not follow the readings of the altar's place).
+    await tm_yield();   // LOAD_SLICE_R10
     const duchanCI = new Group();
     duchanCI.name = "duchanChazonIsh";
     duchanCI.visible = false;
@@ -542,6 +545,7 @@
     // song and the cymbal on the duchan, the incense in Avtinas' upper room, the curtains at the model's "לשכת הפרוכת" (Middot
     // 1:1), the garments in Pinchas' chamber (Middot 1:4). The physician, the herald, the gates' officer and Ben Bevai - no place
     // is written: MODEL CHOICES, as are every man's exact spot, face and dress (the card says so).
+    await tm_yield();   // LOAD_SLICE_R10
     {
       const MG = new Group();
       MG.name = "memunim";
@@ -688,6 +692,7 @@
     // the chel is a wall to him, "עשר אמות רחבה מן הסורג לחיל" (2:3) - in this model's layout that is the line of the women's court's
     // east wall, so his reading draws THAT wall ten amot high, the gate standing as a gatehouse 23 high (model choice). Switched by the
     // eastern wall's row (ctx2.shared.eastWall in 20-mount.js calls ctx2.shared.eznEastWall).
+    await tm_yield();   // LOAD_SLICE_R10
     const eznEHigh = new Group(), eznELow = new Group();
     g.add(eznEHigh); g.add(eznELow);
     eznELow.visible = false;
@@ -810,6 +815,7 @@
     }
     // 1.9.3 (the Rosh's chambers, below): the long walls in groups of their own - eznJW / eznCW the whole walls (Josephus' with a gate,
     // Chazal's closed), eznRJ / eznRC the Rosh's: the middle stretch only (x 131..191), the chambers' forty amot open at both ends
+    await tm_yield();   // LOAD_SLICE_R10
     const eznJW = new Group(), eznCW = new Group(), eznRJ = new Group(), eznRC = new Group(), eznTopDef = new Group();
     eznJ.add(eznJW); eznJ.add(eznRJ); eznC.add(eznCW); eznC.add(eznRC); g.add(eznTopDef);
     eznRJ.visible = eznRC.visible = false;
@@ -1267,6 +1273,7 @@
     // whole side. Each chamber's contents move out with it (the Nazirites' fire and its flames, the wood, the bath - a new shaft in
     // the new floor, the old one closed - and the jars). That they stand out to the north and the south (the kuntres' reading of the
     // drawing), the walls' height, and the chel and the soreg round them (not drawn anew) - model choices.
+    await tm_yield();   // LOAD_SLICE_R10
     const eznRosh = new Group();
     eznRosh.name = "eznChambersRosh";
     eznRosh.visible = false;
@@ -1400,6 +1407,7 @@
     // landings are closed by a rail at that end.
     // DALK_TYT_440: the Delek no longer at -78 - nothing to close at -84 in the reading of seven gates
     platRail(g7, -54, -42, -74, -70, 13.5, ["e"]);
+    await tm_yield();   // LOAD_SLICE_R10
     platRail(g13r, -54, -42, -74, -70, 13.5, ["e"]);
     for (const grp of [g13, g13r]) {
       chelFlight(grp, -87.5, 1, 1, { landW: 7 });   // DALK_TYT_440: the Upper gate - a landing and a flight of its own, east (until now joined to the Delek's at -78)
@@ -1513,6 +1521,7 @@
         { text: "לאבא יוסי בן חנן: שער הנשים — בית המוקד (האפשרות הנדחית)", x: MOKED_X, y: 51, z: -79, size: 2.6, layer: "gates13r" });
     }
     // the Rambam (5:5): "ושער זה הוא הנקרא שער העליון והוא שער ניקנור" - a label on Nikanor's gate, shown by the same row
+    await tm_yield();   // LOAD_SLICE_R10
     const upN = new Group();
     upN.visible = false;
     g.add(upN);
@@ -1645,6 +1654,7 @@
       build(steps15In, C0);
       build(steps15Out, 67.5);
     }
+    await tm_yield();   // LOAD_SLICE_R10
     ctx2.labels.push({ text: "חמש עשרה המעלות — כחצי גורן", x: 104, y: 16.5, z: 0, size: 1.6 });
     // 1.9.5, later the same day (the user, 11.11.2026 17:11: "מעלות שתי קריאות רמבם ברירת מחדל"): TWO READINGS OF THE FIFTEEN STEPS.
     // The Rambam's commentary on Middot 2:5 (the user's library, book 573, line 25) stands against the Rid's length: "שמעלות עזרת נשים
@@ -1779,6 +1789,7 @@
     };
     // CHAMBERS_EAST_N2: what build() adds to g (and the labels it adds) is turned by th about the vertical through (cx, cz) - a chamber furnished
     // with its door in the west wall, set with its door toward the gate (the two chambers of the Nikanor gate)
+    await tm_yield();   // LOAD_SLICE_R10
     const rotated = (cx, cz, th, build) => {
       const n0 = g.children.length, l0 = ctx2.labels.length;
       const r = build();
@@ -1877,6 +1888,7 @@
         for (const [A2, k] of [[A.R, w.hands.R], [A.L, w.hands.L]]) if (A2.k !== k) { A2.k = k; A2.hand.geometry = ctx2.shared.priestKit.handWr(A2.side, k); }
       }
     });
+    await tm_yield();   // LOAD_SLICE_R10
     const ahead211 = (x, z, yaw, d) => [x + Math.sin(yaw) * d, z + Math.cos(yaw) * d];   // a point d in front of a figure
     const wheelAt = (wx, wy, wz, r, px = 1.45) => {   // 1.9.5: px - the posts' distance from the middle   // a wooden wheel standing on two posts, its axle along x (as the laver's mukhni)
       const wheel = new Mesh(new TorusGeometry(r, 0.12, 8, 28), M2.cedar);
@@ -1949,6 +1961,7 @@
         for (const dz of [-0.7, 0, 0.7]) bowl(tx, y + 1.2, tz + dz);
       }
     };
+    await tm_yield();   // LOAD_SLICE_R10
     const F_PARVAH = (cx, cz, y, roof) => {   // "שם היו מולחין עורות קדשים, ועל גגה היה בית הטבילה לכהן גדול ביום הכיפורים" (5:3)
       H2.box(g, 0.3, 0.3, 7.4, M2.cedar, cx - 1.25, y + 6, cz + 0.2);   // the rail, hides hanging from it (SOUTH_SMALL_430: along the room)
       for (let i = 0; i < 4; i++) { const hd = H2.box(g, 0.12, 4.2, 1.7, hideMat, cx - 1.25, y + 1.8, cz - 2.55 + i * 1.85); hd.rotation.y = (i % 2) * 0.12 - 0.06; }
@@ -2034,6 +2047,7 @@
       }
       lbl("פתח למסיבה — לגג בית הפרוה", cx - 0.45, y + 8.4, cz - 5, 1.1);   // SOUTH_SMALL_430: the door x 72.85..75.25 - clear of the west wall (x 72..72.8), its leaf not in it
     };
+    await tm_yield();   // LOAD_SLICE_R10
     const F_ETZ = (cx, cz, y) => {   // the high priest's dwelling (Yoma 10a: a mezuzah, "שהיה בה בית דירה לכהן גדול")
       H2.box(g, 4.2, 1, 2.2, M2.cedar, cx - 12, y, cz);
       H2.box(g, 4, 0.5, 2, clothMat, cx - 12, y + 1, cz);
@@ -2132,6 +2146,7 @@
         H2.box(g, 0.8, 0.1, 0.6, linenMat, tX + 0.05, y + 1.63, tZ - 0.02);
       }
     };
+    await tm_yield();   // LOAD_SLICE_R10
     const F_CHAVITIN = (cx, cz, y) => {   // "לשכת עושי חביתין" - the high priest's daily meal offering (Tamid 1:3; Menachot 4:5), "על מחבת בשמן
       // תעשה" (Bartenura Middot 1:4); Tiferet Yisrael there: in it they kneaded and baked the twelve loaves - half in the morning, half at dusk
       // CHAVITIN_211 (stage ב, point 39; the user: "תעשה גם צורת טגון"): Menachot 50b (131:1746) "חביתי כהן גדול, כיצד עושין אותן? רבי
@@ -2204,6 +2219,7 @@
     // וכל כלי שיר"): lyres hanging on pegs along the west wall, harps standing by the side toward the steps, cymbals on a table, and a Levite
     // putting a lyre in its place. The room's strip toward the women's court's corner chamber (|z| > |cz| + 2.25) is taken by its partition
     // (as in the chambers above). The instruments' forms and numbers - model choices (the lyre as the morning demo's, 55-tamid.js)
+    await tm_yield();   // LOAD_SLICE_R10
     const strMat = new MeshStandardMaterial({ color: 0xece2c6, roughness: 0.6 });
     const lyreG = () => {   // a kinor: a sound box, two arms and a yoke, seven strings; its face toward +x
       const k = new Group();
@@ -3418,6 +3434,7 @@
     // Bartenura on Middot 5:4 (they sat in the unconsecrated half - no sitting in the Azara except kings of David's house); Sanhedrin 1:6 (71);
     // Sanhedrin 4:3 (half a threshing-floor so that they see each other; two judges' scribes stand before them, one right one left).
     // MODEL CHOICES (no source): hall size 22x16 inside, wall thickness 2, floor at 16, tier heights, 5 rows, door places and sizes, figures.
+    await tm_yield();   // LOAD_SLICE_R10
     {
       // GAZIT_FLOOR_B2 (fix-b2, 22.11.2026 - the user's decision 75): the hall's floor at 13.5 - the court of Israel's level - and 27 steps
       // of half an amah up to it from the chel, as the booklet "אלחנן וחיים עולים לירושלים" draws it (D188); until now 16 (the priests'
@@ -3553,6 +3570,7 @@
     // the chamber's floor (16). THE GOLAH CHAMBER (south, z -59.2..-55.2): its door south, to the court ("ומשם מספיקים מים לכל העזרה").
     // Their width inside, 4 - the Boaz (1329, line 26): "לשכה שלכה"פ היה רחבה ד' אמות". MODEL CHOICES: their lengths, the doors'
     // places in their walls, the furniture, the well's size.
+    await tm_yield();   // LOAD_SLICE_R10
     {
       const X0 = 70.8, X1 = 76, T = 1.2, TOP = 29.5, DH = 7, FYK = LV.KOH, ZS = -54;
       const ix0 = X0 + T, icx = (ix0 + X1) / 2;   // inside x 63..67
@@ -3691,6 +3709,7 @@
     // 1.9.5: pillars before the hall's south face (z -54) - GAZIT_MEIRI_195: five, four amot apart (six, 3.6 apart, before), the
     // door to the court (now in the hall's east half) between the third and the fourth; the two east ones stand past the priests'
     // podium (x 82.5) - a base under each
+    await tm_yield();   // LOAD_SLICE_R10
     const pilA = new InstancedMesh(H2.uvWorldBox(new BoxGeometry(1, 11.5, 1), 1, 11.5, 1), M2.marble, 3);
     for (const x of [86]) H2.box(g, 1, 2.5, 1, M2.marble, x, 13.5, -53.7);
     [78, 82, 86].forEach((x, i) => {
@@ -3859,6 +3878,7 @@
     // בית אבטינס... והב׳ בית הטבילה לכה״ג ביוה״כ... ומסתבר שלשכת בית אבטינס... בצד מערב היתה, סמוך למקום הקודש" - the room on the gate's
     // western half (x WATER_X-6.6..-1.4), its door east, to the bath on the eastern half (until now the room over the whole gate and the bath
     // twelve amot west of it - over the Bechorot gate); its size - a model choice
+    await tm_yield();   // LOAD_SLICE_R10
     room(WATER_X - 4, 67.5, 8, 9, 8, 40.9, { dx: 1, dz: 0 }, "עליית בית אבטינס — מפטמי הקטורת", 51.5, (cx, cz, y) => {
       H2.cyl(g, 0.7, 0.5, 0.9, M2.stoneSmooth, cx - 1.6, y, cz); const pst = H2.cyl(g, 0.08, 0.08, 1.4, M2.cedar, cx - 1.4, y + 0.5, cz); pst.rotation.z = 0.5;
       for (const [dx, dz] of [[0.6, -2.7], [1.7, -2.3], [1.2, 2.5]]) H2.cyl(g, 0.45, 0.35, 1.1, clay, cx + dx, y, cz + dz);
@@ -4006,6 +4026,7 @@
       }
     }
     // ===== FIX-B2 (22.11.2026): THE GATES' PALMS, THE RAMPS FOR THE BEASTS, THE OIL CHAMBER'S SECOND DOOR, THE BLEMISHED PRIESTS =====
+    await tm_yield();   // LOAD_SLICE_R10
     {
       const noPickAll = (o) => { o.traverse((m) => { if (m.isMesh) m.userData.noPick = true; }); return o; };
       const bakeTo = (tmp, parent) => {   // (as bake211: the pieces of one material in one mesh)
@@ -4274,6 +4295,7 @@
         if (eznLbl["לשכת העצים"]) eznLbl["לשכת העצים"].push(...ctx2.labels.slice(l0));
       }
     }
+    await tm_yield();   // LOAD_SLICE_R10
     ctx2.shared.flyPoints = ctx2.shared.flyPoints || {};
     Object.assign(ctx2.shared.flyPoints, {
       ezratNashim: { pos: [240, 85, 125], target: [160, 6, 0] },

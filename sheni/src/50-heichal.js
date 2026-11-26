@@ -219,6 +219,7 @@
       ctx2.shared.amaltera = { mode: "kinim", set(k) { this.mode = AG[k] ? k : "kinim"; for (const q of Object.keys(AG)) AG[q].visible = q === this.mode; return this.mode; } };
       ctx2.shared.amaltera.set("kinim");
     }
+    await tm_yield();   // LOAD_SLICE_R10
     const pilG = H2.uvWorldBox(new BoxGeometry(0.5, 76, 1.6), 0.5, 76, 1.6);
     const pilMats = [];
     for (const zz of [34.5, 39.5, 44.5, 49]) {
@@ -360,6 +361,7 @@
     // watch kept its knives, with two doors: one to the ulam and one at its outer western corner ("בזוית צפונית מערבית"), each 8 amot high,
     // to make the whole court fit for slaughtering kodashim kalim (Zevachim 55b). The ulam between them 70 wide, as the house. Model choices:
     // the room 20 high, its partition from the ulam (1, on the house's line z 35), its western wall (1, x 0.5..1.5), the doors 4 wide.
+    await tm_yield();   // LOAD_SLICE_R10
     const ulamT = new Group();
     g.add(ulamT);
     ulamT.visible = false;
@@ -470,6 +472,7 @@
       windows(ulamT, -45, 1);          // the Tiferet Yisrael's: in the room, on its north wall (the partition has its door)
       windows(ulamR, -45, 1);          // the Rambam's: on the hall's north end
     }
+    await tm_yield();   // LOAD_SLICE_R10
     ctx2.shared.ulamWidth = { mode: "mishnah", set(m) { this.mode = m === "rambam" || m === "tiferet" ? m : "mishnah"; ulamM.visible = this.mode === "mishnah"; ulamR.visible = this.mode === "rambam"; ulamT.visible = this.mode === "tiferet"; } };
     // ULAMVIEW_211 (the user, 14.11.2026: "בהצגת השינויים באולם (רמב״ם, תפא״י וכו') צריך להרחיק את המבט כדי שיובן הפער"): the row's
     // view is from higher up, over the ulam's whole width (content.json), and while the ulam's roof is open the reading's own parts
@@ -650,6 +653,7 @@
     //              him, 4:3), then 6; the house's wall 7, then 6; the common otem block gives way to the cells there
     // The cells' centres along the wall are the same in every reading (five in the 67 amot from the house's front wall, x -4.5, to the line
     // of the west wall, -71.5, partitions of 2 - model choice; in the west three in z -22..22, two on the top storey).
+    await tm_yield();   // LOAD_SLICE_R10
     const cellsG = new Group();
     g.add(cellsG);
     const cutS = [];   // the south side's common pieces (into the cutaway)
@@ -700,6 +704,7 @@
     // 1.9.1 (the user: "בלחיצת מתג המסיבה אמור להיפתח הקירוי שלה"): in the Rambam's reading the mesibah is the lowest cell of its strip (z 27..30,
     // x -82.5..-4.5; rambamCells below) - its place cuts the model by height above that storey (the section, axis "y", at 35.2, for 15 s)
     // and this layer marks it: an amber plate on its floor and its name, shown while that cut is on and the Rambam's reading is chosen
+    await tm_yield();   // LOAD_SLICE_R10
     {
       const mp = new Group();
       Object.defineProperty(mp, "visible", { get: () => { const S = ctx2.shared.section, R = ctx2.shared.cellsReading; return !!(S && S.on && S.axis === "y" && S.v < 40 && (!R || R.mode === "rambam")); }, set: () => {} });
@@ -821,6 +826,7 @@
         boxXZ(-1, XWE - w, XWE - w + 0.3, y, y + 1.2, -(GO + w), GO + w, rail);
       }
     };
+    await tm_yield();   // LOAD_SLICE_R10
     const otemBlockRef = otemBlock;   // the common otem block - hidden for the readings whose lower storey stands in it
     const buildCells = (key) => {
       const R = CELLS_R[key], P = cellParts[key];
@@ -942,6 +948,7 @@
       for (const m of outer) if (m) (ctx2.herodAdd ? ctx2.herodAdd(m) : outerWalls.push(m));
       if (Array.isArray(ctx2.cutaway) && ctx2.cutawayReady) { P.south.visible = ctx2.cutaway.length ? ctx2.cutaway[0].visible !== false : true; ctx2.cutaway.push(P.south); } else cutS.push(P.south);
     };
+    await tm_yield();   // LOAD_SLICE_R10
     ctx2.shared.cellsReading = {
       mode: "raavad", keys: Object.keys(CELLS_R), cutX: CUT_X,   // 1.9.3 (the user, 20:16): the Rambam as the Tosafot Yom Tov reads him (4:3) - the lowest storey opposite the otem, as the Raavad; his drawings ("rambam") are no longer in the table
       set(key) {
@@ -1054,6 +1061,7 @@
       outerWalls.push(wallBox(84, 35, 19, -40.5, 72, s * 25.5, s));             // the mass above the walk (16..35, 72..107)
     }
     // the west: the upper storey's west wall, the walk's outer wall and the mass above it, the walk's floor (the cells' roof)
+    await tm_yield();   // LOAD_SLICE_R10
     H2.box(cellsG, 6, 43, 20, M2.marble, -68.5, 64, 0);
     outerWalls.push(H2.box(cellsG, 5, 8, 60, M2.marble, -80, 64, 0));            // x -82.5..-77.5, z -30..30 (was 42 long), 64..72
     outerWalls.push(H2.box(cellsG, 17, 35, 20, M2.marble, -74, 72, 0));          // the mass above (72..107)
@@ -1201,6 +1209,7 @@
     // העזרה באבנים יקרות" (337, line 12), Har HaMoriah there "כוונתו באבני שיש" (5474, line 25). That the coloured marble was in the
     // floor - by Shoshanei Yaakov (8031:2754) and the Aruch (7550:4119), verified in Otzaria; the card cites them. The floor: slabs
     // of two amot in the three marbles, their rows waving like the sea (the slabs' size and the rows' wave - model choices).
+    await tm_yield();   // LOAD_SLICE_R10
     const herodFloorTex = (() => {
       const SZ = 1024, N = 12, T = SZ / N;   // the tile is 24 amot: 12 x 12 slabs of 2 amot
       const cv = document.createElement("canvas");
@@ -1333,6 +1342,7 @@
       }
       return { gS, gUN, gUS, gF };
     };
+    await tm_yield();   // LOAD_SLICE_R10
     mkRing(parTK, 112, 3, true, true);    // maakeh 3 amot (112..115) and an amah of kalah orev over it
     mkRing(parRY, 112, 4, false, true);   // "לא היה כלה עורב עולה מן המדה, אלא ארבע אמות היה מעקה" (112..116), R. Yehuda
     // 1.4.0 (the user): "120 אמה" - the Abarbanel (I Kings 8:10, after Josephus): the house 120 high. An extra band of 20 amot over the
@@ -1474,6 +1484,7 @@
         { text: "פתח העלייה — פתוח לדרום, ושני כלונסות של ארז", x: -30, y: 76, z: 36.5, size: 1.2 }
       );
     }
+    await tm_yield();   // LOAD_SLICE_R10
     H2.box(g, 83, 3.5, 68, M2.marble, -40, 107, 0);   // ceiling layers of the upper storey (107..112; the top 1.5 is the gold band)
     H2.box(g, 84.78, 1.5, 73, M2.gold, -41.61, 110.5, 0);
     // 1.4.0 (the user): the parapet in two readings (Middot 4:6) - ctx2.shared.parapet: "tk" - three amot of maakeh and one amah of kalah
@@ -1751,6 +1762,7 @@
     // elbow leans) } - the arm reaches there (two bones; a far point stretches the arm toward it); o.key = { dir: [x, y, z], turn } |
     // true - the key in his right hand (life-size; `dir` - the way it points); o.xray - the right arm and the key are drawn over the
     // stone (inside a wall). KOH.hide(). Model choices: his look (as the lotteries' priests), the key's form and size.
+    await tm_yield();   // LOAD_SLICE_R10
     const KOH = (() => {
       let A = null, bad = false;
       const KEYL = 0.36;
@@ -1910,6 +1922,7 @@
       return { pose, KEYL, hide() { if (A) { A.g0.visible = false; A.key.visible = false; A.last = null; } }, dims() { const a = A || build(); return a ? a.P : null; },
         get shown() { return !!(A && A.g0.visible); }, get actor() { return A; } };
     })();
+    await tm_yield();   // LOAD_SLICE_R10
     ctx2.shared.kohenActor = KOH;
     // SOUNDS_300 (the user's items 7 and 10, 18.11.2026; "קול צעדים יחף אמור להיות יחסית נמוך"): THE PRIEST'S SOFT BAREFOOT STEPS - one
     // "steps" loop of 90-entry.js (ctx2.shared.sfxLoop) while KOH's place changes, whoever poses him (the wicket's walk, the great gate's
@@ -2051,6 +2064,7 @@
     // western wall and the cell's outer wall - x -82.7..-65.3, two amot wide on the axis (a model choice), eight high, its sill one amah
     // above the Holy of Holies' floor at its west end (F + 4, the slope). NEDOOR's way, but on a CLONE of each mesh's material (a
     // material has one set of planes; the clone keeps the door's and the lul's apart, and follows a swap of the mesh's material).
+    await tm_yield();   // LOAD_SLICE_R10
     const LULHOLE = (() => {
       const B = { x0: -82.7, x1: -65.3, y0: F + 5, y1: F + 13, z0: -1, z1: 1 };
       const planes = [new Plane(new Vector3(-1, 0, 0), B.x0), new Plane(new Vector3(1, 0, 0), -B.x1), new Plane(new Vector3(0, -1, 0), B.y0),
@@ -2534,6 +2548,7 @@
     // 1.9.1 (the user: "צור חור לפשפשים לשתי השיטות"): the front wall beside the great gate (|z| 10.2..27.3) is built six amot thick (the
     // house's wall, Middot 4:7 "כותל ההיכל שש") with its gold facing, and the two pishpeshin are real openings through it, 3 x 6 at z +-19
     // (size and place - model choices); until 1.9.0 the facing was a gold sheet with the wickets painted on it
+    await tm_yield();   // LOAD_SLICE_R10
     for (const s2 of [-1, 1]) {
       const zc = s2 * 18.75, hole = [{ center: zc - s2 * 19, width: 3, height: 6 }];
       const body = H2.wall(g, { axis: "z", length: 17.1, height: 42, thickness: 5.95, mat: M2.marble, occlude: false, cx: -1.5, cz: zc, y: F, openings: hole });
@@ -3113,6 +3128,7 @@
     // "ובגדי קדש לא היו ישנים בהן... ומתכסין בכסות עצמן" (the same Mishnah) - the Levites' look of the morning's service (55-tamid.js:
     // a plain robe, a cap, no belt). The ways, the times and the figures' forms - model choices. The underground: 30-courts.js
     // MESIBAH_303 (ctx2.shared.tevilaWay).
+    await tm_yield();   // LOAD_SLICE_R10
     {
       const MS = () => ctx2.shared.tevilaWay;
       const HP = Math.PI / 2;
@@ -3447,6 +3463,7 @@
       }
     }
     // 1.4.0: the cedar beams across the ulam, from the house's wall (x 1.5) to the ulam's front wall (x 12.5), near its ceiling (Middot 3:8)
+    await tm_yield();   // LOAD_SLICE_R10
     const beamG = new CylinderGeometry(0.35, 0.35, 11, 10);
     beamG.rotateZ(Math.PI / 2);
     instMesh(g, beamG, M2.cedar, [-30, -15, 0, 15, 30].map((z) => m4(7, 60.5, z)));
@@ -3648,6 +3665,7 @@
       };
       return p;
     };
+    await tm_yield();   // LOAD_SLICE_R10
     const parOut = mkPar(-44.5, 1, PAR_H, [TYT_OUT]), parIn = mkPar(-45.5, -1, PAR_H - PAR_BEND, [TYT_AMAH, TYT_OUT]);
     const PARS = [parOut, parIn];
     // 1.9.3: the inner one's head, bent toward the Holy of Holies (with it when it moves: R. Yose's one parochet)
@@ -4054,6 +4072,7 @@
     // What is seen only on Yom Kippur is OFF until its place or its opinions row is chosen (the user: "ברירת מחדל כבוי (נראלי ששיך רק
     // ביוהכ)"): the features rovad4 / kanim / machtot (not timed: they go back when another place is chosen), and the High Priest's walk
     // to between the parochot (ctx2.shared.ykEntry). Every source below was read in the library (book:line).
+    await tm_yield();   // LOAD_SLICE_R10
     {
       ctx2.shared.features = ctx2.shared.features || {};
       const FY = (x) => F + houseRise(x);
@@ -4480,6 +4499,7 @@
         });
       }
     }
+    await tm_yield();   // LOAD_SLICE_R10
     const rockMat = M2.stone.clone();
     rockMat.color = new Color(12167564);
     const rock = new Mesh(new DodecahedronGeometry(1.3, 0), rockMat);

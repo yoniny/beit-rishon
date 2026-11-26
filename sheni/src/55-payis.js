@@ -42,6 +42,7 @@
     // morning service's high priest (55-tamid.js) and "בגדי הכהנים" (below); built when first asked
     //@@include hp-kit
     SH.hpKit = () => hpKit(SH.priestKit);
+    await tm_yield();
     // HP_KIT_A2 (the user via the coordinator: "מתג כזה תעשה גם בבית שני"): "בגדי הכהנים" - a priest in his four garments and the high
     // priest in his eight, side by side between the ulam and the altar, facing east, as in the First Temple (58-ark.js): the same pair
     // (hpKit pair), its readings - the avnet of the common priest (Yoma 12b), the ephod and the mitznefet - set from the opinions table.
@@ -138,7 +139,9 @@
       return t;
     };
     const N = 18, NEW = 8;
-    const K = Array.from({ length: N }, (_, i) => figure(mRobe, true, i));
+    await tm_yield();   // LOAD_SLICE_R10 (issue #2 R8): the figures in slices - the same figures, in the same order (the same random turns)
+    const K = [];
+    for (let i = 0; i < N; i++) { K.push(figure(mRobe, true, i)); if (i % 4 === 3) await tm_yield(); }
     const MEM = figure(mRobe, true, 0);              // the appointed one over the lotteries
     const WATCH = figure(mRobe, true, 3);            // "הרואה"
     const ELDER = new Group();                       // "וזקן יושב במערבה" - seated, in the unconsecrated half
@@ -212,6 +215,7 @@
       };
       ctx2.animated.push(() => { if (SF.on) place(); });
     }
+    await tm_yield();
     const T1 = torch(), T2 = torch(), T3 = torch(), T4 = torch();
     // TORCHES_HELD_N3 (fix-n3, 24.11.2026 - the user, of a picture where a priest stood beside a torch and did not carry it; Tamid 1:3, 88:? "ונכנסו אחריו ושתי אבוקות של אור
     // בידם"; 3:4 "מבקרין אותו לאור האבוקות"): every torch of this demonstration is held in the hand of a priest who walks (or stands) with it - the torch is his hand's child, his arm

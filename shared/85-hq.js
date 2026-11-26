@@ -860,8 +860,17 @@
       pdM.uniforms.resolution.value.set(w, h);
     }
     // ---- once a frame, before the canvas is drawn
+    // HQ_FREE_R16 (issue #2 R16): when the effects have been off for 30 seconds, their four screen-size buffers (about 23 MB at 1920 x 1080)
+    // are given back to the graphics card; switched on again, they are made anew at the first frame (their shaders stay compiled: no wait)
+    let offSince = -1, freed = 0;
+    const freeTargets = () => { for (const t of [pre, aoRT, pdRT, litRT]) if (t) try { t.dispose(); } catch (_) {} freed++; };
     function frame() {
-      if (!S.ao && !S.gi) { U.tmHQOn.value = 0; return; }
+      if (!S.ao && !S.gi) {
+        U.tmHQOn.value = 0;
+        if (pre) { const now = performance.now(); if (offSince < 0) offSince = now; else if (offSince !== Infinity && now - offSince > 30000) { freeTargets(); offSince = Infinity; } }
+        return;
+      }
+      offSince = -1;
       // GI cannot consume the normal/depth prepass until its lit shaders finish compiling. With AO off, drawing that scene
       // meanwhile is entirely discarded. Keep the same unmodified lighting and start all GI passes on its first ready frame.
       if (!S.ao && S.giWarm !== 2) {
@@ -1010,6 +1019,6 @@
       renderer.render(quad, qcam);
       renderer.setRenderTarget(rt);
     }
-    return { S, U, frame, set, warmScene, show, mats: () => ({ gtaoM, pdM, giM, gdM }), get on() { return S.ao || S.gi; } };
+    return { S, U, frame, set, warmScene, show, mats: () => ({ gtaoM, pdM, giM, gdM }), get on() { return S.ao || S.gi; }, get freed() { return freed; } };
   }
   //@@slot after-HQ_make-note

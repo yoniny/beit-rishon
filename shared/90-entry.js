@@ -56,7 +56,12 @@
     return spr;
   }
   // ===== 1.0.1-K: the load measurements. ent_load.loading is true until the overlay goes: the animation loop renders nothing meanwhile =====
+  var ent_envRestored = 0;   // PMREM_RESTORE_R11: how many times the environment was baked again (the tests read it)
   var ent_load = { loading: true, rows: [], tEntry: performance.now(), printed: false, firstVisibleMs: null };
+  // LOAD_SLICE_R10 (issue #2 R10): the long tasks while loading (over 50 ms each, the browser's own count) - their number, the longest and
+  // their sum go into the "[load]" table, so the slicing can be measured on a weak computer
+  var ent_long = { n: 0, max: 0, sum: 0 };
+  try { new PerformanceObserver((l) => { if (!ent_load.loading) return; for (const e of l.getEntries()) { ent_long.n++; ent_long.max = Math.max(ent_long.max, e.duration); ent_long.sum += e.duration; } }).observe({ type: "longtask", buffered: true }); } catch (_) {}
   function ent_mark(step, ms, note) {
     ent_load.rows.push({ step, ms: Math.round(ms * 10) / 10, at: Math.round(performance.now()), note: note || "" });
   }
@@ -90,7 +95,8 @@
   //@@slot ent_room
   ent_room.position.y = 0;
   ent_room.traverse((o) => { if (o.isPointLight) o.intensity = 5; });
-  scene.environment = pmrem.fromScene(ent_room, 0.04).texture;
+  var ent_envRT = pmrem.fromScene(ent_room, 0.04);   // PMREM_RESTORE_R11: kept - baked again into this same target after a lost context
+  scene.environment = ent_envRT.texture;
   // Only the generated PMREM is used after this one-shot bake. Release its source
   // cubemap, convolution shaders and room buffers; the returned texture is owned
   // by the scene and PMREMGenerator.dispose() deliberately leaves it intact.
@@ -211,7 +217,23 @@
         } catch (_) {}
       }, 4000);
     });
-    renderer.domElement.addEventListener("webglcontextrestored", () => { lostT++; hideNote(); try { if (ctx && typeof ctx.requestRender === "function") ctx.requestRender(); } catch (_) {} });
+    // PMREM_RESTORE_R11 (issue #2 R11): the environment's light is drawn on the graphics card, and a lost context loses it - after the
+    // return the model was lit without it (dull, the gold flat). It is baked again, the same room, into the SAME target and texture (the
+    // night demonstrations keep that texture and give it back at their end), then the frame is redrawn
+    const rebakeEnv = () => {
+      let room = null, pm = null;
+      try {
+        room = new RoomEnvironment();
+        room.position.y = 0;
+        room.traverse((o) => { if (o.isPointLight) o.intensity = 5; });
+        pm = new PMREMGenerator(renderer);
+        pm._allocateTarget = () => ent_envRT;
+        pm.fromScene(room, 0.04);
+        ent_envRestored++;
+      } catch (e) { console.warn("[gl] environment:", e && e.message); }
+      try { if (room) { room.traverse((o) => { if (o.isInstancedMesh) o.dispose(); }); room.dispose(); } if (pm) pm.dispose(); } catch (_) {}
+    };
+    renderer.domElement.addEventListener("webglcontextrestored", () => { lostT++; hideNote(); rebakeEnv(); try { if (ctx && typeof ctx.requestRender === "function") ctx.requestRender(); } catch (_) {} });
   }
   var camera = new PerspectiveCamera(48, viewWH[0] / viewWH[1], 0.5, 6e3);
   camera.position.set(430, 190, 240);
@@ -1380,7 +1402,7 @@
       // dimmed grey in blotches, the bounced light itself speckled - not a slip of the code but the method at a cost a weak computer
       // can bear. The row "אור חוזר מהקירות" is gone (giReady false: 70-ui.js builds no row and reads no stored "tm.hq.gi") and the
       // bounce is never drawn, whatever is asked; "צל רך בפינות" (GTAO) stays. The GI code stays in 85-hq.js, idle.
-      hq: { get ao() { return ent_hq.S.ao; }, get gi() { return false; }, giReady: false, set: (aoOn) => ent_hq.set(aoOn, false) }   // HQ_302; GI_OFF_303
+      hq: { get ao() { return ent_hq.S.ao; }, get gi() { return false; }, giReady: false, set: (aoOn) => ent_hq.set(aoOn, false), get freed() { return ent_hq.freed; } }   // HQ_302; GI_OFF_303; HQ_FREE_R16: freed - for the tests
     },
     flyTo,
     raycast: ent_intersect,
@@ -1402,6 +1424,7 @@
     renderer
   };
   //@@slot after-root
+  ctx.shared.batch = { stats: () => ent_batch.stats(), off: () => ent_batch.off(), list: () => ent_batch.B.batches.map((b) => b.mesh), undoAt: (i) => ent_batch.undo(ent_batch.B.batches[i]) };   // BATCH_R15 (list, undoAt - for the tests)
   if (ctx.shared.walkMode) ctx.shared.walkMode.nudge = ent_walkNudge;   // WALK_FLOOR_A2 (4): 70-ui.js zoomBy, in walk mode
   if (!ctx.shared.floorY) ctx.shared.floorY = (x, y, z) => cam_floorY({ x, y, z });
   ctx.shared.solidsChanged = () => { ent_sol.t = -1e9; };   // ONE_FLIGHT_420: a reading that puts parts in or out of the scene - the floors' list made again at once   // SCALE_FIG_A2: the floor under a point, in both houses (the Second's had it)
@@ -1725,7 +1748,10 @@
       return L.length > 0; };
     ctx.shared.demoResume = () => { for (const d of live()) if (isPaused(d)) { try { d.resume(); } catch (_) {} } paint(); };
     ctx.shared.demoPaused = () => live().some(isPaused);
-    setInterval(paint, 300);
+    // TIMERS_HIDDEN_R12 (issue #2 R12): the bar's check (its buttons, its place - a layout read) only while the house is seen; when it is
+    // seen again, at once
+    setInterval(() => { if (!document.hidden && window.__tmHouseVisible !== false) paint(); }, 300);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden && window.__tmHouseVisible !== false) paint(); });
     // a press on the model: a running demonstration pauses (the presentation's own press is the presentation's)
     try {
       renderer.domElement.addEventListener("pointerdown", () => {
@@ -2073,6 +2099,15 @@
     try { par = !!renderer.getContext().getExtension("KHR_parallel_shader_compile"); } catch (_) {}
     ent_mark("compile shaders", performance.now() - tc, how + ", " + ((renderer.info && renderer.info.programs) || []).length + " programs incl. " + variants + " shadow-depth variants" + (par ? ", parallel" : ""));
     bar(0.97);
+    // LOAD_SLICE_R10 (issue #2 R10): the textures of what is seen uploaded first, in slices (the first frame was one long task with all of
+    // them in it); the hidden layers' textures still go up when they are first shown, as before
+    { const tt = performance.now(); let nTex = 0;
+      try {
+        const seen = new Set();
+        scene.traverseVisible((o) => { const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : []; for (const m of ms) for (const k in m) { const v = m[k]; if (v && v.isTexture && !v.isRenderTargetTexture && !v.isCubeTexture) seen.add(v); } });
+        for (const tx of seen) { if (tx.image && typeof renderer.initTexture === "function") { renderer.initTexture(tx); nTex++; } const y = tm_yield(30); if (y) await y; }
+      } catch (e) { console.warn("[load] textures:", e && e.message); }
+      ent_mark("textures uploaded in slices", performance.now() - tt, nTex + " textures"); }
     // the first frame, still under the overlay: the texture uploads, the shadow map and the depth programs happen here, not in view
     const tf = performance.now();
     try {
@@ -2111,6 +2146,7 @@
     }
     if (typeof core_texMs === "number") rows.push({ step: "10-core textures (TEX)", ms: Math.round(core_texMs * 10) / 10, at: null, note: "" });
     for (const r of ent_load.rows) rows.push(r);
+    rows.push({ step: "long tasks while loading", ms: Math.round(ent_long.max), at: null, note: ent_long.n + " tasks, " + Math.round(ent_long.sum) + " ms in all" });
     rows.push({ step: "first visible frame", ms: ent_load.firstVisibleMs == null ? null : Math.round(ent_load.firstVisibleMs * 10) / 10, at: Math.round(performance.now()), note: "" });
     window.__loadTimes = rows;
     try {
@@ -2193,11 +2229,80 @@
         renderer.render(scene, camera);
         ent_load.firstVisibleMs = performance.now() - t0;
         ent_printLoad();
+        setTimeout(() => { try { ent_batch.run(); } catch (e) { console.warn("[batch]", e && e.message); } }, 8000);   // BATCH_R15
       }
     } finally {
       scene.matrixWorldAutoUpdate = autoWorld;
     }
   }
+  // BATCH_R15 (issue #2 R15): the small plain parts drawn one by one (about 1,800 in the Second House, most of them under 500 triangles)
+  // are drawn in batches - under the same parent, of the same material and the same shadow settings, within 32 amot of each other, one
+  // mesh. Only parts with nothing of their own: no name, no userData, no children, not a wall that fades, not see-through, not one of the
+  // demonstrations' hidden groups (only what is seen 8 seconds after the load). The parts stay where they were (their place, their name
+  // for the code, their visibility), moved to a layer that is not drawn and not hit by rays; the batch is drawn and hit instead, the same
+  // triangles. Every frame the parts are compared with how they were: if one moved, turned, was hidden or shown, got another material
+  // or geometry, was taken out or marked by some code - its whole batch is undone at once and for good, and the parts are drawn again by
+  // themselves. ctx.shared.batch = { stats(), off() } (off - every batch undone).
+  var ent_batch = (() => {
+    const B = { batches: [], merged: 0, parts: 0, undone: 0, ran: false, timer: 0 };
+    const HIDE_LAYER = 31, CELL = 32;
+    const sigOf = (g) => { if (g.morphAttributes && Object.keys(g.morphAttributes).some((k) => g.morphAttributes[k].length)) return null; const ks = Object.keys(g.attributes).sort(); if (!ks.includes("position")) return null; return (g.index ? "i" : "n") + ks.map((k) => { const a = g.attributes[k]; if (a.isInterleavedBufferAttribute || a.isGLBufferAttribute) return "X"; return k + a.itemSize + (a.normalized ? "n" : "") + a.array.constructor.name; }).join(","); };
+    const snap = (o) => ({ px: o.position.x, py: o.position.y, pz: o.position.z, qx: o.quaternion.x, qy: o.quaternion.y, qz: o.quaternion.z, qw: o.quaternion.w, sx: o.scale.x, sy: o.scale.y, sz: o.scale.z, vis: o.visible, mat: o.material, geo: o.geometry, par: o.parent, ud: Object.keys(o.userData).length, ch: o.children.length, name: o.name });
+    const same = (o, s) => o.position.x === s.px && o.position.y === s.py && o.position.z === s.pz && o.quaternion.x === s.qx && o.quaternion.y === s.qy && o.quaternion.z === s.qz && o.quaternion.w === s.qw && o.scale.x === s.sx && o.scale.y === s.sy && o.scale.z === s.sz && o.visible === s.vis && o.material === s.mat && o.geometry === s.geo && o.parent === s.par && Object.keys(o.userData).length === s.ud && o.children.length === s.ch && o.name === s.name;
+    const undo = (b) => {
+      if (b.done) return; b.done = true;
+      try { if (b.mesh.parent) b.mesh.parent.remove(b.mesh); b.mesh.geometry.dispose(); } catch (_) {}
+      for (const it of b.parts) it.o.layers.mask = it.mask;
+      B.undone++; B.merged -= b.parts.length; B.parts -= 0;
+      try { if (ctx && typeof ctx.requestRender === "function") ctx.requestRender(); } catch (_) {}
+    };
+    const check = () => {
+      for (const b of B.batches) { if (b.done) continue; for (const it of b.parts) if (!same(it.o, it.s)) { undo(b); break; } }
+    };
+    const run = () => {
+      if (B.ran || window.__tmNoBatch === true) return; B.ran = true;   // (__tmNoBatch: the tests compare with and without)
+      const t0 = performance.now();
+      const occ = new Set(ctx && ctx.H && Array.isArray(ctx.H.OCC) ? ctx.H.OCC : []);
+      scene.updateMatrixWorld(true);
+      const groups = new Map(), visUp = (o) => { for (let q = o; q; q = q.parent) if (q.visible === false) return false; return true; }, box = new Box3(), c = new Vector3();
+      scene.traverse((o) => {
+        if (!o.isMesh || o.isInstancedMesh || o.isSkinnedMesh || o.isBatchedMesh || o.name || o.children.length || Object.keys(o.userData).length || occ.has(o)) return;
+        const m = o.material; if (!m || Array.isArray(m) || m.transparent || m.alphaTest > 0 || Object.keys(m.userData || {}).length || !m.visible) return;
+        if (o.layers.mask !== 1 || o.onBeforeRender !== Object3D.prototype.onBeforeRender || o.raycast !== Mesh.prototype.raycast || o.matrixAutoUpdate === false || !visUp(o)) return;
+        const g = o.geometry, sg = g && sigOf(g); if (!sg || sg.includes("X")) return;
+        const n = g.index ? g.index.count : g.attributes.position.count; if (n > 1500 * 3) return;   // only the small ones
+        if (!g.boundingBox) g.computeBoundingBox(); box.copy(g.boundingBox).applyMatrix4(o.matrixWorld); box.getCenter(c);
+        { const sz = box.getSize(new Vector3()); if (Math.max(sz.x, sz.y, sz.z) >= 6) return; }   // (6 amot or more: one of the large meshes the pills, the cloud and the roofs' test look at - left as it is)
+        const det = o.matrixWorld.determinant(); if (!(Math.abs(det) > 1e-12)) return;
+        o.updateMatrix(); if (!(o.matrix.determinant() > 1e-12)) return;   // (a mirrored part: baked, its faces would turn inside out)
+        const k = [o.parent.uuid, m.uuid, sg, o.castShadow ? 1 : 0, o.receiveShadow ? 1 : 0, o.renderOrder, o.frustumCulled ? 1 : 0, det < 0 ? "m" : "p", Math.floor(c.x / CELL), Math.floor(c.y / CELL), Math.floor(c.z / CELL)].join("|");
+        let L = groups.get(k); if (!L) groups.set(k, L = []); L.push(o);
+      });
+      for (const L of groups.values()) {
+        if (L.length < 4) continue;
+        const o0 = L[0], par = o0.parent, geos = [];
+        try {
+          for (const o of L) { o.updateMatrix(); geos.push(o.geometry.clone().applyMatrix4(o.matrix)); }
+          const mg = mergeGeometries(geos, false);
+          for (const q of geos) q.dispose();
+          if (!mg) continue;
+          mg.computeBoundingSphere(); mg.computeBoundingBox();
+          const mesh = new Mesh(mg, o0.material);
+          mesh.castShadow = o0.castShadow; mesh.receiveShadow = o0.receiveShadow; mesh.renderOrder = o0.renderOrder; mesh.frustumCulled = o0.frustumCulled;
+          mesh.name = "tmBatch"; mesh.userData.tmBatch = true; mesh.userData.noFade = true;   // (not a wall to fade or to hold the eye: its parts were none)
+          par.add(mesh);
+          const b = { mesh, parts: L.map((o) => ({ o, s: snap(o), mask: o.layers.mask })), done: false };
+          for (const it of b.parts) it.o.layers.set(HIDE_LAYER);
+          B.batches.push(b); B.merged += L.length;
+        } catch (e) { for (const q of geos) try { q.dispose(); } catch (_) {} console.warn("[batch] group:", e && e.message); }
+      }
+      B.ms = Math.round(performance.now() - t0);
+      if (ctx && Array.isArray(ctx.animated)) ctx.animated.push(check); else B.timer = setInterval(check, 1000);   // every frame (about 500 parts compared: a few hundredths of a millisecond)
+      try { if (ctx && typeof ctx.requestRender === "function") ctx.requestRender(); } catch (_) {}
+    };
+    return { run, B, check, undo, off: () => { for (const b of B.batches) undo(b); if (B.timer) clearInterval(B.timer); B.timer = 0; },
+      stats: () => ({ batches: B.batches.filter((b) => !b.done).length, merged: B.merged, undone: B.undone, ms: B.ms || 0 }) };
+  })();
   // IDLE_THROTTLE_441 (issue #2, R1 - "רינדור רק כשהמצב דורש אותו"; the user 25.11.2026: "תתחיל גם עם הR לפי הסדר"): when nothing has
   // moved or been asked for two seconds - the camera and its target still, no input, no flight, no walk, no demonstration and no
   // presentation running - the frame is drawn every other refresh (30 a second instead of 60); the fire's flicker, the water and the

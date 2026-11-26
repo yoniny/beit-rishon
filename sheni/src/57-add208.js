@@ -120,6 +120,7 @@
       hub.rotation.z = Math.PI / 2; hub.rotation.x = -Math.PI / 2;
       lbl("השמשית של הילני — כרמב״ם (פירוש המשנה, יומא ג, י)", X + 2, SY + R + 1.4, 0, 1.4, "heleneShamshit");
     }
+    await tm_yield();   // LOAD_SLICE_R10
     {
       const TX = wallX + 0.09, TY = 25.4, TZ = -12.5, TW = 2.4, TH = 1.7;   // north of the door, at the height of a man's eye over the floor (y 22)
       const cv = document.createElement("canvas"); cv.width = 256; cv.height = 180;
@@ -235,6 +236,7 @@
     // ---------- 4. THE CHAMBER OF THE VESSELS (Tamid 3:4) ----------
     // "נכנסו ללשכת הכלים, והוציאו משם תשעים ושלשה כלי כסף וכלי זהב". Tiferet Yisrael (Yachin, Tamid 3:4): "לא ידעתי מקומה. ואפשר
     // שהיתה באותן ל"ח לשכות שהיו סביב לכותלי ההיכל" - a label on the cells, not on one of them.
+    await tm_yield();   // LOAD_SLICE_R10
     lbl("לשכת הכלים — אפשר שבאחד מן התאים (תפארת ישראל, תמיד ג, ד)", -30, 50, -40.5, 1.6);
 
     // ---------- 5. BEIT HAEVEN - THE CHAMBER OF THE PRIEST WHO BURNS THE RED HEIFER (Parah 3:1; Yoma 2a) ----------
@@ -353,6 +355,7 @@
     // east wall, the same; red - "מן החליפות ולפנים", north of the ulam's wings and the house. Fitted to the altar's place and measures
     // (ctx2.shared.altarPlace, altarMeasures) when shown. The southern line of the two additions - Rashi's (the middle of the court) or the
     // Rambam's square (BHB 5:15-16, to the altar's wall line): NORTH_LINE_211, a switch (setLine). The colours - model choices.
+    await tm_yield();   // LOAD_SLICE_R10
     {
       const NG = grp("northZones", false);
       const Y = LV.KOH, ZN = -67.5;
@@ -466,6 +469,7 @@
     // and the altar's two bands in Yehudah's portion as gold columns (the east amah without its north end's amah, the south amah without
     // its west end's amah). Floors as the north's patches (NORTH_211): the courts at their floors' heights, the rest level. A place's
     // feature (untimed), fitted to the altar's place and measures. The colours - model choices.
+    await tm_yield();   // LOAD_SLICE_R10
     {
       const TG = grp("tribes", false);
       const KY = LV.KOH;
@@ -567,6 +571,7 @@
     // (ctx2.shared.simchaDemo.start): the sixteen climb, pour, the wicks catch, they come down; the cups stay lit while the lamps are
     // shown. The lamps are not part of the building's everyday state: the feature simchaMenorot (a place's, untimed - they go when
     // another place is chosen), off by default. Their places in the court, the shaft's form, the cups' arms - model choices.
+    await tm_yield();   // LOAD_SLICE_R10
     {
       // SIMCHA_LAMPS_B2 (fix-b2, 22.11.2026 - the user's decisions 39, 45 and 46): the lamps now have a PLACE and a FORM.
       // THE PLACE (SH.simchaLamps.at): "mid" - four in the court, as until now; "corner" - one in each of the four chambers in the corners,
@@ -814,6 +819,7 @@
     // Water Gate; he goes up the ramp, turns left and pours into the western bowl (40-altar.js: the bowls at x 43.05 / 43.95, z 9.4 of the
     // altar's frame - "מערבי של מים ומזרחי של יין"). Its walk is the walk engine's (ctx2.shared.walk); the walks are hurried.
     // SH.shiloach = { demo, stop, at(t), info, refs, POOL }.
+    await tm_yield();   // LOAD_SLICE_R10
     {
       const SHL = { POOL: [-133, 535.1], PW: 15, PD: 8, D: null, run: false, SP: { x: -135, z: 537, zT: 536.52 } };   // SHILOACH_WEST_B2 (the user, 14:34-14:35, questions 117 and 160 a): south of the mount and below it, on its south-western side (until now at x 25.5, z 541.4 - due south)   // SPRING_CAVE_B2: the pool before the rock, beside the path (until 22.11.2026 at [32, 550], 26 x 12, behind the rock)
       const K = SH.priestKit;
@@ -1302,6 +1308,40 @@
       };
       const inCourts = (x, z) => (x > -112 && x < 241.8 && z > -95 && z < 80.6) || (Math.abs(x) < 12 && z > 318 && z < 340);
       const RS = { list: null, rc: new Raycaster(), o: new Vector3(), d: new Vector3(0, -1, 0) };
+      // FLOOR_GRID_R9 (issue #2 R9; the first start of this demonstration spent seconds in its floor's rays, each one against every solid
+      // of the courts): the solids indexed once by their boxes on an 8-amot grid - a ray straight down meets only those whose box stands
+      // over its point and within its 60 amot; the same hits, in the same order. A solid that moved since (a door, the laver, new instances)
+      // or got another geometry is tested every time from then on, as before
+      const rsBox = (o) => { const g = o.geometry; let b; if (o.isInstancedMesh) { o.computeBoundingBox(); b = o.boundingBox.clone(); } else { g.computeBoundingBox(); b = g.boundingBox.clone(); } return b.applyMatrix4(o.matrixWorld); };
+      const rsKey = (o) => [o.geometry, o.isInstancedMesh ? o.instanceMatrix.version + ":" + o.count : 0];
+      const rsNear = (x, z, from) => {
+        const IX = RS.ix || (RS.ix = (() => {
+          const I = { map: new Map(), always: [], ents: [], frame: -1 };
+          RS.list.forEach((o, i) => {
+            let b = null; try { b = rsBox(o); } catch (_) { b = null; }
+            const e = { o, i, b, m: o.matrixWorld.elements.slice(), k: rsKey(o), dyn: !b || b.isEmpty() };
+            I.ents.push(e);
+            if (e.dyn || b.max.x - b.min.x > 400 || b.max.z - b.min.z > 400) { e.dyn = true; I.always.push(e); return; }
+            for (let cx = Math.floor(b.min.x / 8); cx <= Math.floor(b.max.x / 8); cx++) for (let cz = Math.floor(b.min.z / 8); cz <= Math.floor(b.max.z / 8); cz++) { const kk = cx + "," + cz; let L = I.map.get(kk); if (!L) I.map.set(kk, L = []); L.push(e); }
+          });
+          return I;
+        })());
+        const fr = ctx2.renderer && ctx2.renderer.info ? ctx2.renderer.info.render.frame : -2;
+        if (fr !== IX.frame || fr === -2) {   // once a frame: what moved or changed since the index was made
+          IX.frame = fr;
+          for (const e of IX.ents) {
+            if (e.dyn) continue;
+            const a = e.o.matrixWorld.elements, k = rsKey(e.o); let same = k[0] === e.k[0] && k[1] === e.k[1];
+            for (let j = 0; same && j < 16; j++) if (a[j] !== e.m[j]) same = false;
+            if (!same) { e.dyn = true; IX.always.push(e); }
+          }
+        }
+        const out = [], E = 1e-3, L = IX.map.get(Math.floor(x / 8) + "," + Math.floor(z / 8)) || [];
+        for (const e of L) { if (e.dyn) continue; const b = e.b; if (x >= b.min.x - E && x <= b.max.x + E && z >= b.min.z - E && z <= b.max.z + E && b.max.y >= from - 60 - E && b.min.y <= from + E) out.push(e); }
+        for (const e of IX.always) out.push(e);
+        out.sort((p, q) => p.i - q.i);
+        return out.map((e) => e.o);
+      };
       const rayFloor = (x, z, from) => {   // the first solid under (x, from, z) near the courts (the solids' list built once)
         if (!RS.list) {
           RS.list = [];
@@ -1323,7 +1363,7 @@
           });
         }
         RS.rc.set(RS.o.set(x, from, z), RS.d); RS.rc.far = 60;
-        for (const h of RS.rc.intersectObjects(RS.list, false)) {
+        for (const h of RS.rc.intersectObjects(rsNear(x, z, from), false)) {
           let ok = true; for (let q = h.object; q; q = q.parent) if (q.visible === false) { ok = false; break; }
           if (ok) return h.point.y;
         }
@@ -1921,6 +1961,7 @@
     //  with their instruments and the flute below them, the music (sfxLoop "simcha"), and at the cock's crow the two priests with the
     //  trumpets, from the upper gate to the gate that goes out to the east. MODEL CHOICES: the balconies' depth, the corbels' number and
     //  form, the number and places of the people, the dancers and the Levites, the music, the timing; the tenth step - see the card.
+    await tm_yield();   // LOAD_SLICE_R10
     {
       const Y0 = LV.EZN, HB = 17, YB = Y0 + HB, DEP = 3.5, RAILH = 1.9, CXc = 161;
       const WN = -65, WS = 65, WE = 226;   // the walls' inner faces (30-courts.js: 5 thick, on z -+67.5 and x 228.5)
@@ -2639,6 +2680,7 @@
     // part 2, 315 - 3930:3793 - in the name of the Yerushalmi). The figures go round the altar and its ramp, a branch in each hand, while the
     // demonstration is shown (a place's feature, untimed). No tefillin - Chol HaMoed (SH.tefOff). MODEL CHOICES: the willows' number and form,
     // the way round (outside the ramp too), the walkers' number and pace. FOUR_K: what they hold - the four species in netilah (below).
+    await tm_yield();   // LOAD_SLICE_R10
     {
       const AG = grp("aravahDemo", false);
       const altDz = () => { const AP = SH.altarPlace; return AP && AP.dz && typeof AP.dz[AP.current] === "number" ? AP.dz[AP.current] : 12.5; };
@@ -2840,6 +2882,7 @@
     // follows the faces the courts' module built (the court's walls and the fronts of the chambers in it - found by rays at load, the gates
     // left open). MODEL CHOICES: the depth (4 amot), the heights, the corbels' and the columns' spacing and form, the covering's material;
     // the Rambam's "body" as an overhang (rather than a raised walk on the floor) - a question for the user.
+    await tm_yield();   // LOAD_SLICE_R10
     {
       const XR = grp("exedraRambam", true), XB = grp("exedraBartenura", false);
       const DEP = 4, YP = 19;
@@ -2954,6 +2997,7 @@
     // הגבוהות שבעזרה"); shown: rows of stone, an amah wide and half an amah high, with low channels between them, north to south - from the
     // slaughter place to the ramp, round the altar and its ramp. In the altar's frame (they move with its place). MODEL CHOICES: the rows'
     // width, height, direction and the area they cover.
+    await tm_yield();   // LOAD_SLICE_R10
     {
       const BG = grp("highBenches", true);   // BENCHES_ON (the user 24.11.2026: the "without" option cancelled - the benches always shown, as Chalamish describes)
       const F = LV.KOH, RW = 0.7, RH = 0.5, GAP = 0.75;   // BENCH_THIN_420 (the user 24.11.2026: "תדקק קצת את האיצטבאות בעובי שלהן"): 0.7 (1 until now)
@@ -3044,6 +3088,7 @@
     // of the ways), eating the most holy things - meat in dishes and matzot (the rest of the meal offerings, the shewbread). In their garments,
     // the kit's priests (tefillin by its rules: a weekday). The place, the table, the benches, the dishes - model choices. A hidden layer, the
     // place's feature (the place "ישיבה בעזרה").
+    await tm_yield();   // LOAD_SLICE_R10
     {
       const SG2 = grp("azaraSeating", false);
       const CX = 77.2, CZ = 45, F = groundAt(CX, CZ, 30, LV.KOH);
@@ -3145,6 +3190,7 @@
     // it by its rims, the priest's hand under it, and they wave it; he sets it down south of the corner, bows and goes out. Men only. The
     // way, the pace, the basket and its fruits, the companions - model choices; OX_B2: the ox of 3:3 goes before them (decision 123), and
     // OX_IN_B2: into the court with them, to stand at the place of slaughter (decision 178).
+    await tm_yield();   // LOAD_SLICE_R10
     {
       const BK = { run: false, built: false };
       const BG = grp("bikkurimDemo", false);
@@ -3977,6 +4023,7 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
     // end (x -340) a sign with an arrow. The hidden parts are seen through the ground by the places' features (as the mesibah's way, 30-courts.js
     // MESIBAH_303: ghosts drawn where they are hidden). The ways, the forms, the exit and the sign - model choices. Built after the first
     // seconds, or when a place's feature turns on (rays to the ground).
+    await tm_yield();   // LOAD_SLICE_R10
     {
       const AQ = grp("aqueducts", true), XRK = [], XRE = [];
       const stoneM = new MeshStandardMaterial({ color: 0x9a8c74, roughness: 0.95 }), capM = new MeshStandardMaterial({ color: 0x857862, roughness: 0.95 });
@@ -4095,6 +4142,7 @@ const T0 = { gate: 6.4, take: 7.6, ezn0: 9.6, ezn1: 20.6, steps1: 22.0, nik: 23.
     // ORDER_B2 (fix-b2, 22.11.2026 - the user's decisions 16 and 24: "בסדר היום" in the Second Temple's cards): a place -> the stage of the
     // morning service done in it (55-tamid.js, its stages' ids); the card's link starts the presentation "סדר עבודת הבוקר" at that stage
     // (70-ui.js renderLinks). The choice of the stage for each place - a model choice.
+    await tm_yield();   // LOAD_SLICE_R10
     SH.placeOrder = {
       "הר הבית": "ihb", "בית המוקד": "moked", "לשכת הגזית — הסנהדרין": "lot2", "לשכת הטלאים — בבית המוקד": "lamb",
       "הכיור": "kiyor", "הדגמת המוכני — הכיור יורד לבור ועולה": "kiyor", "המזבח": "terumah", "בית המטבחים": "tobeit", "הטבעות": "akedah",

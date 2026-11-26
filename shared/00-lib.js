@@ -13,6 +13,15 @@ var OtzariaPlugin = (() => {
       get jumped() { return J; } };   // G15: the sum of the jumps so far - a demonstration that keeps its own time by steps (the laver's base) reads it to follow "קדימה" / "אחורה"
   })();
   var performance = new Proxy(window.performance, { get(t, k) { if (k === "now") return tm_clock.now; const v = t[k]; return typeof v === "function" ? v.bind(t) : v; } });
+  // LOAD_SLICE_R10 (issue #2 R8, R10): the big builds at load are cut into slices - "await tm_yield()" between parts gives the browser its
+  // turn (the progress bar, a click on the loading screen) when more than 40 ms passed since the last turn; otherwise it costs nothing. The
+  // order of the work and what it builds are the same. The animation loop draws nothing while loading (90-entry.js), so nothing half-built
+  // is ever seen. tm_yieldN counts the slices (the tests read it).
+  var tm_yieldT = window.performance.now(), tm_yieldN = 0;
+  function tm_yield(budget) {
+    if (window.performance.now() - tm_yieldT < (budget || 40)) return null;
+    return new Promise((r) => setTimeout(() => { tm_yieldT = window.performance.now(); tm_yieldN++; r(); }, 0));
+  }
   var __defProp = Object.defineProperty;
   var __export = (target, all) => {
     for (var name in all)

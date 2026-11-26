@@ -388,7 +388,7 @@
       const s2 = S.snap(); await tick(3); const s3 = S.snap(); const cm2 = S.cmp(s2, s3); chk('resumed-moves', !cm2.same, 'אחרי המשך הסצנה לא זזה');
     } else chk('pause', false, 'כפתור ההשהיה חסר');
     // speed
-    const lab = () => { const sp = e.querySelectorAll('span'); return [...sp].map((x) => x.textContent).find((t) => /מהירות/.test(t)) || ''; };
+    const lab = () => { const sp = e.querySelectorAll('span'); return [...sp].map((x) => x.textContent).find((t) => /מהירות|^×/.test(t)) || ''; };
     const l0 = lab(); const fa = btn(/מהר יותר/); if (fa) { fa.click(); await sleep(350); const l1 = lab(); chk('faster', l1 !== l0 || fa.disabled, 'תווית מהירות ' + l0 + ' → ' + l1); }
     const sl = btn(/לאט יותר/); if (sl) { const lb = lab(); sl.click(); await sleep(350); const la = lab(); chk('slower', la !== lb || sl.disabled, 'תווית מהירות ' + lb + ' → ' + la); sl.click(); await sleep(100); }
     // forward / back: the scene or the walk's caption moves
