@@ -1830,7 +1830,7 @@
       {
         const exG = new Group(); exG.name = "throneLayers"; exG.visible = false; g.add(exG);
         ctx.layers.throneLayers = exG;
-        const ivoryCore = new MeshStandardMaterial({ color: 0xFCFCF8, roughness: 0.38, emissive: 0x8c8c86, emissiveIntensity: 0.6 });   // (the user: "שן של פיל היא לבנה")   // cream: in the side's shade a plain white read grey
+        const ivoryCore = new MeshStandardMaterial({ color: 0xFCFCF8, roughness: 0.38, emissive: 0xf2f2ec, emissiveIntensity: 0.75 });   // (the user: "שן של פיל היא לבנה")   // cream: in the side's shade a plain white read grey
         const xF = X + BW / 2, zc = (bZ0 + bZ1) / 2, W = 2.8, Hh = 1.9, y0 = YT + 0.55, T = 0.07, B = 0.16;
         H.box(exG, 0.02, Hh, W, ivoryCore, xF + 0.011, y0, zc).name = "throneLayerIvory";                       // the ivory, bared
         for (const yy of [y0 - B, y0 + Hh]) H.box(exG, T, B, W + 2 * B, gold, xF + T / 2, yy, zc);              // the gold's cut edge
@@ -1838,14 +1838,14 @@
         const L2 = (text, x, y, z, size) => { const l = { text, x: x + THDX, y, z: z + THDZ, size, layers: ["palace", "throneLayers"] }; palLabels.push(l); ctx.labels.push(l); };
         L2("שן — ״כסא שן גדול״ (מלכים א י, יח)", xF + 0.6, y0 + Hh * 0.6, zc, 0.32);
         L2("זהב מופז — ״ויצפהו זהב מופז״", xF + 0.6, y0 + Hh + 0.35, zc, 0.3);
-        const MB = Array.isArray(ctx.shared.modelButtons) ? ctx.shared.modelButtons : (ctx.shared.modelButtons = []);
-        MB.push({
-          id: "throne-layers", label: "הצג את שכבות הכסא", labelOn: "הסתר את שכבות הכסא", maxDist: 60,
-          title: "חלון בצד הכסא: בפנים — שן, ועליה ציפוי של זהב מופז (מלכים א י, יח). מקום החלון וגודלו — בחירת מודל.",
-          anchor: () => { const v = new Vector3(xF + 1.2, y0 + Hh + 1.0, zc); g.localToWorld(v); return [v.x, v.y, v.z]; },
-          get: () => exG.visible,
-          set: (on) => { exG.visible = !!on; }
-        });
+        // THRONE_LAYERS_461 (the user 26.11.2026: "כפתור זה מפריע לצפיה תעיף אותו לכרטיס/לרשימת השיטות ... המבט אמור להראות את השכבות
+        // ... צריך להיסגר אחר 15 שני'"): no on-model button - the place "שכבות הכסא" (70-ui) switches the window on for 15 s and looks at it
+        const wpt = (dx, dy) => { const v = new Vector3(xF + dx, y0 + Hh / 2 + dy, zc); g.localToWorld(v); return [v.x, v.y, v.z]; };
+        ctx.shared.throneLayers = {
+          get on() { return exG.visible; },
+          set: (on) => { exG.visible = !!on; },
+          cam: () => wpt(4.6, 0.9), target: () => wpt(0, 0.1)
+        };
       }
       const zD = bZ0 + 2.2, DR = 1.75, DH = 0.6;      // the round seat-place (Rashi): centre z 614.7
       const drum = new Mesh(new CylinderGeometry(DR, DR, DH, 40), gold);
@@ -3812,7 +3812,10 @@
         const fly = ctx.ui && typeof ctx.ui.fly === "function" ? ctx.ui.fly : typeof ctx.flyTo === "function" ? ctx.flyTo : null;
         if (f && fly) fly(f.pos, f.target);
       };
-      const A1 = thrAPI.anchors.ascent, A2 = thrAPI.anchors.witnesses;
+      // THR_PILLS_461 (the user 26.11.2026: "תזיז את הכפתורים מהשני למיקום של הראשון"): the two pills off the king's head, beside the
+      // throne's title "כסא שלמה" on the wall behind it (its label, wherever it stands), one on each side
+      const titleL = palLabels.find((l) => l.text === "כסא שלמה");
+      const A1 = titleL ? [titleL.x - 5.2, titleL.y - 0.2, titleL.z] : thrAPI.anchors.ascent, A2 = titleL ? [titleL.x + 5.2, titleL.y - 0.2, titleL.z] : thrAPI.anchors.witnesses;
       (ctx.shared.demoStops || (ctx.shared.demoStops = [])).push(   // 1.3.4: any switch stops the scene
         // DEMO_PAUSE_207: a paused scene still counts as running (a switch ends it); the bar resumes it or starts it again
         { id: "palaceThroneAscent", running: () => thrAPI.ascent.running || thrAPI.ascent.paused, stop: () => thrAPI.ascent.reset(),

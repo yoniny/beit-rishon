@@ -296,9 +296,10 @@
       if (v) {
         f.vis++; if (f.firstVis < 0) f.firstVis = t; f.lastVis = t;
         const cx = (bx.b.min.x + bx.b.max.x) / 2, cz = (bx.b.min.z + bx.b.max.z) / 2, feet = bx.b.min.y;
+        // HANGING_461: a part named ...Hanging (the craftsmen's box on its ropes) - the box hangs, its figure stands on the box's floor
         // SEATED_452: a seated figure (the throne's king: a visible part named ...Seated) has its seat, not the floor, under its box's middle -
         // its feet are not checked against it (the ascent demo's "under the floor" was the seat under him)
-        let seated = false; o.traverse((q) => { if (!seated && /seated/i.test(q.name || '') && q.visible !== false && ancVis(q)) seated = true; });
+        let seated = false; o.traverse((q) => { if (!seated && /seated|hanging/i.test(q.name || '') && q.visible !== false && ancVis(q)) seated = true; });
         let fl = null; if (!seated) try { fl = S.floorUnder(cx, feet + 1.4, cz, bx.ids); } catch (_) {}
         if (fl != null) {
           const dy = feet - fl;

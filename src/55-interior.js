@@ -2930,6 +2930,21 @@
           const dev = new Set([devGold, devGoldS].concat(ctx.shared.devirGoldMats || [])), part = new Set([goldCarvedEnd]);
           const DEV_N = new Set(["goldCarvedDevir", "goldCarvedDevirSouth", "devirCoffer"]);
           ctx.root.traverse((o) => { const m = o.isMesh && o.material; if (!m || Array.isArray(m)) return; if (DEV_N.has(m.name)) dev.add(m); else if (m.name === "goldCarvedEnd") part.add(m); });
+          // PARTITION_ALL_461 (the user 26.11.2026: "מחיצת הדביר ברירת מחדל - רש״י, זה אומר שכולה זהב סגור, כולל הכל; לרד״ק כולה נהיית זהב
+          // פרוים כולל הדלתות והמזוזות"): the doorway's posts, lintel and doors (the house's common gold, M.gold) get their own copy once,
+          // and it goes with the partition
+          const GOLD_HEX = 0xfff1c8;
+          ctx.root.traverse((o) => {
+            if (!o.isMesh || Array.isArray(o.material) || !o.material) return;
+            let inPart = false; for (let p = o.parent; p; p = p.parent) if (/^devir-(door-|lintel)/.test(p.name || "") && p.name !== "devir-door-floor") { inPart = true; break; }
+            if (!inPart && /^(devir-lintel|devirChainBar|devirChainLinks)$/.test(o.name || "")) inPart = true;   // (the user: "רתוקות גם משתנות")
+            if (!inPart || o.name === "devir-door-floor") return;
+            const m = o.material;
+            if (m.name === "devirPartGold") { part.add(m); return; }
+            if (m.name || !m.color || m.color.getHex() !== GOLD_HEX) return;
+            const cl = this.partGold || (this.partGold = Object.assign(m.clone(), { name: "devirPartGold" }));
+            o.material = cl; part.add(cl);
+          });
           for (const mt of dev) goldKindSet(mt, this.mode === "radak" ? "sagur" : null);
           for (const mt of part) goldKindSet(mt, this.mode === "rashi" ? "sagur" : "parvayim");
         }

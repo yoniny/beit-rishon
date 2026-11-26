@@ -874,10 +874,7 @@
         ctx.shared.modelButtons.push({
           id: "crt-onkliot", label: "האונקליות", labelOn: "כבה את הסימון", maxDist: 70,
           title: "״ואנקליות של ברזל היו קבועין בהם, ושלשה סדרים היו לכל אחד ואחד, שבהם תולין״ (מדות ג, ה) — המבט מתקרב, והאונקליות מסומנות בצבע צף ל־15 שניות, בשיטה שנבחרה במתג ״בית המטבחים״.",
-          anchor: () => {
-            const p = ctx.camera && ctx.camera.position;
-            return p && p.x > SL.x0 - 30 && p.x < SL.x1 + 50 && p.z < 10 && p.z > -100 && p.y < AZ + 70 ? [SL.pillarCols[SL.pillarCols.length - 1] + 1.6, AZ + 4.9, -53.5] : null;
-          },
+          anchor: () => null,   // ONKLIOT_PILL_461 (the user 26.11.2026: "אונקליות כפתור לא רלוונטי תסיר"): no pill on the model; the place and the menu keep it
           get: () => ON.on,
           set: (on) => ctx.shared.onkliot(!!on)
         });

@@ -2493,10 +2493,7 @@
       MB.push({
         id: "alt-onkliot", label: "האונקליות", labelOn: "כבה את הסימון", maxDist: 70,
         title: "״ואנקליות של ברזל היו קבועין בהם, ושלשה סדרים היו לכל אחד ואחד, שבהם תולין״ (מידות ג, ה) — המבט מתקרב, והאונקליות מסומנות בצבע צף ל־15 שניות, בשיטה שנבחרה במתג ״בית המטבחים — העמודים והאונקליות״.",
-        anchor: () => {
-          const p = ctx2.camera && ctx2.camera.position, z0 = slaughterG.position.z;
-          return p && p.x > 20 && p.x < 110 && p.z < 10 && p.z > -100 && p.y < F + 70 ? [61.6, F + 4.9, -54 + z0] : null;
-        },
+        anchor: () => null,   // ONKLIOT_PILL_461 (the user 26.11.2026: "אונקליות כפתור לא רלוונטי תסיר"): no pill on the model; the place and the menu keep it
         get: () => ON.on,
         set: (on) => ctx2.shared.onkliot(!!on)
       });
