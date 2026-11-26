@@ -1295,15 +1295,106 @@
       prop("ashHeap", mesh(new ConeGeometry(0.55, 0.45, 12).translate(0, 0.225, 0), MAT.ash));
       prop("ashGold", mesh(new SphereGeometry(0.34, 12, 6, 0, Math.PI * 2, 0, HP).scale(1, 0.35, 1), MAT.ash));
       const portionGeo = new SphereGeometry(0.22, 10, 8).scale(1.4, 0.8, 0.9);
+      // LIMBS_441 (the user 25.11.2026: "אברים - תעשה צורת אברים ממש (רגל, ראש כפי המשנה)"; until now pink lumps): the lamb's limbs as the
+      // nine carry them to the ramp - Tamid 4:3: "הראש בימינו... והרגל בשמאלו" (the first: the head and the right hind leg); "השני, שתי
+      // הידים" (the forelegs); "השלישי, העוקץ ורגל" (the fat tail and the other hind leg); "הרביעי, החזה והגרה" (the breast and the neck,
+      // the windpipe with it); "החמישי, שתי הדפנות" (the two flanks, their ribs); "הששי, הקרביים בבזך" (the entrails in a dish); and the
+      // flour, the chavitin and the wine (7-9, as before). Flayed (4:3 "הפשיטו"): the meat, the white fat, the bones' ends, the hooves; the
+      // head with its small horns and its muzzle. In amot, each as a yearling lamb's; their forms and sizes - model choices
+      const LIMB = (() => {
+        // the meat's own surface: the grain of the muscle, the white of the fat through it (a canvas, as the model's other textures)
+        const meatTex = (base, fib, fat) => { const cv = document.createElement("canvas"); cv.width = cv.height = 128; const c = cv.getContext("2d");
+          c.fillStyle = base; c.fillRect(0, 0, 128, 128); let q = 77; const rn = () => { q = (q * 1664525 + 1013904223) >>> 0; return q / 4294967296; };
+          for (let k = 0; k < 90; k++) { c.strokeStyle = fib; c.globalAlpha = 0.25 + rn() * 0.3; c.lineWidth = 0.6 + rn() * 1.4; const y0 = rn() * 128; c.beginPath(); c.moveTo(-4, y0); for (let x = 0; x <= 132; x += 12) c.lineTo(x, y0 + Math.sin(x * 0.05 + k) * 3 + (rn() - 0.5) * 2); c.stroke(); }
+          for (let k = 0; k < 26; k++) { c.fillStyle = fat; c.globalAlpha = 0.35 + rn() * 0.45; c.beginPath(); c.ellipse(rn() * 128, rn() * 128, 1 + rn() * 5, 0.6 + rn() * 1.6, rn() * 3, 0, Math.PI * 2); c.fill(); }
+          c.globalAlpha = 1; const t = new CanvasTexture(cv); t.wrapS = t.wrapT = RepeatWrapping; t.colorSpace = SRGBColorSpace; t.repeat.set(2, 2); return t; };
+        const mMeat = std(0xffffff, { roughness: 0.48, map: meatTex("#9c3a32", "#c2584c", "#f2e2cc") }), mMeat2 = std(0xffffff, { roughness: 0.45, map: meatTex("#b2483e", "#d0705e", "#f4e6d2") });
+        const mFat = std(0xffffff, { roughness: 0.5, map: meatTex("#efe2c8", "#e2cfae", "#fff8ea") }), mBone = std(0xece4d2, { roughness: 0.42 }), mHoof = std(0x2e2620, { roughness: 0.6 }), mHorn = std(0xb39a74, { roughness: 0.7 }), mEyeL = std(0x1c1210, { roughness: 0.25 });
+        const cap = (r, l, m, x, y, z, rx = 0, ry = 0, rz = 0) => { const o = mesh(new CapsuleGeometry(r, l, 4, 10), m, x, y, z); o.rotation.set(rx, ry, rz); return o; };
+        const lathe = (prof, m, segs = 18) => { const geo = new LatheGeometry(prof.map(([r, y]) => V2(Math.max(0.002, r), y)), segs); geo.computeVertexNormals(); return mesh(geo, m); };
+        const leg = (g, x, y, z, rz, len = 1, fore = false) => {   // a leg of the lamb lying along +x: the thick haunch (or the shoulder) bulging and
+          // tapering to the knee, the round bone's end where it was cut off at the hip, its fat over the top, the thin shank, the cloven hoof
+          const L = new Group(); L.position.set(x, y, z); L.rotation.z = rz;
+          const s2 = len * (fore ? 0.85 : 1);
+          const prof = [[0.0, 0], [0.09, 0.01], [0.13, 0.06], [0.145, 0.14], [0.13, 0.24], [0.095, 0.32], [0.055, 0.38], [0.04, 0.42], [0.034, 0.56], [0.03, 0.7], [0.036, 0.74], [0.0, 0.75]].map(([r, h]) => [r * s2 * (fore && h < 0.3 ? 1.05 : 1), h * s2]);
+          const m1 = lathe(prof, mMeat); m1.geometry.rotateZ(-HP); m1.scale.set(1, 0.78, 1); L.add(m1);   // flattened a little, as it lies
+          const fp = [[0.0, 0.02], [0.1, 0.03], [0.14, 0.09], [0.15, 0.16], [0.12, 0.22], [0.0, 0.23]].map(([r, h]) => [r * s2, h * s2]);
+          const m2 = lathe(fp, mFat, 14); m2.geometry.rotateZ(-HP); m2.scale.set(1, 0.85, 1.02); m2.position.set(0, 0.025, 0); L.add(m2);   // its fat cover on the haunch's top
+          L.add(mesh(new SphereGeometry(0.05 * s2, 10, 8), mBone, 0.005, 0.01, 0));   // the bone's end at the cut
+          for (const dz of [-0.018, 0.018]) { const h = mesh(new ConeGeometry(0.022 * s2, 0.07 * s2, 6).rotateZ(-HP), mHoof, 0.77 * s2, -0.01, dz); L.add(h); }   // the cloven hoof
+          g.add(L); return L;
+        };
+        const head = (g, x, y, z) => {   // the flayed head, the muzzle forward (+z): the long skull narrowing to the nose, the nostrils, the mouth,
+          // the eyes in their sockets, the ears laid back, two small horns curling out and back (a yearling ram's)
+          const H = new Group(); H.position.set(x, y, z);
+          const prof = [[0.0, -0.17], [0.09, -0.15], [0.13, -0.08], [0.14, 0.0], [0.125, 0.08], [0.1, 0.16], [0.08, 0.23], [0.068, 0.29], [0.055, 0.33], [0.0, 0.345]];
+          const sk = lathe(prof, mMeat, 20); sk.geometry.rotateX(HP); sk.scale.set(0.78, 1, 1); H.add(sk);
+          const jaw = lathe([[0.0, -0.05], [0.07, -0.03], [0.075, 0.08], [0.05, 0.2], [0.03, 0.26], [0.0, 0.27]], mMeat2, 14); jaw.geometry.rotateX(HP); jaw.scale.set(0.8, 0.55, 1); jaw.position.set(0, -0.075, 0.03); H.add(jaw);
+          H.add(mesh(new BoxGeometry(0.07, 0.006, 0.12), mHoof, 0, -0.062, 0.24));   // the mouth's line
+          for (const sx of [-1, 1]) {
+            H.add(mesh(new SphereGeometry(0.012, 6, 4), mHoof, sx * 0.022, 0.0, 0.338));   // a nostril
+            const e = mesh(new SphereGeometry(0.024, 8, 6), mEyeL, sx * 0.098, 0.045, 0.06); H.add(e);
+            H.add(mesh(new SphereGeometry(0.03, 8, 5, 0, Math.PI * 2, 0, HP * 0.9).scale(1, 0.55, 1), mMeat2, sx * 0.097, 0.058, 0.06));   // the lid over it
+            const ear = mesh(new SphereGeometry(0.06, 10, 6).scale(0.35, 0.18, 1.1), mMeat2, sx * 0.12, 0.07, -0.13); ear.rotation.set(0.2, sx * 0.5, sx * 0.4); H.add(ear);
+            const hn = mesh(new TorusGeometry(0.055, 0.02, 7, 14, Math.PI * 1.25).scale(1, 1, 0.8), mHorn, sx * 0.075, 0.115, -0.07); hn.rotation.set(-0.3, HP * sx, 0.9 * sx); H.add(hn);
+            H.add(mesh(new SphereGeometry(0.024, 8, 6), mHorn, sx * 0.06, 0.12, -0.02));   // the horn's base
+          }
+          g.add(H); return H;
+        };
+        const ribs = (g, x, y, z, w, d, flip) => {   // a flank lying flat: a slab of meat a little arched, the ribs' white lines across it, its fat edge
+          const F2 = new Group(); F2.position.set(x, y, z);
+          const slab = mesh(new BoxGeometry(d, 0.06, w, 6, 1, 4), mMeat, 0, 0, 0);
+          const P = slab.geometry.attributes.position; for (let k = 0; k < P.count; k++) P.setY(k, P.getY(k) - 0.35 * P.getZ(k) * P.getZ(k)); P.needsUpdate = true; slab.geometry.computeVertexNormals();   // arched across
+          F2.add(slab);
+          for (let k = 0; k < 6; k++) { const rx = -d / 2 + 0.05 + k * (d - 0.1) / 5; for (const zz of [-0.12, 0, 0.12]) F2.add(mesh(new BoxGeometry(0.022, 0.014, 0.13), mBone, rx, 0.035 - 0.35 * zz * zz, zz)); }
+          F2.add(cap(0.03, d - 0.08, mFat, 0, 0.0, w / 2 - 0.02, 0, 0, HP));
+          if (flip) F2.rotation.y = Math.PI;
+          g.add(F2); return F2;
+        };
+        return {
+          1: () => { const g = new Group(); head(g, -0.2, 0.16, 0.06); leg(g, -0.05, 0.12, -0.16, 0.08); return g; },
+          2: () => { const g = new Group(); leg(g, -0.32, 0.1, -0.09, 0.1, 0.85, true); leg(g, -0.28, 0.12, 0.1, 0.06, 0.85, true); return g; },
+          3: () => { const g = new Group(); leg(g, -0.05, 0.12, 0.12, 0.06); const tl = lathe([[0.0, -0.02], [0.12, 0.02], [0.17, 0.12], [0.16, 0.24], [0.11, 0.33], [0.05, 0.38], [0.02, 0.44], [0.0, 0.45]], mFat, 16); tl.geometry.rotateX(HP); tl.scale.set(1.1, 0.45, 1); tl.position.set(-0.18, 0.08, -0.2); tl.rotation.y = 0.4; g.add(tl); return g; },   // the fat tail of the sheep, broad and flat
+          4: () => { const g = new Group(); const br = mesh(new SphereGeometry(0.2, 14, 8, 0, Math.PI * 2, 0, HP).scale(1.15, 0.55, 1), mMeat, -0.13, 0.06, 0); g.add(br);
+            for (let k = 0; k < 4; k++) g.add(mesh(new BoxGeometry(0.03, 0.02, 0.32), mBone, -0.26 + k * 0.085, 0.16 - Math.abs(k - 1.5) * 0.02, 0));
+            g.add(cap(0.075, 0.22, mMeat2, 0.2, 0.1, 0.02, 0, 0, HP)); g.add(cap(0.03, 0.3, mFat, 0.22, 0.17, 0.02, 0, 0, HP));   // the neck, and the windpipe on it
+            for (let k = 0; k < 4; k++) { const rg = mesh(new TorusGeometry(0.032, 0.008, 4, 10), mBone, 0.1 + k * 0.07, 0.17, 0.02); rg.rotation.y = HP; g.add(rg); }
+            return g; },
+          5: () => { const g = new Group(); ribs(g, 0, 0.06, -0.2, 0.36, 0.5, false); ribs(g, 0, 0.14, 0.18, 0.36, 0.5, true); return g; },
+          6: () => { const g = new Group(); g.add(mesh(new CylinderGeometry(0.3, 0.22, 0.12, 16, 1, true), MAT.silver, 0, 0.06, 0)); g.add(mesh(new CylinderGeometry(0.22, 0.22, 0.02, 16), MAT.silver, 0, 0.005, 0));   // the bazakh, a broad shallow dish
+            for (let k = 0; k < 5; k++) { const c2 = mesh(new TorusGeometry(0.07 + (k % 3) * 0.025, 0.035, 8, 18), k % 2 ? mMeat2 : std(0xd99a8a, { roughness: 0.5 }), Math.cos(k * 1.7) * 0.11, 0.08 + (k % 2) * 0.03, Math.sin(k * 1.7) * 0.11); c2.rotation.set(HP + (k % 3) * 0.2, 0, k * 0.6); g.add(c2); }
+            g.add(mesh(new SphereGeometry(0.09, 10, 8).scale(1.3, 0.6, 1), std(0x6e2a26, { roughness: 0.45 }), -0.04, 0.1, 0.02));   // the liver among them
+            return g; }
+        };
+      })();
       for (let i = 1; i <= 9; i++) {
         let o;
         if (i === 7) o = (() => { const g = new Group(); g.add(mesh(new CylinderGeometry(0.3, 0.24, 0.26, 12), MAT.silver, 0, 0.13, 0)); g.add(mesh(new CylinderGeometry(0.27, 0.27, 0.04, 12), MAT.flour, 0, 0.26, 0)); return g; })();
         else if (i === 8) o = (() => { const g = new Group(); g.add(mesh(new CylinderGeometry(0.34, 0.34, 0.06, 14), MAT.silver)); for (let k = 0; k < 5; k++) g.add(mesh(new CylinderGeometry(0.12, 0.12, 0.05, 10), MAT.cake, Math.cos(k * 1.26) * 0.18, 0.06, Math.sin(k * 1.26) * 0.18)); return g; })();
         else if (i === 9) o = (() => { const g = new Group(); g.add(mesh(new LatheGeometry([V2(0.001, 0), V2(0.16, 0.02), V2(0.19, 0.2), V2(0.1, 0.42), V2(0.12, 0.5)], 12), MAT.gold)); return g; })();
-        else { o = new Group(); o.add(mesh(portionGeo, MAT.portion, -0.12, 0.16, 0)); if (i !== 6) o.add(mesh(portionGeo, MAT.portion, 0.16, 0.18, 0.05)); }
+        else o = LIMB[i]();
         prop("p" + i, o, { p: [0, -0.16, 0.24], r: [0, 0, 0] });
       }
-      prop("salt", (() => { const g = new Group(); for (let i = 0; i < 9; i++) g.add(mesh(new SphereGeometry(0.06, 6, 4), MAT.salt, Math.cos(i) * 0.3, 0.06, (i - 4) * 1.2)); return g; })());
+      // SALT_RAMP_441 (the user 25.11.2026: "זה לא מליחה... האבר באוויר והמלח כדור, המלח צריך להיות על הכבש ומערים בתוכו את האברים"):
+      // the salt lies spread ON THE RAMP, on its lower half, on its west side - Tamid 4:3 "ונתנום מחצי הכבש ולמטה במערבו, ומלחום"; Middot
+      // 5:3 (the salt chamber) "שם היו נותנין מלח לקרבן" - a layer along the nine places (onRamp: 1.25 apart, the ramp falling 0.282 to the
+      // amah southward), with low heaps in it; the limbs are set down into it (SC.evarim) and the salt is strewn over them (SC.melach). Its
+      // breadth, its depth and the heaps - model choices
+      prop("salt", (() => { const g = new Group(), SL = 0.282, th = Math.atan(SL), mS = std(0xf2f0ea, { roughness: 0.72 }), mS2 = std(0xe6e3da, { roughness: 0.8 });
+        let q = 4417; const rn = () => { q = (q * 1664525 + 1013904223) >>> 0; return q / 4294967296; };
+        // heaped as it was poured, not laid out: lumpy heaps of many sizes along the strip, a ragged thin spread under them, loose grains
+        const lump = (r, h, x, z, m) => { const geo = new SphereGeometry(r, 12, 7, 0, Math.PI * 2, 0, HP); const P = geo.attributes.position;
+          for (let k = 0; k < P.count; k++) { const a = Math.atan2(P.getZ(k), P.getX(k)), f = 1 + 0.22 * Math.sin(a * 3 + r * 17) + 0.12 * Math.sin(a * 5 + h * 23); P.setX(k, P.getX(k) * f); P.setZ(k, P.getZ(k) * f * (0.75 + rn() * 0.05)); P.setY(k, P.getY(k) * (h / r) * (0.85 + 0.3 * rn())); }
+          geo.computeVertexNormals(); const o = mesh(geo, m, x, -SL * z + 0.01, z); o.rotation.set(th, rn() * 6.28, 0); g.add(o); };
+        for (let i = 0; i < 9; i++) {   // round each place where a limb goes, and between them
+          const zc = (i - 4) * 1.25;
+          lump(0.32 + rn() * 0.16, 0.02 + rn() * 0.015, (rn() - 0.5) * 0.3, zc + (rn() - 0.5) * 0.3, mS2);   // the thin spread under the limb
+          const n = 3 + Math.floor(rn() * 3);
+          for (let k = 0; k < n; k++) { const a = rn() * 6.28, r = 0.42 + rn() * 0.3;   // the heaps round it, not on it (the limb lies in among them)
+            lump(0.09 + rn() * 0.16, 0.07 + rn() * 0.12, Math.cos(a) * r * 0.8, zc + Math.sin(a) * r, mS); }
+        }
+        for (let k = 0; k < 40; k++) { const z = (rn() - 0.5) * 11.5, x = (rn() - 0.4) * 1.4; g.add(mesh(new SphereGeometry(0.025 + rn() * 0.02, 5, 3), mS, x, -SL * z + 0.02, z)); }
+        return g; })());
       // SALT_STAGE_S2: each of the nine's pinch of salt, in his right hand while he salts (SC.melach)
       for (let i = 1; i <= 9; i++) prop("saltH" + i, (() => { const g = new Group(); for (const [x, y, z] of [[0, 0, 0], [0.06, 0.035, 0.02], [-0.05, 0.03, -0.03], [0.01, 0.07, -0.01]]) g.add(mesh(new SphereGeometry(0.05, 6, 4), MAT.salt, x, y, z)); return g; })());
       // MAARACHOT2_211 (stage ב; the user: the arrangements in detail): the limbs and the fats not consumed from the evening - charred, on the
@@ -2341,6 +2432,7 @@
         a.put("p" + (i + 1), s[0], null, s[1], 12 + i * 0.12, HP);
         a.pose(k, "place", 11.4 + i * 0.25, 12.6 + i * 0.25);
       });
+      a.put("salt", onRamp(4)[0] + 0.05, null, onRamp(4)[1], 0.1);   // SALT_RAMP_441: the salt already on the ramp when they come
       a.tag("s5", "האברים", 2, 14);   // SALT_STAGE_S2: the salt in the stage of its own (below; until now put here at 15 s)
     };
     // KIYOR_LIGHT_S2: the stage "kiyor" (its own script is not touched - the kiddush is agent H's, HANDS_K) lit while it is shown, and
@@ -2351,17 +2443,17 @@
     SC.melach = (a) => {
       NINE.forEach((k, i) => {
         const s = onRamp(i);
-        a.at(k, 48.9, s[1], -HP, 0, { y: null });
+        a.at(k, 48.85, s[1], -HP, 0, { y: null });
         for (const r of [0, 3.6]) {
           const t0 = 0.8 + r + i * 0.28;
           a.pose(k, "scoop", t0, t0 + 1.1);
-          a.pose(k, "place", t0 + 1.2, t0 + 2.4);
+          a.pose(k, "rub", t0 + 1.2, t0 + 3.2);   // SALT_RAMP_441: bowed, his hands on his part (until now "place", standing, the hands in the air)
           a.hold(k, "saltH" + (i + 1), "R", t0 + 0.7);   // the pinch, from the scoop until it is strewn over his part
           a.gone("saltH" + (i + 1), t0 + 2.2);
         }
       });
-      a.put("salt", onRamp(4)[0] + 0.05, null, onRamp(4)[1], 2.2);
-      a.tag("s5", "מולחים את האברים", 0.6, 11.5);
+      a.put("salt", onRamp(4)[0] + 0.05, null, onRamp(4)[1], 0);   // SALT_RAMP_441: the layer under the limbs, from the stage before
+      a.tag("s5", "מולחים את האברים — ״ונתנום מחצי הכבש ולמטה במערבו, ומלחום״ (תמיד ד, ג)", 0.6, 11.5);
     };
     SC.shema = (a) => {
       a.roofs();
@@ -2672,7 +2764,7 @@
     const POSES = {   // [right shoulder x, abduct, elbow], [left ...], lean - the arm hangs down; a negative x lifts it forward
       stand: [[0.05, 0.08, -0.15], [0.05, 0.08, -0.15], 0], hold: [[-0.55, 0.05, -1.0], [0.05, 0.08, -0.15], 0], carry: [[-0.5, -0.12, -1.15], [-0.5, -0.12, -1.15], 0],
       fingers: [[-1.25, 0.05, -0.45], [0.05, 0.08, -0.15], 0], knock: [[-1.4, 0.05, -1.3], [0.05, 0.08, -0.15], 0.05], wash: [[-0.95, -0.12, -0.55], [-0.95, -0.12, -0.55], 0.18],
-      scoop: [[-0.95, 0.05, -0.35], [-0.95, 0.05, -0.35], 0.42], shovel: [[-0.85, -0.1, -0.5], [-0.75, -0.25, -0.7], 0.3], place: [[-0.9, -0.1, -0.4], [-0.9, -0.1, -0.4], 0.35],
+      scoop: [[-0.95, 0.05, -0.35], [-0.95, 0.05, -0.35], 0.42], rub: [[-0.35, 0.06, -0.12], [-0.35, 0.06, -0.12], 0], shovel: [[-0.85, -0.1, -0.5], [-0.75, -0.25, -0.7], 0.3], place: [[-0.9, -0.1, -0.4], [-0.9, -0.1, -0.4], 0.35],
       pour: [[-1.15, 0.05, -0.35], [0.05, 0.08, -0.15], 0.22], offer: [[-1.0, -0.05, -0.6], [-0.6, -0.1, -0.8], 0.15], point: [[-1.7, 0.1, -0.05], [0.05, 0.08, -0.15], 0],
       reach: [[-1.95, -0.05, -0.55], [-1.65, -0.08, -0.7], 0], raise: [[-2.53, -0.17, -0.04], [-2.43, -0.17, -0.04], 0], raiseHP: [[-1.82, -0.15, -0.04], [-1.78, -0.15, -0.04], 0], greet: [[-0.6, 0.05, -1.2], [-0.6, 0.05, -1.2], 0.12],
       trumpet: [[-1.5, -0.25, -1.45], [-1.45, -0.3, -1.55], 0], cymbal: [[-1.0, 0.5, -1.2], [-1.0, 0.5, -1.2], 0], wave: [[-2.6, 0.35, -0.2], [0.05, 0.08, -0.15], 0],
@@ -3043,6 +3135,11 @@
         if (p === "throw") { const u = clamp(t / 0.7, 0, 1); R = [lerp(0.7, -1.5, u), 0.05, lerp(-0.6, -0.2, u)]; }
         else if (p === "wave") R = [-2.6, 0.35 + 0.35 * Math.sin(t * 9), -0.2];
         else if (p === "cymbal") { const u = Math.abs(Math.sin(t * 5)); R = Lv = [-1.0, 0.15 + 0.5 * u, -1.25]; }
+        else if (p === "rub" && f.bend) {   // SALT_RAMP_441 (the user: "ידי הכהנים צריכים להיות למטה (בכיפוף הכהנים) ולגעת בבשר"): bowed deep at the waist over
+          // his part on the ramp, both hands down on the meat, rubbing the salt into it to and fro
+          const u = smooth(clamp(t / 0.6, 0, 1)), w = Math.sin(t * 5.2);
+          bendA = 1.38 * u; lean = 0; R = [lerp(R[0], -1.42 + 0.14 * w, u), 0.1, -0.08]; Lv = [lerp(Lv[0], -1.42 - 0.14 * w, u), 0.1, -0.08];   // (the arms raised forward as far as he bows: straight down to the ramp)
+        }
         else if (p === "shovel" || p === "scoop" || p === "place") { const w = Math.sin(t * 3.2); R = [R[0] + 0.25 * w, R[1], R[2]]; Lv = [Lv[0] + 0.25 * w, Lv[1], Lv[2]]; }
         else if (p === "wash") { const w = Math.sin(t * 6); R = [R[0] + 0.1 * w, R[1], R[2]]; Lv = [Lv[0] - 0.1 * w, Lv[1], Lv[2]]; }
         else if (p === "play" || p === "sing") {   // MUSICIANS_305: the player's right hand over the strings; both sway with the song
