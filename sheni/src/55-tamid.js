@@ -2683,7 +2683,7 @@
       // reaches (kidReach) - until 2.1.2 the whole figure leaned from the ankles (0.5), as falling. The arms below: only where there is
       // no waist (the high priest's body) - there the old lean, a little less.
       kiddush: [[-0.3, 0.14, 0], [-0.3, 0.14, 0], 0.4],
-      support: [[-1.15, -0.1, -0.35], [-1.15, -0.1, -0.35], 0.42],   // KIDD_HELP_T_441: bowed to the bowed back, his arms forward on it   // KIDDUSH_RYOSE_A2: the fellow's hands on the side and back of the one who sanctifies
+      support: [[-0.7, -0.08, -0.35], [-0.7, -0.08, -0.35], 0.5],   // KIDD_HELP_T_441: bowed to the bowed back, his arms forward on it   // KIDDUSH_RYOSE_A2: the fellow's hands on the side and back of the one who sanctifies
       // NIGHT_WATCH_305: "שלום עליך" - the right hand raised before him; the blow of the staff or the pakia (applyFig); woken; up from
       // the stone; the left hand to the lantern and down to the cloak; the herald's two hands about his mouth (callArms)
       hail: [[-1.25, 0.12, -0.75], [0.05, 0.08, -0.15], 0.04], strike: [[-0.85, 0.05, -0.15], [0.05, 0.08, -0.15], 0.1],

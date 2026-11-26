@@ -2530,16 +2530,22 @@
       silver.metalness = 0.9;
       silver.roughness = 0.3;
       const TW = 1.2, TD = 1.6, LEG = 1.25, TT = 0.25;
+      const tabG = new Group(); rampG.add(tabG);   // TABLES_TOS_441: the two tables in a group of their own (moved in Tosafot's reading, below)
       const mkTable = (mat, tx, tz) => {
-        H2.box(rampG, TW, TT, TD, mat, tx, F + LEG, tz);
-        for (const lx of [-1, 1]) for (const lz of [-1, 1]) H2.box(rampG, 0.16, LEG, 0.16, mat, tx + lx * (TW / 2 - 0.12), F, tz + lz * (TD / 2 - 0.12));
+        H2.box(tabG, TW, TT, TD, mat, tx, F + LEG, tz);
+        for (const lx of [-1, 1]) for (const lz of [-1, 1]) H2.box(tabG, 0.16, LEG, 0.16, mat, tx + lx * (TW / 2 - 0.12), F, tz + lz * (TD / 2 - 0.12));
       };
       const MB = [40, 16], SV = [40, 18.2];
       mkTable(M2.marble, MB[0], MB[1]);
       mkTable(silver, SV[0], SV[1]);
       ctx2.shared.rampTables = { marble: MB, silver: SV, top: LEG + TT };
+      // TABLES_TOS_441 (the user 26.11.2026: "חלבים - השלחן נתקע בכבש"): in Tosafot's reading of the small ramps the walk to the yesod runs
+      // outside the third ramp, further west (SMALL_RAMPS3_211), right over the marble table (its paving x 39.9..42.8 where the table stands,
+      // x 39.4..40.6). There the two tables stand 1.8 amot further west, clear of it - still west of the ramp, by the altar's south-west corner
+      // (the Ra'avad). The demonstration reads their place from rampTables (moved with them). The shift - a model choice
+      { const R0 = ctx2.shared.ramps, set0 = R0 && R0.set; if (R0 && set0) R0.set = function (on) { set0.call(this, on); const dx = on ? -1.8 : 0; tabG.position.x = dx; MB[0] = 40 + dx; SV[0] = 40 + dx; }; }
       for (const [lay, ox, oz] of [["altarBody32", 0, 0], ["altarBody28", 2, -4]]) {
-        // over the label of the path to the yesod (x 42.8, F + 3.6), which stands beside them
+        // (TABLES_TOS_441: the labels stay over the default place) over the label of the path to the yesod (x 42.8, F + 3.6), which stands beside them
         ctx2.labels.push({ text: "שלחן של שיש — שלחן החלבים", x: MB[0] + ox - 0.8, y: F + 5.6, z: MB[1] + oz, size: 0.9, layer: lay, moveWithAltar: true },
           { text: "שלחן של כסף — לכלי שרת", x: SV[0] + ox - 0.8, y: F + 4.8, z: SV[1] + oz, size: 0.9, layer: lay, moveWithAltar: true });
       }

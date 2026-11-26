@@ -583,9 +583,9 @@
       let r = HM.get(m);
       if (r) return r;
       const lo = m.clone();
-      Object.assign(lo, { map: texHairA, alphaTest: 0.42, bumpMap: texHairA, bumpScale: 0.6, side: DoubleSide });
+      Object.assign(lo, { map: texHairA, alphaTest: 0.42, bumpMap: texHairA, bumpScale: 0.6, side: DoubleSide, roughness: Math.min(lo.roughness, 0.62) });   // HAIR_SHINE_441: the far level a little glossier too
       const hi = new MeshPhysicalMaterial({ color: m.color.clone(), vertexColors: m.vertexColors, map: texHairA, alphaTest: 0.42, bumpMap: texHairA, bumpScale: 0.8,
-        side: DoubleSide, roughness: 0.72, metalness: 0, specularIntensity: 0.24, specularColor: m.color.clone().lerp(new Color(0xffffff), 0.2), anisotropy: 0.6, anisotropyRotation: Math.PI / 2 });   // (the sheen of the hair's own colour: on dark hair, dim)
+        side: DoubleSide, roughness: 0.36, metalness: 0, specularIntensity: 1.0, specularColor: m.color.clone().lerp(new Color(0xffffff), 0.35), anisotropy: 0.85, sheen: 0.6, sheenRoughness: 0.35, sheenColor: m.color.clone().lerp(new Color(0xffffff), 0.5), anisotropyRotation: Math.PI / 2 });   // HAIR_SHINE_441 (the user 26.11.2026: "תוסיף ברק"): a stronger sheen along the strands (0.72 / 0.24 / 0.2 / 0.6 until now), on all the hair   // (the sheen of the hair's own colour: on dark hair, dim)
       // every layer's outer side is its front: the inner side (seen where the beard turns back to the neck) darker, as in its shade
       const inner = (sh) => { sh.fragmentShader = sh.fragmentShader.replace("#include <opaque_fragment>", "#include <opaque_fragment>\n\tif (!gl_FrontFacing) gl_FragColor.rgb *= 0.45;"); };
       lo.onBeforeCompile = hi.onBeforeCompile = inner;
