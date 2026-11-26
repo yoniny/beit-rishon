@@ -2193,6 +2193,13 @@
       stop() { this.held = -1; this.t0 = -1; setDrop(0); this.drop = 0; for (const k of Object.keys(capG)) capG[k].visible = false; },
       pose(d, ph) { this.held = -1; this.t0 = -1; setDrop(d); this.drop = d; for (const k of Object.keys(capG)) capG[k].visible = k === ph; }   // a still frame (checks, the tour)
     };
+    // MUKHNI_EXEDRA_452 (the user 26.11.2026, a picture: "הדגמה המוכני נתקע באכסדרה"): in the Bartenura's reading of the court's exedras
+    // (columns and a covering) the covering passes between the demonstration's eye and the laver - while it runs, the exedras are put out
+    // of sight, and come back as they were when it ends (as the chambers' open fronts do, 30-courts.js crt-south-front)
+    { let exOff = false;
+      const exSet = (off) => { for (const nm of ["exedraRambam", "exedraBartenura"]) { const o = ctx2.root && ctx2.root.getObjectByName(nm); if (!o) continue;
+        if (off) { o.userData.mkVis = o.visible; o.visible = false; } else if (o.userData.mkVis !== undefined) { o.visible = o.userData.mkVis; delete o.userData.mkVis; } } };
+      if (Array.isArray(ctx2.animated)) ctx2.animated.push(() => { const want = M.t0 >= 0; if (want !== exOff) { exOff = want; exSet(want); } }); }
     (ctx2.shared.demoStops || (ctx2.shared.demoStops = [])).push({ id: "alt-mukhni-demo", running: () => M.t0 >= 0, stop: () => M.stop(),
       pause: () => M.pause(), resume: () => M.resume(), paused: () => M.paused(), restart: () => M.demo() });   // 1.9.2; MUKHNI_PAUSE_G16
     ctx2.shared.flyPoints = ctx2.shared.flyPoints || {};
