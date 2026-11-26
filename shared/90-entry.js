@@ -2206,7 +2206,12 @@
     }
     return now - I.last > 2000 ? 2 : 1;
   }
-  renderer.setAnimationLoop((t) => {
+  renderer.setAnimationLoop((tRaf) => {
+    // SKIP_FLY_441: the loop's moments in the plugin's own clock (tm_clock, 00-lib.js) - the clock the flights, the demonstrations and the
+    // camera's decisions are set by (performance.now() inside the plugin). The browser's frame time (tRaf) is the real clock, which a
+    // demonstration's "קדימה" / "אחורה" and its speed do not move: a flight started after a jump was the jump's length in the future (k far
+    // below 0), and at another speed it ran at the wrong pace
+    const t = performance.now();
     if (ent_load.loading || !ent_isVisible()) return;   // nothing is drawn behind the loading overlay or by a hidden house/tab
     if (ent_idleStride() > 1 && (++ent_idle.n & 1)) { ent_idle.skipped++; return; }   // IDLE_THROTTLE_441
     if (flyAnim) {
@@ -2214,7 +2219,10 @@
       // while a demonstration is paused, the flight in progress holds where it is, and goes on from there with the demonstration
       try { if (ent_flyLastT != null && typeof ctx.shared.demoPaused === "function" && ctx.shared.demoPaused()) flyAnim.t0 += t - ent_flyLastT; } catch (_) {}
       ent_flyLastT = t;
-      const k = Math.min(1, (t - flyAnim.t0) / flyAnim.dur), e = ease(k);
+      // SKIP_FLY_441 (the user's recording 26.11.2026, "שמחת בית השואבה" from the demonstrations' menu, "קדימה": the eye flew off into the dark,
+      // into the walls, then black): the skip jumps the clock while the demonstration counts as paused, the hold above pushed t0 past now by the
+      // whole jump, k went far below 0, and the ease of a negative k (2k^2) threw the eye thousands of amot away, further every frame. k from 0 to 1
+      const k = Math.max(0, Math.min(1, (t - flyAnim.t0) / flyAnim.dur)), e = ease(k);
       camera.position.lerpVectors(flyAnim.p0, flyAnim.p1, e);
       controls.target.lerpVectors(flyAnim.c0, flyAnim.c1, e);
       if (k >= 1) {
